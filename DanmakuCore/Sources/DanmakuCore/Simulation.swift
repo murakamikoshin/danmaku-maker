@@ -79,6 +79,8 @@ public struct Simulation {
     public private(set) var outcome = Outcome.playing
     /// 被弾を無視する。UI テスト専用（アプリ側は DEBUG ビルドでしか立てない）
     public var invincible = false
+    /// 復活直後の無敵が切れるステップ
+    public private(set) var shieldUntilTick = 0
 
     private var cooldown = 0.0
     private var rng: Mulberry32
@@ -100,6 +102,17 @@ public struct Simulation {
     }
 
     public var isBoss: Bool { stage.mode == .boss }
+
+    /// 復活直後で、被弾しない状態か
+    public var isShielded: Bool { tick < shieldUntilTick }
+
+    /// 被弾した場所からそのまま復活する。画面の弾を全消去し、短い間だけ無敵にする
+    public mutating func revive(shieldSeconds: Double = 2) {
+        guard outcome == .hit else { return }
+        outcome = .playing
+        bullets.removeAll(keepingCapacity: true)
+        shieldUntilTick = tick + Int((shieldSeconds / DanmakuConfig.step).rounded())
+    }
 
     public var bossPosition: Point {
         let mv = Simulation.bossMoves[stage.bossMove ?? 0]
@@ -181,7 +194,7 @@ public struct Simulation {
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
             if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared {
-                if invincible { continue }
+                if invincible || tick < shieldUntilTick { continue }
                 outcome = .hit; return
             }
             bullets[w] = b; w += 1

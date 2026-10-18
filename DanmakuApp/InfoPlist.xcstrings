@@ -1,0 +1,38 @@
+{
+  "sourceLanguage": "ja",
+  "version": "1.0",
+  "strings": {
+    "CFBundleDisplayName": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾幕メーカー"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danmaku Maker"
+          }
+        }
+      }
+    },
+    "NSUserTrackingUsageDescription": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を表示するために使用します。許可しなくても遊べます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used to show ads. You can play without allowing it."
+          }
+        }
+      }
+    }
+  }
+}

@@ -99,6 +99,14 @@ final class GameScene: SKScene {
         addChild(centerLabel)
     }
 
+    /// 被弾した場所から復活する（広告を見たあと／広告削除の購入者）
+    func revive() {
+        sim.revive()
+        finished = false
+        lastTime = nil
+        accumulator = 0
+    }
+
     // MARK: 入力（画面のどこでもドラッグで相対移動）
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -153,6 +161,7 @@ final class GameScene: SKScene {
             s.node.position = pos(Double(s.node.position.x), (s.y + now * s.v).truncatingRemainder(dividingBy: Double(H)))
         }
         shipNode.position = pos(sim.player.x, sim.player.y)
+        shipNode.alpha = sim.isShielded ? (Int(now * 10) % 2 == 0 ? 0.35 : 1) : 1
 
         // 弾（スプライトを使い回す）
         let bs = sim.bullets

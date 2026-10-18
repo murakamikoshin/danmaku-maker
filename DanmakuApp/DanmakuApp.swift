@@ -5,6 +5,8 @@ struct DanmakuApp: App {
     @StateObject private var auth = AuthService()
     @StateObject private var blocks = BlockStore()
     @StateObject private var deepLink = DeepLink()
+    @StateObject private var ads = AdsService()
+    @StateObject private var purchases = PurchaseService()
     @Environment(\.scenePhase) private var scenePhase
 
     init() { Backend.configure() }
@@ -15,7 +17,16 @@ struct DanmakuApp: App {
                 .environmentObject(auth)
                 .environmentObject(blocks)
                 .environmentObject(deepLink)
-                .task { auth.start(); await ResultsQueue.shared.flush() }
+                .environmentObject(ads)
+                .environmentObject(purchases)
+                .task {
+                    auth.start()
+                    purchases.start()
+                    await purchases.refresh()
+                    // 広告削除の購入者には、同意画面も広告も出さない
+                    if !purchases.isPremium { await ads.start() }
+                    await ResultsQueue.shared.flush()
+                }
                 .onOpenURL { deepLink.handle($0) }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL) }
                 .onChange(of: scenePhase) { phase in

@@ -39,11 +39,22 @@ struct SignInSheet: View {
 struct SettingsView: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
+    @EnvironmentObject private var purchases: PurchaseService
     @Environment(\.dismiss) private var dismiss
+    @State private var showStore = false
 
     var body: some View {
         NavigationStack {
             List {
+                Section("settings.store") {
+                    if purchases.isPremium {
+                        Label("store.purchased", systemImage: "checkmark.seal.fill").foregroundStyle(Color(Palette.bullets[4]))
+                    } else {
+                        Button("revive.removeads") { showStore = true }.accessibilityIdentifier("settings.removeads")
+                    }
+                    Button("store.restore") { Task { await purchases.restore() } }
+                    if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary) }
+                }
                 Section("settings.account") {
                     if auth.isMember {
                         Text("settings.signedin")
@@ -75,6 +86,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("editor.close") { dismiss() } } }
         }
+        .sheet(isPresented: $showStore) { StoreView() }
         .preferredColorScheme(.dark)
     }
 }

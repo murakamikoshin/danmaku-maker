@@ -10,12 +10,74 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
     exactVersion: 11.6.0
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    exactVersion: 11.2.0
+  UserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
+    exactVersion: 2.3.0
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios-spm
+    exactVersion: 5.69.0
 targets:
   DanmakuApp:
     type: application
     platform: iOS
     sources:
       - DanmakuApp
+    info:
+      path: DanmakuApp/Info.plist
+      properties:
+        GADApplicationIdentifier: $(ADMOB_APP_ID)
+        ADMOB_REWARDED_UNIT_ID: $(ADMOB_REWARDED_UNIT_ID)
+        REVENUECAT_API_KEY: $(REVENUECAT_API_KEY)
+        NSUserTrackingUsageDescription: 広告を表示するために使用します。許可しなくても遊べます。
+        ITSAppUsesNonExemptEncryption: false
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+          - SKAdNetworkIdentifier: 4fzdc2evr5.skadnetwork
+          - SKAdNetworkIdentifier: 2fnua5tdw4.skadnetwork
+          - SKAdNetworkIdentifier: ydx93a7ass.skadnetwork
+          - SKAdNetworkIdentifier: p78axxw29g.skadnetwork
+          - SKAdNetworkIdentifier: v72qych5uu.skadnetwork
+          - SKAdNetworkIdentifier: ludvb6z3bs.skadnetwork
+          - SKAdNetworkIdentifier: cp8zw746q7.skadnetwork
+          - SKAdNetworkIdentifier: 3sh42y64q3.skadnetwork
+          - SKAdNetworkIdentifier: c6k4g5qg8m.skadnetwork
+          - SKAdNetworkIdentifier: s39g8k73mm.skadnetwork
+          - SKAdNetworkIdentifier: 3qy4746246.skadnetwork
+          - SKAdNetworkIdentifier: hs6bdukanm.skadnetwork
+          - SKAdNetworkIdentifier: mlmmfzh3r3.skadnetwork
+          - SKAdNetworkIdentifier: v4nxqhlyqp.skadnetwork
+          - SKAdNetworkIdentifier: wzmmz9fp6w.skadnetwork
+          - SKAdNetworkIdentifier: yclnxrl5pm.skadnetwork
+          - SKAdNetworkIdentifier: t38b2kh725.skadnetwork
+          - SKAdNetworkIdentifier: 7ug5zh24hu.skadnetwork
+          - SKAdNetworkIdentifier: gta9lk7p23.skadnetwork
+          - SKAdNetworkIdentifier: vutu7akeur.skadnetwork
+          - SKAdNetworkIdentifier: y5ghdn5j9k.skadnetwork
+          - SKAdNetworkIdentifier: n6fk4nfna4.skadnetwork
+          - SKAdNetworkIdentifier: v9wttpbfk9.skadnetwork
+          - SKAdNetworkIdentifier: n38lu8286q.skadnetwork
+          - SKAdNetworkIdentifier: 47vhws6wlr.skadnetwork
+          - SKAdNetworkIdentifier: kbd757ywx3.skadnetwork
+          - SKAdNetworkIdentifier: 9t245vhmpl.skadnetwork
+          - SKAdNetworkIdentifier: a2p9lx4jpn.skadnetwork
+          - SKAdNetworkIdentifier: 22mmun2rn5.skadnetwork
+          - SKAdNetworkIdentifier: 4468km3ulz.skadnetwork
+          - SKAdNetworkIdentifier: 2u9pt9hc89.skadnetwork
+          - SKAdNetworkIdentifier: 8s468mfl3y.skadnetwork
+          - SKAdNetworkIdentifier: klf5c3l5u5.skadnetwork
+          - SKAdNetworkIdentifier: ppxm28t8ap.skadnetwork
+          - SKAdNetworkIdentifier: uw77j35x4d.skadnetwork
+          - SKAdNetworkIdentifier: pwa73g5rt2.skadnetwork
+          - SKAdNetworkIdentifier: 578prtvx9j.skadnetwork
+          - SKAdNetworkIdentifier: 4dzt52r2t5.skadnetwork
+          - SKAdNetworkIdentifier: e5fvkxwrpn.skadnetwork
+          - SKAdNetworkIdentifier: 8c4e2ghe7u.skadnetwork
+          - SKAdNetworkIdentifier: zq492l623r.skadnetwork
+          - SKAdNetworkIdentifier: 3rd42ekr43.skadnetwork
+          - SKAdNetworkIdentifier: 3qcr597p9d.skadnetwork
     entitlements:
       path: DanmakuApp/DanmakuApp.entitlements
       properties:
@@ -30,7 +92,22 @@ targets:
         product: FirebaseFirestore
       - package: Firebase
         product: FirebaseFunctions
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+      - package: UserMessagingPlatform
+        product: GoogleUserMessagingPlatform
+      - package: RevenueCat
+        product: RevenueCat
     settings:
+      configs:
+        Debug:
+          ADMOB_APP_ID: ca-app-pub-3940256099942544~1458002511
+          ADMOB_REWARDED_UNIT_ID: ca-app-pub-3940256099942544/1712485313
+          REVENUECAT_API_KEY: ""
+        Release:
+          ADMOB_APP_ID: ca-app-pub-3940256099942544~1458002511
+          ADMOB_REWARDED_UNIT_ID: ca-app-pub-3940256099942544/1712485313
+          REVENUECAT_API_KEY: ""
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.koshin.danmakumaker
         PRODUCT_NAME: DanmakuMaker

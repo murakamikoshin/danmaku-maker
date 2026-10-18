@@ -18,6 +18,13 @@ final class PlayModel: ObservableObject {
     @Published private(set) var generation = 0
     @Published private(set) var remaining: Double
     @Published private(set) var result: PlayResult?
+    /// 被弾したときの「復活しますか？」の表示
+    @Published private(set) var reviveOffer = false
+    /// 復活を出せるか（テストプレイでは出さない。広告の準備ができているか／購入者かは view 側で判定）
+    var canRevive: () -> Bool = { false }
+    private var usedAdRevive = false
+    private var pending: PlayResult?
+    private var pendingMoves: [Move] = []
 
     init(stage: Stage) {
         self.stage = stage
@@ -36,12 +43,37 @@ final class PlayModel: ObservableObject {
             guard let self else { return }
             let r = PlayResult(outcome: sim.outcome, time: max(0, sim.t), hp: sim.hp,
                                duration: sim.stage.durationSec, isBoss: sim.isBoss)
-            self.result = r
-            self.onResult?(r, moves)
+            if sim.outcome == .hit, self.canRevive() {
+                self.pending = r; self.pendingMoves = moves
+                self.reviveOffer = true
+            } else {
+                self.result = r
+                self.onResult?(r, moves)
+            }
         }
     }
 
+    /// 復活する（広告を見終えたあと／購入者）
+    func revive(free: Bool) {
+        if !free { usedAdRevive = true }
+        reviveOffer = false
+        pending = nil
+        scene.revive()
+    }
+
+    func giveUp() {
+        reviveOffer = false
+        if let r = pending { result = r; onResult?(r, pendingMoves) }
+        pending = nil
+    }
+
+    /// 広告での復活は1プレイ1回まで
+    var adReviveAvailable: Bool { !usedAdRevive }
+
     func restart() {
+        usedAdRevive = false
+        reviveOffer = false
+        pending = nil
         result = nil
         remaining = Double(stage.durationSec)
         scene = GameScene(stage: stage)
@@ -58,6 +90,9 @@ struct PlayView: View {
     let onExit: () -> Void
     @StateObject private var model: PlayModel
     @State private var startedOnce = false
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @State private var showStore = false
 
     init(stage: Stage, title: String, isTest: Bool = false, share: ShareContext? = nil, onStart: (() -> Void)? = nil,
          onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
@@ -89,6 +124,12 @@ struct PlayView: View {
                        debugOptions: Self.debugOptions)
                 .id(model.generation)
                 .aspectRatio(CGFloat(DanmakuConfig.width / DanmakuConfig.height), contentMode: .fit)
+                .overlay {
+                    if model.reviveOffer {
+                        ReviveView(isPremium: purchases.isPremium, price: purchases.priceText,
+                                   onRevive: { Task { await revive() } }, onGiveUp: { model.giveUp() }, onStore: { showStore = true })
+                    }
+                }
                 .overlay { if let r = model.result { ResultView(result: r, isTest: isTest, share: share, retry: { model.restart(); onStart?() }, back: onExit) } }
                 .frame(maxHeight: .infinity)
 
@@ -99,7 +140,16 @@ struct PlayView: View {
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .preferredColorScheme(.dark)
-        .onAppear { if !startedOnce { startedOnce = true; onStart?() } }
+        .onAppear {
+            if !startedOnce { startedOnce = true; onStart?() }
+            model.canRevive = { !isTest && (purchases.isPremium || (ads.isReady && model.adReviveAvailable)) }
+        }
+        .sheet(isPresented: $showStore) { StoreView() }
+    }
+
+    private func revive() async {
+        if purchases.isPremium { model.revive(free: true); return }
+        if await ads.showRewarded() { model.revive(free: false) }
     }
 
     private static var debugOptions: SpriteView.DebugOptions {
@@ -159,6 +209,36 @@ struct ResultView: View {
                 HStack {
                     Button("result.retry", action: retry).accessibilityIdentifier("result.retry").buttonStyle(.borderedProminent).tint(Color(Palette.pink))
                     Button("result.back", action: back).buttonStyle(.bordered).tint(.white)
+                }
+            }
+            .padding(22)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color(red: 0.11, green: 0.09, blue: 0.25)))
+            .padding(30)
+        }
+    }
+}
+
+struct ReviveView: View {
+    let isPremium: Bool
+    let price: String?
+    let onRevive: () -> Void
+    let onGiveUp: () -> Void
+    let onStore: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color(Palette.background).opacity(0.72)
+            VStack(spacing: 14) {
+                Text("result.hit").font(.system(size: 34, weight: .heavy)).foregroundStyle(Color(Palette.pink))
+                Button(action: onRevive) {
+                    Text(isPremium ? "revive.free" : "revive.ad").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent).tint(Color(Palette.bullets[1]))
+                .accessibilityIdentifier("revive.button")
+                Button("revive.giveup", action: onGiveUp).buttonStyle(.bordered).tint(.white)
+                    .accessibilityIdentifier("revive.giveup")
+                if !isPremium {
+                    Button(action: onStore) { Text("revive.removeads").font(.footnote) }
                 }
             }
             .padding(22)
