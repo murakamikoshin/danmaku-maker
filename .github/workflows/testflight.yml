@@ -1,0 +1,45 @@
+# Xcode Cloud の代わりに、GitHub Actions（Xcode 26 の macOS ランナー）でビルドして TestFlight へ送る。
+# 手動実行（Actions タブ → TestFlight → Run workflow）。【未検証】Xcode Cloud を使うなら不要。
+# 必要な Secrets: ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_P8_BASE64（App Store Connect API キー）、GOOGLE_SERVICE_INFO_PLIST_BASE64
+name: TestFlight
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.app 2>/dev/null || ls /Applications | grep Xcode
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Restore Firebase config
+        env:
+          PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: echo "$PLIST" | base64 --decode > DanmakuApp/GoogleService-Info.plist
+      - name: Generate project
+        run: xcodegen generate
+      - name: App Store Connect API key
+        env:
+          KEY: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$KEY" | base64 --decode > ~/private_keys/AuthKey_${KEY_ID}.p8
+      - name: Archive
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild archive -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -allowProvisioningUpdates -authenticationKeyPath ~/private_keys/AuthKey_${KEY_ID}.p8 \
+            -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }}
+      - name: Export and upload to TestFlight
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" -exportOptionsPlist ci/ExportOptions.plist \
+            -exportPath "$RUNNER_TEMP/export" -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${KEY_ID}.p8 -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER"
