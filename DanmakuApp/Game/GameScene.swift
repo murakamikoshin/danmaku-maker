@@ -32,6 +32,9 @@ final class GameScene: SKScene {
 
     init(stage: Stage) {
         sim = Simulation(stage: stage)
+        #if DEBUG
+        sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
+        #endif
         super.init(size: CGSize(width: GameScene.W, height: GameScene.H))
         scaleMode = .aspectFit
         backgroundColor = Palette.background

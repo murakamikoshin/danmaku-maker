@@ -29,8 +29,21 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: 弾幕メーカー
         SWIFT_EMIT_LOC_STRINGS: YES
         LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+  DanmakuAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - DanmakuAppUITests
+    dependencies:
+      - target: DanmakuApp
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   DanmakuApp:
     build:
       targets:
         DanmakuApp: all
+    test:
+      targets:
+        - DanmakuAppUITests

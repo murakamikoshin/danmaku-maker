@@ -13,6 +13,7 @@ struct PlayResult {
 @MainActor
 final class PlayModel: ObservableObject {
     let stage: Stage
+    var onResult: ((PlayResult, [Move]) -> Void)?
     @Published private(set) var scene: GameScene
     @Published private(set) var generation = 0
     @Published private(set) var remaining: Double
@@ -31,10 +32,12 @@ final class PlayModel: ObservableObject {
             let rounded = (t * 10).rounded() / 10
             if rounded != self.remaining { self.remaining = rounded }
         }
-        scene.onFinish = { [weak self] sim, _ in
+        scene.onFinish = { [weak self] sim, moves in
             guard let self else { return }
-            self.result = PlayResult(outcome: sim.outcome, time: max(0, sim.t), hp: sim.hp,
-                                     duration: sim.stage.durationSec, isBoss: sim.isBoss)
+            let r = PlayResult(outcome: sim.outcome, time: max(0, sim.t), hp: sim.hp,
+                               duration: sim.stage.durationSec, isBoss: sim.isBoss)
+            self.result = r
+            self.onResult?(r, moves)
         }
     }
 
@@ -49,13 +52,18 @@ final class PlayModel: ObservableObject {
 
 struct PlayView: View {
     let title: String
+    let isTest: Bool
     let onExit: () -> Void
     @StateObject private var model: PlayModel
 
-    init(stage: Stage, title: String, onExit: @escaping () -> Void) {
+    init(stage: Stage, title: String, isTest: Bool = false,
+         onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
+        self.isTest = isTest
         self.onExit = onExit
-        _model = StateObject(wrappedValue: PlayModel(stage: stage))
+        let m = PlayModel(stage: stage)
+        m.onResult = onResult
+        _model = StateObject(wrappedValue: m)
     }
 
     var body: some View {
@@ -76,7 +84,7 @@ struct PlayView: View {
                        debugOptions: Self.debugOptions)
                 .id(model.generation)
                 .aspectRatio(CGFloat(DanmakuConfig.width / DanmakuConfig.height), contentMode: .fit)
-                .overlay { if let r = model.result { ResultView(result: r, retry: { model.restart() }, back: onExit) } }
+                .overlay { if let r = model.result { ResultView(result: r, isTest: isTest, retry: { model.restart() }, back: onExit) } }
                 .frame(maxHeight: .infinity)
 
             Text("play.hint")
@@ -99,6 +107,7 @@ struct PlayView: View {
 
 struct ResultView: View {
     let result: PlayResult
+    var isTest = false
     let retry: () -> Void
     let back: () -> Void
 
@@ -114,6 +123,7 @@ struct ResultView: View {
     }
 
     private var message: String {
+        if isTest { return L(win ? "result.test.ok" : "result.test.ng") }
         switch result.outcome {
         case .cleared:
             return result.isBoss ? String(format: L("result.msg.boss"), timeText)
@@ -128,11 +138,12 @@ struct ResultView: View {
             Color(Palette.background).opacity(0.72)
             VStack(spacing: 14) {
                 Text(headline)
+                    .accessibilityIdentifier("result.headline")
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundStyle(win ? Color(Palette.gold) : Color(Palette.pink))
                 Text(message).font(.footnote).foregroundStyle(.secondary)
                 HStack {
-                    Button("result.retry", action: retry).buttonStyle(.borderedProminent).tint(Color(Palette.pink))
+                    Button("result.retry", action: retry).accessibilityIdentifier("result.retry").buttonStyle(.borderedProminent).tint(Color(Palette.pink))
                     Button("result.back", action: back).buttonStyle(.bordered).tint(.white)
                 }
             }

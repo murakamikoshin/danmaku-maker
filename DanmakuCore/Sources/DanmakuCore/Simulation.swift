@@ -27,9 +27,9 @@ public enum Outcome: Equatable, Sendable {
     case playing, cleared, hit, timeUp
 }
 
-enum Emit {
+public enum Emit {
     /// 試作の `emit` と同じ。弾数は 1600 で頭打ち（乱数は上限でも消費する）
-    static func emit(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
+    public static func emit(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                      rng: inout Mulberry32, into out: inout [Bullet]) {
         let sp = m.v * 60
         let n = max(1, m.c)
@@ -77,6 +77,8 @@ public struct Simulation {
     public private(set) var banner = 0.0
     public private(set) var flash = 0.0
     public private(set) var outcome = Outcome.playing
+    /// 被弾を無視する。UI テスト専用（アプリ側は DEBUG ビルドでしか立てない）
+    public var invincible = false
 
     private var cooldown = 0.0
     private var rng: Mulberry32
@@ -178,7 +180,10 @@ public struct Simulation {
             b.y += b.vy * dt
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
-            if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared { outcome = .hit; return }
+            if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared {
+                if invincible { continue }
+                outcome = .hit; return
+            }
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)

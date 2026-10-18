@@ -3,6 +3,7 @@ import DanmakuCore
 
 struct HomeView: View {
     @State private var playing: SampleStage?
+    @State private var editing = false
 
     var body: some View {
         NavigationStack {
@@ -16,7 +17,14 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("app.title")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { editing = true } label: { Label("home.create", systemImage: "plus") }
+                        .accessibilityIdentifier("home.create")
+                }
+            }
         }
+        .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: L(s.nameKey)) { playing = nil }
         }

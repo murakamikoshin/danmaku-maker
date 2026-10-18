@@ -56,3 +56,15 @@ final class DeterminismTests: XCTestCase {
         XCTAssertEqual(r.outcome, .cleared)
     }
 }
+
+final class InvincibleTests: XCTestCase {
+    func testInvincibleIgnoresHitsButDefaultDoesNot() {
+        let stage = Stage(name: "i", mode: .survive, durationSec: 10,
+                          emitters: [em(.aim, x: 0.5, y: 0.8, i: 0.3, c: 5, v: 3, r: 10)]).sanitized()
+        var normal = Simulation(stage: stage), god = Simulation(stage: stage)
+        god.invincible = true
+        for _ in 0..<(144 + 1200) { normal.step(.zero); god.step(.zero) }
+        XCTAssertEqual(normal.outcome, .hit)
+        XCTAssertEqual(god.outcome, .cleared)
+    }
+}
