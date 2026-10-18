@@ -13,7 +13,7 @@ setGlobalOptions({ region: "asia-northeast1", maxInstances: 10 });
 initializeApp();
 const db = getFirestore();
 
-const APP_STORE_URL = process.env.APP_STORE_URL ?? "https://apps.apple.com/";
+const APP_STORE_URL = process.env.APP_STORE_URL ?? "https://apps.apple.com/app/id6824245206";
 const HIDE_REPORT_THRESHOLD = 5;
 const POST_INTERVAL_MS = 10_000;
 const TREND_HALF_LIFE_MS = 2 * 24 * 3600 * 1000;

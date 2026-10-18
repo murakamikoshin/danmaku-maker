@@ -5,7 +5,7 @@ enum AppConfig {
     // TODO: Firebase プロジェクト作成後に実際のドメインへ（既定は <projectId>.web.app）
     static let webHost = "danmaku-maker.web.app"
     static let supportEmail = "support@danmaku-maker.example"
-    static let appStoreURL = URL(string: "https://apps.apple.com/")!
+    static let appStoreURL = URL(string: "https://apps.apple.com/app/id6824245206")!
 
     static var webBase: URL { URL(string: "https://\(webHost)")! }
     static func shareURL(_ id: String) -> URL { webBase.appendingPathComponent("s/\(id)") }
