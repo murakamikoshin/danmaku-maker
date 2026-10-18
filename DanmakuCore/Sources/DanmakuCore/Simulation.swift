@@ -35,7 +35,7 @@ enum Emit {
         let n = max(1, m.c)
         let deg = Double.pi / 180
         func add(_ x: Double, _ y: Double, _ a: Double) {
-            if out.count < DanmakuCore.maxBullets {
+            if out.count < DanmakuConfig.maxBullets {
                 out.append(Bullet(x: x, y: y, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k))
             }
         }
@@ -49,7 +49,7 @@ enum Emit {
             }
         case .rain:
             for _ in 0..<n {
-                let x = rng.next() * DanmakuCore.width
+                let x = rng.next() * DanmakuConfig.width
                 let a = Double.pi / 2 + (rng.next() - 0.5) * 0.3
                 add(x, -8, a)
             }
@@ -67,8 +67,8 @@ public struct Simulation {
     public let stage: Stage
     public private(set) var tick = 0
     /// ゲーム内時間。READY 中は負。試作と同じく 1/120 を足していく
-    public private(set) var t = -DanmakuCore.readySeconds
-    public private(set) var player = Point(x: DanmakuCore.width / 2, y: DanmakuCore.height * 0.85)
+    public private(set) var t = -DanmakuConfig.readySeconds
+    public private(set) var player = Point(x: DanmakuConfig.width / 2, y: DanmakuConfig.height * 0.85)
     public private(set) var bullets: [Bullet] = []
     public private(set) var shots: [Point] = []
     public private(set) var hp: Int
@@ -101,8 +101,8 @@ public struct Simulation {
 
     public var bossPosition: Point {
         let mv = Simulation.bossMoves[stage.bossMove ?? 0]
-        return Point(x: DanmakuCore.width * (0.5 + mv.a * sin(max(0, t) * mv.w)),
-                     y: DanmakuCore.height * 0.18)
+        return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, t) * mv.w)),
+                     y: DanmakuConfig.height * 0.18)
     }
 
     private func phaseOf() -> Int {
@@ -115,8 +115,8 @@ public struct Simulation {
     /// 1ステップ（1/120 秒）進める。終了後は何もしない
     public mutating func step(_ move: Move) {
         guard outcome == .playing else { return }
-        let dt = DanmakuCore.step
-        let W = DanmakuCore.width, H = DanmakuCore.height
+        let dt = DanmakuConfig.step
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
         tick += 1
         t += dt
         player.x = Simulation.clamp(player.x + Double(move.dx) * Move.unit, 6, W - 6)
@@ -178,7 +178,7 @@ public struct Simulation {
             b.y += b.vy * dt
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
-            if dx * dx + dy * dy < DanmakuCore.hitRadiusSquared { outcome = .hit; return }
+            if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared { outcome = .hit; return }
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)

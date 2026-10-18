@@ -21,7 +21,7 @@ final class BossTests: XCTestCase {
         XCTAssertEqual(phases.map(\.phase), [2, 3])
         for p in phases {
             XCTAssertEqual(p.bullets, 0, "切り替わりで全消去")
-            XCTAssertEqual(p.banner, 1.2, accuracy: DanmakuCore.step + 1e-9, "1.2秒（同じステップで1回ぶん減る）")
+            XCTAssertEqual(p.banner, 1.2, accuracy: DanmakuConfig.step + 1e-9, "1.2秒（同じステップで1回ぶん減る）")
         }
         XCTAssertEqual(sim.outcome, .cleared)
         XCTAssertLessThanOrEqual(sim.hp, 0)

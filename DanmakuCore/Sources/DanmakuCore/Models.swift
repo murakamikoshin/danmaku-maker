@@ -1,7 +1,7 @@
 import Foundation
 
 /// 論理画面・固定ステップなどの定数
-public enum DanmakuCore {
+public enum DanmakuConfig {
     public static let formatVersion = 1
     public static let width = 360.0
     public static let height = 540.0
@@ -72,7 +72,7 @@ public struct Stage: Codable, Equatable, Sendable {
     public var formatVersion: Int
 
     public init(name: String, mode: Mode, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil,
-                emitters: [Emitter], formatVersion: Int = DanmakuCore.formatVersion) {
+                emitters: [Emitter], formatVersion: Int = DanmakuConfig.formatVersion) {
         self.name = name; self.mode = mode; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove
         self.emitters = emitters; self.formatVersion = formatVersion
@@ -90,7 +90,7 @@ public struct Stage: Codable, Equatable, Sendable {
         bossHp = try d.decodeIfPresent(Int.self, forKey: .bossHp)
         bossMove = try d.decodeIfPresent(Int.self, forKey: .bossMove)
         emitters = try d.decode([Emitter].self, forKey: .emitters)
-        formatVersion = try d.decodeIfPresent(Int.self, forKey: .formatVersion) ?? DanmakuCore.formatVersion
+        formatVersion = try d.decodeIfPresent(Int.self, forKey: .formatVersion) ?? DanmakuConfig.formatVersion
     }
 
     public static let durations: [Mode: [Int]] = [
@@ -112,7 +112,7 @@ public struct Stage: Codable, Equatable, Sendable {
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let mv = isBoss ? Int(clamp(Double(bossMove ?? 0), 0, 2).rounded()) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
-        let ems = emitters.prefix(DanmakuCore.maxEmitters).map { m in
+        let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: m.t,
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
@@ -121,6 +121,6 @@ public struct Stage: Codable, Equatable, Sendable {
                     k: Int(clamp(Double(m.k), 0, 4)), ph: Int(clamp(Double(m.ph), 0, 3)))
         }
         return Stage(name: trimmed, mode: mode, durationSec: d, bossHp: hp, bossMove: mv,
-                     emitters: Array(ems), formatVersion: DanmakuCore.formatVersion)
+                     emitters: Array(ems), formatVersion: DanmakuConfig.formatVersion)
     }
 }
