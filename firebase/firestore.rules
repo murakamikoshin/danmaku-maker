@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMember() { return signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous'; }
+
+    // ステージ: 公開中のものだけ誰でも読める。書き込みはすべて Cloud Functions 経由
+    match /stages/{stageId} {
+      allow read: if resource.data.status == 'published' || (signedIn() && resource.data.authorUid == request.auth.uid);
+      allow write: if false;
+
+      match /likes/{uid} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow write: if false;
+      }
+    }
+
+    // ユーザー: 自分の表示名とブロックリストだけ自分で更新できる
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if isMember() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['displayName', 'blockedUids', 'createdAt', 'postCount'])
+        && request.resource.data.postCount == 0
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.blockedUids is list && request.resource.data.blockedUids.size() <= 500
+        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 12;
+      allow update: if isMember() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'blockedUids'])
+        && request.resource.data.blockedUids is list && request.resource.data.blockedUids.size() <= 500
+        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 12;
+      allow delete: if false;
+    }
+
+    // 通報・リプレイ・管理者向けアラートはクライアントから一切触れない
+    match /reports/{id} { allow read, write: if false; }
+    match /stageReplays/{id} { allow read, write: if false; }
+    match /admin_alerts/{id} { allow read, write: if false; }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

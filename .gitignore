@@ -18,3 +18,4 @@ serviceAccount*.json
 test-results/
 playwright-report/
 node_modules/
+firebase/functions/lib/

@@ -1,0 +1,33 @@
+{
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "storage": { "rules": "storage.rules" },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", "test", ".git", "*.log"],
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run lint", "npm --prefix \"$RESOURCE_DIR\" test", "npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ],
+  "hosting": {
+    "public": "hosting/public",
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/s/**", "function": { "functionId": "sharePage", "region": "asia-northeast1" } },
+      { "source": "/og/**", "function": { "functionId": "ogImage", "region": "asia-northeast1" } }
+    ],
+    "headers": [
+      { "source": "/.well-known/apple-app-site-association", "headers": [{ "key": "Content-Type", "value": "application/json" }] },
+      { "source": "/apple-app-site-association", "headers": [{ "key": "Content-Type", "value": "application/json" }] }
+    ]
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "functions": { "port": 5001 },
+    "firestore": { "port": 8080 },
+    "storage": { "port": 9199 },
+    "hosting": { "port": 5000 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}
