@@ -1,38 +1,104 @@
 import SpriteKit
-
+import DanmakuCore
 /// 試作と同じ見た目の弾・自機・ボスを、起動時に1回だけ絵にしてテクスチャにする
 enum SpriteFactory {
     private static func texture(size: CGSize, _ draw: (CGContext) -> Void) -> SKTexture {
+        texture(image(size: size, draw))
+    }
+
+    private static var bulletCache: [Theme: [UIImage]] = [:]
+    private static var shipCache: [Theme: UIImage] = [:]
+    private static var bulletTextureCache: [Theme: [SKTexture]] = [:]
+    private static var shipTextureCache: [Theme: SKTexture] = [:]
+
+    private static func image(size: CGSize, _ draw: (CGContext) -> Void) -> UIImage {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 3
         format.opaque = false
-        let image = UIGraphicsImageRenderer(size: size, format: format).image { draw($0.cgContext) }
+        return UIGraphicsImageRenderer(size: size, format: format).image { draw($0.cgContext) }
+    }
+
+    private static func texture(_ image: UIImage) -> SKTexture {
         let t = SKTexture(image: image)
         t.filteringMode = .linear
         return t
     }
 
-    /// 色つきの円（半径6）＋白い芯（半径3）
-    static let bullets: [SKTexture] = Palette.bullets.map { color in
-        texture(size: CGSize(width: 12, height: 12)) { c in
-            c.setFillColor(color.cgColor)
-            c.fillEllipse(in: CGRect(x: 0, y: 0, width: 12, height: 12))
-            c.setFillColor(UIColor.white.cgColor)
-            c.fillEllipse(in: CGRect(x: 3, y: 3, width: 6, height: 6))
+    /// 弾の絵（12×12）。形はテーマごとに違うが、大きさは同じ
+    static func bulletImages(_ theme: Theme) -> [UIImage] {
+        if let c = bulletCache[theme] { return c }
+        let skin = Skin.of(theme)
+        let list = skin.bulletColors.map { color in
+            image(size: CGSize(width: 12, height: 12)) { c in
+                c.setFillColor(color.cgColor)
+                switch skin.bulletShape {
+                case .circle:
+                    c.fillEllipse(in: CGRect(x: 0, y: 0, width: 12, height: 12))
+                case .petal:
+                    for i in 0..<5 {
+                        let a = Double(i) * 2 * Double.pi / 5
+                        c.fillEllipse(in: CGRect(x: 6 + cos(a) * 2.8 - 2.6, y: 6 + sin(a) * 2.8 - 2.6, width: 5.2, height: 5.2))
+                    }
+                case .bubble:
+                    c.fillEllipse(in: CGRect(x: 0, y: 0, width: 12, height: 12))
+                    c.setBlendMode(.clear)
+                    c.fillEllipse(in: CGRect(x: 2.4, y: 2.4, width: 7.2, height: 7.2))
+                    c.setBlendMode(.normal)
+                    c.setFillColor(color.cgColor)
+                    c.fillEllipse(in: CGRect(x: 4.4, y: 4.4, width: 3.2, height: 3.2))
+                case .diamond:
+                    c.move(to: CGPoint(x: 6, y: 0)); c.addLine(to: CGPoint(x: 12, y: 6))
+                    c.addLine(to: CGPoint(x: 6, y: 12)); c.addLine(to: CGPoint(x: 0, y: 6))
+                    c.closePath(); c.fillPath()
+                }
+                if skin.bulletShape != .bubble {
+                    c.setFillColor(UIColor.white.cgColor)
+                    c.fillEllipse(in: CGRect(x: 3, y: 3, width: 6, height: 6))
+                }
+            }
         }
+        bulletCache[theme] = list
+        return list
     }
 
-    static let ship: SKTexture = texture(size: CGSize(width: 20, height: 24)) { c in
-        // 試作の drawShip（中心 (10,12)）
-        c.setFillColor(UIColor(hex: 0x5CE1E6).cgColor)
-        c.move(to: CGPoint(x: 10, y: 1))
-        c.addLine(to: CGPoint(x: 18, y: 20))
-        c.addLine(to: CGPoint(x: 10, y: 16))
-        c.addLine(to: CGPoint(x: 2, y: 20))
-        c.closePath()
-        c.fillPath()
-        c.setFillColor(UIColor.white.cgColor)
-        c.fillEllipse(in: CGRect(x: 7.5, y: 9.5, width: 5, height: 5))
+    static func bullets(_ theme: Theme) -> [SKTexture] {
+        if let c = bulletTextureCache[theme] { return c }
+        let list = bulletImages(theme).map(texture)
+        bulletTextureCache[theme] = list
+        return list
+    }
+
+    /// 自機の絵（20×24）。当たり判定は中心の白い点で、形が違っても変わらない
+    static func shipImage(_ theme: Theme) -> UIImage {
+        if let c = shipCache[theme] { return c }
+        let skin = Skin.of(theme)
+        let img = image(size: CGSize(width: 20, height: 24)) { c in
+            c.setFillColor(skin.shipColor.cgColor)
+            func poly(_ pts: [(Double, Double)]) {
+                for (i, p) in pts.enumerated() {
+                    let q = CGPoint(x: p.0, y: p.1)
+                    i == 0 ? c.move(to: q) : c.addLine(to: q)
+                }
+                c.closePath(); c.fillPath()
+            }
+            switch skin.shipShape {
+            case .arrow: poly([(10, 1), (18, 20), (10, 16), (2, 20)])
+            case .wings: poly([(10, 2), (13, 12), (19, 8), (17, 21), (10, 17), (3, 21), (1, 8), (7, 12)])
+            case .manta: poly([(10, 1), (14, 9), (20, 14), (13, 17), (10, 23), (7, 17), (0, 14), (6, 9)])
+            case .star: poly([(10, 0), (13, 8), (20, 10), (14, 14), (16, 22), (10, 17), (4, 22), (6, 14), (0, 10), (7, 8)])
+            }
+            c.setFillColor(UIColor.white.cgColor)
+            c.fillEllipse(in: CGRect(x: 7.5, y: 9.5, width: 5, height: 5))
+        }
+        shipCache[theme] = img
+        return img
+    }
+
+    static func ship(_ theme: Theme) -> SKTexture {
+        if let c = shipTextureCache[theme] { return c }
+        let t = texture(shipImage(theme))
+        shipTextureCache[theme] = t
+        return t
     }
 
     static func boss(flash: Bool) -> SKTexture {

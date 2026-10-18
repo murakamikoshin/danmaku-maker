@@ -19,7 +19,9 @@ final class GameScene: SKScene {
     private var touchLast: CGPoint?
     private var finished = false
 
-    private let shipNode = SKSpriteNode(texture: SpriteFactory.ship)
+    private let skin: Skin
+    private let bulletTextures: [SKTexture]
+    private let shipNode: SKSpriteNode
     private let bossNode = SKSpriteNode(texture: SpriteFactory.boss(flash: false))
     private let bossTexture = SpriteFactory.boss(flash: false)
     private let bossFlashTexture = SpriteFactory.boss(flash: true)
@@ -30,14 +32,23 @@ final class GameScene: SKScene {
     private let barFill = SKSpriteNode(color: Palette.gold, size: CGSize(width: 1, height: 5))
     private let centerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
 
-    init(stage: Stage) {
-        sim = Simulation(stage: stage)
+    init(stage: Stage, loadout: Loadout = Loadout()) {
+        sim = Simulation(stage: stage, shotType: loadout.shot)
+        // 弾・背景・自機は別々のテーマを選べる
+        var skin = Skin.of(loadout.bullets)
+        let bg = Skin.of(loadout.background)
+        skin.background = bg.background; skin.star = bg.star
+        let ship = Skin.of(loadout.ship)
+        skin.shipColor = ship.shipColor; skin.shipShape = ship.shipShape
+        self.skin = skin
+        bulletTextures = SpriteFactory.bullets(loadout.bullets)
+        shipNode = SKSpriteNode(texture: SpriteFactory.ship(loadout.ship))
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
         #endif
         super.init(size: CGSize(width: GameScene.W, height: GameScene.H))
         scaleMode = .aspectFit
-        backgroundColor = Palette.background
+        backgroundColor = skin.background
         buildNodes()
     }
 
@@ -51,7 +62,7 @@ final class GameScene: SKScene {
         for _ in 0..<70 {
             let x = rng.next() * Double(W), y = rng.next() * Double(H)
             let s = rng.next() * 1.4 + 0.3, v = rng.next() * 30 + 10
-            let n = SKSpriteNode(color: Palette.star, size: CGSize(width: s, height: s))
+            let n = SKSpriteNode(color: skin.star, size: CGSize(width: s, height: s))
             n.zPosition = 0
             n.position = pos(x, y)
             addChild(n)
@@ -63,7 +74,7 @@ final class GameScene: SKScene {
                 p.move(to: CGPoint(x: 0, y: 7)); p.addLine(to: CGPoint(x: 7, y: 0))
                 p.addLine(to: CGPoint(x: 0, y: -7)); p.addLine(to: CGPoint(x: -7, y: 0)); p.closeSubpath()
                 let n = SKShapeNode(path: p)
-                n.strokeColor = Palette.bullets[m.k]
+                n.strokeColor = skin.bulletColors[m.k]
                 n.lineWidth = 1
                 n.position = pos(m.x * Double(W), m.y * Double(H))
                 n.zPosition = 1
@@ -86,7 +97,7 @@ final class GameScene: SKScene {
         addChild(barFill)
         if sim.isBoss {
             for f in [CGFloat(1) / 3, CGFloat(2) / 3] {
-                let s = SKSpriteNode(color: Palette.background, size: CGSize(width: 2, height: 5))
+                let s = SKSpriteNode(color: skin.background, size: CGSize(width: 2, height: 5))
                 s.anchorPoint = CGPoint(x: 0.5, y: 1); s.position = CGPoint(x: W * f, y: H); s.zPosition = 7
                 addChild(s)
             }
@@ -166,7 +177,7 @@ final class GameScene: SKScene {
         // 弾（スプライトを使い回す）
         let bs = sim.bullets
         while bulletNodes.count < bs.count {
-            let n = SKSpriteNode(texture: SpriteFactory.bullets[0])
+            let n = SKSpriteNode(texture: bulletTextures[0])
             n.zPosition = 4
             addChild(n)
             bulletNodes.append(n)
@@ -177,7 +188,7 @@ final class GameScene: SKScene {
                 let b = bs[i]
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
-                n.texture = SpriteFactory.bullets[b.color]
+                n.texture = bulletTextures[b.color]
             } else if !n.isHidden {
                 n.isHidden = true
             }
@@ -190,12 +201,18 @@ final class GameScene: SKScene {
             let ss = sim.shots
             while shotNodes.count < ss.count {
                 let n = SKSpriteNode(color: Palette.gold, size: CGSize(width: 3, height: 10))
+                n.name = "shot"
                 n.zPosition = 2
                 addChild(n)
                 shotNodes.append(n)
             }
             for i in 0..<shotNodes.count {
-                if i < ss.count { shotNodes[i].isHidden = false; shotNodes[i].position = pos(ss[i].x, ss[i].y - 1) }
+                if i < ss.count {
+                    shotNodes[i].isHidden = false
+                    shotNodes[i].position = pos(ss[i].x, ss[i].y - 1)
+                    shotNodes[i].size = ss[i].damage > 1 ? CGSize(width: 6, height: 14) : CGSize(width: 3, height: 10)
+                    shotNodes[i].color = ss[i].damage > 1 ? skin.shipColor : Palette.gold
+                }
                 else { shotNodes[i].isHidden = true }
             }
             let ratio = max(0, Double(sim.hp)) / Double(sim.stage.bossHp ?? 1)

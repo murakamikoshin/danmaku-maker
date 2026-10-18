@@ -29,6 +29,7 @@ struct DanmakuApp: App {
                 .environmentObject(deepLink)
                 .environmentObject(ads)
                 .environmentObject(purchases)
+                .environmentObject(CosmeticsStore.shared)
                 .task {
                     auth.start()
                     purchases.start()

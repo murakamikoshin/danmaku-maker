@@ -70,7 +70,8 @@ public struct Simulation {
     public private(set) var t = -DanmakuConfig.readySeconds
     public private(set) var player = Point(x: DanmakuConfig.width / 2, y: DanmakuConfig.height * 0.85)
     public private(set) var bullets: [Bullet] = []
-    public private(set) var shots: [Point] = []
+    public private(set) var shots: [PlayerShot] = []
+    public let shotType: ShotType
     public private(set) var hp: Int
     public private(set) var phase = 1
     /// 「第N段階」表示の残り秒数
@@ -89,12 +90,13 @@ public struct Simulation {
 
     static let bossMoves: [(a: Double, w: Double)] = [(0, 0), (0.25, 0.6), (0.32, 1.3)]
 
-    public init(stage: Stage) {
-        self.init(stage: stage, seed: stage.seed)
+    public init(stage: Stage, shotType: ShotType = .standard) {
+        self.init(stage: stage, seed: stage.seed, shotType: shotType)
     }
 
-    init(stage: Stage, seed: UInt32) {
+    init(stage: Stage, seed: UInt32, shotType: ShotType = .standard) {
         self.stage = stage
+        self.shotType = shotType
         hp = stage.bossHp ?? 0
         rng = Mulberry32(seed: seed)
         next = stage.emitters.map(\.s)
@@ -147,16 +149,18 @@ public struct Simulation {
             if banner > 0 { banner -= dt }
             cooldown -= dt
             if t >= 0 && cooldown <= 0 {
-                cooldown = 0.09
-                shots.append(Point(x: player.x - 5, y: player.y - 10))
-                shots.append(Point(x: player.x + 5, y: player.y - 10))
+                cooldown = shotType.interval
+                for spec in shotType.volley {
+                    shots.append(PlayerShot(x: player.x + spec.dx, y: player.y - 10, vx: spec.vx, damage: spec.damage))
+                }
             }
             var w = 0
             for var s in shots {
+                s.x += s.vx * dt
                 s.y -= 600 * dt
-                if s.y < -10 { continue }
+                if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
-                if dx * dx + dy * dy < 24 * 24 { hp -= 1; flash = 0.06; continue }
+                if dx * dx + dy * dy < 24 * 24 { hp -= s.damage; flash = 0.06; continue }
                 shots[w] = s; w += 1
             }
             shots.removeSubrange(w...)

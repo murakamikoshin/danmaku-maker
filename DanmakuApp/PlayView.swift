@@ -13,6 +13,7 @@ struct PlayResult {
 @MainActor
 final class PlayModel: ObservableObject {
     let stage: Stage
+    private let loadout: Loadout
     var onResult: ((PlayResult, [Move]) -> Void)?
     @Published private(set) var scene: GameScene
     @Published private(set) var generation = 0
@@ -26,10 +27,11 @@ final class PlayModel: ObservableObject {
     private var pending: PlayResult?
     private var pendingMoves: [Move] = []
 
-    init(stage: Stage) {
+    init(stage: Stage, loadout: Loadout = Loadout()) {
         self.stage = stage
+        self.loadout = loadout
         remaining = Double(stage.durationSec)
-        scene = GameScene(stage: stage)
+        scene = GameScene(stage: stage, loadout: loadout)
         wire()
     }
 
@@ -76,7 +78,7 @@ final class PlayModel: ObservableObject {
         pending = nil
         result = nil
         remaining = Double(stage.durationSec)
-        scene = GameScene(stage: stage)
+        scene = GameScene(stage: stage, loadout: loadout)
         generation += 1
         wire()
     }
@@ -101,7 +103,7 @@ struct PlayView: View {
         self.share = share
         self.onStart = onStart
         self.onExit = onExit
-        let m = PlayModel(stage: stage)
+        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(isTest: isTest))
         m.onResult = onResult
         _model = StateObject(wrappedValue: m)
     }

@@ -17,11 +17,13 @@
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
 		4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
+		517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76AAB990CF55410F75C347D /* ShopView.swift */; };
 		60F4407E97864A330737BEA2 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD3C27E636E8B15E076F52B /* Palette.swift */; };
 		6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */; };
 		7499E2A3E8F9B9C6B02D214C /* DanmakuCore in Frameworks */ = {isa = PBXBuildFile; productRef = 849C6FF0167B1B8617DAC835 /* DanmakuCore */; };
 		7A872D6145DFFA9320989551 /* ResultsQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */; };
 		84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14207E44305C80AA77BB6252 /* EditorModel.swift */; };
+		87237EE186219FB19202E0D5 /* CosmeticsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */; };
 		8B5EAC47BDA10AC369C1950A /* PublishFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */; };
 		8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D829E677A324B52D22AD32A /* AppConfig.swift */; };
 		916253486151123560DAA46E /* StageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */; };
@@ -45,6 +47,7 @@
 		F379544BE24E12BF703FE682 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EAAE646F801B4E815A4D2DF /* EditorView.swift */; };
 		F60366855D1624D0C085B3B0 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
 		F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 999CC41D43E16FE0C7135EDD /* HomeView.swift */; };
+		F7796624B3092E53B550441B /* Skin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F83BED46E19BBDDDCE011EE /* Skin.swift */; };
 		FCDEC99BCF405777F76BBEB6 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */; };
 /* End PBXBuildFile section */
 
@@ -70,10 +73,12 @@
 		4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldViewModel.swift; sourceTree = "<group>"; };
 		4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DanmakuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		4F83BED46E19BBDDDCE011EE /* Skin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skin.swift; sourceTree = "<group>"; };
 		72F3CDCA55F3D4734044C80B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteFactory.swift; sourceTree = "<group>"; };
 		7D829E677A324B52D22AD32A /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DanmakuApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmeticsStore.swift; sourceTree = "<group>"; };
 		8AC7B188372A599912AC6166 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		8F62E287AE766D76D9CF3901 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		8FABAD127D8EABEA2C29870E /* PurchaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseService.swift; sourceTree = "<group>"; };
@@ -91,6 +96,7 @@
 		CBED3045376B6993745B32B4 /* DanmakuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmakuApp.swift; sourceTree = "<group>"; };
 		D3C37708B7ECADCE444E276D /* DanmakuCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DanmakuCore; path = DanmakuCore; sourceTree = SOURCE_ROOT; };
 		DAA4624B3387C7D797F98B70 /* EmitterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterCard.swift; sourceTree = "<group>"; };
+		E76AAB990CF55410F75C347D /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 		E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FB986508388484596E9919F0 /* StageRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageRepository.swift; sourceTree = "<group>"; };
@@ -162,6 +168,7 @@
 				9391B5CB3600EA4B42088BAD /* AuthService.swift */,
 				C68321CF2F6D3DCFF7456C66 /* Backend.swift */,
 				10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */,
+				8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */,
 				336990F3C2805B0B289AF111 /* PublishService.swift */,
 				8FABAD127D8EABEA2C29870E /* PurchaseService.swift */,
 				B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */,
@@ -184,6 +191,7 @@
 				084F59B3D178DDB070FCACBB /* PlayView.swift */,
 				BA8479A886EF2B4CF44742DC /* SampleStages.swift */,
 				EBE917C9BB76D326485AC381 /* SettingsView.swift */,
+				E76AAB990CF55410F75C347D /* ShopView.swift */,
 				102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */,
 				95160D2A88138F6429741ED2 /* StoreView.swift */,
 				4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */,
@@ -208,6 +216,7 @@
 			children = (
 				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
 				FDD3C27E636E8B15E076F52B /* Palette.swift */,
+				4F83BED46E19BBDDDCE011EE /* Skin.swift */,
 				77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */,
 			);
 			path = Game;
@@ -349,6 +358,7 @@
 				422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */,
 				4FB11696D193E6302F80B9DA /* Backend.swift in Sources */,
 				1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */,
+				87237EE186219FB19202E0D5 /* CosmeticsStore.swift in Sources */,
 				AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */,
 				84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */,
 				F379544BE24E12BF703FE682 /* EditorView.swift in Sources */,
@@ -365,6 +375,8 @@
 				D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */,
 				09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */,
 				C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */,
+				517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */,
+				F7796624B3092E53B550441B /* Skin.swift in Sources */,
 				955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */,
 				916253486151123560DAA46E /* StageDetailView.swift in Sources */,
 				C869AFFC862FB1A75EE1D253 /* StageRepository.swift in Sources */,

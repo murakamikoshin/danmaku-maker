@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var detail: RemoteStage?
     @State private var editing = false
     @State private var showSettings = false
+    @State private var showShop = false
     @State private var query = ""
     @State private var searchError = false
     #if DEBUG
@@ -39,9 +40,11 @@ struct HomeView: View {
             .autocorrectionDisabled()
             .onSubmit(of: .search) { Task { await search() } }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItemGroup(placement: .topBarLeading) {
                     Button { showSettings = true } label: { Label("home.settings", systemImage: "gearshape") }
                         .accessibilityIdentifier("home.settings")
+                    Button { showShop = true } label: { Label("home.shop", systemImage: "paintpalette") }
+                        .accessibilityIdentifier("home.shop")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { editing = true } label: { Label("home.create", systemImage: "plus") }
@@ -55,6 +58,7 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
         .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showShop) { ShopView() }
         .sheet(item: $detail) { StageDetailView(remote: $0) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
@@ -118,6 +122,7 @@ struct HomeView: View {
                let s = SampleStages.all.first(where: { $0.id == args[i + 1] }) { playing = s }
             if args.contains("-open-editor"), !editing { editing = true }
             if args.contains("-open-store"), !showStoreDebug { showStoreDebug = true }
+            if args.contains("-open-shop"), !showShop { showShop = true }
             if args.contains("-open-settings"), !showSettings { showSettings = true }
         }
         // 画面の準備前だと表示が無視されることがあるので、数回に分けて試す
