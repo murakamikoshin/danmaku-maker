@@ -4,13 +4,13 @@
   "type": "module",
   "main": "lib/index.js",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "scripts": {
     "build": "tsc",
     "lint": "eslint src test",
     "test": "vitest run test/unit.test.ts",
-    "test:emu": "cd .. && firebase emulators:exec --only firestore,storage,functions --project demo-danmaku \"cd functions && npm run build && vitest run test/emu\"",
+    "test:emu": "cd .. && firebase emulators:exec --only auth,firestore,storage,functions --project demo-danmaku \"cd functions && npm run build && vitest run test/emu\"",
     "test:rules": "cd .. && firebase emulators:exec --only firestore,storage --project demo-danmaku \"cd functions && vitest run test/rules\""
   },
   "dependencies": {
