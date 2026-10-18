@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "49Q2CLPBWK.com.koshin.danmakumaker"
+        ],
+        "components": [
+          {
+            "/": "/s/*",
+            "comment": "Stage share links"
+          }
+        ]
+      }
+    ]
+  }
+}
