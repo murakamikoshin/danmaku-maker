@@ -1,0 +1,31 @@
+id   Lv  mode    dur  weak(slow,short)      strong(fast,long)     name
+o01  1   survive  20  CLEAR  20.0s           CLEAR  20.0s           First Vortex
+o02  1   survive  20  CLEAR  20.0s           CLEAR  20.0s           Passing Shower
+o03  1   survive  20  HIT     6.6s           CLEAR  20.0s           I See You
+o04  1   survive  20  CLEAR  20.0s           CLEAR  20.0s           Swaying Fan
+o05  1   boss     30  CLEAR   7.5s hp0       CLEAR   7.5s hp0       Little Boss
+o06  2   survive  30  HIT    21.5s           CLEAR  30.0s           Rings
+o07  2   survive  30  CLEAR  30.0s           CLEAR  30.0s           Rain & Spiral
+o08  2   survive  30  HIT    21.5s           CLEAR  30.0s           Double Vortex
+o09  2   survive  30  CLEAR  30.0s           CLEAR  30.0s           Downpour
+o10  2   survive  30  CLEAR  30.0s           CLEAR  30.0s           Electric Fans
+o11  3   boss     60  CLEAR  44.1s hp0       CLEAR  28.0s hp0       Swaying Boss
+o12  3   survive  45  CLEAR  45.0s           CLEAR  45.0s           Fireworks
+o13  3   survive  45  HIT    11.6s           CLEAR  45.0s           Crossfire
+o14  3   survive  45  CLEAR  45.0s           CLEAR  45.0s           Carousel
+o15  3   survive  45  CLEAR  45.0s           CLEAR  45.0s           Staggered Attack
+o16  4   boss     90  TIME   90.0s hp66      TIME   90.0s hp24      Three-Phase Boss
+o17  4   survive  60  HIT    47.7s           CLEAR  60.0s           Curtain
+o18  4   survive  60  CLEAR  60.0s           CLEAR  60.0s           Vortex Maze
+o19  4   survive  20  HIT     8.2s           CLEAR  20.0s           Hellish Fireworks
+o20  4   survive  45  CLEAR  45.0s           CLEAR  45.0s           Wall of Bullets
+o21  5   boss    120  TIME  120.0s hp222     TIME  120.0s hp130     Speedy Boss
+o22  5   survive  60  HIT    21.8s           CLEAR  60.0s           Storm
+o23  5   survive  60  CLEAR  60.0s           CLEAR  60.0s           Starry Sky
+o24  5   boss    180  HIT    99.7s hp297     TIME  180.0s hp270     Barrage Boss
+o25  5   survive  90  HIT    58.8s           CLEAR  90.0s           90-Second Trial
+o26  5   survive  90  CLEAR  90.0s           CLEAR  90.0s           Birdcage
+o27  5   boss    180  HIT   178.6s hp375     TIME  180.0s hp174     Final Chapter Boss
+o28  5   survive 120  HIT    23.1s           CLEAR 120.0s           120-Second Nightmare
+o29  5   survive 120  HIT     4.7s           CLEAR 120.0s           Danmaku Hell
+o30  5   survive 120  HIT    42.8s           HIT    62.0s           Divine Realm

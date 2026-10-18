@@ -1,0 +1,1923 @@
+[
+ {
+  "id": "o01",
+  "difficulty": 1,
+  "name": {
+   "ja": "はじめての渦",
+   "en": "First Vortex"
+  },
+  "aim": {
+   "ja": "渦巻きの弾の間をゆっくり抜ける練習。操作に慣れる。",
+   "en": "Slip between slow spiral arms. Learn the controls."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 20,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 0,
+     "e": 20,
+     "i": 0.12,
+     "c": 3,
+     "v": 1.8,
+     "r": 11,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o01"
+  }
+ },
+ {
+  "id": "o02",
+  "difficulty": 1,
+  "name": {
+   "ja": "にわか雨",
+   "en": "Passing Shower"
+  },
+  "aim": {
+   "ja": "雨を避けながら、途中から来る自機狙いを見る。",
+   "en": "Dodge rain, then notice the aimed shots that join later."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 20,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 0,
+     "e": 20,
+     "i": 0.18,
+     "c": 2,
+     "v": 2.2,
+     "r": 0,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.15,
+     "s": 5,
+     "e": 20,
+     "i": 1.5,
+     "c": 3,
+     "v": 2.5,
+     "r": 30,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o02"
+  }
+ },
+ {
+  "id": "o03",
+  "difficulty": 1,
+  "name": {
+   "ja": "見てるぞ",
+   "en": "I See You"
+  },
+  "aim": {
+   "ja": "自機を狙う弾は、少し動けば当たらないと知る。",
+   "en": "Aimed shots miss if you keep moving a little."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 20,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.2,
+     "y": 0.15,
+     "s": 0,
+     "e": 20,
+     "i": 0.9,
+     "c": 5,
+     "v": 3,
+     "r": 40,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.8,
+     "y": 0.15,
+     "s": 0.45,
+     "e": 20,
+     "i": 0.9,
+     "c": 5,
+     "v": 3,
+     "r": 40,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o03"
+  }
+ },
+ {
+  "id": "o04",
+  "difficulty": 1,
+  "name": {
+   "ja": "ゆらゆら扇",
+   "en": "Swaying Fan"
+  },
+  "aim": {
+   "ja": "左右に振れる扇の隙間を見つける。",
+   "en": "Find the gaps in a fan swinging side to side."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 20,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 0,
+     "e": 20,
+     "i": 0.2,
+     "c": 3,
+     "v": 2,
+     "r": 50,
+     "k": 4,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o04"
+  }
+ },
+ {
+  "id": "o05",
+  "difficulty": 1,
+  "name": {
+   "ja": "ちびボス",
+   "en": "Little Boss"
+  },
+  "aim": {
+   "ja": "ボス戦の入門。撃ちながら避ける。HPが少ない。",
+   "en": "Boss intro. Dodge while your auto-fire works. Low HP."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 30,
+   "bossHp": 150,
+   "bossMove": 0,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 30,
+     "i": 0.9,
+     "c": 10,
+     "v": 1.6,
+     "r": 7,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 30,
+     "i": 1.4,
+     "c": 3,
+     "v": 2.2,
+     "r": 20,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o05"
+  }
+ },
+ {
+  "id": "o06",
+  "difficulty": 2,
+  "name": {
+   "ja": "輪っか",
+   "en": "Rings"
+  },
+  "aim": {
+   "ja": "ゆっくり広がる輪の隙間をくぐる。",
+   "en": "Pass through the gaps in slowly expanding rings."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 30,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 1.2,
+     "c": 12,
+     "v": 1.6,
+     "r": 8,
+     "k": 0,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o06"
+  }
+ },
+ {
+  "id": "o07",
+  "difficulty": 2,
+  "name": {
+   "ja": "雨と渦",
+   "en": "Rain & Spiral"
+  },
+  "aim": {
+   "ja": "雨を避けつつ、渦が増えてくるのに対応する。",
+   "en": "Handle rain while a spiral starts up."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 30,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 0,
+     "e": 30,
+     "i": 0.3,
+     "c": 2,
+     "v": 2,
+     "r": 0,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 4,
+     "e": 30,
+     "i": 0.2,
+     "c": 2,
+     "v": 1.6,
+     "r": 14,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o07"
+  }
+ },
+ {
+  "id": "o08",
+  "difficulty": 2,
+  "name": {
+   "ja": "ダブル渦",
+   "en": "Double Vortex"
+  },
+  "aim": {
+   "ja": "逆回りの2つの渦。中央を通るか、外を回るか。",
+   "en": "Two counter-rotating spirals. Weave through the middle or go around."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 30,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.15,
+     "c": 2,
+     "v": 1.8,
+     "r": 13,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.7,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.15,
+     "c": 2,
+     "v": 1.8,
+     "r": -13,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o08"
+  }
+ },
+ {
+  "id": "o09",
+  "difficulty": 2,
+  "name": {
+   "ja": "土砂降り",
+   "en": "Downpour"
+  },
+  "aim": {
+   "ja": "密度の高い雨の中で、自機狙いも避ける。",
+   "en": "Dense rain plus aimed shots."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 30,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 0,
+     "e": 30,
+     "i": 0.12,
+     "c": 3,
+     "v": 2.6,
+     "r": 0,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.15,
+     "s": 0,
+     "e": 30,
+     "i": 1.2,
+     "c": 3,
+     "v": 2.4,
+     "r": 24,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o09"
+  }
+ },
+ {
+  "id": "o10",
+  "difficulty": 2,
+  "name": {
+   "ja": "扇風機",
+   "en": "Electric Fans"
+  },
+  "aim": {
+   "ja": "左右2つの扇が同時に振れる。",
+   "en": "Two fans swinging at once, left and right."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 30,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "sweep",
+     "x": 0.25,
+     "y": 0.1,
+     "s": 0,
+     "e": 30,
+     "i": 0.18,
+     "c": 3,
+     "v": 2.6,
+     "r": 60,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.75,
+     "y": 0.1,
+     "s": 0,
+     "e": 30,
+     "i": 0.18,
+     "c": 3,
+     "v": 2.6,
+     "r": 60,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o10"
+  }
+ },
+ {
+  "id": "o11",
+  "difficulty": 3,
+  "name": {
+   "ja": "ゆらゆらボス",
+   "en": "Swaying Boss"
+  },
+  "aim": {
+   "ja": "段階ごとに攻撃が変わるボス。動く的に当てる。",
+   "en": "A swaying boss whose attack changes each phase."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 60,
+   "bossHp": 200,
+   "bossMove": 1,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 60,
+     "i": 0.7,
+     "c": 3,
+     "v": 2.2,
+     "r": 30,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 60,
+     "i": 0.8,
+     "c": 12,
+     "v": 1.8,
+     "r": 9,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 60,
+     "i": 0.12,
+     "c": 3,
+     "v": 2,
+     "r": 12,
+     "k": 3,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o11"
+  }
+ },
+ {
+  "id": "o12",
+  "difficulty": 3,
+  "name": {
+   "ja": "花火大会",
+   "en": "Fireworks"
+  },
+  "aim": {
+   "ja": "時間差で上がる花火（輪）のリズムをつかむ。",
+   "en": "Read the rhythm of staggered ring fireworks."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 45,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 0,
+     "e": 45,
+     "i": 0.9,
+     "c": 14,
+     "v": 2,
+     "r": 6,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.7,
+     "y": 0.2,
+     "s": 0.45,
+     "e": 45,
+     "i": 0.9,
+     "c": 14,
+     "v": 2,
+     "r": -6,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o12"
+  }
+ },
+ {
+  "id": "o13",
+  "difficulty": 3,
+  "name": {
+   "ja": "三方向",
+   "en": "Crossfire"
+  },
+  "aim": {
+   "ja": "3方向からの自機狙い。立ち位置を決めて動く。",
+   "en": "Aimed shots from three directions."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 45,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.1,
+     "y": 0.1,
+     "s": 0,
+     "e": 45,
+     "i": 1,
+     "c": 4,
+     "v": 2.6,
+     "r": 36,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.9,
+     "y": 0.1,
+     "s": 0.5,
+     "e": 45,
+     "i": 1,
+     "c": 4,
+     "v": 2.6,
+     "r": 36,
+     "k": 3,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.05,
+     "s": 1,
+     "e": 45,
+     "i": 1.2,
+     "c": 4,
+     "v": 2.8,
+     "r": 30,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o13"
+  }
+ },
+ {
+  "id": "o14",
+  "difficulty": 3,
+  "name": {
+   "ja": "回転木馬",
+   "en": "Carousel"
+  },
+  "aim": {
+   "ja": "細かい渦と、逆回りの大きな輪の組み合わせ。",
+   "en": "A fine spiral combined with a big counter-rotating ring."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 45,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.3,
+     "s": 0,
+     "e": 45,
+     "i": 0.1,
+     "c": 6,
+     "v": 1.7,
+     "r": 7,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.3,
+     "s": 3,
+     "e": 45,
+     "i": 1.6,
+     "c": 18,
+     "v": 2.2,
+     "r": -10,
+     "k": 2,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o14"
+  }
+ },
+ {
+  "id": "o15",
+  "difficulty": 3,
+  "name": {
+   "ja": "時間差攻撃",
+   "en": "Staggered Attack"
+  },
+  "aim": {
+   "ja": "次々に新しい攻撃が加わる。慌てずに順応する。",
+   "en": "New attacks keep joining. Adapt calmly."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 45,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 20,
+     "i": 0.16,
+     "c": 3,
+     "v": 1.8,
+     "r": 11,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.15,
+     "s": 8,
+     "e": 45,
+     "i": 1,
+     "c": 4,
+     "v": 2.6,
+     "r": 34,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 18,
+     "e": 45,
+     "i": 1.3,
+     "c": 16,
+     "v": 2,
+     "r": 7,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 28,
+     "e": 45,
+     "i": 0.2,
+     "c": 3,
+     "v": 2.4,
+     "r": 60,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o15"
+  }
+ },
+ {
+  "id": "o16",
+  "difficulty": 4,
+  "name": {
+   "ja": "三段変化のボス",
+   "en": "Three-Phase Boss"
+  },
+  "aim": {
+   "ja": "3段階で攻撃が激しくなる本格的なボス戦。",
+   "en": "A proper three-phase boss fight."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 400,
+   "bossMove": 1,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.6,
+     "c": 5,
+     "v": 2.6,
+     "r": 50,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.55,
+     "c": 18,
+     "v": 2,
+     "r": 9,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.09,
+     "c": 4,
+     "v": 2.1,
+     "r": 13,
+     "k": 3,
+     "ph": 3
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 1.4,
+     "c": 3,
+     "v": 3.2,
+     "r": 20,
+     "k": 1,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o16"
+  }
+ },
+ {
+  "id": "o17",
+  "difficulty": 4,
+  "name": {
+   "ja": "カーテン",
+   "en": "Curtain"
+  },
+  "aim": {
+   "ja": "大きく振れる扇と雨の壁。動き続ける。",
+   "en": "A wide sweeping fan plus a wall of rain. Keep moving."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 60,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.08,
+     "s": 0,
+     "e": 60,
+     "i": 0.14,
+     "c": 4,
+     "v": 2.4,
+     "r": 70,
+     "k": 4,
+     "ph": 0
+    },
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 10,
+     "e": 60,
+     "i": 0.2,
+     "c": 2,
+     "v": 2.2,
+     "r": 0,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o17"
+  }
+ },
+ {
+  "id": "o18",
+  "difficulty": 4,
+  "name": {
+   "ja": "渦の迷路",
+   "en": "Vortex Maze"
+  },
+  "aim": {
+   "ja": "3つの渦が作る迷路を60秒かけて抜ける。",
+   "en": "Navigate a maze of three spirals for 60 seconds."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 60,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.2,
+     "y": 0.2,
+     "s": 0,
+     "e": 60,
+     "i": 0.2,
+     "c": 2,
+     "v": 1.8,
+     "r": 9,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.15,
+     "s": 0,
+     "e": 60,
+     "i": 0.2,
+     "c": 2,
+     "v": 1.8,
+     "r": -9,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.8,
+     "y": 0.2,
+     "s": 0,
+     "e": 60,
+     "i": 0.2,
+     "c": 2,
+     "v": 1.8,
+     "r": 9,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o18"
+  }
+ },
+ {
+  "id": "o19",
+  "difficulty": 4,
+  "name": {
+   "ja": "鬼畜・花火大会",
+   "en": "Hellish Fireworks"
+  },
+  "aim": {
+   "ja": "花火の密度と速さが上がり、後半に扇が加わる。",
+   "en": "Faster, denser fireworks, then a fan joins late."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 20,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 0,
+     "e": 20,
+     "i": 0.7,
+     "c": 20,
+     "v": 2.2,
+     "r": 7,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.7,
+     "y": 0.2,
+     "s": 0.35,
+     "e": 20,
+     "i": 0.7,
+     "c": 20,
+     "v": 2.2,
+     "r": -7,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 6,
+     "e": 20,
+     "i": 0.2,
+     "c": 3,
+     "v": 3,
+     "r": 70,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o19"
+  }
+ },
+ {
+  "id": "o20",
+  "difficulty": 4,
+  "name": {
+   "ja": "弾の壁",
+   "en": "Wall of Bullets"
+  },
+  "aim": {
+   "ja": "3つの輪が作る壁の隙間を見極める。",
+   "en": "Spot the gaps in a wall made by three rings."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 45,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.2,
+     "y": 0.2,
+     "s": 0,
+     "e": 45,
+     "i": 0.8,
+     "c": 24,
+     "v": 1.9,
+     "r": 5,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0.27,
+     "e": 45,
+     "i": 0.8,
+     "c": 24,
+     "v": 1.9,
+     "r": -5,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.8,
+     "y": 0.2,
+     "s": 0.54,
+     "e": 45,
+     "i": 0.8,
+     "c": 24,
+     "v": 1.9,
+     "r": 5,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o20"
+  }
+ },
+ {
+  "id": "o21",
+  "difficulty": 5,
+  "name": {
+   "ja": "高速ボス",
+   "en": "Speedy Boss"
+  },
+  "aim": {
+   "ja": "速く動くボス。弾を当てつつ、全段階を耐える。",
+   "en": "A fast-moving boss. Land your shots and survive every phase."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 120,
+   "bossHp": 500,
+   "bossMove": 2,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 120,
+     "i": 0.5,
+     "c": 5,
+     "v": 2.8,
+     "r": 45,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 120,
+     "i": 0.5,
+     "c": 20,
+     "v": 2.2,
+     "r": 8,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 120,
+     "i": 0.2,
+     "c": 3,
+     "v": 2.6,
+     "r": 60,
+     "k": 1,
+     "ph": 2
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 120,
+     "i": 0.08,
+     "c": 4,
+     "v": 2.3,
+     "r": 13,
+     "k": 3,
+     "ph": 3
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 120,
+     "i": 1.1,
+     "c": 3,
+     "v": 3.2,
+     "r": 20,
+     "k": 1,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o21"
+  }
+ },
+ {
+  "id": "o22",
+  "difficulty": 5,
+  "name": {
+   "ja": "嵐",
+   "en": "Storm"
+  },
+  "aim": {
+   "ja": "雨・自機狙い・渦が同時に襲う。",
+   "en": "Rain, aimed shots, and a spiral all at once."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 60,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 0,
+     "e": 60,
+     "i": 0.14,
+     "c": 3,
+     "v": 2.6,
+     "r": 0,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.12,
+     "s": 3,
+     "e": 60,
+     "i": 1.1,
+     "c": 4,
+     "v": 2.8,
+     "r": 34,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.3,
+     "s": 8,
+     "e": 60,
+     "i": 0.16,
+     "c": 3,
+     "v": 1.8,
+     "r": 10,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o22"
+  }
+ },
+ {
+  "id": "o23",
+  "difficulty": 5,
+  "name": {
+   "ja": "星空",
+   "en": "Starry Sky"
+  },
+  "aim": {
+   "ja": "ゆっくりだが、画面を埋める大量の輪。",
+   "en": "Slow but screen-filling rings."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 60,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 60,
+     "i": 1.5,
+     "c": 36,
+     "v": 1.3,
+     "r": 5,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.35,
+     "s": 0.75,
+     "e": 60,
+     "i": 1.5,
+     "c": 36,
+     "v": 1.3,
+     "r": -5,
+     "k": 0,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o23"
+  }
+ },
+ {
+  "id": "o24",
+  "difficulty": 5,
+  "name": {
+   "ja": "連弾ボス",
+   "en": "Barrage Boss"
+  },
+  "aim": {
+   "ja": "HP600。長丁場の弾幕を耐えて削り切る。",
+   "en": "HP 600. Survive a long barrage while chipping it down."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 180,
+   "bossHp": 600,
+   "bossMove": 2,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.45,
+     "c": 6,
+     "v": 2.8,
+     "r": 50,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.1,
+     "c": 4,
+     "v": 2,
+     "r": 11,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.45,
+     "c": 22,
+     "v": 2.2,
+     "r": 7,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.16,
+     "c": 4,
+     "v": 2.6,
+     "r": 70,
+     "k": 4,
+     "ph": 2
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.07,
+     "c": 5,
+     "v": 2.3,
+     "r": 13,
+     "k": 3,
+     "ph": 3
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 1,
+     "c": 26,
+     "v": 1.8,
+     "r": -9,
+     "k": 2,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o24"
+  }
+ },
+ {
+  "id": "o25",
+  "difficulty": 5,
+  "name": {
+   "ja": "90秒の試練",
+   "en": "90-Second Trial"
+  },
+  "aim": {
+   "ja": "攻撃が3段階で切り替わる、長時間の耐久。",
+   "en": "A long endurance run through three escalating waves."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 90,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 0,
+     "e": 40,
+     "i": 0.12,
+     "c": 3,
+     "v": 1.9,
+     "r": 11,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.3,
+     "y": 0.12,
+     "s": 15,
+     "e": 90,
+     "i": 0.9,
+     "c": 4,
+     "v": 2.7,
+     "r": 34,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.7,
+     "y": 0.12,
+     "s": 15.4,
+     "e": 90,
+     "i": 0.9,
+     "c": 4,
+     "v": 2.7,
+     "r": 34,
+     "k": 3,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.3,
+     "s": 40,
+     "e": 90,
+     "i": 1.1,
+     "c": 22,
+     "v": 2,
+     "r": 7,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 55,
+     "e": 90,
+     "i": 0.15,
+     "c": 4,
+     "v": 2.6,
+     "r": 70,
+     "k": 4,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o25"
+  }
+ },
+ {
+  "id": "o26",
+  "difficulty": 5,
+  "name": {
+   "ja": "鳥籠",
+   "en": "Birdcage"
+  },
+  "aim": {
+   "ja": "逆回りの輪と渦が作る籠の中で、90秒生き残る。",
+   "en": "Survive 90 seconds inside a cage of counter-rotating rings and spirals."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 90,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 0,
+     "e": 90,
+     "i": 1,
+     "c": 20,
+     "v": 1.8,
+     "r": 7,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 2,
+     "e": 90,
+     "i": 0.14,
+     "c": 3,
+     "v": 1.7,
+     "r": -12,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 20,
+     "e": 90,
+     "i": 0.25,
+     "c": 2,
+     "v": 2,
+     "r": 0,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 35,
+     "e": 90,
+     "i": 1.3,
+     "c": 5,
+     "v": 2.6,
+     "r": 30,
+     "k": 3,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o26"
+  }
+ },
+ {
+  "id": "o27",
+  "difficulty": 5,
+  "name": {
+   "ja": "最終章・ボス",
+   "en": "Final Chapter Boss"
+  },
+  "aim": {
+   "ja": "HP800、180秒。すべてを使い切る最終ボス。",
+   "en": "HP 800, 180 seconds. The final boss that uses everything."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 180,
+   "bossHp": 800,
+   "bossMove": 1,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.5,
+     "c": 6,
+     "v": 2.8,
+     "r": 50,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.6,
+     "c": 20,
+     "v": 2,
+     "r": 8,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.09,
+     "c": 4,
+     "v": 2.1,
+     "r": 12,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.16,
+     "c": 4,
+     "v": 2.7,
+     "r": 70,
+     "k": 1,
+     "ph": 2
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.8,
+     "c": 28,
+     "v": 1.9,
+     "r": -8,
+     "k": 2,
+     "ph": 3
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 0.07,
+     "c": 5,
+     "v": 2.4,
+     "r": 14,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.18,
+     "s": 0,
+     "e": 180,
+     "i": 1,
+     "c": 5,
+     "v": 3.3,
+     "r": 24,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o27"
+  }
+ },
+ {
+  "id": "o28",
+  "difficulty": 5,
+  "name": {
+   "ja": "120秒の悪夢",
+   "en": "120-Second Nightmare"
+  },
+  "aim": {
+   "ja": "あらゆるパターンが重なり続ける2分間。",
+   "en": "Two minutes of every pattern stacked together."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 120,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 0,
+     "e": 120,
+     "i": 0.12,
+     "c": 4,
+     "v": 1.9,
+     "r": 11,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 10,
+     "e": 120,
+     "i": 1,
+     "c": 18,
+     "v": 2,
+     "r": 7,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.7,
+     "y": 0.2,
+     "s": 10.5,
+     "e": 120,
+     "i": 1,
+     "c": 18,
+     "v": 2,
+     "r": -7,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 30,
+     "e": 120,
+     "i": 0.2,
+     "c": 2,
+     "v": 2.4,
+     "r": 0,
+     "k": 3,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 50,
+     "e": 120,
+     "i": 0.8,
+     "c": 5,
+     "v": 2.9,
+     "r": 36,
+     "k": 4,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.08,
+     "s": 75,
+     "e": 120,
+     "i": 0.15,
+     "c": 4,
+     "v": 2.7,
+     "r": 70,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o28"
+  }
+ },
+ {
+  "id": "o29",
+  "difficulty": 5,
+  "name": {
+   "ja": "弾幕地獄",
+   "en": "Danmaku Hell"
+  },
+  "aim": {
+   "ja": "密度が桁違い。見切る目と指の精度が試される。",
+   "en": "Insane density. Tests your eyes and finger precision."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 120,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 0,
+     "e": 120,
+     "i": 0.1,
+     "c": 4,
+     "v": 1.9,
+     "r": 9,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.7,
+     "y": 0.2,
+     "s": 0,
+     "e": 120,
+     "i": 0.1,
+     "c": 4,
+     "v": 1.9,
+     "r": -9,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.3,
+     "s": 15,
+     "e": 120,
+     "i": 0.9,
+     "c": 28,
+     "v": 2,
+     "r": 5,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 30,
+     "e": 120,
+     "i": 0.16,
+     "c": 3,
+     "v": 2.6,
+     "r": 0,
+     "k": 3,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 45,
+     "e": 120,
+     "i": 0.7,
+     "c": 6,
+     "v": 3,
+     "r": 40,
+     "k": 4,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.08,
+     "s": 70,
+     "e": 120,
+     "i": 0.13,
+     "c": 5,
+     "v": 2.8,
+     "r": 75,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o29"
+  }
+ },
+ {
+  "id": "o30",
+  "difficulty": 5,
+  "name": {
+   "ja": "神の領域",
+   "en": "Divine Realm"
+  },
+  "aim": {
+   "ja": "真の最難関。クリアできたら達人。",
+   "en": "The ultimate test. Clear it and you're a master."
+  },
+  "stage": {
+   "mode": "survive",
+   "durationSec": 120,
+   "bossHp": null,
+   "bossMove": null,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.22,
+     "s": 0,
+     "e": 120,
+     "i": 0.08,
+     "c": 5,
+     "v": 2,
+     "r": 11,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.2,
+     "y": 0.2,
+     "s": 8,
+     "e": 120,
+     "i": 0.8,
+     "c": 26,
+     "v": 2.1,
+     "r": 6,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.8,
+     "y": 0.2,
+     "s": 8.4,
+     "e": 120,
+     "i": 0.8,
+     "c": 26,
+     "v": 2.1,
+     "r": -6,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 25,
+     "e": 120,
+     "i": 0.14,
+     "c": 3,
+     "v": 2.8,
+     "r": 0,
+     "k": 3,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.08,
+     "s": 40,
+     "e": 120,
+     "i": 0.6,
+     "c": 7,
+     "v": 3.1,
+     "r": 44,
+     "k": 4,
+     "ph": 0
+    },
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.08,
+     "s": 60,
+     "e": 120,
+     "i": 0.12,
+     "c": 5,
+     "v": 2.9,
+     "r": 80,
+     "k": 2,
+     "ph": 0
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.4,
+     "s": 85,
+     "e": 120,
+     "i": 0.1,
+     "c": 4,
+     "v": 2.2,
+     "r": -13,
+     "k": 1,
+     "ph": 0
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o30"
+  }
+ }
+]

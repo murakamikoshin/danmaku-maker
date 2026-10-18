@@ -9,6 +9,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "DanmakuCore"),
+        // 公式ステージの検証用ボット（アプリには入らない）
+        .executableTarget(name: "StageBot", dependencies: ["DanmakuCore"]),
         .testTarget(name: "DanmakuCoreTests", dependencies: ["DanmakuCore"],
                     resources: [.copy("Resources")]),
     ]

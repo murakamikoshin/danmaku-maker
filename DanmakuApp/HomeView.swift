@@ -48,7 +48,7 @@ struct HomeView: View {
             .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
         }
         .fullScreenCover(item: $playing) { s in
-            PlayView(stage: s.stage, title: L(s.nameKey)) { playing = nil }
+            PlayView(stage: s.stage, title: s.title) { playing = nil }
         }
         .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
         .sheet(isPresented: $showSettings) { SettingsView() }
@@ -134,11 +134,13 @@ struct SampleRow: View {
     let sample: SampleStage
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(L(sample.nameKey)).font(.headline)
+            Text(sample.title).font(.headline)
             HStack(spacing: 6) {
                 ModeBadge(mode: sample.stage.mode)
                 Text(detailText(sample.stage)).font(.caption).foregroundStyle(.secondary)
+                Text(String(repeating: "★", count: sample.difficulty)).font(.caption).foregroundStyle(Color(Palette.gold))
             }
+            Text(sample.aim).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
         }
     }
 }
