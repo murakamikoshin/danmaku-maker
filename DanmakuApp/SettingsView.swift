@@ -42,6 +42,7 @@ struct SettingsView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @Environment(\.dismiss) private var dismiss
     @State private var showStore = false
+    @State private var showDelete = false
 
     var body: some View {
         NavigationStack {
@@ -59,6 +60,8 @@ struct SettingsView: View {
                     if auth.isMember {
                         Text("settings.signedin")
                         Button("settings.signout") { auth.signOut() }
+                        Button("settings.delete", role: .destructive) { showDelete = true }
+                            .accessibilityIdentifier("settings.delete")
                     } else {
                         Text("settings.guest").foregroundStyle(.secondary)
                         SignInButton()
@@ -86,7 +89,41 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("editor.close") { dismiss() } } }
         }
+        .sheet(isPresented: $showDelete) { DeleteAccountSheet() }
         .sheet(isPresented: $showStore) { StoreView() }
+        .preferredColorScheme(.dark)
+    }
+}
+
+/// アカウント削除の確認と実行（Apple での再認証つき）
+struct DeleteAccountSheet: View {
+    @EnvironmentObject private var auth: AuthService
+    @Environment(\.dismiss) private var dismiss
+    @State private var done = false
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text(done ? "delete.done.title" : "delete.title").font(.title2.bold())
+            if done {
+                Text("delete.done.body").foregroundStyle(.secondary).multilineTextAlignment(.center)
+                Button("editor.close") { dismiss() }.buttonStyle(.borderedProminent)
+            } else {
+                Text("delete.body").foregroundStyle(.secondary).multilineTextAlignment(.center)
+                if auth.isBusy { ProgressView() } else {
+                    SignInWithAppleButton(.continue, onRequest: { auth.prepare($0) }, onCompletion: { result in
+                        Task { if await auth.deleteAccount(result) { done = true } }
+                    })
+                    .signInWithAppleButtonStyle(.white)
+                    .frame(height: 48)
+                    .accessibilityIdentifier("delete.apple")
+                }
+                if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(Color(Palette.pink)) }
+                Button("common.cancel") { dismiss() }.disabled(auth.isBusy)
+            }
+        }
+        .padding(24)
+        .presentationDetents([.medium])
+        .interactiveDismissDisabled(auth.isBusy)
         .preferredColorScheme(.dark)
     }
 }

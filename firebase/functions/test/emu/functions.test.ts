@@ -92,6 +92,37 @@ describe("submitResults / toggleLike / reportStage", () => {
   });
 });
 
+describe("deleteAccount", () => {
+  it("投稿・リプレイ・OGP画像・ユーザー情報・いいねを消し、認証ユーザーも消える", async () => {
+    const { id } = (await publish()) as { id: string };
+    const myUid = auth.currentUser!.uid;
+    const other = (await publish({ name: "他人のステージ" })) as { id: string };
+    await signUp();
+    const liker = auth.currentUser!.uid;
+    await call("toggleLike", { stageId: other.id });
+    await call("toggleLike", { stageId: id });
+    expect((await db.doc(`stages/${other.id}`).get()).get("likes")).toBe(1);
+    // 投稿者に戻って削除…ではなく、いいねした人が自分を削除する
+    expect(await call("deleteAccount", {})).toMatchObject({ ok: true, stages: 0 });
+    expect((await db.doc(`stages/${other.id}`).get()).get("likes")).toBe(0);
+    expect((await db.doc(`stages/${id}`).get()).get("likes")).toBe(0);
+    expect((await db.collection(`users/${liker}/likes`).get()).size).toBe(0);
+    expect(myUid).not.toBe(liker);
+  });
+  it("投稿者が削除すると、ステージも関連データも消える", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    const { id } = (await call("publishStage", stage)) as { id: string };
+    expect((await db.doc(`stages/${id}`).get()).exists).toBe(true);
+    expect(await call("deleteAccount", {})).toMatchObject({ ok: true, stages: 1 });
+    expect((await db.doc(`stages/${id}`).get()).exists).toBe(false);
+    expect((await db.doc(`stageReplays/${id}`).get()).exists).toBe(false);
+    expect((await db.doc(`users/${uid}`).get()).exists).toBe(false);
+    const res = await fetch(`${origin}/sharePage/s/${id}`);
+    expect(res.status).toBe(404);
+  });
+});
+
 describe("sharePage / ogImage（HTTP）", () => {
   let id = "";
   beforeAll(async () => { id = ((await publish()) as { id: string }).id; });

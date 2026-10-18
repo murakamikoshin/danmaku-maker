@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { logger, setGlobalOptions } from "firebase-functions/v2";
@@ -135,7 +136,9 @@ export const toggleLike = onCall(async (req) => {
     const now = Date.now();
     const trending = decay(stage.get("trending") ?? 0, stage.get("trendUpdatedAt") ?? now, now);
     const liked = !like.exists;
-    if (liked) tx.set(likeRef, { createdAt: FieldValue.serverTimestamp() }); else tx.delete(likeRef);
+    const mirrorRef = db.doc(`users/${uid}/likes/${id}`); // アカウント削除のときに、自分のいいねを取り消すための控え
+    if (liked) { tx.set(likeRef, { createdAt: FieldValue.serverTimestamp() }); tx.set(mirrorRef, { createdAt: FieldValue.serverTimestamp() }); }
+    else { tx.delete(likeRef); tx.delete(mirrorRef); }
     const likes = Math.max(0, (stage.get("likes") as number) + (liked ? 1 : -1));
     tx.update(ref, { likes, trending: trending + (liked ? 5 : 0), trendUpdatedAt: now });
     return { liked, likes };
@@ -194,4 +197,37 @@ export const ogImage = onRequest({ memory: "512MiB" }, async (req, res) => {
     png = (await file.download())[0];
   }
   res.status(200).set("Content-Type", "image/png").set("Cache-Control", "public, max-age=86400, s-maxage=86400").send(png);
+});
+
+/** アカウント削除。投稿したステージ・リプレイ・OGP画像・いいね・ユーザー情報を消し、認証ユーザーも削除する */
+export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, async (req) => {
+  const uid = requireAny(req);
+  const bucket = getStorage().bucket();
+
+  const mine = await db.collection("stages").where("authorUid", "==", uid).get();
+  for (const s of mine.docs) {
+    await db.recursiveDelete(s.ref); // いいねのサブコレクションごと
+    await db.doc(`stageReplays/${s.id}`).delete();
+    await bucket.file(`og/${s.id}.png`).delete({ ignoreNotFound: true });
+  }
+
+  const likes = await db.collection(`users/${uid}/likes`).get();
+  for (const l of likes.docs) {
+    await db.runTransaction(async (tx) => {
+      const ref = db.doc(`stages/${l.id}`);
+      const st = await tx.get(ref);
+      if (!st.exists) return;
+      tx.delete(db.doc(`stages/${l.id}/likes/${uid}`));
+      tx.update(ref, { likes: Math.max(0, (st.get("likes") as number) - 1) });
+    });
+  }
+
+  // 通報の記録は安全のために残すが、通報者は特定できないようにする
+  const reports = await db.collection("reports").where("reporterUid", "==", uid).get();
+  for (const r of reports.docs) await r.ref.update({ reporterUid: "deleted" });
+
+  await db.recursiveDelete(db.doc(`users/${uid}`));
+  await getAuth().deleteUser(uid);
+  logger.info("account-deleted", { stages: mine.size, likes: likes.size });
+  return { ok: true, stages: mine.size };
 });

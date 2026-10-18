@@ -68,6 +68,30 @@ final class AuthService: ObservableObject {
         }
     }
 
+    /// アカウント削除。Apple のトークンを失効させてから、サーバーで投稿・データ・認証ユーザーを削除する
+    func deleteAccount(_ result: Result<ASAuthorization, Error>) async -> Bool {
+        errorMessage = nil
+        guard case .success(let auth) = result, let apple = auth.credential as? ASAuthorizationAppleIDCredential,
+              let codeData = apple.authorizationCode, let code = String(data: codeData, encoding: .utf8) else {
+            if case .failure(let e) = result, (e as? ASAuthorizationError)?.code == .canceled { return false }
+            errorMessage = L("error.delete.failed")
+            return false
+        }
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            try await Auth.auth().revokeToken(withAuthorizationCode: code)
+            _ = try await Backend.functions.httpsCallable("deleteAccount").call([:])
+            try? Auth.auth().signOut()
+            _ = try? await Auth.auth().signInAnonymously()
+            isMember = false
+            return true
+        } catch {
+            errorMessage = L("error.delete.failed")
+            return false
+        }
+    }
+
     func signOut() {
         try? Auth.auth().signOut()
         Task { try? await Auth.auth().signInAnonymously() }
