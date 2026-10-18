@@ -7,6 +7,9 @@ options:
 packages:
   DanmakuCore:
     path: DanmakuCore
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    exactVersion: 11.6.0
 targets:
   DanmakuApp:
     type: application
@@ -15,6 +18,12 @@ targets:
       - DanmakuApp
     dependencies:
       - package: DanmakuCore
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseFunctions
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.koshin.danmakumaker
