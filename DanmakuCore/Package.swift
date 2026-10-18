@@ -9,6 +9,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "DanmakuCore"),
-        .testTarget(name: "DanmakuCoreTests", dependencies: ["DanmakuCore"]),
+        .testTarget(name: "DanmakuCoreTests", dependencies: ["DanmakuCore"],
+                    resources: [.copy("Resources")]),
     ]
 )

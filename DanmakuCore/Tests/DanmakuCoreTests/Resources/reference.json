@@ -1,0 +1,821 @@
+[
+ {
+  "name": "ring",
+  "seed": 12345,
+  "stage": {
+   "name": "ring",
+   "mode": "survive",
+   "durationSec": 30,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.25,
+     "s": 0,
+     "e": 30,
+     "i": 1,
+     "c": 16,
+     "v": 2,
+     "r": 6,
+     "k": 0,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 16,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 2880,
+    "sumY": 2159.9999999999995,
+    "firstX": 181,
+    "firstY": 135
+   },
+   {
+    "tick": 200,
+    "count": 16,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 2880,
+    "sumY": 2159.9999999999995,
+    "firstX": 236,
+    "firstY": 135
+   },
+   {
+    "tick": 300,
+    "count": 31,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 5580.000000000002,
+    "sumY": 4341.000000000005,
+    "firstX": 336,
+    "firstY": 135
+   }
+  ],
+  "over": {
+   "tick": 463,
+   "kind": "lose",
+   "hp": 0
+  }
+ },
+ {
+  "name": "spiral",
+  "seed": 12345,
+  "stage": {
+   "name": "spiral",
+   "mode": "survive",
+   "durationSec": 30,
+   "emitters": [
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.12,
+     "c": 3,
+     "v": 1.8,
+     "r": 11,
+     "k": 0,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 3,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 540,
+    "sumY": 324,
+    "firstX": 180.9,
+    "firstY": 108
+   },
+   {
+    "tick": 200,
+    "count": 12,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 2160.000000000002,
+    "sumY": 1295.999999999999,
+    "firstX": 230.40000000000032,
+    "firstY": 108
+   },
+   {
+    "tick": 300,
+    "count": 33,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 5940.000000000001,
+    "sumY": 3564.0000000000014,
+    "firstX": 320.39999999999884,
+    "firstY": 108
+   },
+   {
+    "tick": 500,
+    "count": 50,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 9758.432588085569,
+    "sumY": 7398.478859742174,
+    "firstX": 19.800000000000722,
+    "firstY": 385.4745393725352
+   },
+   {
+    "tick": 800,
+    "count": 56,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 10284.175894422013,
+    "sumY": 9985.534604891875,
+    "firstX": 22.39711795553262,
+    "firstY": 541.0103596581562
+   }
+  ],
+  "over": {
+   "tick": 960,
+   "kind": "lose",
+   "hp": 0
+  }
+ },
+ {
+  "name": "aim",
+  "seed": 12345,
+  "stage": {
+   "name": "aim",
+   "mode": "survive",
+   "durationSec": 30,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.2,
+     "y": 0.15,
+     "s": 0,
+     "e": 30,
+     "i": 0.9,
+     "c": 5,
+     "v": 3,
+     "r": 40,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.8,
+     "y": 0.15,
+     "s": 0.45,
+     "e": 30,
+     "i": 0.9,
+     "c": 5,
+     "v": 3,
+     "r": 40,
+     "k": 3,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 5,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 361.99818443183227,
+    "sumY": 411.9936455114131,
+    "firstX": 72.8805209625635,
+    "firstY": 82.21436519815344
+   },
+   {
+    "tick": 200,
+    "count": 10,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 1907.9019593189441,
+    "sumY": 1215.6314396619566,
+    "firstX": 121.30917390355569,
+    "firstY": 149.0044510965929
+   },
+   {
+    "tick": 300,
+    "count": 15,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 2363.814812046891,
+    "sumY": 3355.0555264923914,
+    "firstX": 209.36127015990382,
+    "firstY": 270.4409709119377
+   }
+  ],
+  "over": {
+   "tick": 403,
+   "kind": "lose",
+   "hp": 0
+  }
+ },
+ {
+  "name": "rain",
+  "seed": 12345,
+  "stage": {
+   "name": "rain",
+   "mode": "survive",
+   "durationSec": 30,
+   "emitters": [
+    {
+     "t": "rain",
+     "x": 0.5,
+     "y": 0,
+     "s": 0,
+     "e": 30,
+     "i": 0.18,
+     "c": 2,
+     "v": 2.2,
+     "r": 0,
+     "k": 0,
+     "ph": 0
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 5,
+     "e": 30,
+     "i": 1.5,
+     "c": 3,
+     "v": 2.5,
+     "r": 30,
+     "k": 2,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 2,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 526.9751048313142,
+    "sumY": -13.80684782556611,
+    "firstX": 352.76591242961655,
+    "firstY": -6.901848044323386
+   },
+   {
+    "tick": 200,
+    "count": 6,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 1254.488191979271,
+    "sumY": 180.0576897497737,
+    "firstX": 356.27139439176926,
+    "firstY": 53.496509517890345
+   },
+   {
+    "tick": 300,
+    "count": 16,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 3374.7838290856926,
+    "sumY": 1287.2331118863515,
+    "firstX": 362.64499795931965,
+    "firstY": 163.31170508555212
+   },
+   {
+    "tick": 500,
+    "count": 34,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 6224.721318920945,
+    "sumY": 6561.251943683267,
+    "firstX": 375.39220509442043,
+    "firstY": 382.9420962208743
+   },
+   {
+    "tick": 800,
+    "count": 49,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 9582.01950864265,
+    "sumY": 12666.685951179885,
+    "firstX": 337.1213302285173,
+    "firstY": 543.5272793624542
+   }
+  ],
+  "over": {
+   "tick": 936,
+   "kind": "lose",
+   "hp": 0
+  }
+ },
+ {
+  "name": "sweep",
+  "seed": 12345,
+  "stage": {
+   "name": "sweep",
+   "mode": "survive",
+   "durationSec": 30,
+   "emitters": [
+    {
+     "t": "sweep",
+     "x": 0.5,
+     "y": 0.1,
+     "s": 0,
+     "e": 30,
+     "i": 0.2,
+     "c": 3,
+     "v": 3,
+     "r": 70,
+     "k": 1,
+     "ph": 0
+    },
+    {
+     "t": "ring",
+     "x": 0.3,
+     "y": 0.2,
+     "s": 3.3,
+     "e": 30,
+     "i": 0.7,
+     "c": 20,
+     "v": 2.2,
+     "r": -7,
+     "k": 0,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 3,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 540,
+    "sumY": 166.40673726513194,
+    "firstX": 180.37110593888178,
+    "firstY": 55.45336863256597
+   },
+   {
+    "tick": 200,
+    "count": 9,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 1558.5339636755573,
+    "sumY": 896.7774684817024,
+    "firstX": 200.78193257737985,
+    "firstY": 135.38864342369425
+   },
+   {
+    "tick": 300,
+    "count": 21,
+    "hp": 0,
+    "phase": 1,
+    "sumX": 2648.4467824927565,
+    "sumY": 3240.660100058433,
+    "firstX": 237.89252646555815,
+    "firstY": 280.7255066802911
+   }
+  ],
+  "over": {
+   "tick": 411,
+   "kind": "lose",
+   "hp": 0
+  }
+ },
+ {
+  "name": "boss3",
+  "seed": 12345,
+  "stage": {
+   "name": "boss3",
+   "mode": "boss",
+   "durationSec": 60,
+   "bossHp": 400,
+   "bossMove": 1,
+   "emitters": [
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.6,
+     "c": 5,
+     "v": 2.6,
+     "r": 50,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.55,
+     "c": 18,
+     "v": 2,
+     "r": 9,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "spiral",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.09,
+     "c": 4,
+     "v": 2.1,
+     "r": 13,
+     "k": 3,
+     "ph": 3
+    },
+    {
+     "t": "aim",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 1.4,
+     "c": 3,
+     "v": 3.2,
+     "r": 20,
+     "k": 1,
+     "ph": 3
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 5,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 902.242285725432,
+    "sumY": 492.1947650732247,
+    "firstX": 180.9979360245084,
+    "firstY": 98.37888254643318
+   },
+   {
+    "tick": 200,
+    "count": 5,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 901.8185162485706,
+    "sumY": 832.9068441005851,
+    "firstX": 211.13452049734755,
+    "firstY": 163.21742260025806
+   },
+   {
+    "tick": 300,
+    "count": 15,
+    "hp": 400,
+    "phase": 1,
+    "sumX": 3101.963572761953,
+    "sumY": 3016.05075047857,
+    "firstX": 265.92831044796424,
+    "firstY": 281.1056772435761
+   }
+  ],
+  "over": {
+   "tick": 419,
+   "kind": "lose",
+   "hp": 400
+  }
+ },
+ {
+  "name": "bossHarmless",
+  "seed": 12345,
+  "stage": {
+   "name": "bossHarmless",
+   "mode": "boss",
+   "durationSec": 60,
+   "bossHp": 300,
+   "bossMove": 2,
+   "emitters": [
+    {
+     "t": "ring",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 30,
+     "i": 0.1,
+     "c": 1,
+     "v": 1,
+     "r": 0,
+     "k": 0,
+     "ph": 0
+    }
+   ]
+  },
+  "snapshots": [
+   {
+    "tick": 1,
+    "count": 0,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 100,
+    "count": 0,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 144,
+    "count": 0,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 0,
+    "sumY": 0,
+    "firstX": 0,
+    "firstY": 0
+   },
+   {
+    "tick": 145,
+    "count": 1,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 181.7479755890319,
+    "sumY": 97.2,
+    "firstX": 181.7479755890319,
+    "firstY": 97.2
+   },
+   {
+    "tick": 200,
+    "count": 5,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 1131.5080198286585,
+    "sumY": 486,
+    "firstX": 209.2479755890319,
+    "firstY": 97.2
+   },
+   {
+    "tick": 300,
+    "count": 13,
+    "hp": 300,
+    "phase": 1,
+    "sumX": 3829.1103032984174,
+    "sumY": 1263.6000000000004,
+    "firstX": 259.2479755890319,
+    "firstY": 97.2
+   },
+   {
+    "tick": 500,
+    "count": 18,
+    "hp": 292,
+    "phase": 1,
+    "sumX": 4886.867860040283,
+    "sumY": 1749.6000000000006,
+    "firstX": 359.2479755890319,
+    "firstY": 97.2
+   },
+   {
+    "tick": 800,
+    "count": 31,
+    "hp": 285,
+    "phase": 1,
+    "sumX": 6992.528821368214,
+    "sumY": 3013.199999999999,
+    "firstX": 365.23944977949054,
+    "firstY": 97.2
+   },
+   {
+    "tick": 1200,
+    "count": 29,
+    "hp": 278,
+    "phase": 1,
+    "sumX": 6879.755118227507,
+    "sumY": 2818.7999999999993,
+    "firstX": 376.8267625686967,
+    "firstY": 97.2
+   },
+   {
+    "tick": 1800,
+    "count": 25,
+    "hp": 263,
+    "phase": 1,
+    "sumX": 5417.192490025707,
+    "sumY": 2430,
+    "firstX": 379.25359307933866,
+    "firstY": 97.2
+   },
+   {
+    "tick": 2500,
+    "count": 29,
+    "hp": 242,
+    "phase": 1,
+    "sumX": 6037.2616856960985,
+    "sumY": 2818.7999999999993,
+    "firstX": 366.1113265480517,
+    "firstY": 97.2
+   },
+   {
+    "tick": 3600,
+    "count": 25,
+    "hp": 220,
+    "phase": 1,
+    "sumX": 4797.286251791309,
+    "sumY": 2430,
+    "firstX": 370.2244540009111,
+    "firstY": 97.2
+   }
+  ],
+  "over": {
+   "tick": 7345,
+   "kind": "lose",
+   "hp": 125
+  }
+ }
+]
