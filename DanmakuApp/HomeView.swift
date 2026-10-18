@@ -13,6 +13,9 @@ struct HomeView: View {
     @State private var showSettings = false
     @State private var query = ""
     @State private var searchError = false
+    #if DEBUG
+    @State private var showStoreDebug = false
+    #endif
 
     enum Tab: Hashable { case samples, world }
 
@@ -53,6 +56,9 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(item: $detail) { StageDetailView(remote: $0) }
+        #if DEBUG
+        .sheet(isPresented: $showStoreDebug) { StoreView() }
+        #endif
         #if DEBUG
         .onAppear { applyLaunchArguments() }
         #endif
@@ -107,11 +113,15 @@ struct HomeView: View {
     /// スクリーンショット撮影用: `-open-stage o29`（公式ステージを開く）、`-open-editor`、`-open-boss-editor` は DEBUG ビルドだけ
     private func applyLaunchArguments() {
         let args = ProcessInfo.processInfo.arguments
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            if let i = args.firstIndex(of: "-open-stage"), args.indices.contains(i + 1),
+        func openRequested() {
+            if let i = args.firstIndex(of: "-open-stage"), args.indices.contains(i + 1), playing == nil,
                let s = SampleStages.all.first(where: { $0.id == args[i + 1] }) { playing = s }
-            if args.contains("-open-editor") { editing = true }
+            if args.contains("-open-editor"), !editing { editing = true }
+            if args.contains("-open-store"), !showStoreDebug { showStoreDebug = true }
+            if args.contains("-open-settings"), !showSettings { showSettings = true }
         }
+        // 画面の準備前だと表示が無視されることがあるので、数回に分けて試す
+        for delay in [1.5, 5.0, 10.0] { DispatchQueue.main.asyncAfter(deadline: .now() + delay) { openRequested() } }
     }
     #endif
 

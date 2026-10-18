@@ -155,7 +155,7 @@ struct PlayView: View {
 
     private static var debugOptions: SpriteView.DebugOptions {
         #if DEBUG
-        [.showsFPS, .showsNodeCount]
+        ProcessInfo.processInfo.arguments.contains("-no-debug-overlay") ? [] : [.showsFPS, .showsNodeCount]
         #else
         []
         #endif

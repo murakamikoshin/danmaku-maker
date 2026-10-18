@@ -11,9 +11,19 @@ struct DanmakuApp: App {
 
     init() { Backend.configure() }
 
+    /// スクリーンショット撮影用: DEBUG ビルドで `-no-ads` を付けると、同意ダイアログと広告を出さない
+    private static var adsDisabledForScreenshots: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-no-ads")
+        #else
+        false
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .preferredColorScheme(.dark)
                 .environmentObject(auth)
                 .environmentObject(blocks)
                 .environmentObject(deepLink)
@@ -24,7 +34,7 @@ struct DanmakuApp: App {
                     purchases.start()
                     await purchases.refresh()
                     // 広告削除の購入者には、同意画面も広告も出さない
-                    if !purchases.isPremium { await ads.start() }
+                    if !purchases.isPremium && !Self.adsDisabledForScreenshots { await ads.start() }
                     await ResultsQueue.shared.flush()
                 }
                 .onOpenURL { deepLink.handle($0) }

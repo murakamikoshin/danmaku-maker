@@ -2657,6 +2657,38 @@
           }
         }
       }
+    },
+    "editor.name.placeholder": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "例：地獄の渦"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Inferno Spiral"
+          }
+        }
+      }
+    },
+    "editor.author.placeholder": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "例：弾幕太郎"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Danmaku Dan"
+          }
+        }
+      }
     }
   }
 }

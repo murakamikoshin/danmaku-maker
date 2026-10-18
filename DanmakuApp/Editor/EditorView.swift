@@ -71,10 +71,11 @@ private struct ModePicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("editor.condition").font(.caption).foregroundStyle(.secondary)
-            HStack(spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
                 option(.survive, "editor.mode.survive", "editor.mode.survive.sub")
                 option(.boss, "editor.mode.boss", "editor.mode.boss.sub")
             }
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -84,7 +85,7 @@ private struct ModePicker: View {
                 Text(title).font(.headline)
                 Text(sub).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(12)
             .background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.11, green: 0.09, blue: 0.25)))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(mode == m ? Color(Palette.gold) : Color(Palette.barBack), lineWidth: mode == m ? 2 : 1))
@@ -99,15 +100,15 @@ private struct NameFields: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            field("editor.name", text: $draft.name, limit: EditorModel.maxName, id: "editor.name")
-            field("editor.author", text: $draft.authorName, limit: EditorModel.maxAuthor, id: "editor.author")
+            field("editor.name", prompt: "editor.name.placeholder", text: $draft.name, limit: EditorModel.maxName, id: "editor.name")
+            field("editor.author", prompt: "editor.author.placeholder", text: $draft.authorName, limit: EditorModel.maxAuthor, id: "editor.author")
         }
     }
 
-    private func field(_ label: LocalizedStringKey, text: Binding<String>, limit: Int, id: String) -> some View {
+    private func field(_ label: LocalizedStringKey, prompt: LocalizedStringKey, text: Binding<String>, limit: Int, id: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.caption).foregroundStyle(.secondary)
-            TextField("", text: text)
+            TextField("", text: text, prompt: Text(prompt))
                 .textFieldStyle(.roundedBorder)
                 .onChange(of: text.wrappedValue) { v in if v.count > limit { text.wrappedValue = String(v.prefix(limit)) } }
                 .accessibilityIdentifier(id)
