@@ -53,13 +53,18 @@ final class PlayModel: ObservableObject {
 struct PlayView: View {
     let title: String
     let isTest: Bool
+    let share: ShareContext?
+    let onStart: (() -> Void)?
     let onExit: () -> Void
     @StateObject private var model: PlayModel
+    @State private var startedOnce = false
 
-    init(stage: Stage, title: String, isTest: Bool = false,
+    init(stage: Stage, title: String, isTest: Bool = false, share: ShareContext? = nil, onStart: (() -> Void)? = nil,
          onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
         self.isTest = isTest
+        self.share = share
+        self.onStart = onStart
         self.onExit = onExit
         let m = PlayModel(stage: stage)
         m.onResult = onResult
@@ -84,7 +89,7 @@ struct PlayView: View {
                        debugOptions: Self.debugOptions)
                 .id(model.generation)
                 .aspectRatio(CGFloat(DanmakuConfig.width / DanmakuConfig.height), contentMode: .fit)
-                .overlay { if let r = model.result { ResultView(result: r, isTest: isTest, retry: { model.restart() }, back: onExit) } }
+                .overlay { if let r = model.result { ResultView(result: r, isTest: isTest, share: share, retry: { model.restart(); onStart?() }, back: onExit) } }
                 .frame(maxHeight: .infinity)
 
             Text("play.hint")
@@ -94,6 +99,7 @@ struct PlayView: View {
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .preferredColorScheme(.dark)
+        .onAppear { if !startedOnce { startedOnce = true; onStart?() } }
     }
 
     private static var debugOptions: SpriteView.DebugOptions {
@@ -108,6 +114,7 @@ struct PlayView: View {
 struct ResultView: View {
     let result: PlayResult
     var isTest = false
+    var share: ShareContext?
     let retry: () -> Void
     let back: () -> Void
 
@@ -142,6 +149,13 @@ struct ResultView: View {
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundStyle(win ? Color(Palette.gold) : Color(Palette.pink))
                 Text(message).font(.footnote).foregroundStyle(.secondary)
+                if let share, !isTest {
+                    let text = ShareText.player(share, result: result)
+                    HStack {
+                        ShareLink(item: text) { Label("detail.share", systemImage: "square.and.arrow.up") }.buttonStyle(.bordered)
+                        if let url = ShareText.xIntentURL(text) { Link("detail.share.x", destination: url).buttonStyle(.bordered) }
+                    }
+                }
                 HStack {
                     Button("result.retry", action: retry).accessibilityIdentifier("result.retry").buttonStyle(.borderedProminent).tint(Color(Palette.pink))
                     Button("result.back", action: back).buttonStyle(.bordered).tint(.white)

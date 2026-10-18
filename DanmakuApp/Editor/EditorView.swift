@@ -4,7 +4,7 @@ import DanmakuCore
 struct EditorView: View {
     @StateObject private var model = EditorModel()
     @State private var testRun: TestRun?
-    @State private var showPublishSoon = false
+    @State private var publishing = false
     let onClose: () -> Void
 
     var body: some View {
@@ -28,9 +28,9 @@ struct EditorView: View {
                         Button("editor.test") { testRun = TestRun(stage: model.stage) }
                             .buttonStyle(.borderedProminent).tint(Color(Palette.bullets[1]))
                             .accessibilityIdentifier("editor.test")
-                        Button("editor.post") { showPublishSoon = true }
+                        Button("editor.post") { publishing = true }
                             .buttonStyle(.borderedProminent).tint(Color(Palette.pink))
-                            .disabled(!model.isVerified)
+                            .disabled(!model.isVerified || !model.canPublish)
                             .accessibilityIdentifier("editor.post")
                     }
                 }
@@ -51,7 +51,11 @@ struct EditorView: View {
                      },
                      onExit: { testRun = nil })
         }
-        .alert("editor.post.soon", isPresented: $showPublishSoon) { Button("OK", role: .cancel) {} }
+        .sheet(isPresented: $publishing) {
+            if let replay = model.clearReplay {
+                PublishFlowView(stage: model.stage, authorName: model.draft.authorName, replay: replay) { model.published() }
+            }
+        }
     }
 }
 

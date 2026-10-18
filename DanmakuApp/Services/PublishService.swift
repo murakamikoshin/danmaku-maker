@@ -1,0 +1,44 @@
+import DanmakuCore
+import FirebaseFunctions
+import Foundation
+
+enum PublishService {
+    /// 投稿して、発行された短縮IDを返す。失敗時は表示用の文言を持つ PublishError
+    static func publish(stage: Stage, authorName: String, replay: Replay) async throws -> String {
+        guard Backend.isAvailable else { throw PublishError(message: L("error.offline")) }
+        var payload = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(stage))) as? [String: Any] ?? [:]
+        payload["authorName"] = authorName.trimmingCharacters(in: .whitespaces)
+        payload["clearReplay"] = replay.encoded()
+        payload["termsAccepted"] = true
+        payload["lang"] = Locale.preferredLanguages.first.map { String($0.prefix(2)) } ?? "und"
+        do {
+            let result = try await Backend.functions.httpsCallable("publishStage").call(payload)
+            guard let id = (result.data as? [String: Any])?["id"] as? String else { throw PublishError(message: L("error.publish.generic")) }
+            return id
+        } catch let e as PublishError {
+            throw e
+        } catch {
+            let code = (error as NSError).localizedDescription
+            let key = "error.publish.\(code)"
+            let text = L(key)
+            throw PublishError(message: text == key ? L("error.publish.generic") : text)
+        }
+    }
+}
+
+struct PublishError: LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
+enum StageActions {
+    static func toggleLike(id: String) async throws -> (liked: Bool, likes: Int) {
+        let r = try await Backend.functions.httpsCallable("toggleLike").call(["stageId": id])
+        let d = r.data as? [String: Any] ?? [:]
+        return (d["liked"] as? Bool ?? false, (d["likes"] as? NSNumber)?.intValue ?? 0)
+    }
+
+    static func report(id: String, reason: String) async throws {
+        _ = try await Backend.functions.httpsCallable("reportStage").call(["stageId": id, "reason": reason])
+    }
+}

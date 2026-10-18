@@ -91,6 +91,20 @@ final class EditorModel: ObservableObject {
         draft.emitters.remove(at: index)
     }
 
+    /// 投稿には、ステージ名と作者名が必要
+    var canPublish: Bool {
+        !draft.name.trimmingCharacters(in: .whitespaces).isEmpty && !draft.authorName.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// 投稿が済んだら、下書きと確認状態を空にして次のステージを作れるようにする
+    func published() {
+        let author = draft.authorName
+        draft = Draft()
+        draft.authorName = author
+        verifiedStage = nil
+        clearReplay = nil
+    }
+
     func markVerified(stage: Stage, replay: Replay) {
         verifiedStage = stage
         clearReplay = replay

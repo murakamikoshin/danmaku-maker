@@ -16,6 +16,12 @@ targets:
     platform: iOS
     sources:
       - DanmakuApp
+    entitlements:
+      path: DanmakuApp/DanmakuApp.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+        com.apple.developer.associated-domains:
+          - applinks:danmaku-maker.web.app
     dependencies:
       - package: DanmakuCore
       - package: Firebase
