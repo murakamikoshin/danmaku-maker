@@ -4,7 +4,7 @@ import Foundation
 enum AppConfig {
     // TODO: Firebase プロジェクト作成後に実際のドメインへ（既定は <projectId>.web.app）
     static let webHost = "danmaku-maker.web.app"
-    static let supportEmail = "support@danmaku-maker.example"
+    static let supportEmail = "koshinstudio88@gmail.com"
     static let appStoreURL = URL(string: "https://apps.apple.com/app/id6824245206")!
 
     static var webBase: URL { URL(string: "https://\(webHost)")! }

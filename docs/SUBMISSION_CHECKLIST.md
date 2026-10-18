@@ -7,7 +7,7 @@
 | UGC: ブロック | ✅ | 「作者をブロック」。一覧から非表示。設定で解除 |
 | UGC: NG ワード | ✅ | サーバー（publishStage）で日英の NG ワードを検査 |
 | UGC: 規約同意 | ✅ | 投稿前に同意画面（規約・プライバシーへのリンク） |
-| UGC: 連絡先 | ⚠️ | 設定画面とサポートページに掲載。**メールアドレスが仮（support@danmaku-maker.example）→ 要差し替え** |
+| UGC: 連絡先 | ⚠️ | 設定画面とサポートページに掲載。**メールアドレスが仮（koshinstudio88@gmail.com）→ 要差し替え** |
 | 広告がゲーム操作の邪魔をしない | ✅ | リワード広告は被弾後の復活のみ（ユーザー操作）。開始時の広告なし |
 | 購入の復元 | ✅ | 設定画面と購入画面にボタン |
 | ログインなしで遊べる | ✅ | 匿名認証。投稿・いいね・通報だけ Sign in with Apple |
@@ -53,7 +53,7 @@ App Store Connect → 弾幕メーカー → iOS 1.0 → 「App Review に関す
 同じ画面の「サインインが必要」のチェックは **外す**（ログインなしで遊べます）。
 
 ## 6. サポート用メールアドレスを決める
-`firebase/hosting/site.config.json` の `supportEmail`（今は仮の `support@danmaku-maker.example`）を決めて教えてください。ページを作り直して公開します。アプリ内の設定画面（`DanmakuApp/Services/AppConfig.swift`）も同時に直します。
+`firebase/hosting/site.config.json` の `supportEmail`（今は仮の `koshinstudio88@gmail.com`）を決めて教えてください。ページを作り直して公開します。アプリ内の設定画面（`DanmakuApp/Services/AppConfig.swift`）も同時に直します。
 
 ## 7. ビルドを作って TestFlight へ（どちらか）
 ### A. Xcode Cloud（おすすめ。トレカダッシュと同じ方法）
