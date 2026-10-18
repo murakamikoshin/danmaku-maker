@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "app.title" : {
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "弾幕メーカー" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Danmaku Maker" } }
+      }
+    },
+    "app.tagline" : {
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "作って、投稿して、世界と遊ぼう。" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Build it. Share it. Dodge the world." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
