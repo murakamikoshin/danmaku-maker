@@ -1,5 +1,4 @@
 .DS_Store
-*.xcodeproj
 xcuserdata/
 DerivedData/
 .build/
@@ -21,3 +20,5 @@ node_modules/
 firebase/functions/lib/
 firebase/*-debug.log
 firebase/.firebase/
+DanmakuMaker.xcodeproj/xcuserdata/
+DanmakuMaker.xcodeproj/project.xcworkspace/xcuserdata/

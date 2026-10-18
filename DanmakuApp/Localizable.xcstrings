@@ -338,86 +338,6 @@
         }
       }
     },
-    "sample.s1": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "はじめての渦"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "First Vortex"
-          }
-        }
-      }
-    },
-    "sample.s2": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "にわか雨"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passing Shower"
-          }
-        }
-      }
-    },
-    "sample.s3": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "見てるぞ"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I See You"
-          }
-        }
-      }
-    },
-    "sample.s4": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "鬼畜・花火大会"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hellish Fireworks"
-          }
-        }
-      }
-    },
-    "sample.s5": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "三段変化のボス"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Three-Phase Boss"
-          }
-        }
-      }
-    },
     "home.create": {
       "localizations": {
         "ja": {
@@ -1230,22 +1150,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Publish"
-          }
-        }
-      }
-    },
-    "editor.post.soon": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "投稿機能は準備中です。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Publishing is coming soon."
           }
         }
       }

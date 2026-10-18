@@ -110,6 +110,8 @@ targets:
           REVENUECAT_API_KEY: ""
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.koshin.danmakumaker
+        DEVELOPMENT_TEAM: 49Q2CLPBWK
+        CODE_SIGN_STYLE: Automatic
         PRODUCT_NAME: DanmakuMaker
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"

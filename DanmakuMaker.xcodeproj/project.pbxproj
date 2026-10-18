@@ -1,0 +1,716 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE917C9BB76D326485AC381 /* SettingsView.swift */; };
+		1824196EED242121C72C2DD2 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F59B3D178DDB070FCACBB /* PlayView.swift */; };
+		1BFBA87BDE46B43E2AFD555C /* PublishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336990F3C2805B0B289AF111 /* PublishService.swift */; };
+		1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */; };
+		2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */; };
+		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
+		39989238F961EAE880CDC817 /* EditorFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */; };
+		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
+		4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
+		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
+		60F4407E97864A330737BEA2 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD3C27E636E8B15E076F52B /* Palette.swift */; };
+		6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */; };
+		7499E2A3E8F9B9C6B02D214C /* DanmakuCore in Frameworks */ = {isa = PBXBuildFile; productRef = 849C6FF0167B1B8617DAC835 /* DanmakuCore */; };
+		7A872D6145DFFA9320989551 /* ResultsQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */; };
+		84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14207E44305C80AA77BB6252 /* EditorModel.swift */; };
+		8B5EAC47BDA10AC369C1950A /* PublishFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */; };
+		8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D829E677A324B52D22AD32A /* AppConfig.swift */; };
+		916253486151123560DAA46E /* StageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */; };
+		955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */; };
+		9CE8796A5A91D3ADD3148812 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */; };
+		9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F62E287AE766D76D9CF3901 /* GameScene.swift */; };
+		9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */; };
+		AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */; };
+		AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED3045376B6993745B32B4 /* DanmakuApp.swift */; };
+		B259B87E13614269D15389E9 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 7E25805402198660741F69EC /* RevenueCat */; };
+		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
+		BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */ = {isa = PBXBuildFile; fileRef = 966ADA412BC3686AAAF4587D /* official_stages.json */; };
+		C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC441513117F025F08A727B7 /* ShareText.swift */; };
+		C869AFFC862FB1A75EE1D253 /* StageRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB986508388484596E9919F0 /* StageRepository.swift */; };
+		CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAA4624B3387C7D797F98B70 /* EmitterCard.swift */; };
+		CDBFA71C66EC250234E9DDB5 /* StoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95160D2A88138F6429741ED2 /* StoreView.swift */; };
+		D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0719981841E39DB1D9E6C6AB /* FirebaseFirestore */; };
+		D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8479A886EF2B4CF44742DC /* SampleStages.swift */; };
+		E06EA720167D731F500C2403 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8AC7B188372A599912AC6166 /* Localizable.xcstrings */; };
+		E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A243990CAD3948B58BBC48 /* EmitterPreview.swift */; };
+		F379544BE24E12BF703FE682 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EAAE646F801B4E815A4D2DF /* EditorView.swift */; };
+		F60366855D1624D0C085B3B0 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
+		F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 999CC41D43E16FE0C7135EDD /* HomeView.swift */; };
+		FCDEC99BCF405777F76BBEB6 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A1DB4EE3A8F0895351E8C535 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5AC548212977918D59E21668 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 406389F459EF1DFE1E731B9B;
+			remoteInfo = DanmakuApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
+		102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageDetailView.swift; sourceTree = "<group>"; };
+		10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockStore.swift; sourceTree = "<group>"; };
+		14207E44305C80AA77BB6252 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
+		22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishFlowView.swift; sourceTree = "<group>"; };
+		26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotUITests.swift; sourceTree = "<group>"; };
+		336990F3C2805B0B289AF111 /* PublishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishService.swift; sourceTree = "<group>"; };
+		3EAAE646F801B4E815A4D2DF /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldViewModel.swift; sourceTree = "<group>"; };
+		4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DanmakuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		72F3CDCA55F3D4734044C80B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteFactory.swift; sourceTree = "<group>"; };
+		7D829E677A324B52D22AD32A /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DanmakuApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8AC7B188372A599912AC6166 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		8F62E287AE766D76D9CF3901 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		8FABAD127D8EABEA2C29870E /* PurchaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseService.swift; sourceTree = "<group>"; };
+		92A243990CAD3948B58BBC48 /* EmitterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterPreview.swift; sourceTree = "<group>"; };
+		9391B5CB3600EA4B42088BAD /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		95160D2A88138F6429741ED2 /* StoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreView.swift; sourceTree = "<group>"; };
+		966ADA412BC3686AAAF4587D /* official_stages.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages.json; sourceTree = "<group>"; };
+		98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsService.swift; sourceTree = "<group>"; };
+		999CC41D43E16FE0C7135EDD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DanmakuApp.entitlements; sourceTree = "<group>"; };
+		B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsQueue.swift; sourceTree = "<group>"; };
+		BA8479A886EF2B4CF44742DC /* SampleStages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStages.swift; sourceTree = "<group>"; };
+		C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorFlowUITests.swift; sourceTree = "<group>"; };
+		C68321CF2F6D3DCFF7456C66 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
+		CBED3045376B6993745B32B4 /* DanmakuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmakuApp.swift; sourceTree = "<group>"; };
+		D3C37708B7ECADCE444E276D /* DanmakuCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DanmakuCore; path = DanmakuCore; sourceTree = SOURCE_ROOT; };
+		DAA4624B3387C7D797F98B70 /* EmitterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterCard.swift; sourceTree = "<group>"; };
+		E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FB986508388484596E9919F0 /* StageRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageRepository.swift; sourceTree = "<group>"; };
+		FC441513117F025F08A727B7 /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
+		FDD3C27E636E8B15E076F52B /* Palette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5F2279AB3BD71C822DA08D20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7499E2A3E8F9B9C6B02D214C /* DanmakuCore in Frameworks */,
+				FCDEC99BCF405777F76BBEB6 /* FirebaseAuth in Frameworks */,
+				D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */,
+				6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */,
+				4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */,
+				F60366855D1624D0C085B3B0 /* GoogleUserMessagingPlatform in Frameworks */,
+				B259B87E13614269D15389E9 /* RevenueCat in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		037B791375337A501E9E53CA /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				D3C37708B7ECADCE444E276D /* DanmakuCore */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		1B34DC5A17F40CB173D3BFA8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */,
+				4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		38E9D6174EF8206BAC49A0C6 /* DanmakuAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */,
+				26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */,
+			);
+			path = DanmakuAppUITests;
+			sourceTree = "<group>";
+		};
+		99A389FD256B46C647F04C63 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				14207E44305C80AA77BB6252 /* EditorModel.swift */,
+				3EAAE646F801B4E815A4D2DF /* EditorView.swift */,
+				DAA4624B3387C7D797F98B70 /* EmitterCard.swift */,
+				92A243990CAD3948B58BBC48 /* EmitterPreview.swift */,
+				22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		9A7CC4D1EC100673198BBE11 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */,
+				7D829E677A324B52D22AD32A /* AppConfig.swift */,
+				9391B5CB3600EA4B42088BAD /* AuthService.swift */,
+				C68321CF2F6D3DCFF7456C66 /* Backend.swift */,
+				10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */,
+				336990F3C2805B0B289AF111 /* PublishService.swift */,
+				8FABAD127D8EABEA2C29870E /* PurchaseService.swift */,
+				B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */,
+				FC441513117F025F08A727B7 /* ShareText.swift */,
+				FB986508388484596E9919F0 /* StageRepository.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		ADDE986E96D5A43E7CF359ED /* DanmakuApp */ = {
+			isa = PBXGroup;
+			children = (
+				AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */,
+				CBED3045376B6993745B32B4 /* DanmakuApp.swift */,
+				E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */,
+				999CC41D43E16FE0C7135EDD /* HomeView.swift */,
+				72F3CDCA55F3D4734044C80B /* Info.plist */,
+				4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */,
+				8AC7B188372A599912AC6166 /* Localizable.xcstrings */,
+				084F59B3D178DDB070FCACBB /* PlayView.swift */,
+				BA8479A886EF2B4CF44742DC /* SampleStages.swift */,
+				EBE917C9BB76D326485AC381 /* SettingsView.swift */,
+				102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */,
+				95160D2A88138F6429741ED2 /* StoreView.swift */,
+				4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */,
+				99A389FD256B46C647F04C63 /* Editor */,
+				CD8CFC363DC68F19E88DF9D0 /* Game */,
+				B505E4DEF2094902B59D9817 /* Resources */,
+				9A7CC4D1EC100673198BBE11 /* Services */,
+			);
+			path = DanmakuApp;
+			sourceTree = "<group>";
+		};
+		B505E4DEF2094902B59D9817 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				966ADA412BC3686AAAF4587D /* official_stages.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		CD8CFC363DC68F19E88DF9D0 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
+				FDD3C27E636E8B15E076F52B /* Palette.swift */,
+				77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		E259C44490F67C30B8FB0946 = {
+			isa = PBXGroup;
+			children = (
+				ADDE986E96D5A43E7CF359ED /* DanmakuApp */,
+				38E9D6174EF8206BAC49A0C6 /* DanmakuAppUITests */,
+				037B791375337A501E9E53CA /* Packages */,
+				1B34DC5A17F40CB173D3BFA8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		406389F459EF1DFE1E731B9B /* DanmakuApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0BE32E5DDC9A693D0FFFE3B /* Build configuration list for PBXNativeTarget "DanmakuApp" */;
+			buildPhases = (
+				50920A1F64422AD4E87A36EE /* Sources */,
+				C97BCF70CBA0C45C8F3A390C /* Resources */,
+				5F2279AB3BD71C822DA08D20 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DanmakuApp;
+			packageProductDependencies = (
+				849C6FF0167B1B8617DAC835 /* DanmakuCore */,
+				509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */,
+				0719981841E39DB1D9E6C6AB /* FirebaseFirestore */,
+				CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */,
+				FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */,
+				B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */,
+				7E25805402198660741F69EC /* RevenueCat */,
+			);
+			productName = DanmakuApp;
+			productReference = 7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FC1CA289FFAE0E4C0DF3DD8D /* DanmakuAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 807AD059EA70445A856DDEB1 /* Build configuration list for PBXNativeTarget "DanmakuAppUITests" */;
+			buildPhases = (
+				3562AC202A56E882F7F33F16 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0C2F8CFB8620D3808576288C /* PBXTargetDependency */,
+			);
+			name = DanmakuAppUITests;
+			packageProductDependencies = (
+			);
+			productName = DanmakuAppUITests;
+			productReference = 4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5AC548212977918D59E21668 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					406389F459EF1DFE1E731B9B = {
+						DevelopmentTeam = 49Q2CLPBWK;
+						ProvisioningStyle = Automatic;
+					};
+					FC1CA289FFAE0E4C0DF3DD8D = {
+						TestTargetID = 406389F459EF1DFE1E731B9B;
+					};
+				};
+			};
+			buildConfigurationList = B1ED644DE819459EDA533B8D /* Build configuration list for PBXProject "DanmakuMaker" */;
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				ja,
+			);
+			mainGroup = E259C44490F67C30B8FB0946;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				C477D248F6279A380A1DC92A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				A0AF8BF87E0FEE88F1A8BF69 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+				D24F205AF726535BC60BA0E5 /* XCLocalSwiftPackageReference "DanmakuCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1B34DC5A17F40CB173D3BFA8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				406389F459EF1DFE1E731B9B /* DanmakuApp */,
+				FC1CA289FFAE0E4C0DF3DD8D /* DanmakuAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C97BCF70CBA0C45C8F3A390C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */,
+				9CE8796A5A91D3ADD3148812 /* InfoPlist.xcstrings in Resources */,
+				E06EA720167D731F500C2403 /* Localizable.xcstrings in Resources */,
+				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3562AC202A56E882F7F33F16 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39989238F961EAE880CDC817 /* EditorFlowUITests.swift in Sources */,
+				39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		50920A1F64422AD4E87A36EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */,
+				8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */,
+				422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */,
+				4FB11696D193E6302F80B9DA /* Backend.swift in Sources */,
+				1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */,
+				AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */,
+				84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */,
+				F379544BE24E12BF703FE682 /* EditorView.swift in Sources */,
+				CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */,
+				E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */,
+				9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */,
+				F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */,
+				60F4407E97864A330737BEA2 /* Palette.swift in Sources */,
+				1824196EED242121C72C2DD2 /* PlayView.swift in Sources */,
+				8B5EAC47BDA10AC369C1950A /* PublishFlowView.swift in Sources */,
+				1BFBA87BDE46B43E2AFD555C /* PublishService.swift in Sources */,
+				BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */,
+				7A872D6145DFFA9320989551 /* ResultsQueue.swift in Sources */,
+				D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */,
+				09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */,
+				C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */,
+				955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */,
+				916253486151123560DAA46E /* StageDetailView.swift in Sources */,
+				C869AFFC862FB1A75EE1D253 /* StageRepository.swift in Sources */,
+				CDBFA71C66EC250234E9DDB5 /* StoreView.swift in Sources */,
+				9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0C2F8CFB8620D3808576288C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 406389F459EF1DFE1E731B9B /* DanmakuApp */;
+			targetProxy = A1DB4EE3A8F0895351E8C535 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		12C8BE7C2792917E092E088C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1F677B9842DB9BFDD437E724 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ADMOB_APP_ID = "ca-app-pub-3940256099942544~1458002511";
+				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 49Q2CLPBWK;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DanmakuApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "弾幕メーカー";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
+				PRODUCT_NAME = DanmakuMaker;
+				REVENUECAT_API_KEY = "";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		67BC57739885D6626D23E0AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.DanmakuAppUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DanmakuApp;
+			};
+			name = Debug;
+		};
+		742508894C0E208E92E43F7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.DanmakuAppUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DanmakuApp;
+			};
+			name = Release;
+		};
+		98E9ADD3D0F5DEFB64A0E19F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ADMOB_APP_ID = "ca-app-pub-3863314847163872~6121423237";
+				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3863314847163872/5500185716";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 49Q2CLPBWK;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DanmakuApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "弾幕メーカー";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
+				PRODUCT_NAME = DanmakuMaker;
+				REVENUECAT_API_KEY = "";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		ADBB03CD5471E850374407DE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		807AD059EA70445A856DDEB1 /* Build configuration list for PBXNativeTarget "DanmakuAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67BC57739885D6626D23E0AD /* Debug */,
+				742508894C0E208E92E43F7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B0BE32E5DDC9A693D0FFFE3B /* Build configuration list for PBXNativeTarget "DanmakuApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1F677B9842DB9BFDD437E724 /* Debug */,
+				98E9ADD3D0F5DEFB64A0E19F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B1ED644DE819459EDA533B8D /* Build configuration list for PBXProject "DanmakuMaker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ADBB03CD5471E850374407DE /* Debug */,
+				12C8BE7C2792917E092E088C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D24F205AF726535BC60BA0E5 /* XCLocalSwiftPackageReference "DanmakuCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = DanmakuCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 11.6.0;
+			};
+		};
+		634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = exactVersion;
+				version = 11.2.0;
+			};
+		};
+		A0AF8BF87E0FEE88F1A8BF69 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform";
+			requirement = {
+				kind = exactVersion;
+				version = 2.3.0;
+			};
+		};
+		C477D248F6279A380A1DC92A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = exactVersion;
+				version = 5.69.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0719981841E39DB1D9E6C6AB /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		7E25805402198660741F69EC /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C477D248F6279A380A1DC92A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		849C6FF0167B1B8617DAC835 /* DanmakuCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DanmakuCore;
+		};
+		B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0AF8BF87E0FEE88F1A8BF69 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+		CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+		FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 5AC548212977918D59E21668 /* Project object */;
+}

@@ -53,6 +53,9 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(item: $detail) { StageDetailView(remote: $0) }
+        #if DEBUG
+        .onAppear { applyLaunchArguments() }
+        #endif
         .task(id: tab) { if tab == .world && world.stages.isEmpty { await world.reload() } }
         .onChange(of: world.sort) { _ in Task { await world.reload() } }
         .onChange(of: deepLink.stageID) { id in
@@ -99,6 +102,18 @@ struct HomeView: View {
         }
         .refreshable { await world.reload() }
     }
+
+    #if DEBUG
+    /// スクリーンショット撮影用: `-open-stage o29`（公式ステージを開く）、`-open-editor`、`-open-boss-editor` は DEBUG ビルドだけ
+    private func applyLaunchArguments() {
+        let args = ProcessInfo.processInfo.arguments
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            if let i = args.firstIndex(of: "-open-stage"), args.indices.contains(i + 1),
+               let s = SampleStages.all.first(where: { $0.id == args[i + 1] }) { playing = s }
+            if args.contains("-open-editor") { editing = true }
+        }
+    }
+    #endif
 
     private func search() async {
         let id = query.trimmingCharacters(in: .whitespaces).uppercased()

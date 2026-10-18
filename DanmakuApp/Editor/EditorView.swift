@@ -40,7 +40,7 @@ struct EditorView: View {
             .background(Color(Palette.background).ignoresSafeArea())
             .navigationTitle("editor.title")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("editor.close", action: onClose) } }
+            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("editor.close", action: onClose).accessibilityIdentifier("editor.close") } }
         }
         .preferredColorScheme(.dark)
         .onChange(of: model.draft) { _ in model.save() }

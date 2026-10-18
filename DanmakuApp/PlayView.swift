@@ -112,6 +112,7 @@ struct PlayView: View {
                 Button("play.quit", action: onExit)
                     .buttonStyle(.bordered)
                     .tint(.white)
+                    .accessibilityIdentifier("play.quit")
                 Text(title).font(.headline).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                 Text(String(format: "%.1f", model.remaining))
                     .font(.system(.headline, design: .monospaced))
