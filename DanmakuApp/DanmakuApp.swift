@@ -22,7 +22,7 @@ struct DanmakuApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            MainTabView()
                 .preferredColorScheme(.dark)
                 .environmentObject(auth)
                 .environmentObject(blocks)

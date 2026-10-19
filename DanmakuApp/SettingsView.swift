@@ -42,7 +42,6 @@ struct SettingsView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @Environment(\.dismiss) private var dismiss
     @State private var showStore = false
-    @State private var showShop = false
     @State private var showDelete = false
 
     var body: some View {
@@ -54,7 +53,6 @@ struct SettingsView: View {
                     } else {
                         Button("revive.removeads") { showStore = true }.accessibilityIdentifier("settings.removeads")
                     }
-                    Button("settings.shop") { showShop = true }.accessibilityIdentifier("settings.shop")
                     Button("store.restore") { Task { await purchases.restore() } }
                     if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary) }
                 }
@@ -89,11 +87,9 @@ struct SettingsView: View {
             }
             .navigationTitle("settings.title")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("editor.close") { dismiss() } } }
         }
         .sheet(isPresented: $showDelete) { DeleteAccountSheet() }
         .sheet(isPresented: $showStore) { StoreView() }
-        .sheet(isPresented: $showShop) { ShopView() }
         .preferredColorScheme(.dark)
     }
 }

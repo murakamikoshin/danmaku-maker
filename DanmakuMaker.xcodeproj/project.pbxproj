@@ -13,6 +13,7 @@
 		1C20487B71E38F28F475A332 /* CustomImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */; };
 		1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */; };
 		2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */; };
+		258439472FCE7575D6175586 /* ShopEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */; };
 		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
 		39989238F961EAE880CDC817 /* EditorFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */; };
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
@@ -35,6 +36,7 @@
 		AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */; };
 		AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED3045376B6993745B32B4 /* DanmakuApp.swift */; };
 		B259B87E13614269D15389E9 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 7E25805402198660741F69EC /* RevenueCat */; };
+		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
 		BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */ = {isa = PBXBuildFile; fileRef = 966ADA412BC3686AAAF4587D /* official_stages.json */; };
 		C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC441513117F025F08A727B7 /* ShareText.swift */; };
@@ -64,6 +66,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEffects.swift; sourceTree = "<group>"; };
 		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
 		102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageDetailView.swift; sourceTree = "<group>"; };
 		10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockStore.swift; sourceTree = "<group>"; };
@@ -71,6 +74,7 @@
 		22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishFlowView.swift; sourceTree = "<group>"; };
 		26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotUITests.swift; sourceTree = "<group>"; };
 		336990F3C2805B0B289AF111 /* PublishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishService.swift; sourceTree = "<group>"; };
+		3ACCCCE535A3473E173ED76E /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		3EAAE646F801B4E815A4D2DF /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldViewModel.swift; sourceTree = "<group>"; };
 		4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DanmakuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -194,9 +198,11 @@
 				72F3CDCA55F3D4734044C80B /* Info.plist */,
 				4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */,
 				8AC7B188372A599912AC6166 /* Localizable.xcstrings */,
+				3ACCCCE535A3473E173ED76E /* MainTabView.swift */,
 				084F59B3D178DDB070FCACBB /* PlayView.swift */,
 				BA8479A886EF2B4CF44742DC /* SampleStages.swift */,
 				EBE917C9BB76D326485AC381 /* SettingsView.swift */,
+				02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */,
 				E76AAB990CF55410F75C347D /* ShopView.swift */,
 				102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */,
 				95160D2A88138F6429741ED2 /* StoreView.swift */,
@@ -374,6 +380,7 @@
 				E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */,
 				9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */,
 				F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */,
+				B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */,
 				60F4407E97864A330737BEA2 /* Palette.swift in Sources */,
 				1824196EED242121C72C2DD2 /* PlayView.swift in Sources */,
 				8B5EAC47BDA10AC369C1950A /* PublishFlowView.swift in Sources */,
@@ -383,6 +390,7 @@
 				D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */,
 				09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */,
 				C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */,
+				258439472FCE7575D6175586 /* ShopEffects.swift in Sources */,
 				517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */,
 				F7796624B3092E53B550441B /* Skin.swift in Sources */,
 				955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */,

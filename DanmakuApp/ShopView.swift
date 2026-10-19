@@ -2,47 +2,133 @@ import SwiftUI
 import PhotosUI
 import DanmakuCore
 
-/// きせかえ・ショップ。弾の色・背景・自機の見た目と、自機の撃ち方を買って、選ぶ画面
+/// ショップ。動く見本つきのカードを並べた画面で、見た目・撃ち方・自分の画像を買って、選ぶ
 struct ShopView: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @EnvironmentObject private var purchases: PurchaseService
-    @Environment(\.dismiss) private var dismiss
     @State private var showRemoveAds = false
+    @State private var celebrate = false
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Text("shop.intro").font(.footnote).foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 26) {
+                    ShopHero()
+
                     if !purchases.isPremium {
-                        Button { showRemoveAds = true } label: { Label("revive.removeads", systemImage: "nosign") }
-                            .accessibilityIdentifier("shop.removeads")
+                        Button { showRemoveAds = true } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "nosign").font(.title2.bold())
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("revive.removeads").font(.headline)
+                                    Text("store.benefit.revive").font(.caption).opacity(0.9)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.footnote.bold())
+                            }
+                            .foregroundStyle(.white)
+                            .padding(16)
+                            .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0x8E5CFF))], startPoint: .leading, endPoint: .trailing),
+                                        in: RoundedRectangle(cornerRadius: 18))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("shop.removeads")
                     }
-                }
-                CustomImagesSection()
 
-                Section {
-                    ForEach(ShotType.allCases, id: \.self) { ShotRow(shot: $0) }
-                } header: { Text("shop.section.shot") } footer: { Text("shop.shot.footer") }
+                    CustomImagesCard()
+                    ShotSection()
+                    ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
+                    ThemeCard(theme: .classic)
 
-                ThemeSection(theme: .classic)
-                ForEach(Theme.paid, id: \.self) { ThemeSection(theme: $0) }
-
-                Section {
                     Button("store.restore") { Task { await purchases.restore() } }
+                        .frame(maxWidth: .infinity)
                         .disabled(purchases.isBusy)
                         .accessibilityIdentifier("shop.restore")
-                    if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary) }
+                    if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity) }
+                }
+                .padding(.horizontal, 16).padding(.vertical, 12)
+            }
+            .background(Color(Palette.background).ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .task { await purchases.refresh() }
+            .overlay {
+                if celebrate {
+                    ZStack {
+                        ConfettiView()
+                        Text("shop.got")
+                            .font(.system(size: 56, weight: .heavy, design: .rounded))
+                            .foregroundStyle(LinearGradient(colors: [Color(Palette.gold), Color(Palette.pink)], startPoint: .top, endPoint: .bottom))
+                            .shadow(color: .black.opacity(0.5), radius: 8)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                    .ignoresSafeArea()
                 }
             }
-            .navigationTitle("shop.title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("editor.close") { dismiss() } } }
-            .task { await purchases.refresh() }
+            .onChange(of: purchases.celebration) { product in
+                guard product != nil else { return }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.55)) { celebrate = true }
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_600_000_000)
+                    withAnimation { celebrate = false }
+                    purchases.celebration = nil
+                }
+            }
         }
         .sheet(isPresented: $showRemoveAds) { StoreView() }
         .preferredColorScheme(.dark)
     }
+}
+
+// MARK: 部品
+
+/// 上のバナー: ゲームと同じ渦巻きの弾が、流れ続ける
+private struct ShopHero: View {
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            BulletBurstView(theme: .classic)
+            LinearGradient(colors: [.clear, Color.black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("SHOP")
+                    .font(.system(size: 46, weight: .heavy, design: .rounded))
+                    .foregroundStyle(LinearGradient(colors: [.white, Color(Palette.pink)], startPoint: .top, endPoint: .bottom))
+                    .shadow(color: Color(Palette.pink).opacity(0.8), radius: 10)
+                Text("shop.hero.sub").font(.footnote.bold()).foregroundStyle(.white.opacity(0.9))
+            }
+            .padding(16)
+        }
+        .frame(height: 190)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.18)))
+    }
+}
+
+/// カードの枠(見出し、中身、補足)
+private struct ShopCard<Content: View>: View {
+    let title: LocalizedStringKey
+    var footer: LocalizedStringKey?
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title).font(.system(size: 22, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+            content
+            if let footer { Text(footer).font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4) }
+        }
+    }
+}
+
+private struct CardBody<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        VStack(spacing: 0) { content }
+            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08)))
+    }
+}
+
+private struct CardDivider: View {
+    var body: some View { Divider().overlay(Color.white.opacity(0.1)).padding(.leading, 14) }
 }
 
 private struct PriceButton: View {
@@ -53,64 +139,141 @@ private struct PriceButton: View {
         let available = purchases.prices[product] != nil
         Button { Task { await purchases.purchase(product) } } label: {
             Text(purchases.prices[product] ?? "¥\(product.yen)")
-                .font(.subheadline.bold()).frame(minWidth: 64)
+                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(minWidth: 70)
+                .padding(.vertical, 8).padding(.horizontal, 12)
+                .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6, y: 2)
         }
-        .buttonStyle(.borderedProminent).tint(Color(Palette.pink))
+        .buttonStyle(.plain)
+        .opacity(available && !purchases.isBusy ? 1 : 0.5)
         .disabled(!available || purchases.isBusy)
         .accessibilityIdentifier("shop.buy.\(product.id)")
     }
 }
 
-private struct ShotRow: View {
-    @EnvironmentObject private var cosmetics: CosmeticsStore
-    let shot: ShotType
-
+private struct EquippedLabel: View {
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(LocalizedStringKey(shot.nameKey)).font(.headline)
-                Text(LocalizedStringKey(shot.detailKey)).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if cosmetics.ownership.has(shot) {
-                if cosmetics.loadout.shot == shot {
-                    Label("shop.equipped", systemImage: "checkmark.circle.fill").labelStyle(.titleAndIcon)
-                        .font(.footnote).foregroundStyle(Color(Palette.bullets[4]))
-                } else {
-                    Button("shop.equip") { cosmetics.equip(shot) }.buttonStyle(.bordered)
+        Label("shop.equipped", systemImage: "checkmark.circle.fill")
+            .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+    }
+}
+
+private struct EquipButton: View {
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Text("shop.equip").font(.footnote.bold()).padding(.vertical, 6).padding(.horizontal, 14)
+                .background(Color.white.opacity(0.14), in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: 撃ち方
+
+private struct ShotSection: View {
+    var body: some View {
+        ShopCard(title: "shop.section.shot", footer: "shop.shot.footer") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(ShotType.allCases, id: \.self) { ShotTile(shot: $0) }
                 }
-            } else {
-                PriceButton(product: .shot(shot))
+                .padding(.horizontal, 2).padding(.vertical, 2)
             }
         }
     }
 }
 
-private struct ThemeSection: View {
+private struct ShotTile: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    let shot: ShotType
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ShotPreviewView(shot: shot)
+                .frame(height: 96)
+                .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Text(LocalizedStringKey(shot.nameKey)).font(.system(size: 18, weight: .heavy, design: .rounded))
+            Text(LocalizedStringKey(shot.detailKey)).font(.caption).foregroundStyle(.secondary)
+                .frame(height: 48, alignment: .topLeading)
+            HStack {
+                Spacer()
+                if cosmetics.ownership.has(shot) {
+                    if cosmetics.loadout.shot == shot { EquippedLabel() } else { EquipButton { cosmetics.equip(shot) } }
+                } else {
+                    PriceButton(product: .shot(shot))
+                }
+            }
+        }
+        .padding(12)
+        .frame(width: 210)
+        .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(cosmetics.loadout.shot == shot ? Color(Palette.bullets[4]).opacity(0.7) : Color.white.opacity(0.08), lineWidth: 1.5))
+    }
+}
+
+// MARK: テーマ(弾・背景・自機)
+
+private struct ThemeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     let theme: Theme
 
+    private var partsYen: Int { ThemePart.allCases.map { Product.part(theme, $0).yen }.reduce(0, +) }
+    private var offPercent: Int { theme == .classic ? 0 : Int((1 - Double(Product.set(theme).yen) / Double(partsYen)) * 100 + 0.5) }
+
     var body: some View {
-        Section {
-            ForEach(ThemePart.allCases, id: \.self) { PartRow(theme: theme, part: $0) }
-            if theme != .classic {
+        VStack(alignment: .leading, spacing: 0) {
+            // 見本: そのテーマの背景・弾・自機で、実際の弾幕が流れる
+            ZStack(alignment: .topLeading) {
+                BulletBurstView(theme: theme)
                 HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("shop.set").font(.headline)
-                        Text("shop.set.detail").font(.caption).foregroundStyle(.secondary)
-                    }
+                    Text(LocalizedStringKey(theme.nameKey))
+                        .font(.system(size: 26, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white).shadow(color: .black.opacity(0.7), radius: 5)
                     Spacer()
-                    if cosmetics.ownership.canBuy(.set(theme)) {
-                        PriceButton(product: .set(theme))
-                    } else {
-                        Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote)
-                            .foregroundStyle(Color(Palette.bullets[4]))
+                    if theme != .classic && cosmetics.ownership.canBuy(.set(theme)) {
+                        Text(String(format: L("shop.off"), offPercent))
+                            .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                            .padding(.vertical, 4).padding(.horizontal, 10)
+                            .background(Color(Palette.pink), in: Capsule())
                     }
                 }
+                .padding(14)
             }
-        } header: {
-            Text(LocalizedStringKey(theme.nameKey))
+            .frame(height: 170)
+
+            VStack(spacing: 0) {
+                ForEach(Array(ThemePart.allCases.enumerated()), id: \.element) { idx, part in
+                    PartRow(theme: theme, part: part)
+                    if idx < ThemePart.allCases.count - 1 || theme != .classic { CardDivider() }
+                }
+                if theme != .classic { setRow }
+            }
+            .background(Color.white.opacity(0.07))
         }
+        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.12)))
+    }
+
+    private var setRow: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("shop.set").font(.system(size: 17, weight: .heavy, design: .rounded))
+                HStack(spacing: 6) {
+                    Text("¥\(partsYen)").strikethrough().foregroundStyle(.secondary)
+                    Text("→").foregroundStyle(.secondary)
+                    Text("¥\(Product.set(theme).yen)").foregroundStyle(Color(Palette.gold)).bold()
+                }.font(.caption)
+            }
+            Spacer()
+            if cosmetics.ownership.canBuy(.set(theme)) { PriceButton(product: .set(theme)) }
+            else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+        }
+        .padding(14)
+        .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.18), Color(Palette.gold).opacity(0.10)], startPoint: .leading, endPoint: .trailing))
     }
 }
 
@@ -122,19 +285,16 @@ private struct PartRow: View {
     var body: some View {
         HStack(spacing: 12) {
             preview.frame(width: 84, alignment: .leading)
-            Text(LocalizedStringKey(part.nameKey))
+            Text(LocalizedStringKey(part.nameKey)).font(.body.weight(.semibold))
             Spacer()
             if cosmetics.ownership.has(part, of: theme) {
-                if cosmetics.loadout.theme(for: part) == theme {
-                    Label("shop.equipped", systemImage: "checkmark.circle.fill")
-                        .font(.footnote).foregroundStyle(Color(Palette.bullets[4]))
-                } else {
-                    Button("shop.equip") { cosmetics.equip(theme, for: part) }.buttonStyle(.bordered)
-                }
+                if cosmetics.loadout.theme(for: part) == theme { EquippedLabel() }
+                else { EquipButton { cosmetics.equip(theme, for: part) } }
             } else {
                 PriceButton(product: .part(theme, part))
             }
         }
+        .padding(14)
     }
 
     @ViewBuilder private var preview: some View {
@@ -162,29 +322,41 @@ private struct PartRow: View {
     }
 }
 
+// MARK: じぶんの画像
 
-/// 自分の画像: ボス・弾・自機を、写真アプリから選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ保存する)
-private struct CustomImagesSection: View {
+/// ボス・弾・自機を、写真アプリから選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ保存する)
+private struct CustomImagesCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
 
     var body: some View {
-        Section {
-            if cosmetics.ownership.hasCustomImages {
-                ForEach(CustomSlot.allCases) { CustomSlotRow(slot: $0) }
-            } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("shop.custom.title").font(.headline)
-                    Text("shop.custom.intro").font(.caption).foregroundStyle(.secondary)
-                }
-                HStack {
-                    Spacer()
-                    PriceButton(product: .customImages)
+        ShopCard(title: "shop.custom.title", footer: "shop.custom.footer") {
+            CardBody {
+                if cosmetics.ownership.hasCustomImages {
+                    ForEach(Array(CustomSlot.allCases.enumerated()), id: \.element) { idx, slot in
+                        CustomSlotRow(slot: slot)
+                        if idx < CustomSlot.allCases.count - 1 { CardDivider() }
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("shop.custom.intro").font(.footnote).foregroundStyle(.secondary)
+                        HStack(spacing: 16) {
+                            ForEach(CustomSlot.allCases) { slot in
+                                VStack(spacing: 4) {
+                                    ZStack {
+                                        Circle().fill(Color.white.opacity(0.1))
+                                        Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])).foregroundStyle(Color.white.opacity(0.35))
+                                        Image(systemName: "sparkles").foregroundStyle(Color(Palette.gold))
+                                    }.frame(width: 46, height: 46)
+                                    Text(LocalizedStringKey(slot.nameKey)).font(.caption2.bold()).foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            PriceButton(product: .customImages)
+                        }
+                    }
+                    .padding(14)
                 }
             }
-        } header: {
-            Text("shop.custom.title")
-        } footer: {
-            Text("shop.custom.footer")
         }
     }
 }
@@ -210,7 +382,7 @@ private struct CustomSlotRow: View {
             }
             .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Text(LocalizedStringKey(slot.nameKey)).font(.body)
+                Text(LocalizedStringKey(slot.nameKey)).font(.body.weight(.semibold))
                 if failed { Text("shop.custom.failed").font(.caption).foregroundStyle(.red) }
                 else if image == nil { Text("shop.custom.empty").font(.caption).foregroundStyle(.secondary) }
             }
@@ -224,10 +396,12 @@ private struct CustomSlotRow: View {
             }
             PhotosPicker(selection: $item, matching: .images) {
                 Text(image == nil ? "shop.custom.pick" : "shop.custom.change").font(.footnote.bold())
+                    .padding(.vertical, 6).padding(.horizontal, 12)
+                    .background(Color.white.opacity(0.14), in: Capsule())
             }
-            .buttonStyle(.bordered)
             .accessibilityIdentifier("shop.custom.pick.\(slot.rawValue)")
         }
+        .padding(14)
         .onChange(of: item) { newItem in
             guard let newItem else { return }
             Task {

@@ -2545,6 +2545,38 @@
         }
       }
     },
+    "shop.got": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゲット！"
+          }
+        }
+      }
+    },
+    "shop.hero.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make it yours. Make it wild."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "きせかえて、もっとワクワクしよう"
+          }
+        }
+      }
+    },
     "shop.intro": {
       "localizations": {
         "en": {
@@ -2557,6 +2589,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "弾の色・背景・自機の見た目と、自機の撃ち方を買えます。撃ち方は1秒あたりの威力が同じで、撃ち味だけが違います。どれも買い切りです。"
+          }
+        }
+      }
+    },
+    "shop.off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% OFF"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%%OFF"
           }
         }
       }
@@ -2646,13 +2694,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Customize & Shop"
+            "value": "Shop"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "きせかえ・ショップ"
+            "value": "ショップ"
           }
         }
       }
@@ -2973,6 +3021,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "いまは購入できません。しばらくしてからお試しください。"
+          }
+        }
+      }
+    },
+    "tab.play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あそぶ"
+          }
+        }
+      }
+    },
+    "tab.settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "せってい"
+          }
+        }
+      }
+    },
+    "tab.shop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shop"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショップ"
           }
         }
       }

@@ -13,6 +13,8 @@ final class PurchaseService: NSObject, ObservableObject {
     @Published private(set) var priceText: String?
     @Published private(set) var isBusy = false
     @Published var message: String?
+    /// 買えたばかりの商品(ショップの紙吹雪に使う。画面側が消す)
+    @Published var celebration: Product?
     /// 商品ごとの価格表示（App Store から取得できたものだけ）
     @Published private(set) var prices: [Product: String] = [:]
 
@@ -61,6 +63,7 @@ final class PurchaseService: NSObject, ObservableObject {
         guard let sp = storeProducts[product] else { message = L("store.unavailable"); return }
         await run { try await Purchases.shared.purchase(product: sp) }
         autoEquip(product)
+        if !cosmetics.ownership.canBuy(product) { celebration = product }
     }
 
     private func run(_ buy: () async throws -> PurchaseResultData) async {
