@@ -1,6 +1,6 @@
 /// 自機の撃ち方。どれも1秒あたりの総ダメージは同じ（約22）で、強さではなく撃ち味が違う
 public enum ShotType: String, CaseIterable, Codable, Sendable {
-    /// 前に2本。投稿のテストプレイと、課金なしの標準
+    /// 前に2本。課金なしの標準
     case standard
     /// 3方向に広がる。動きながらでも当てやすいが、近づかないと3発とも当たらない
     case spread

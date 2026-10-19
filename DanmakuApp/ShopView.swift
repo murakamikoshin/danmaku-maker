@@ -215,7 +215,7 @@ private struct ShotTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ShotPreviewView(shot: shot)
-                .frame(height: 96)
+                .frame(height: 190)
                 .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             Text(LocalizedStringKey(shot.nameKey)).font(.system(size: 18, weight: .heavy, design: .rounded))

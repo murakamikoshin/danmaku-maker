@@ -94,7 +94,7 @@ struct BulletBurstView: View {
     }
 }
 
-/// 撃ち方ごとの、自機からボスへ向かう弾の見本
+/// 撃ち方ごとの、自機からボスへ向かう弾の見本。実際のゲームと同じ速さ・間隔・広がりで、縦横同じ倍率で描く
 struct ShotPreviewView: View {
     let shot: ShotType
 
@@ -103,27 +103,32 @@ struct ShotPreviewView: View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate
-                let shipP = CGPoint(x: size.width * 0.5, y: size.height * 0.86)
-                let bossP = CGPoint(x: size.width * 0.5, y: size.height * 0.2)
-                let sc = (shipP.y - bossP.y) / 362.0            // 実際の距離(約362)を、見本の大きさに縮める
-                let life = 362.0 / 600.0
+                // ゲームの画面は 360 幅。自機とボスの距離は、実際のゲームと同じ 約362(ボスは高さ18%、自機は85%の位置)
+                let dist = 362.0
+                let sc = min(Double(size.width) / 360.0, Double(size.height) * 0.78 / dist)
+                let shipP = CGPoint(x: size.width * 0.5, y: size.height - 14)
+                let bossP = CGPoint(x: size.width * 0.5, y: shipP.y - CGFloat(dist * sc))
+                let life = dist / 600.0                      // 弾がボスに届くまでの時間(秒)
                 let k1 = Int(floor(t / shot.interval))
                 let k0 = k1 - Int(life / shot.interval) - 1
                 for k in k0...k1 {
                     let age = t - Double(k) * shot.interval
                     if age < 0 || age > life { continue }
                     for v in shot.volley {
-                        let x = shipP.x + CGFloat(v.dx + v.vx * age * 3.2) * 1.4
-                        let y = shipP.y - CGFloat(600 * age) * sc
+                        let x = Double(shipP.x) + (v.dx + v.vx * age) * sc
+                        let y = Double(shipP.y) - 10 * sc - 600 * age * sc
                         let heavy = v.damage > 1
-                        let w: CGFloat = heavy ? 7 : 3, h: CGFloat = heavy ? 16 : 9
+                        // ゲームの弾の大きさ(通常 3×10、ヘビー 6×14)。小さくなりすぎないように、見えるだけ太くする
+                        let w = max(2.0, (heavy ? 6 : 3) * sc * 1.6), h = max(5.0, (heavy ? 14 : 10) * sc * 1.6)
                         let color: Color = heavy ? Color(UIColor(hex: 0x5CE1E6)) : Color(Palette.gold)
                         ctx.fill(Path(roundedRect: CGRect(x: x - w / 2, y: y - h / 2, width: w, height: h), cornerRadius: 1.5), with: .color(color))
                     }
                 }
-                let bossRect = CGRect(x: bossP.x - 15, y: bossP.y - 15, width: 30, height: 30)
+                // ボスの当たる範囲(中)と同じ大きさ
+                let r = DanmakuConfig.bossRadii[1] * sc
+                let bossRect = CGRect(x: bossP.x - r, y: bossP.y - r, width: r * 2, height: r * 2)
                 ctx.fill(GameBossShape().path(in: bossRect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
-                ctx.draw(Image(uiImage: ship), in: CGRect(x: shipP.x - 8, y: shipP.y - 10, width: 16, height: 20))
+                ctx.draw(Image(uiImage: ship), in: CGRect(x: shipP.x - 10 * sc * 1.2, y: shipP.y - 12 * sc * 1.2, width: 20 * sc * 1.2, height: 24 * sc * 1.2))
             }
         }
     }
