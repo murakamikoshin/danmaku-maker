@@ -54,13 +54,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rotation"
+            "value": "Spin speed"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "回転"
+            "value": "回る速さ"
           }
         }
       }
@@ -7062,13 +7062,77 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rotate pattern"
+            "value": "Aim angle"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "パターンの向き(回転)"
+            "value": "全体の向き"
+          }
+        }
+      }
+    },
+    "editor.revert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo changes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "元に戻す"
+          }
+        }
+      }
+    },
+    "editor.revert.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go back to how it was?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "編集前の状態に戻しますか?"
+          }
+        }
+      }
+    },
+    "editor.revert.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returns to how the stage was when you opened this screen (or last cleared it). Changes since then are lost."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この画面を開いたとき(またはクリアしたとき)の内容に戻ります。それ以降の変更は消えます。"
+          }
+        }
+      }
+    },
+    "editor.revert.do": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revert"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "戻す"
           }
         }
       }

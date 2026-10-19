@@ -5,6 +5,7 @@ struct EditorView: View {
     @StateObject private var model: EditorModel
     @State private var testRun: TestRun?
     @State private var publishing = false
+    @State private var confirmRevert = false
     /// 「かんたん」は、モード・名前・時間・発射台だけ。「くわしく」は、ライフ・BGM・見た目・演出なども出す
     @AppStorage("editor.advanced.v1") private var advanced = false
     let onClose: () -> Void
@@ -20,6 +21,12 @@ struct EditorView: View {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") { onClose() }
                     .accessibilityIdentifier("editor.close")
             } trailing: {
+                Button { confirmRevert = true } label: {
+                    Label("editor.revert", systemImage: "arrow.uturn.backward").font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(Palette.gold)).labelStyle(.titleAndIcon)
+                }
+                .disabled(!model.canRevert).opacity(model.canRevert ? 1 : 0.35)
+                .accessibilityIdentifier("editor.revert")
                 Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(Palette.bullets[4])).labelStyle(.titleAndIcon)
             }
@@ -82,13 +89,17 @@ struct EditorView: View {
                         Text("editor.hint.clear").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .padding(16)
+                .padding(16).padding(.bottom, 80)
             }
             .scrollDismissesKeyboard(.interactively)
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onChange(of: model.draft) { _ in model.save() }
+        .confirmationDialog("editor.revert.title", isPresented: $confirmRevert, titleVisibility: .visible) {
+            Button("editor.revert.do", role: .destructive) { model.revert() }
+            Button("common.cancel", role: .cancel) {}
+        } message: { Text("editor.revert.message") }
         .fullScreenCover(item: $testRun) { run in
             PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name), isTest: true, customs: run.customs,
                      onResult: { result, moves in
@@ -306,7 +317,9 @@ struct SliderRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(label).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).frame(width: 74, alignment: .leading)
+            Text(label).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
+                .frame(width: 84, alignment: .leading)
             GameSlider(value: $value, range: range, step: step).allowsHitTesting(!disabled)
             Text(format(value))
                 .font(.system(size: 12, weight: .bold, design: .monospaced))

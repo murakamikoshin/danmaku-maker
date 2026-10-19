@@ -185,16 +185,23 @@ final class EditorModel: ObservableObject {
     static let maxAuthor = 12
 
     @Published var draft: Draft
+    /// 「元に戻す」の戻り先。画面を開いたとき、またはクリア・投稿したときの内容
+    private var baseline: Draft
     private var entry: SavedStage
     private let store: LocalStageStore
 
     init(entry: SavedStage, store: LocalStageStore = .shared) {
         self.entry = entry
         self.store = store
-        draft = entry.draft
+        var d = entry.draft
         // 作者名は全ステージ共通
-        if !AuthorName.current.isEmpty { draft.authorName = AuthorName.current }
+        if !AuthorName.current.isEmpty { d.authorName = AuthorName.current }
+        draft = d
+        baseline = d
     }
+
+    var canRevert: Bool { draft != baseline }
+    func revert() { draft = baseline }
 
     var entryID: UUID { entry.id }
     var stage: Stage { draft.stage }
@@ -291,6 +298,7 @@ final class EditorModel: ObservableObject {
         entry.publishedStage = stage
         entry.publishedID = id
         entry.draft = draft
+        baseline = draft
         store.update(entry)
     }
 
@@ -298,6 +306,7 @@ final class EditorModel: ObservableObject {
         entry.verifiedStage = stage
         entry.verifiedReplay = replay.encoded()
         entry.draft = draft
+        baseline = draft
         store.update(entry)
         objectWillChange.send()
     }
