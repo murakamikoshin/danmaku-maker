@@ -163,6 +163,20 @@ struct HomeView: View {
             if let i = args.firstIndex(of: "-open-stage"), args.indices.contains(i + 1), playing == nil,
                let s = SampleStages.all.first(where: { $0.id == args[i + 1] }) { playing = s }
             if args.contains("-open-editor"), editingEntry == nil, let first = saved.stages.first ?? saved.create() { editingEntry = first }
+            // 画面確認用: 連戦(雑魚 → 中ボス → 大ボス)のステージを作って、編集画面を開く
+            if args.contains("-open-sequence-editor"), editingEntry == nil, var e = saved.create() {
+                e.draft.mode = .sequence
+                e.draft.name = "連戦テスト"
+                e.draft.authorName = "Koshin"
+                var w1 = DraftWave(kind: .survive); w1.duration = 20
+                var w2 = DraftWave(kind: .boss); w2.bossHp = 200; w2.duration = 30; w2.defeat = DefeatEffect.fireworks.rawValue
+                var w3 = DraftWave(kind: .boss); w3.bossHp = 800; w3.duration = 90; w3.warning = true; w3.defeat = DefeatEffect.explosion.rawValue
+                e.draft.waves = [w1, w2, w3]
+                saved.update(e)
+                editingEntry = e
+            }
+            // 画面確認用: 保存した最初のステージで遊ぶ
+            if args.contains("-play-first-mine"), playingMine == nil, let first = saved.stages.first { playingMine = first }
             if args.contains("-open-store"), !showStoreDebug { showStoreDebug = true }
         }
         // 画面の準備前だと表示が無視されることがあるので、数回に分けて試す
