@@ -109,6 +109,7 @@ targets:
           ADMOB_REWARDED_UNIT_ID: ca-app-pub-3863314847163872/5500185716
           REVENUECAT_API_KEY: "appl_EhUVgOXVczuSOnQUNULxohhhjMa"
       base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.koshin.danmakumaker
         DEVELOPMENT_TEAM: 49Q2CLPBWK
         CODE_SIGN_STYLE: Automatic

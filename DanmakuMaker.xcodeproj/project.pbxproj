@@ -39,6 +39,7 @@
 		C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC441513117F025F08A727B7 /* ShareText.swift */; };
 		C869AFFC862FB1A75EE1D253 /* StageRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB986508388484596E9919F0 /* StageRepository.swift */; };
 		CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAA4624B3387C7D797F98B70 /* EmitterCard.swift */; };
+		CAAEF6105AF0276BE649A5CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88F2FCA282B18627E4A48039 /* Assets.xcassets */; };
 		CDBFA71C66EC250234E9DDB5 /* StoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95160D2A88138F6429741ED2 /* StoreView.swift */; };
 		D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0719981841E39DB1D9E6C6AB /* FirebaseFirestore */; };
 		D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8479A886EF2B4CF44742DC /* SampleStages.swift */; };
@@ -79,6 +80,7 @@
 		7D829E677A324B52D22AD32A /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DanmakuApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmeticsStore.swift; sourceTree = "<group>"; };
+		88F2FCA282B18627E4A48039 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8AC7B188372A599912AC6166 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		8F62E287AE766D76D9CF3901 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		8FABAD127D8EABEA2C29870E /* PurchaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseService.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 		ADDE986E96D5A43E7CF359ED /* DanmakuApp */ = {
 			isa = PBXGroup;
 			children = (
+				88F2FCA282B18627E4A48039 /* Assets.xcassets */,
 				AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */,
 				CBED3045376B6993745B32B4 /* DanmakuApp.swift */,
 				E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */,
@@ -330,6 +333,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CAAEF6105AF0276BE649A5CF /* Assets.xcassets in Resources */,
 				AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */,
 				9CE8796A5A91D3ADD3148812 /* InfoPlist.xcstrings in Resources */,
 				E06EA720167D731F500C2403 /* Localizable.xcstrings in Resources */,
