@@ -103,3 +103,13 @@ Secrets に `ASC_KEY_ID` `ASC_ISSUER_ID` `ASC_KEY_P8_BASE64` `GOOGLE_SERVICE_INF
 - 権利 `no_ads` に `com.koshin.danmakumaker.removeads` を結びつけ済み。
 - オファリング `default` に、Lifetime パッケージ(広告削除)を作成済み。
 - アプリの公開キーは `project.yml` の `REVENUECAT_API_KEY` に設定済み(公開キーなのでコミットしてよい)。
+
+## 追加: 提出直前の状態(2026-10-19 夜)
+- アプリ内購入は16個(広告削除 ¥600、パーツ12個 ¥100〜¥200、撃ち方2個 ¥300、じぶんの画像 ¥500)。すべて App Store Connect と RevenueCat に登録済み。
+- アプリアイコンを設定済み(`tools/make_app_icon.py` で、ゲームの実際の部品から生成)。
+- ビルド 1.0.0 (4) を GitHub Actions(`.github/workflows/testflight.yml`)で作って TestFlight に配信済み。内部テスト「内部テスト」グループに Koshin(koushin0224@icloud.com)を追加済み。
+- App Store Connect の「提出物の下書き」には、iOS 1.0.0 (4) とアプリ内購入16個、合計17件が入っている。
+- コンテンツ配信権は「はい(必要な権利を保有)」にした(他のユーザーが投稿したステージを表示するため)。
+- **最後の「審査へ提出」は、Koshin が実機確認のあとに押す。** 場所: App Store Connect →「弾幕メーカー」→「配信」→「iOSアプリ 1.0」→ 右下の「提出物の下書き」→「審査へ提出」。
+- ビルドを作り直すとき: `gh workflow run TestFlight --ref main`(Secrets は GitHub に登録済み)。新しいビルドができたら、バージョンページの「ビルド」で選び直す。
+- 紹介画像(スクリーンショット)は、日英とも5枚(ゲーム画面)。ショップ画面の画像は `docs/store_screenshots/` にあるが、App Store には未登録(任意)。
