@@ -10,6 +10,9 @@ final class GameScene: SKScene {
 
     private(set) var sim: Simulation
     var onTime: ((Double) -> Void)?
+    /// ライフ(HP)の残り・最大・ボスに与えたダメージ。変わったときだけ呼ぶ
+    var onStatus: ((Int, Int, Int) -> Void)?
+    private var lastStatus = (-1, -1, -1)
     var onFinish: ((Simulation, [Move]) -> Void)?
 
     private var moves: [Move] = []
@@ -252,6 +255,18 @@ final class GameScene: SKScene {
             centerLabel.isHidden = true
             centerLabel.fontColor = Palette.text
         }
-        onTime?(max(0, Double(sim.stage.durationSec) - max(0, sim.t)))
+        onTime?(sim.stage.isUnlimitedTime ? max(0, sim.t) : max(0, Double(sim.stage.durationSec) - max(0, sim.t)))
+        let status = (sim.lifeLeft, sim.lifeMax, sim.damageDealt)
+        if status != lastStatus {
+            if lastStatus.0 > status.0 && lastStatus.0 >= 0 {
+                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                if status.0 > 0 { AudioManager.shared.se(.lifeLost) }
+            }
+            lastStatus = status
+            onStatus?(status.0, status.1, status.2)
+        }
+        // 被弾したら、自機が赤くひらめく
+        shipNode.color = .red
+        shipNode.colorBlendFactor = sim.hitFlash > 0 ? 0.85 : 0
     }
 }

@@ -37,6 +37,7 @@ struct ShopView: View {
 
                     CustomImagesCard()
                     ShotSection()
+                    HomingCard()
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
                     ThemeCard(theme: .classic)
 
@@ -67,6 +68,7 @@ struct ShopView: View {
             .onChange(of: purchases.celebration) { product in
                 guard product != nil else { return }
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
+                AudioManager.shared.se(.get)
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.55)) { celebrate = true }
                 Task {
                     try? await Task.sleep(nanoseconds: 2_600_000_000)
@@ -411,6 +413,70 @@ private struct CustomSlotRow: View {
                     else { failed = true }
                     item = nil
                 }
+            }
+        }
+    }
+}
+
+
+// MARK: 追尾弾(ステージ作りで使える新しい弾のパターン)
+
+private struct HomingCard: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        ShopCard(title: "shop.homing.title", footer: "shop.homing.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 10) {
+                    HomingDemo()
+                        .frame(height: 110)
+                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Text("shop.homing.intro").font(.footnote).foregroundStyle(.secondary)
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.hasHoming {
+                            Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                        } else {
+                            PriceButton(product: .homing)
+                        }
+                    }
+                }
+                .padding(14)
+            }
+        }
+    }
+}
+
+/// 追尾弾が、動く自機を追いかけて曲がる様子
+private struct HomingDemo: View {
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+            Canvas { ctx, size in
+                let t = tl.date.timeIntervalSinceReferenceDate
+                let ship = CGPoint(x: size.width * (0.5 + 0.38 * sin(t * 0.9)), y: size.height * 0.84)
+                let src = CGPoint(x: size.width * 0.5, y: 14)
+                // 3発を、時間差で出して、自機の動きを追って曲がらせる(簡易)
+                for k in 0..<3 {
+                    let phase = fmod(t * 0.5 + Double(k) / 3.0, 1.0)
+                    var p = src
+                    var angle = Double.pi / 2
+                    let steps = Int(phase * 60)
+                    for _ in 0..<steps {
+                        let want = atan2(Double(ship.y - p.y), Double(ship.x - p.x))
+                        var d = want - angle
+                        while d > .pi { d -= 2 * .pi }
+                        while d < -.pi { d += 2 * .pi }
+                        angle += min(0.09, max(-0.09, d))
+                        p.x += CGFloat(cos(angle)) * size.height * 0.011
+                        p.y += CGFloat(sin(angle)) * size.height * 0.011
+                    }
+                    let r: CGFloat = 6
+                    ctx.fill(Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)), with: .color(Color(Palette.bullets[(k + 1) % 5])))
+                    ctx.fill(Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6)), with: .color(.white))
+                }
+                ctx.fill(GameBossShape().path(in: CGRect(x: src.x - 11, y: src.y - 11, width: 22, height: 22)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                ctx.fill(GameShipShape().path(in: CGRect(x: ship.x - 8, y: ship.y - 10, width: 16, height: 20)), with: .color(Color(UIColor(hex: 0x5CE1E6))))
             }
         }
     }

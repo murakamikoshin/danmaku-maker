@@ -1,0 +1,124 @@
+import XCTest
+@testable import DanmakuCore
+
+/// サーバー(TypeScript)側のゲーム再現が、この Swift 版と一致するかを確かめるための「正解データ」を書き出す。
+/// 環境変数 EXPORT_SIM_FIXTURES にファイルの場所を渡したときだけ動く(普段のテストでは何もしない)。
+final class FixtureExportTests: XCTestCase {
+    struct Case: Codable {
+        var name: String
+        var stage: Stage
+        var shot: String
+        var replay: String
+        var steps: Int
+        var expect: Expect
+    }
+    struct Expect: Codable {
+        var outcome: String
+        var tick: Int
+        var hp: Int
+        var damage: Int
+        var lifeLeft: Int
+        var bulletCount: Int
+        var bulletHash: UInt32
+    }
+
+    /// 決まった乱数で、操作記録を作る
+    private struct XorShift {
+        var s: UInt64
+        mutating func next() -> UInt64 { s ^= s << 13; s ^= s >> 7; s ^= s << 17; return s }
+        mutating func unit() -> Double { Double(next() % 1_000_000) / 1_000_000 }
+    }
+
+    private func moves(style: Int, count: Int, seed: UInt64) -> [Move] {
+        var r = XorShift(s: seed &* 2654435761 &+ 88172645463325252)
+        var out: [Move] = []
+        var dx = 0, dy = 0
+        for i in 0..<count {
+            switch style {
+            case 0: out.append(.zero)                                       // 動かない
+            case 1:                                                          // ランダムに動く(しばらく同じ向き)
+                if i % 24 == 0 { dx = Int(r.unit() * 8) - 4; dy = Int(r.unit() * 6) - 3 }
+                out.append(Move(dx: Int8(dx), dy: Int8(dy)))
+            case 2: out.append(Move(dx: Int8((i / 90) % 2 == 0 ? 3 : -3), dy: 0))   // 左右に往復
+            default:                                                         // 大きく速く動く
+                if i % 12 == 0 { dx = Int(r.unit() * 40) - 20; dy = Int(r.unit() * 30) - 15 }
+                out.append(Move(dx: Int8(dx), dy: Int8(dy)))
+            }
+        }
+        return out
+    }
+
+    private func emitters(_ patterns: [DanmakuCore.Pattern], boss: Bool) -> [Emitter] {
+        let intervals: [Double] = [0.35, 0.5, 0.2, 0.8]
+        let counts: [Int] = [6, 10, 3, 16]
+        let speeds: [Double] = [2, 2.5, 3, 1.5]
+        let angles: [Double] = [12, 40, -25, 90]
+        var out: [Emitter] = []
+        for (idx, p) in patterns.enumerated() {
+            let x: Double = 0.3 + 0.1 * Double(idx % 5)
+            let y: Double = 0.15 + 0.05 * Double(idx % 4)
+            let s: Double = boss ? 0 : Double(idx) * 0.7
+            let ph: Int = boss ? idx % 4 : 0
+            out.append(Emitter(t: p, x: x, y: y, s: s, e: 30, i: intervals[idx % 4], c: counts[idx % 4],
+                               v: speeds[idx % 4], r: angles[idx % 4], k: idx % 5, ph: ph))
+        }
+        return out
+    }
+
+    func testExportFixtures() throws {
+        guard let path = ProcessInfo.processInfo.environment["EXPORT_SIM_FIXTURES"] else { throw XCTSkip("書き出し先が未指定") }
+        let all: [DanmakuCore.Pattern] = [.ring, .spiral, .aim, .rain, .sweep, .sideL, .sideR, .corner, .homing]
+        var stages: [(String, Stage)] = []
+        for (i, p) in all.enumerated() {
+            stages.append(("survive-\(p.rawValue)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([p, all[(i + 3) % 8]], boss: false)).sanitized()))
+        }
+        stages.append(("survive-all", Stage(name: "s", mode: .survive, durationSec: 30, emitters: Array(emitters(all, boss: false).prefix(8))).sanitized()))
+        stages.append(("survive-homing", Stage(name: "s", mode: .survive, durationSec: 20, emitters: [Emitter(t: .homing, x: 0.5, y: 0.1, s: 0, e: 20, i: 0.9, c: 3, v: 2, r: 60, k: 2)]).sanitized()))
+        stages.append(("survive-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.aim, .spiral], boss: false), lifeMode: .lives, lifeCount: 3).sanitized()))
+        stages.append(("survive-hp8", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.rain, .ring], boss: false), lifeMode: .hp, lifeCount: 8).sanitized()))
+        for hp in [100, 300] {
+            stages.append(("boss-hp\(hp)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: hp, bossMove: 1, emitters: emitters([.ring, .aim, .sweep, .corner], boss: true)).sanitized()))
+        }
+        stages.append(("boss-lives5", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 2, emitters: emitters([.spiral, .sideL, .sideR], boss: true), lifeMode: .lives, lifeCount: 5).sanitized()))
+        stages.append(("boss-unlimited", Stage(name: "b", mode: .boss, durationSec: 0, bossHp: 700, bossMove: 1, emitters: emitters([.ring, .homing, .sideL], boss: true)).sanitized()))
+        stages.append(("boss-firepoint", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1, emitters: [
+            Emitter(t: .spiral, x: 0.15, y: 0.45, s: 0, e: 30, i: 0.2, c: 3, v: 2, r: 11, k: 1, ph: 0, p: 1),
+            Emitter(t: .aim, x: 0.85, y: 0.3, s: 0, e: 30, i: 0.7, c: 5, v: 2.5, r: 40, k: 3, ph: 0, p: 1),
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 1.0, c: 12, v: 1.5, r: 6, k: 0, ph: 0, p: 0)]).sanitized()))
+        stages.append(("boss-unlimited-lives", Stage(name: "b", mode: .boss, durationSec: 0, bossHp: 400, bossMove: 0, emitters: emitters([.aim, .corner], boss: true), lifeMode: .lives, lifeCount: 5).sanitized()))
+        stages.append(("damage-easy", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 1, emitters: emitters([.ring], boss: true)).sanitized()))
+        stages.append(("damage-moving", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 2, emitters: emitters([.aim, .rain, .corner], boss: true), lifeMode: .hp, lifeCount: 12).sanitized()))
+        stages.append(("damage-empty", Stage(name: "d", mode: .damage, durationSec: 60, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 1, v: 1, r: 0, k: 0, ph: 3)]).sanitized()))
+
+        var cases: [Case] = []
+        var seed: UInt64 = 1
+        for (name, st) in stages {
+            for shot in ShotType.allCases {
+                for style in 0..<4 {
+                    seed += 1
+                    let limit = (st.timeLimitSec + 3) * 120 + 144
+                    let mv = moves(style: style, count: limit, seed: seed)
+                    var sim = Simulation(stage: st, shotType: shot)
+                    var used = 0
+                    while sim.outcome == .playing && sim.tick < limit { sim.step(sim.tick < mv.count ? mv[sim.tick] : .zero); used += 1 }
+                    let trimmed = Array(mv.prefix(used))
+                    let r = sim.result
+                    let outcome: String
+                    switch sim.outcome { case .cleared: outcome = "cleared"; case .hit: outcome = "hit"; case .timeUp: outcome = "timeUp"; case .playing: outcome = "playing" }
+                    cases.append(Case(name: "\(name)/\(shot.rawValue)/m\(style)", stage: st, shot: shot.rawValue,
+                                      replay: Replay(moves: trimmed).encoded(), steps: used,
+                                      expect: Expect(outcome: outcome, tick: sim.tick, hp: sim.hp, damage: sim.damageDealt,
+                                                     lifeLeft: sim.lifeLeft, bulletCount: r.bulletCount, bulletHash: r.bulletHash)))
+                }
+            }
+        }
+        // 偏りがないか(クリア・被弾・時間切れ)
+        let counts = Dictionary(grouping: cases, by: { $0.expect.outcome }).mapValues(\.count)
+        print("fixture outcomes:", counts, "total", cases.count)
+        XCTAssertGreaterThan(counts["cleared"] ?? 0, 10)
+        XCTAssertGreaterThan(counts["hit"] ?? 0, 10)
+        let enc = JSONEncoder()
+        enc.outputFormatting = [.sortedKeys]
+        try enc.encode(cases).write(to: URL(fileURLWithPath: path))
+    }
+}

@@ -13,6 +13,19 @@ service cloud.firestore {
         allow read: if signedIn() && request.auth.uid == uid;
         allow write: if false;
       }
+
+      // ランキング: 公開中のステージのものは、ログイン済み(匿名も可)なら誰でも読める。書き込みは Cloud Functions だけ
+      match /scores/{uid} {
+        allow read: if signedIn() && get(/databases/$(database)/documents/stages/$(stageId)).data.status == 'published';
+        allow write: if false;
+      }
+
+      // コメント: 公開中のステージの、非表示になっていないものだけ読める。書き込みは Cloud Functions だけ
+      match /comments/{commentId} {
+        allow read: if signedIn() && resource.data.status == 'published'
+          && get(/databases/$(database)/documents/stages/$(stageId)).data.status == 'published';
+        allow write: if false;
+      }
     }
 
     // ユーザー: 自分の表示名とブロックリストだけ自分で更新できる
@@ -34,6 +47,10 @@ service cloud.firestore {
     // 通報・リプレイ・管理者向けアラートはクライアントから一切触れない
     match /reports/{id} { allow read, write: if false; }
     match /stageReplays/{id} { allow read, write: if false; }
+    match /scoreReplays/{id} { allow read, write: if false; }
+    match /scoreMeta/{id} { allow read, write: if false; }
+    match /commentMeta/{id} { allow read, write: if false; }
+    match /commentReports/{id} { allow read, write: if false; }
     match /admin_alerts/{id} { allow read, write: if false; }
 
     match /{document=**} { allow read, write: if false; }

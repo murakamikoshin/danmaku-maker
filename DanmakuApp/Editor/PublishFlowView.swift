@@ -17,62 +17,83 @@ struct PublishFlowView: View {
     enum Phase: Equatable { case start, publishing, done(String) }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 18) {
-                switch phase {
-                case .start: start
-                case .publishing: ProgressView("publish.publishing").padding(.top, 40)
-                case .done(let id): done(id)
+        VStack(spacing: 0) {
+            ScreenHeader(title: "publish.title") {
+                RoundIconButton(systemImage: "xmark", label: "editor.close") { dismiss() }
+                    .opacity(phase == .publishing ? 0.3 : 1).disabled(phase == .publishing)
+            } trailing: { Color.clear.frame(width: 38, height: 38) }
+            ScrollView {
+                VStack(spacing: 16) {
+                    switch phase {
+                    case .start: start
+                    case .publishing:
+                        VStack(spacing: 12) {
+                            ProgressView().tint(Color(Palette.pink)).scaleEffect(1.4)
+                            Text("publish.publishing").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.secondary)
+                        }.padding(.top, 50)
+                    case .done(let id): done(id)
+                    }
+                    if let error { Text(error).font(.footnote).foregroundStyle(Color(Palette.pink)).multilineTextAlignment(.center) }
                 }
-                if let error { Text(error).font(.footnote).foregroundStyle(Color(Palette.pink)).multilineTextAlignment(.center) }
-                Spacer()
+                .padding(20)
             }
-            .padding(24)
-            .navigationTitle("publish.title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("editor.close") { dismiss() } } }
         }
+        .background(Color(Palette.background).ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
         .preferredColorScheme(.dark)
     }
 
     @ViewBuilder private var start: some View {
         if !termsAccepted {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("publish.terms.title").font(.title3.bold())
-                Text("publish.terms.body").foregroundStyle(.secondary)
-                Link("settings.terms", destination: AppConfig.termsURL)
-                Link("settings.privacy", destination: AppConfig.privacyURL)
-                Button { termsAccepted = true } label: { Text("publish.terms.accept").frame(maxWidth: .infinity) }
-                    .buttonStyle(.borderedProminent).tint(Color(Palette.pink)).controlSize(.large)
-                    .accessibilityIdentifier("publish.terms.accept")
+            GamePanel(title: "publish.terms.title") {
+                Text("publish.terms.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                HStack(spacing: 10) {
+                    Link(destination: AppConfig.termsURL) { Chip(title: L("settings.terms"), selected: false) }
+                    Link(destination: AppConfig.privacyURL) { Chip(title: L("settings.privacy"), selected: false) }
+                }
             }
+            GameActionButton(title: "publish.terms.accept", systemImage: "checkmark.circle.fill", fill: GameStyle.accent) { termsAccepted = true }
+                .accessibilityIdentifier("publish.terms.accept")
         } else if !auth.isMember {
-            VStack(spacing: 12) {
-                Text("signin.title").font(.title3.bold())
-                Text("signin.body").foregroundStyle(.secondary).multilineTextAlignment(.center)
+            GamePanel(title: "signin.title") {
+                Text("signin.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                 SignInButton()
             }
         } else {
-            VStack(spacing: 12) {
-                Text(stage.name).font(.title2.bold())
-                Text("by \(authorName)").foregroundStyle(.secondary)
-                Button { Task { await publish() } } label: { Text("publish.submit").frame(maxWidth: .infinity) }
-                    .buttonStyle(.borderedProminent).tint(Color(Palette.pink)).controlSize(.large)
+            VStack(spacing: 14) {
+                StageCardShell(mode: stage.mode) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(stage.name).font(.system(size: 18, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(2)
+                        Text("by \(authorName)").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                        Text(detailText(stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                GameActionButton(title: "publish.submit", systemImage: "paperplane.fill", fill: GameStyle.accent) { Task { await publish() } }
                     .accessibilityIdentifier("publish.submit")
             }
         }
     }
 
     private func done(_ id: String) -> some View {
-        VStack(spacing: 14) {
-            Text("publish.done").font(.title2.bold()).foregroundStyle(Color(Palette.gold))
-            Text("ID  \(id)").font(.system(.title, design: .monospaced))
+        VStack(spacing: 16) {
+            ZStack {
+                Circle().fill(Color(Palette.gold).opacity(0.18)).frame(width: 96, height: 96)
+                Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
+            }
+            Text("publish.done").font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+            Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
+                .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 14))
             let text = ShareText.author(name: stage.name, id: id)
-            ShareLink(item: text) { Label("detail.share", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity) }
-                .buttonStyle(.borderedProminent).tint(Color(Palette.bullets[1])).controlSize(.large)
-            if let url = ShareText.xIntentURL(text) { Link("detail.share.x", destination: url).buttonStyle(.bordered) }
-            Button("editor.close") { dismiss() }
+            ShareLink(item: text) {
+                Label("detail.share", systemImage: "square.and.arrow.up").font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(GameStyle.cyan, in: RoundedRectangle(cornerRadius: 16))
+            }
+            if let url = ShareText.xIntentURL(text) {
+                Link(destination: url) { Chip(title: L("detail.share.x"), selected: false) }
+            }
+            Button { gameTap(); dismiss() } label: { Text("editor.close").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(.secondary) }
         }
     }
 
@@ -82,6 +103,7 @@ struct PublishFlowView: View {
         do {
             let id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay)
             phase = .done(id)
+            AudioManager.shared.se(.get)
             onPublished()
         } catch {
             self.error = error.localizedDescription

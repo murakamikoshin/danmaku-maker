@@ -10,6 +10,9 @@ extension Emitter {
         case .aim: return Emitter(t: t, e: end, i: 0.8, c: 5, v: 3, r: 40)
         case .rain: return Emitter(t: t, y: 0, e: end, i: 0.25, c: 2, v: 2, r: 0)
         case .sweep: return Emitter(t: t, e: end, i: 0.15, c: 5, v: 2.5, r: 60)
+        case .sideL, .sideR: return Emitter(t: t, e: end, i: 0.5, c: 2, v: 2.5, r: 10)
+        case .corner: return Emitter(t: t, e: end, i: 1.2, c: 3, v: 2.5, r: 30)
+        case .homing: return Emitter(t: t, e: end, i: 1.6, c: 2, v: 1.6, r: 45)
         }
     }
 
@@ -27,7 +30,27 @@ struct Draft: Codable, Equatable {
     var duration = 20
     var bossHp = 400
     var bossMove = 1
+    /// 自機の耐久。標準はライフ1(1回当たったら終わり)
+    var lifeMode: LifeMode = .lives
+    var lifeCount = 1
     var emitters: [Emitter] = [Emitter.make(.spiral, end: 20)]
+
+    init() {}
+
+    /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
+    init(from decoder: Decoder) throws {
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, emitters }
+        let c = try decoder.container(keyedBy: K.self)
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
+        mode = try c.decodeIfPresent(Mode.self, forKey: .mode) ?? .survive
+        duration = try c.decodeIfPresent(Int.self, forKey: .duration) ?? 20
+        bossHp = try c.decodeIfPresent(Int.self, forKey: .bossHp) ?? 400
+        bossMove = try c.decodeIfPresent(Int.self, forKey: .bossMove) ?? 1
+        lifeMode = try c.decodeIfPresent(LifeMode.self, forKey: .lifeMode) ?? .lives
+        lifeCount = try c.decodeIfPresent(Int.self, forKey: .lifeCount) ?? 1
+        emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.spiral, end: 20)]
+    }
 }
 
 @MainActor
@@ -56,8 +79,9 @@ final class EditorModel: ObservableObject {
     var stage: Stage {
         Stage(name: draft.name, mode: draft.mode, durationSec: draft.duration,
               bossHp: draft.mode == .boss ? draft.bossHp : nil,
-              bossMove: draft.mode == .boss ? draft.bossMove : nil,
-              emitters: draft.emitters).sanitized()
+              bossMove: draft.mode != .survive ? draft.bossMove : nil,
+              emitters: draft.emitters,
+              lifeMode: draft.lifeMode, lifeCount: draft.lifeCount).sanitized()
     }
 
     var isVerified: Bool { verifiedStage != nil && verifiedStage == stage }
@@ -71,7 +95,15 @@ final class EditorModel: ObservableObject {
     func setMode(_ m: Mode) {
         guard m != draft.mode else { return }
         draft.mode = m
-        if !durations.contains(draft.duration) { setDuration(durations[1]) }
+        // 選べない長さになったら、標準(生き残りは20秒、ボス戦とダメージ勝負は60秒)にする
+        if !durations.contains(draft.duration) { setDuration(m == .survive ? 20 : 60) }
+    }
+
+    /// 耐久の方式を変えたとき、数はその方式の標準(ライフ3 / HP10)にする。ライフ1の標準に戻したいときは数を1にする
+    func setLifeMode(_ m: LifeMode) {
+        guard m != draft.lifeMode else { return }
+        draft.lifeMode = m
+        draft.lifeCount = m == .lives ? 3 : 10
     }
 
     /// 時間を変えたとき、「最後まで」の発射台は新しい終わりに追従する

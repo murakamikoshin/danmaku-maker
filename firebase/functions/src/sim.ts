@@ -33,6 +33,27 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
     case "rain":
       for (let j = 0; j < n; j++) { const x = rng() * W; add(x, -8, Math.PI / 2 + (rng() - 0.5) * 0.3); }
       break;
+    case "homing": {
+      const b = Math.atan2(py - cy, px - cx);
+      for (let j = 0; j < n; j++) add(cx, cy, b + (j - (n - 1) / 2) * 0.35);
+      break;
+    }
+    case "sideL": case "sideR": {
+      const left = m.t === "sideL";
+      for (let j = 0; j < n; j++) {
+        const y = rng() * H * 0.78;
+        const a = (left ? 0 : Math.PI) + (rng() - 0.5) * 2 * Math.abs(m.r) * deg;
+        add(left ? -8 : W + 8, y, a);
+      }
+      break;
+    }
+    case "corner": {
+      for (const [ox, oy] of [[-8, -8], [W + 8, -8], [-8, H * 0.6], [W + 8, H * 0.6]] as const) {
+        const b = Math.atan2(py - oy, px - ox);
+        for (let j = 0; j < n; j++) add(ox, oy, b + (n > 1 ? (j / (n - 1) - 0.5) * m.r * deg : 0));
+      }
+      break;
+    }
     case "sweep": {
       const b = Math.PI / 2 + Math.sin(k * 0.25) * m.r * deg;
       for (let j = 0; j < n; j++) add(cx, cy, b + (n > 1 ? (j / (n - 1) - 0.5) * 0.5 : 0));
@@ -43,10 +64,10 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
 
 /** 撃ち始めの数秒後の弾の位置を返す */
 export function snapshot(stage: Stage): { bullets: Dot[]; at: number } {
-  const boss = stage.mode === "boss";
+  const boss = stage.mode !== "survive";
   const starts = stage.emitters.filter((m) => boss || m.t !== "rain").map((m) => (boss ? 0 : m.s));
   const first = starts.length ? Math.min(...starts) : 0;
-  const at = Math.min(stage.durationSec - 0.1, first + 3.5);
+  const at = Math.min((stage.durationSec === 0 ? 600 : stage.durationSec) - 0.1, first + 3.5);
   const rng = mulberry(12345);
   const px = W / 2, py = H * 0.85, dt = 1 / 60;
   const bullets: Array<Dot & { vx: number; vy: number }> = [];
@@ -58,7 +79,7 @@ export function snapshot(stage: Stage): { bullets: Dot[]; at: number } {
       if (boss && !(m.ph === 0 || m.ph === 1)) return;
       const end = boss ? Infinity : Math.min(m.e, stage.durationSec);
       while (t >= next[idx]! && next[idx]! < end) {
-        const cx = boss ? bossPos.x : m.x * W, cy = boss ? bossPos.y : m.y * H;
+        const cx = boss && m.p !== 1 ? bossPos.x : m.x * W, cy = boss && m.p !== 1 ? bossPos.y : m.y * H;
         emit(m, shots[idx]!, cx, cy, px, py, rng, bullets);
         shots[idx]!++;
         next[idx]! += Math.max(0.05, m.i);

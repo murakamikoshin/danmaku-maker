@@ -82,6 +82,7 @@ final class PurchaseService: NSObject, ObservableObject {
         case .set(let t): for p in ThemePart.allCases { cosmetics.equip(t, for: p) }
         case .shot(let s): cosmetics.equip(s)
         case .customImages: break   // 画像を選んだときに使う設定になる
+        case .homing: break         // ステージ作りで、追尾弾のパターンが選べるようになる
         }
     }
 

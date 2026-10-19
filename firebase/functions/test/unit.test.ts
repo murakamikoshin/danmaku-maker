@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
-import { validatePublish } from "../src/validate.js";
+import { validateComment, validatePublish } from "../src/validate.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
 import { pickLang, renderSharePage } from "../src/share.js";
@@ -129,5 +129,90 @@ describe("共有ページ", () => {
     expect(pickLang("fr")).toBe("en");
     expect(pickLang(undefined)).toBe("en");
     expect(pickLang("en", "ja")).toBe("ja");
+  });
+});
+
+
+describe("validatePublish: ダメージ勝負・ライフ・新しいパターン", () => {
+  it("ダメージ勝負は HP なし・ボスの動きあり", () => {
+    const r = validatePublish(good({ mode: "damage", durationSec: 60, bossMove: 2 }));
+    expect(r.ok).toBe(true);
+    if (r.ok) { expect(r.stage.bossHp).toBeNull(); expect(r.stage.bossMove).toBe(2); }
+    expect(validatePublish(good({ mode: "damage", durationSec: 20, bossMove: 0 }))).toEqual({ ok: false, error: "duration" });
+    expect(validatePublish(good({ mode: "damage", durationSec: 60 }))).toEqual({ ok: false, error: "boss-move" });
+  });
+  it("ライフ制・HP制を受け付け、標準(ライフ1)は保存しない", () => {
+    const hp = validatePublish(good({ lifeMode: "hp", lifeCount: 10 }));
+    expect(hp.ok && hp.stage.lifeMode).toBe("hp");
+    expect(hp.ok && hp.stage.lifeCount).toBe(10);
+    const lives = validatePublish(good({ lifeMode: "lives", lifeCount: 3 }));
+    expect(lives.ok && lives.stage.lifeCount).toBe(3);
+    const std = validatePublish(good({ lifeMode: "lives", lifeCount: 1 }));
+    expect(std.ok && std.stage.lifeMode).toBeUndefined();
+    const none = validatePublish(good());
+    expect(none.ok && "lifeMode" in none.stage).toBe(false);
+  });
+  it.each([
+    ["ライフが6", { lifeMode: "lives", lifeCount: 6 }, "life-count"],
+    ["HPが2", { lifeMode: "hp", lifeCount: 2 }, "life-count"],
+    ["HPが21", { lifeMode: "hp", lifeCount: 21 }, "life-count"],
+    ["方式が不正", { lifeMode: "god", lifeCount: 3 }, "life-mode"],
+    ["方式なしで数だけ", { lifeCount: 3 }, "life-count"],
+    ["小数", { lifeMode: "lives", lifeCount: 2.5 }, "life-count"],
+  ])("%s は拒否", (_n, over, err) => {
+    expect(validatePublish(good(over))).toEqual({ ok: false, error: err });
+  });
+  it.each(["sideL", "sideR", "corner"])("新しいパターン %s を受け付ける", (t) => {
+    expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
+  });
+  it("OGP 画像の生成も新しいモード・パターンで動く", () => {
+    const r = validatePublish(good({ mode: "damage", durationSec: 60, bossMove: 1, emitters: [em({ t: "corner" }), em({ t: "sideL" })] }));
+    if (!r.ok) throw new Error("invalid");
+    expect(ogpSvg(r.stage, "ABCDE")).toContain("<svg");
+  });
+});
+
+
+describe("validateComment", () => {
+  it("空白をそろえて通す", () => {
+    expect(validateComment("  むずい\n\nけど  好き ")).toEqual({ ok: true, text: "むずい けど 好き" });
+    expect(validateComment("あ".repeat(80)).ok).toBe(true);
+  });
+  it.each([
+    ["空", "", "comment-length"],
+    ["空白だけ", "  \n ", "comment-length"],
+    ["81文字", "あ".repeat(81), "comment-length"],
+    ["数字ではない", 123, "comment-length"],
+    ["NGワード", "しね", "comment-ng-word"],
+    ["URL(https)", "見て https://a.example/x", "comment-link"],
+    ["URL(www)", "www.example.com", "comment-link"],
+    ["ドメイン", "example.com へどうぞ", "comment-link"],
+    ["//", "a//b", "comment-link"],
+  ])("%s は拒否", (_n, text, err) => {
+    expect(validateComment(text)).toEqual({ ok: false, error: err });
+  });
+  it("ふつうの文や顔文字は通る", () => {
+    expect(validateComment("やっと倒せた！！(^o^) 3.5秒はやい").ok).toBe(true);
+  });
+});
+
+
+describe("validatePublish: 出す場所(p)", () => {
+  it("ボス戦では好きな場所を指定でき、標準(0)は保存しない", () => {
+    const r = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, emitters: [em({ p: 1, x: 0.2, y: 0.5 }), em({ p: 0 }), em()] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) { expect(r.stage.emitters[0]!.p).toBe(1); expect("p" in r.stage.emitters[1]!).toBe(false); expect("p" in r.stage.emitters[2]!).toBe(false); }
+  });
+  it("生き残りでは指定できない・範囲外は拒否", () => {
+    expect(validatePublish(good({ emitters: [em({ p: 1 })] }))).toEqual({ ok: false, error: "emitter-point" });
+    expect(validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, emitters: [em({ p: 2 })] }))).toEqual({ ok: false, error: "emitter-range" });
+  });
+  it("時間無制限(0)はボス戦だけ", () => {
+    expect(validatePublish(good({ mode: "boss", durationSec: 0, bossHp: 400, bossMove: 1 })).ok).toBe(true);
+    expect(validatePublish(good({ mode: "survive", durationSec: 0 }))).toEqual({ ok: false, error: "duration" });
+    expect(validatePublish(good({ mode: "damage", durationSec: 0, bossMove: 0 }))).toEqual({ ok: false, error: "duration" });
+  });
+  it("追尾弾を受け付ける", () => {
+    expect(validatePublish(good({ emitters: [em({ t: "homing" })] })).ok).toBe(true);
   });
 });

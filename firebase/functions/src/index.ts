@@ -4,10 +4,11 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { logger, setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
+import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
-import { REPORT_REASONS, validatePublish, type Stage } from "./validate.js";
+import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validatePublish, type Stage } from "./validate.js";
 
 setGlobalOptions({ region: "asia-northeast1", maxInstances: 10 });
 initializeApp();
@@ -53,6 +54,11 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
+  // 作者のクリア記録を再生して、本当にクリアできるステージか確かめる(テストプレイは標準の撃ち方)
+  const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
+  const played = decodeReplay(v.clearReplay, maxSteps);
+  if (!played) throw new HttpsError("invalid-argument", "replay");
+  if (simulate(v.stage, played.moves, played.steps, "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
   const langRaw = (req.data as { lang?: unknown }).lang;
   const lang = typeof langRaw === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(langRaw) ? langRaw : "und";
 
@@ -167,6 +173,137 @@ export const reportStage = onCall(async (req) => {
   });
 });
 
+const SCORE_INTERVAL_MS = 3000;
+const HANDLE_CHOICES = 16;
+
+/** uid から決まる 4 桁の数字(同じ名前の人を区別する飾り。uid そのものは分からない) */
+function handleNumber(uid: string): number {
+  let h = 2166136261;
+  for (const ch of uid) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  return h % 10000;
+}
+
+/**
+ * ランキングに記録する。アプリから届いた操作記録(リプレイ)をサーバーが再生して、本当にクリアできているか確かめてから載せる。
+ * ボス戦は「クリアまでのステップ数」(少ないほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)。標準の撃ち方だけが対象。
+ * 名前は自由入力にせず、決まった言葉の組み合わせ(番号で選ぶ)だけにする。
+ */
+export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, async (req) => {
+  const uid = requireAny(req);
+  const id = stageIdFrom(req.data);
+  const d = req.data as { replay?: unknown; shot?: unknown; handle?: { a?: unknown; n?: unknown } };
+  if (!isShotType(d.shot) || d.shot !== "standard") throw new HttpsError("invalid-argument", "shot");
+  const a = d.handle?.a, n = d.handle?.n;
+  if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
+    throw new HttpsError("invalid-argument", "handle");
+  }
+  if (typeof d.replay !== "string" || d.replay.length < 8 || d.replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(d.replay)) {
+    throw new HttpsError("invalid-argument", "replay");
+  }
+
+  // 連続送信を防ぐ
+  const metaRef = db.doc(`scoreMeta/${uid}`);
+  await db.runTransaction(async (tx) => {
+    const meta = await tx.get(metaRef);
+    const last = (meta.get("lastAt") as number | undefined) ?? 0;
+    if (Date.now() - last < SCORE_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
+    tx.set(metaRef, { lastAt: Date.now() });
+  });
+
+  const stageSnap = await db.doc(`stages/${id}`).get();
+  if (!stageSnap.exists || stageSnap.get("status") !== "published") throw new HttpsError("not-found", "stage");
+  const stage = stageSnap.data() as Stage;
+  if (stage.mode === "survive") throw new HttpsError("failed-precondition", "no-ranking");
+
+  const played = decodeReplay(d.replay, (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144);
+  if (!played) throw new HttpsError("invalid-argument", "replay");
+  const result = simulate(stage, played.moves, played.steps, "standard");
+  if (result.outcome !== "cleared") return { accepted: false, reason: "not-cleared" };
+
+  const boss = stage.mode === "boss";
+  const value = boss ? result.tick : result.damage;
+  const better = (x: number, y: number) => (boss ? x < y : x > y);
+  const scoreRef = db.doc(`stages/${id}/scores/${uid}`);
+  const { improved, best } = await db.runTransaction(async (tx) => {
+    const cur = await tx.get(scoreRef);
+    const old = cur.get("value") as number | undefined;
+    if (old !== undefined && !better(value, old)) return { improved: false, best: old };
+    tx.set(scoreRef, { uid, a, n, num: handleNumber(uid), value, mode: stage.mode, createdAt: FieldValue.serverTimestamp() });
+    tx.set(db.doc(`scoreReplays/${id}_${uid}`), { stageId: id, uid, value, replay: d.replay, createdAt: FieldValue.serverTimestamp() });
+    return { improved: true, best: value };
+  });
+  const ahead = await db.collection(`stages/${id}/scores`).where("value", boss ? "<" : ">", best).count().get();
+  return { accepted: true, improved, value: best, rank: ahead.data().count + 1 };
+});
+
+const COMMENT_INTERVAL_MS = 15_000;
+const COMMENT_HIDE_THRESHOLD = 3;
+
+/** ステージにコメントする。Apple でサインインした人だけ。NGワード・URL・連続投稿は拒否する */
+export const postComment = onCall(async (req) => {
+  const uid = requireMember(req);
+  const id = stageIdFrom(req.data);
+  const d = req.data as { text?: unknown; handle?: { a?: unknown; n?: unknown } };
+  const v = validateComment(d.text);
+  if (!v.ok) throw new HttpsError("invalid-argument", v.error);
+  const a = d.handle?.a, n = d.handle?.n;
+  if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
+    throw new HttpsError("invalid-argument", "handle");
+  }
+  const stage = await db.doc(`stages/${id}`).get();
+  if (!stage.exists || stage.get("status") !== "published") throw new HttpsError("not-found", "stage");
+
+  const metaRef = db.doc(`commentMeta/${uid}`);
+  await db.runTransaction(async (tx) => {
+    const meta = await tx.get(metaRef);
+    const last = (meta.get("lastAt") as number | undefined) ?? 0;
+    if (Date.now() - last < COMMENT_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
+    tx.set(metaRef, { lastAt: Date.now() });
+  });
+
+  const ref = db.collection(`stages/${id}/comments`).doc();
+  await ref.set({ uid, a, n, num: handleNumber(uid), text: v.text, status: "published", reports: 0, createdAt: FieldValue.serverTimestamp() });
+  return { id: ref.id };
+});
+
+/** コメントを消す。コメントした本人と、ステージの作者だけができる */
+export const deleteComment = onCall(async (req) => {
+  const uid = requireAny(req);
+  const id = stageIdFrom(req.data);
+  const cid = (req.data as { commentId?: unknown }).commentId;
+  if (typeof cid !== "string" || !/^[A-Za-z0-9]{10,40}$/.test(cid)) throw new HttpsError("invalid-argument", "comment-id");
+  const [stage, comment] = await Promise.all([db.doc(`stages/${id}`).get(), db.doc(`stages/${id}/comments/${cid}`).get()]);
+  if (!stage.exists || !comment.exists) throw new HttpsError("not-found", "comment");
+  if (comment.get("uid") !== uid && stage.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-allowed");
+  await comment.ref.delete();
+  return { ok: true };
+});
+
+/** コメントを通報する。1人1回で、3人が通報すると自動で非表示になる */
+export const reportComment = onCall(async (req) => {
+  const uid = requireMember(req);
+  const id = stageIdFrom(req.data);
+  const cid = (req.data as { commentId?: unknown }).commentId;
+  const reason = (req.data as { reason?: unknown }).reason;
+  if (typeof cid !== "string" || !/^[A-Za-z0-9]{10,40}$/.test(cid)) throw new HttpsError("invalid-argument", "comment-id");
+  if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
+  return db.runTransaction(async (tx) => {
+    const ref = db.doc(`stages/${id}/comments/${cid}`), repRef = db.doc(`commentReports/${id}_${cid}_${uid}`);
+    const [comment, rep] = await Promise.all([tx.get(ref), tx.get(repRef)]);
+    if (!comment.exists) throw new HttpsError("not-found", "comment");
+    if (rep.exists) return { already: true, hidden: comment.get("status") === "hidden" };
+    const reports = (comment.get("reports") as number) + 1;
+    const hide = reports >= COMMENT_HIDE_THRESHOLD && comment.get("status") === "published";
+    tx.set(repRef, { stageId: id, commentId: cid, reporterUid: uid, reason, createdAt: FieldValue.serverTimestamp() });
+    tx.update(ref, { reports, ...(hide ? { status: "hidden" } : {}) });
+    if (hide) {
+      tx.set(db.collection("admin_alerts").doc(), { type: "comment-auto-hidden", stageId: id, commentId: cid, reports, createdAt: FieldValue.serverTimestamp() });
+      logger.error("comment-auto-hidden", { stageId: id, commentId: cid, reports });
+    }
+    return { already: false, hidden: hide };
+  });
+});
+
 /** /s/{id} … OGP つきの共有ページ */
 export const sharePage = onRequest(async (req, res) => {
   const lang = pickLang(req.get("accept-language"), typeof req.query.lang === "string" ? req.query.lang : undefined);
@@ -208,8 +345,22 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   for (const s of mine.docs) {
     await db.recursiveDelete(s.ref); // いいねのサブコレクションごと
     await db.doc(`stageReplays/${s.id}`).delete();
+    const scoreReplays = await db.collection("scoreReplays").where("stageId", "==", s.id).get();
+    for (const r of scoreReplays.docs) await r.ref.delete();
     await bucket.file(`og/${s.id}.png`).delete({ ignoreNotFound: true });
   }
+
+  // 自分のランキング記録(他の人のステージにあるもの)と、その操作記録
+  const scores = await db.collectionGroup("scores").where("uid", "==", uid).get();
+  for (const sc of scores.docs) await sc.ref.delete();
+  const myReplays = await db.collection("scoreReplays").where("uid", "==", uid).get();
+  for (const r of myReplays.docs) await r.ref.delete();
+  await db.doc(`scoreMeta/${uid}`).delete();
+  const myComments = await db.collectionGroup("comments").where("uid", "==", uid).get();
+  for (const c of myComments.docs) await c.ref.delete();
+  await db.doc(`commentMeta/${uid}`).delete();
+  const myCommentReports = await db.collection("commentReports").where("reporterUid", "==", uid).get();
+  for (const r of myCommentReports.docs) await r.ref.update({ reporterUid: "deleted" });
 
   const likes = await db.collection(`users/${uid}/likes`).get();
   for (const l of likes.docs) {

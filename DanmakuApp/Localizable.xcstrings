@@ -1,6 +1,22 @@
 {
   "sourceLanguage": "ja",
   "strings": {
+    "angle.jitter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spread"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ばらつき"
+          }
+        }
+      }
+    },
     "angle.none": {
       "localizations": {
         "en": {
@@ -65,6 +81,22 @@
         }
       }
     },
+    "angle.turn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn rate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "曲がり方"
+          }
+        }
+      }
+    },
     "app.tagline": {
       "localizations": {
         "en": {
@@ -113,6 +145,22 @@
         }
       }
     },
+    "badge.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DMG"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダメージ"
+          }
+        }
+      }
+    },
     "badge.survive": {
       "localizations": {
         "en": {
@@ -125,6 +173,246 @@
           "stringUnit": {
             "state": "translated",
             "value": "耐久"
+          }
+        }
+      }
+    },
+    "comment.author": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AUTHOR"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作者"
+          }
+        }
+      }
+    },
+    "comment.block": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block this user"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この人をブロックする"
+          }
+        }
+      }
+    },
+    "comment.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除する"
+          }
+        }
+      }
+    },
+    "comment.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No comments yet. Be the first!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだコメントがありません。最初の1件を書こう！"
+          }
+        }
+      }
+    },
+    "comment.error.length": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use 1-80 characters."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1〜80文字で書いてください。"
+          }
+        }
+      }
+    },
+    "comment.error.link": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Links aren't allowed."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リンクは書けません。"
+          }
+        }
+      }
+    },
+    "comment.error.ng": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contains words that aren't allowed."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使えない言葉が含まれています。"
+          }
+        }
+      }
+    },
+    "comment.error.tooFast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please wait a moment and try again."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少し待ってから、もう一度送ってください。"
+          }
+        }
+      }
+    },
+    "comment.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write about this stage (80 chars)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージの感想を書こう(80文字まで)"
+          }
+        }
+      }
+    },
+    "comment.report": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通報する"
+          }
+        }
+      }
+    },
+    "comment.report.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report this comment?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このコメントを通報しますか？"
+          }
+        }
+      }
+    },
+    "comment.rules": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep it kind. No abuse or links. You can report inappropriate comments."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "やさしい言葉で書こう。悪口やリンクは禁止です。不適切なコメントは通報できます。"
+          }
+        }
+      }
+    },
+    "comment.send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "送信"
+          }
+        }
+      }
+    },
+    "comment.signin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to comment"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サインインしてコメントする"
+          }
+        }
+      }
+    },
+    "comment.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comments"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コメント"
           }
         }
       }
@@ -317,6 +605,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "HP%lld・制限%lld秒"
+          }
+        }
+      }
+    },
+    "detail.boss.unlimited": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP %lld · no time limit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP %lld · 時間無制限"
+          }
+        }
+      }
+    },
+    "detail.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damage race %ds"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダメージ勝負 %d秒"
+          }
+        }
+      }
+    },
+    "detail.id": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID"
+          }
+        }
+      }
+    },
+    "detail.life.hp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d HP"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP%d"
+          }
+        }
+      }
+    },
+    "detail.life.lives": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d lives"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライフ%d"
           }
         }
       }
@@ -625,6 +993,22 @@
         }
       }
     },
+    "editor.color.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullet color"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾の色"
+          }
+        }
+      }
+    },
     "editor.condition": {
       "localizations": {
         "en": {
@@ -653,6 +1037,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "弾数"
+          }
+        }
+      }
+    },
+    "editor.damage.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The boss has infinite HP. Survive until time is up and your total damage is recorded."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスのHPは無限です。制限時間まで生き残ると、与えたダメージの合計が記録されます。"
           }
         }
       }
@@ -737,6 +1137,86 @@
         }
       }
     },
+    "editor.life": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your life"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "じぶんのライフ"
+          }
+        }
+      }
+    },
+    "editor.life.hp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP制"
+          }
+        }
+      }
+    },
+    "editor.life.lives": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lives"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライフ制"
+          }
+        }
+      }
+    },
+    "editor.life.note.hp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each bullet that hits costs 1 HP and disappears. There is no invincibility time. At zero you fail."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾に当たるたびにHPが1減り、当たった弾は消えます。無敵時間はありません。0になったら失敗です。"
+          }
+        }
+      }
+    },
+    "editor.life.note.lives": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each hit costs one life, then you're invincible for 2 seconds. At zero you fail. With 1 life, a single hit ends the run."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当たるとライフが1つ減って、2秒だけ無敵になります。0になったら失敗。1にすると、1回当たったら終わりです。"
+          }
+        }
+      }
+    },
     "editor.limit": {
       "localizations": {
         "en": {
@@ -781,6 +1261,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "自動ショットでHPを削りきる"
+          }
+        }
+      }
+    },
+    "editor.mode.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damage race"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダメージ勝負"
+          }
+        }
+      }
+    },
+    "editor.mode.damage.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Survive to the end and deal as much damage as you can"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "制限時間まで生き残って、ボスに与えたダメージを競う"
           }
         }
       }
@@ -849,6 +1361,54 @@
         }
       }
     },
+    "editor.origin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where bullets come from"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾を出す場所"
+          }
+        }
+      }
+    },
+    "editor.origin.boss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the boss"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの位置"
+          }
+        }
+      }
+    },
+    "editor.origin.point": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anywhere"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好きな場所"
+          }
+        }
+      }
+    },
     "editor.pattern": {
       "localizations": {
         "en": {
@@ -893,6 +1453,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "投稿する"
+          }
+        }
+      }
+    },
+    "editor.section.basic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stage name"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージの名前"
           }
         }
       }
@@ -1005,6 +1581,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "エディタ"
+          }
+        }
+      }
+    },
+    "editor.unlimited": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無制限"
+          }
+        }
+      }
+    },
+    "editor.unlimited.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No time limit. You clear it by defeating the boss. Elapsed time is shown while playing (10 minutes max)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "制限時間はなく、ボスを倒したときがクリアです。遊ぶ画面には、経過時間が出ます(最長10分)。"
           }
         }
       }
@@ -1169,6 +1777,38 @@
         }
       }
     },
+    "error.publish.life-count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The life/HP count is invalid."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライフ・HPの数が正しくありません。"
+          }
+        }
+      }
+    },
+    "error.publish.life-mode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The life mode is invalid."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライフの方式が正しくありません。"
+          }
+        }
+      }
+    },
     "error.publish.name-length": {
       "localizations": {
         "en": {
@@ -1197,6 +1837,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "ステージ名に使えない言葉が含まれています。"
+          }
+        }
+      }
+    },
+    "error.publish.replay-not-cleared": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This stage hasn't been cleared yet. Test-play it again and clear it."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージは、まだクリアできていません。もう一度テストプレイしてクリアしてください。"
           }
         }
       }
@@ -1245,6 +1901,614 @@
           "stringUnit": {
             "state": "translated",
             "value": "サインインできませんでした。もう一度お試しください。"
+          }
+        }
+      }
+    },
+    "handle.adj": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjective"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ことば"
+          }
+        }
+      }
+    },
+    "handle.adj.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shining"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "かがやく"
+          }
+        }
+      }
+    },
+    "handle.adj.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swift"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "こうそくの"
+          }
+        }
+      }
+    },
+    "handle.adj.10": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "くろい"
+          }
+        }
+      }
+    },
+    "handle.adj.11": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あかい"
+          }
+        }
+      }
+    },
+    "handle.adj.12": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blue"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あおい"
+          }
+        }
+      }
+    },
+    "handle.adj.13": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bright"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まぶしい"
+          }
+        }
+      }
+    },
+    "handle.adj.14": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supreme"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "さいきょうの"
+          }
+        }
+      }
+    },
+    "handle.adj.15": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jolly"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゆかいな"
+          }
+        }
+      }
+    },
+    "handle.adj.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleepy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ねむい"
+          }
+        }
+      }
+    },
+    "handle.adj.3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lively"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "げんきな"
+          }
+        }
+      }
+    },
+    "handle.adj.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "しずかな"
+          }
+        }
+      }
+    },
+    "handle.adj.5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speedy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "はやい"
+          }
+        }
+      }
+    },
+    "handle.adj.6": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mighty"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "つよい"
+          }
+        }
+      }
+    },
+    "handle.adj.7": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Playful"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "おちゃめな"
+          }
+        }
+      }
+    },
+    "handle.adj.8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mystic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ふしぎな"
+          }
+        }
+      }
+    },
+    "handle.adj.9": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flashy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ひらめく"
+          }
+        }
+      }
+    },
+    "handle.animal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animal"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どうぶつ"
+          }
+        }
+      }
+    },
+    "handle.animal.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rabbit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ウサギ"
+          }
+        }
+      }
+    },
+    "handle.animal.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cat"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ネコ"
+          }
+        }
+      }
+    },
+    "handle.animal.10": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panda"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パンダ"
+          }
+        }
+      }
+    },
+    "handle.animal.11": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crow"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カラス"
+          }
+        }
+      }
+    },
+    "handle.animal.12": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chick"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ヒヨコ"
+          }
+        }
+      }
+    },
+    "handle.animal.13": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiger"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "トラ"
+          }
+        }
+      }
+    },
+    "handle.animal.14": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ネズミ"
+          }
+        }
+      }
+    },
+    "handle.animal.15": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turtle"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カメ"
+          }
+        }
+      }
+    },
+    "handle.animal.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fox"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キツネ"
+          }
+        }
+      }
+    },
+    "handle.animal.3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanuki"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タヌキ"
+          }
+        }
+      }
+    },
+    "handle.animal.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Penguin"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ペンギン"
+          }
+        }
+      }
+    },
+    "handle.animal.5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Owl"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フクロウ"
+          }
+        }
+      }
+    },
+    "handle.animal.6": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dragon"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドラゴン"
+          }
+        }
+      }
+    },
+    "handle.animal.7": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bear"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クマ"
+          }
+        }
+      }
+    },
+    "handle.animal.8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolphin"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "イルカ"
+          }
+        }
+      }
+    },
+    "handle.animal.9": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hedgehog"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハリネズミ"
+          }
+        }
+      }
+    },
+    "handle.format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@ #%3$04d"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@%2$@#%3$04d"
+          }
+        }
+      }
+    },
+    "handle.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your ranking name is picked from preset words. The 4-digit number is assigned automatically."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランキングの名前は、決まった言葉から選びます。後ろの4桁の数字は、自動で決まります。"
+          }
+        }
+      }
+    },
+    "handle.random": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Randomize"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランダムにする"
+          }
+        }
+      }
+    },
+    "handle.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ranking name"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランキングの名前"
           }
         }
       }
@@ -1441,6 +2705,38 @@
         }
       }
     },
+    "pattern.corner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corners"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "四隅から"
+          }
+        }
+      }
+    },
+    "pattern.homing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homing"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追尾"
+          }
+        }
+      }
+    },
     "pattern.rain": {
       "localizations": {
         "en": {
@@ -1469,6 +2765,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "放射"
+          }
+        }
+      }
+    },
+    "pattern.sideL": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From left"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左から"
+          }
+        }
+      }
+    },
+    "pattern.sideR": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From right"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右から"
           }
         }
       }
@@ -1745,6 +3073,198 @@
         }
       }
     },
+    "ranking.best": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your best stays %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自己ベスト %@ のまま"
+          }
+        }
+      }
+    },
+    "ranking.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records yet. Be the first!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ記録がありません。一番乗りを目指そう！"
+          }
+        }
+      }
+    },
+    "ranking.error.notCleared": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't verify this run."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この記録は確認できませんでした。"
+          }
+        }
+      }
+    },
+    "ranking.error.tooFast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please wait a moment and try again."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少し待ってから、もう一度送ってください。"
+          }
+        }
+      }
+    },
+    "ranking.improved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New personal best!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自己ベスト更新！"
+          }
+        }
+      }
+    },
+    "ranking.rank": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "World #%d!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "世界 %d位！"
+          }
+        }
+      }
+    },
+    "ranking.revived": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clears that used a revive aren't counted in rankings or clear stats."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "復活を使ったクリアは、ランキングとクリア数には数えられません。"
+          }
+        }
+      }
+    },
+    "ranking.standard.only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only runs with the standard shot can be ranked."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランキングに記録できるのは、標準の撃ち方で遊んだときだけです。"
+          }
+        }
+      }
+    },
+    "ranking.sub.boss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fastest clear time first (standard shot only)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリアまでの時間が短い順(標準の撃ち方だけ)"
+          }
+        }
+      }
+    },
+    "ranking.sub.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Most damage first (standard shot only)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与えたダメージが多い順(標準の撃ち方だけ)"
+          }
+        }
+      }
+    },
+    "ranking.submit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Submit to ranking"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランキングに記録する"
+          }
+        }
+      }
+    },
+    "ranking.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "World ranking"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "世界ランキング"
+          }
+        }
+      }
+    },
     "report.reason.impossible": {
       "localizations": {
         "en": {
@@ -1841,6 +3361,38 @@
         }
       }
     },
+    "result.damage.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DAMAGE DEALT"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与えたダメージ"
+          }
+        }
+      }
+    },
+    "result.damage.win": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Survived!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生き残った！"
+          }
+        }
+      }
+    },
     "result.hit": {
       "localizations": {
         "en": {
@@ -1869,6 +3421,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@秒 でボスを撃破！"
+          }
+        }
+      }
+    },
+    "result.msg.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You lasted until the end!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "制限時間まで生き残りました！"
           }
         }
       }
@@ -1937,6 +3505,22 @@
         }
       }
     },
+    "result.revived": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used a revive"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "復活あり"
+          }
+        }
+      }
+    },
     "result.test.ng": {
       "localizations": {
         "en": {
@@ -1965,6 +3549,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "クリア確認完了。投稿できます。"
+          }
+        }
+      }
+    },
+    "result.time.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CLEAR TIME"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリアタイム"
           }
         }
       }
@@ -2081,6 +3681,38 @@
         }
       }
     },
+    "settings.audio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "おと"
+          }
+        }
+      }
+    },
+    "settings.bgm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGM"
+          }
+        }
+      }
+    },
     "settings.blocked": {
       "localizations": {
         "en": {
@@ -2157,6 +3789,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "プライバシーポリシー"
+          }
+        }
+      }
+    },
+    "settings.ranking.name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ranking name"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランキングの名前"
+          }
+        }
+      }
+    },
+    "settings.se": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound effects"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "効果音"
           }
         }
       }
@@ -2369,6 +4033,22 @@
         }
       }
     },
+    "share.damage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I dealt %2$d damage in \"%1$@\"! #DanmakuMaker %3$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「%1$@」でボスに%2$dダメージ！ #弾幕メーカー %3$@"
+          }
+        }
+      }
+    },
     "share.fail": {
       "localizations": {
         "en": {
@@ -2573,6 +4253,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "きせかえて、もっとワクワクしよう"
+          }
+        }
+      }
+    },
+    "shop.homing.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone can play stages that use homing bullets, even without buying it."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追尾弾を使ったステージは、買っていない人も遊べます。"
+          }
+        }
+      }
+    },
+    "shop.homing.intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use bullets that curve toward your ship when building stages. They only home in for 2.5 seconds after firing. Works in survive, boss and damage stages."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機を追いかけて曲がる弾を、ステージ作りで使えるようになります。曲がるのは出てから2.5秒だけ。ボス戦・ダメージ勝負・生き残りのどれでも使えます。"
+          }
+        }
+      }
+    },
+    "shop.homing.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homing bullets"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追尾弾"
           }
         }
       }

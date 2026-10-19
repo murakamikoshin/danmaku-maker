@@ -23,6 +23,7 @@ struct MainTabView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) { TabBar(selection: $tab) }
         .onChange(of: tab) { opened.insert($0) }
         .onAppear {
+            AudioManager.shared.play(.menu)
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-shop") { tab = .shop; opened.insert(.shop) }

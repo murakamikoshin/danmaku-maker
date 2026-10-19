@@ -19,6 +19,8 @@ public enum Product: Hashable, Sendable {
     case shot(ShotType)
     /// ボス・弾・自機を、自分で選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ置く)
     case customImages
+    /// 追尾弾のパターンを、ステージ作りで使える(遊ぶのは誰でもできる)
+    case homing
 
     public static let idPrefix = "com.koshin.danmakumaker."
 
@@ -28,12 +30,14 @@ public enum Product: Hashable, Sendable {
         case .set(let t): return Product.idPrefix + "\(t.rawValue).set"
         case .shot(let s): return Product.idPrefix + "shot.\(s.rawValue)"
         case .customImages: return Product.idPrefix + "customimages"
+        case .homing: return Product.idPrefix + "homing"
         }
     }
 
     public init?(id: String) {
         guard id.hasPrefix(Product.idPrefix) else { return nil }
         if id == Product.idPrefix + "customimages" { self = .customImages; return }
+        if id == Product.idPrefix + "homing" { self = .homing; return }
         let rest = id.dropFirst(Product.idPrefix.count).split(separator: ".").map(String.init)
         if rest.count == 2, rest[0] == "shot", let s = ShotType(rawValue: rest[1]), s != .standard {
             self = .shot(s); return
@@ -51,6 +55,7 @@ public enum Product: Hashable, Sendable {
         case .set: return 200
         case .shot: return 300
         case .customImages: return 500
+        case .homing: return 300
         }
     }
 
@@ -63,6 +68,7 @@ public enum Product: Hashable, Sendable {
         }
         for s in ShotType.allCases where s != .standard { list.append(.shot(s)) }
         list.append(.customImages)
+        list.append(.homing)
         return list
     }
 }
@@ -86,6 +92,9 @@ public struct Ownership: Equatable, Sendable {
         shot == .standard || owned.contains(.shot(shot))
     }
 
+    /// 追尾弾をステージ作りで使えるか
+    public var hasHoming: Bool { owned.contains(.homing) }
+
     /// 自分の画像を使う権利があるか
     public var hasCustomImages: Bool { owned.contains(.customImages) }
 
@@ -96,6 +105,7 @@ public struct Ownership: Equatable, Sendable {
         case .set(let t): return !ThemePart.allCases.allSatisfy { has($0, of: t) }
         case .shot(let s): return !has(s)
         case .customImages: return !hasCustomImages
+        case .homing: return !hasHoming
         }
     }
 }

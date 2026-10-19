@@ -3,13 +3,23 @@ import GoogleMobileAds
 import UIKit
 import UserMessagingPlatform
 
-/// リワード広告（被弾したときの「広告を見て復活」だけ）。広告の前に同意(UMP)とトラッキング許可(ATT)を取る。
-/// ステージ開始ごとのインタースティシャルは出さない。
+/// 広告は2種類だけ。広告の前に同意(UMP)とトラッキング許可(ATT)を取る。
+///  1. リワード広告: 被弾したときの「広告を見て復活」(見るかどうかは、プレイヤーが選ぶ)
+///  2. 全画面広告: 結果画面から次へ進むときに、3回遊ぶごと・前の広告から2分以上あいているときだけ。
+///     広告削除の購入者・テストプレイ・ステージ開始時・プレイ中には、出さない。
 @MainActor
 final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate {
     @Published private(set) var isReady = false
 
     private var rewarded: GADRewardedAd?
+    private var interstitial: GADInterstitialAd?
+    private var loadingInterstitial = false
+    private var interstitialDismiss: (() -> Void)?
+    /// 全画面広告を出す間隔: 遊んだ回数と、最後に広告を出した時刻
+    private var playsSinceAd = 0
+    private var lastAdAt = Date()
+    static let playsBetweenInterstitials = 3
+    static let minSecondsBetweenAds: TimeInterval = 120
     private var started = false
     private var loading = false
     private var onDismiss: ((Bool) -> Void)?
@@ -18,6 +28,9 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// Info.plist 経由（ビルド設定 ADMOB_REWARDED_UNIT_ID）。開発中は Google のテスト広告 ID
     private var unitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_REWARDED_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/1712485313"
+    }
+    private var interstitialUnitID: String {
+        Bundle.main.object(forInfoDictionaryKey: "ADMOB_INTERSTITIAL_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/4411468910"
     }
 
     /// 同意 → トラッキング許可 → SDK 開始 → 広告の読み込み。広告削除の購入者には呼ばない
@@ -31,6 +44,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
             GADMobileAds.sharedInstance().start { _ in c.resume() }
         }
         await load()
+        await loadInterstitial()
     }
 
     private func requestConsent() async {
@@ -65,6 +79,35 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         isReady = ad != nil
     }
 
+    func loadInterstitial() async {
+        guard UMPConsentInformation.sharedInstance.canRequestAds, interstitial == nil, !loadingInterstitial else { return }
+        loadingInterstitial = true
+        defer { loadingInterstitial = false }
+        let ad: GADInterstitialAd? = await withCheckedContinuation { c in
+            GADInterstitialAd.load(withAdUnitID: interstitialUnitID, request: GADRequest()) { ad, _ in c.resume(returning: ad) }
+        }
+        ad?.fullScreenContentDelegate = self
+        interstitial = ad
+    }
+
+    /// 結果画面が出たとき(テストプレイ以外)に数える
+    func countPlay() { playsSinceAd += 1 }
+
+    /// 次へ進むときに、出す条件がそろっていれば全画面広告を出す(閉じるまで待つ)。出さなかったら false
+    @discardableResult
+    func showInterstitialIfDue() async -> Bool {
+        guard playsSinceAd >= Self.playsBetweenInterstitials,
+              Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds,
+              let ad = interstitial, let vc = Self.topViewController() else { return false }
+        playsSinceAd = 0
+        lastAdAt = Date()
+        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+            interstitialDismiss = { cont.resume() }
+            ad.present(fromRootViewController: vc)
+        }
+        return true
+    }
+
     /// 広告を見終えて報酬を得たら true
     func showRewarded() async -> Bool {
         guard let ad = rewarded, let vc = Self.topViewController() else { return false }
@@ -86,6 +129,15 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     }
 
     private func finishPresentation() async {
+        if interstitialDismiss != nil {
+            interstitial = nil
+            let h = interstitialDismiss
+            interstitialDismiss = nil
+            lastAdAt = Date()
+            h?()
+            await loadInterstitial()
+            return
+        }
         rewarded = nil
         isReady = false
         let handler = onDismiss

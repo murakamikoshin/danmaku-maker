@@ -100,7 +100,7 @@ for e in entries {
         return boss ? "\(o.result.padding(toLength: 5, withPad: " ", startingAt: 0)) \(t) hp\(o.hp)".padding(toLength: 22, withPad: " ", startingAt: 0)
                     : "\(o.result.padding(toLength: 5, withPad: " ", startingAt: 0)) \(t)".padding(toLength: 22, withPad: " ", startingAt: 0)
     }
-    let boss = e.stage.mode == .boss
+    let boss = e.stage.mode != .survive
     print("\(e.id)  \(e.difficulty)   \(boss ? "boss   " : "survive") \(String(format: "%3d", e.stage.durationSec))  \(fmt(w, boss)) \(fmt(s, boss)) \(e.name["en"] ?? "")")
     fflush(stdout)
 }

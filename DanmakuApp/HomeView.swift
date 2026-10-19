@@ -19,32 +19,37 @@ struct HomeView: View {
     enum Tab: Hashable { case samples, world }
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Picker("", selection: $tab) {
-                        Text("home.tab.samples").tag(Tab.samples)
-                        Text("home.tab.world").tag(Tab.world)
+        VStack(spacing: 0) {
+            ScreenHeader(logo: "app.title") {
+                Color.clear.frame(width: 38, height: 38)
+            } trailing: {
+                Button { gameTap(); editing = true } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "plus").font(.system(size: 13, weight: .heavy))
+                        Text("home.create").font(.system(size: 14, weight: .heavy, design: .rounded))
                     }
-                    .pickerStyle(.segmented)
-                    .listRowBackground(Color.clear)
-                    .accessibilityIdentifier("home.tab")
+                    .foregroundStyle(.white)
+                    .padding(.vertical, 9).padding(.horizontal, 14)
+                    .background(GameStyle.accent, in: Capsule())
+                    .overlay(Capsule().stroke(Color.white.opacity(0.4)))
+                    .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6)
                 }
-                if tab == .samples { samples } else { worldList }
+                .buttonStyle(BounceButtonStyle())
+                .accessibilityIdentifier("home.create")
             }
-            .navigationTitle("app.title")
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .automatic), prompt: Text("home.search.prompt"))
-            .textInputAutocapitalization(.characters)
-            .autocorrectionDisabled()
-            .onSubmit(of: .search) { Task { await search() } }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { editing = true } label: { Label("home.create", systemImage: "plus") }
-                        .accessibilityIdentifier("home.create")
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
+                    GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
+                    if tab == .samples { samples } else { worldList }
                 }
+                .padding(.horizontal, 16).padding(.bottom, 24).padding(.top, 4)
             }
-            .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
+            .refreshable { if tab == .world { await world.reload() } }
         }
+        .background(Color(Palette.background).ignoresSafeArea())
+        .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: s.title) { playing = nil }
         }
@@ -66,41 +71,37 @@ struct HomeView: View {
     }
 
     private var samples: some View {
-        Section {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("home.samples").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
             ForEach(SampleStages.all) { s in
-                Button { playing = s } label: { SampleRow(sample: s) }
+                Button { gameTap(); playing = s } label: { SampleRow(sample: s) }
+                    .buttonStyle(BounceButtonStyle())
             }
-        } header: { Text("home.samples") }
+        }
     }
 
     @ViewBuilder private var worldList: some View {
-        Section {
-            Picker("", selection: $world.sort) {
-                ForEach(StageSort.allCases) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .listRowBackground(Color.clear)
-        }
-        Section {
+        ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
+        VStack(spacing: 10) {
             if !Backend.isAvailable {
-                Text("world.unavailable").foregroundStyle(.secondary)
+                Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
             }
             ForEach(world.stages.filter { !blocks.isBlocked($0.authorUid) }) { s in
-                Button { detail = s } label: { RemoteRow(stage: s) }
+                Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
+                    .buttonStyle(BounceButtonStyle())
                     .onAppear { if s.id == world.stages.last?.id { Task { await world.loadMore() } } }
             }
-            if world.isLoading { HStack { Spacer(); ProgressView(); Spacer() } }
+            if world.isLoading { HStack { Spacer(); ProgressView().tint(Color(Palette.pink)); Spacer() }.padding(.vertical, 8) }
             if world.failed {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("world.error").foregroundStyle(.secondary)
-                    Button("world.retry") { Task { await world.loadMore() } }.buttonStyle(.bordered)
+                VStack(spacing: 8) {
+                    Text("world.error").font(.footnote).foregroundStyle(.secondary)
+                    Button { gameTap(); Task { await world.loadMore() } } label: { Chip(title: L("world.retry"), selected: true) }.buttonStyle(BounceButtonStyle())
                 }
             }
             if world.stages.isEmpty && !world.isLoading && !world.failed && Backend.isAvailable {
-                Text("world.empty").foregroundStyle(.secondary)
+                Text("world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
-        .refreshable { await world.reload() }
     }
 
     #if DEBUG
@@ -135,30 +136,51 @@ struct HomeView: View {
 
 struct ModeBadge: View {
     let mode: Mode
+    private var tint: Color {
+        switch mode {
+        case .boss: return Color(Palette.pink)
+        case .damage: return Color(Palette.gold)
+        case .survive: return Color(UIColor(hex: 0x5CE1E6))
+        }
+    }
     var body: some View {
-        Text(mode == .boss ? "badge.boss" : "badge.survive")
-            .font(.caption2.bold())
-            .padding(.horizontal, 7).padding(.vertical, 1)
-            .overlay(Capsule().stroke(lineWidth: 1))
-            .foregroundStyle(mode == .boss ? Color(Palette.pink) : Color(Palette.bullets[1]))
+        Text(mode == .boss ? "badge.boss" : mode == .damage ? "badge.damage" : "badge.survive")
+            .font(.system(size: 10, weight: .heavy, design: .rounded))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 8).padding(.vertical, 2)
+            .background(tint.opacity(0.15), in: Capsule())
+            .overlay(Capsule().stroke(tint.opacity(0.6), lineWidth: 1))
     }
 }
 
 func detailText(_ st: Stage) -> String {
-    st.mode == .boss ? String(format: L("detail.boss"), st.bossHp ?? 0, st.durationSec) : String(format: L("detail.survive"), st.durationSec)
+    var text: String
+    switch st.mode {
+    case .boss: text = st.durationSec == 0 ? String(format: L("detail.boss.unlimited"), st.bossHp ?? 0) : String(format: L("detail.boss"), st.bossHp ?? 0, st.durationSec)
+    case .damage: text = String(format: L("detail.damage"), st.durationSec)
+    case .survive: text = String(format: L("detail.survive"), st.durationSec)
+    }
+    // 標準(ライフ1)以外のときだけ、耐久を添える
+    if st.effectiveLifeMode == .hp { text += " · " + String(format: L("detail.life.hp"), st.effectiveLifeCount) }
+    else if st.effectiveLifeCount > 1 { text += " · " + String(format: L("detail.life.lives"), st.effectiveLifeCount) }
+    return text
 }
 
 struct SampleRow: View {
     let sample: SampleStage
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(sample.title).font(.headline)
-            HStack(spacing: 6) {
-                ModeBadge(mode: sample.stage.mode)
-                Text(detailText(sample.stage)).font(.caption).foregroundStyle(.secondary)
-                Text(String(repeating: "★", count: sample.difficulty)).font(.caption).foregroundStyle(Color(Palette.gold))
+        StageCardShell(mode: sample.stage.mode) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(sample.title).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                HStack(spacing: 6) {
+                    ModeBadge(mode: sample.stage.mode)
+                    Text(detailText(sample.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Text(String(repeating: "★", count: sample.difficulty)).font(.system(size: 12)).foregroundStyle(Color(Palette.gold))
+                Text(sample.aim).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2).multilineTextAlignment(.leading)
             }
-            Text(sample.aim).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+            Spacer(minLength: 0)
+            Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.5))
         }
     }
 }
@@ -166,25 +188,24 @@ struct SampleRow: View {
 struct RemoteRow: View {
     let stage: RemoteStage
     var body: some View {
-        HStack {
+        StageCardShell(mode: stage.stage.mode) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(stage.name).font(.headline).lineLimit(2)
+                Text(stage.name).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(2).multilineTextAlignment(.leading)
                 HStack(spacing: 6) {
                     ModeBadge(mode: stage.stage.mode)
-                    Text("\(detailText(stage.stage)) · by \(stage.authorName)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text("\(detailText(stage.stage)) · by \(stage.authorName)").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                 }
                 HStack(spacing: 12) {
                     Label("\(stage.plays)", systemImage: "gamecontroller")
                     Label("\(stage.clears)", systemImage: "flag.checkered")
                     Label("\(stage.likes)", systemImage: "heart")
                 }
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             }
-            Spacer()
-            VStack {
-                Text(stage.clearRatePercent.map { "\($0)%" } ?? "—")
-                    .font(.system(.title3, design: .monospaced)).foregroundStyle(Color(Palette.gold))
-                Text("world.clearrate").font(.caption2).foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            VStack(spacing: 2) {
+                PercentRing(percent: stage.clearRatePercent)
+                Text("world.clearrate").font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary)
             }
         }
     }

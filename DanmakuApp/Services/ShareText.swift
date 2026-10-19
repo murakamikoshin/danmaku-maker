@@ -18,6 +18,8 @@ enum ShareText {
         let url = ctx.url.absoluteString
         let time = String(format: "%.1f", result.time)
         switch result.outcome {
+        case .cleared where result.isDamage:
+            return String(format: L("share.damage"), ctx.name, result.damage, url)
         case .cleared where result.isBoss:
             return String(format: L("share.boss"), time, ctx.name, url)
         case .cleared:

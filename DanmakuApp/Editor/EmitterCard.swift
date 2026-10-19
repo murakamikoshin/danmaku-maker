@@ -2,6 +2,7 @@ import SwiftUI
 import DanmakuCore
 
 struct EmitterCard: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
     let index: Int
     @Binding var emitter: Emitter
     let isBoss: Bool
@@ -9,45 +10,58 @@ struct EmitterCard: View {
     let canDelete: Bool
     let onDelete: () -> Void
 
-    private static let patternKeys: [Pattern: String] = [
-        .ring: "pattern.ring", .spiral: "pattern.spiral", .aim: "pattern.aim", .rain: "pattern.rain", .sweep: "pattern.sweep",
-    ]
+    /// 位置を選ばないパターン(画面の端や四隅などから出る)
+    private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(String(format: L("editor.emitter"), index + 1)).font(.headline).foregroundStyle(Color(Palette.gold))
+                HStack(spacing: 8) {
+                    bulletBadge
+                    Text(String(format: L("editor.emitter"), index + 1)).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                }
                 Spacer()
                 if canDelete {
-                    Button("editor.delete", action: onDelete).buttonStyle(.bordered).controlSize(.small)
-                        .accessibilityIdentifier("emitter.delete.\(index)")
+                    Button { gameTap(); onDelete() } label: {
+                        Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color(Palette.pink))
+                            .padding(.vertical, 6).padding(.horizontal, 10)
+                            .background(Color(Palette.pink).opacity(0.15), in: Capsule())
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("emitter.delete.\(index)")
                 }
             }
             EmitterPreview(emitter: emitter, isBoss: isBoss)
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("editor.pattern").font(.caption).foregroundStyle(.secondary)
-                    Picker("", selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0) })) {
-                        ForEach(Pattern.allCases, id: \.self) { Text(LocalizedStringKey(EmitterCard.patternKeys[$0]!)).tag($0) }
-                    }
-                    .pickerStyle(.menu).labelsHidden()
-                    .accessibilityIdentifier("emitter.pattern.\(index)")
-                }
-                Spacer()
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("editor.pattern").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0) }), index: index)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("editor.color.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                 ColorSwatches(selection: $emitter.k, index: index)
             }
+
             if isBoss {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("editor.phase").font(.caption).foregroundStyle(.secondary)
-                    Picker("", selection: $emitter.ph) {
-                        Text("phase.all").tag(0)
-                        Text("phase.1").tag(1); Text("phase.2").tag(2); Text("phase.3").tag(3)
-                    }
-                    .pickerStyle(.menu).labelsHidden()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("editor.origin.boss")), (1, L("editor.origin.point"))],
+                             selection: $emitter.p, idPrefix: "emitter.origin.\(index)", minimum: 110)
+                }
+                if emitter.firesFromPoint && !positionless {
+                    SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
+                    SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.phase").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("phase.all")), (1, L("phase.1")), (2, L("phase.2")), (3, L("phase.3"))],
+                             selection: $emitter.ph, idPrefix: "emitter.phase.\(index)", minimum: 64)
                 }
             } else {
-                SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05, disabled: emitter.t == .rain) { "\(Int($0 * 100))%" }
-                SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05, disabled: emitter.t == .rain) { "\(Int($0 * 100))%" }
+                SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
+                SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
                 SliderRow(label: "editor.start", value: $emitter.s, range: 0...Double(duration), step: 0.5) { String(format: "%g%@", $0, L("unit.s")) }
                 SliderRow(label: "editor.end", value: Binding(get: { min(emitter.e, Double(duration)) }, set: { emitter.e = $0 }),
                           range: 0...Double(duration), step: 0.5) { $0 >= Double(duration) ? L("editor.until.end") : String(format: "%g%@", $0, L("unit.s")) }
@@ -58,35 +72,60 @@ struct EmitterCard: View {
             SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain) { "\(Int($0))°" }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(red: 0.11, green: 0.09, blue: 0.25)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(Palette.barBack)))
+        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(GameStyle.edge))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
+    }
+
+    private var bulletBadge: some View {
+        ZStack {
+            Circle().fill(Color(Skin.of(cosmetics.effective.bullets).bulletColors[min(max(emitter.k, 0), 4)]))
+            Circle().fill(Color.white).frame(width: 9, height: 9)
+        }
+        .frame(width: 22, height: 22)
     }
 
     private var angleLabel: LocalizedStringKey {
         switch emitter.t {
         case .ring, .spiral: return "angle.rotate"
-        case .aim: return "angle.spread"
+        case .aim, .corner: return "angle.spread"
         case .rain: return "angle.none"
         case .sweep: return "angle.swing"
+        case .sideL, .sideR: return "angle.jitter"
+        case .homing: return "angle.turn"
         }
     }
 }
 
+/// 弾の色の選択(ゲームの弾と同じ、色つきの円に白い芯)
 private struct ColorSwatches: View {
     @Binding var selection: Int
     let index: Int
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    private var colors: [UIColor] { Skin.of(cosmetics.effective.bullets).bulletColors }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 14) {
             ForEach(0..<5, id: \.self) { j in
-                Circle().fill(Color(Palette.bullets[j])).frame(width: 26, height: 26)
-                    .overlay(Circle().stroke(Color.white, lineWidth: selection == j ? 2 : 0).padding(-3))
-                    .onTapGesture { selection = j }
-                    .accessibilityLabel(Text(String(format: L("editor.color"), j + 1)))
-                    .accessibilityAddTraits(selection == j ? [.isButton, .isSelected] : .isButton)
-                    .accessibilityIdentifier("emitter.color.\(index).\(j)")
+                let selected = selection == j
+                Button {
+                    gameTap()
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { selection = j }
+                } label: {
+                    ZStack {
+                        Circle().fill(Color(colors[j]))
+                        Circle().fill(Color.white).frame(width: 14, height: 14)
+                    }
+                    .frame(width: 30, height: 30)
+                    .overlay(Circle().stroke(Color.white, lineWidth: selected ? 2.5 : 0).padding(-4))
+                    .shadow(color: Color(colors[j]).opacity(selected ? 0.9 : 0), radius: 8)
+                    .scaleEffect(selected ? 1.15 : 1)
+                }
+                .buttonStyle(BounceButtonStyle())
+                .accessibilityLabel(Text(String(format: L("editor.color"), j + 1)))
+                .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+                .accessibilityIdentifier("emitter.color.\(index).\(j)")
             }
         }
     }

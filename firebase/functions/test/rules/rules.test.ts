@@ -24,6 +24,15 @@ beforeEach(async () => {
     await setDoc(doc(db, "users/u1"), { displayName: "A", blockedUids: [], postCount: 3, createdAt: new Date() });
     await setDoc(doc(db, "reports/x"), { stageId: "AAAAA" });
     await setDoc(doc(db, "stageReplays/AAAAA"), { clearReplay: "AQ==" });
+    await setDoc(doc(db, "stages/AAAAA/scores/u1"), { uid: "u1", a: 1, n: 2, num: 1234, value: 500, mode: "boss", createdAt: new Date() });
+    await setDoc(doc(db, "stages/BBBBB/scores/u1"), { uid: "u1", a: 1, n: 2, num: 1234, value: 500, mode: "boss", createdAt: new Date() });
+    await setDoc(doc(db, "scoreReplays/AAAAA_u1"), { replay: "AQ==" });
+    await setDoc(doc(db, "scoreMeta/u1"), { lastAt: 1 });
+    await setDoc(doc(db, "stages/AAAAA/comments/c1"), { uid: "u1", a: 0, n: 0, num: 1, text: "いいね", status: "published", reports: 0, createdAt: new Date() });
+    await setDoc(doc(db, "stages/AAAAA/comments/c2"), { uid: "u2", a: 0, n: 0, num: 2, text: "隠された", status: "hidden", reports: 3, createdAt: new Date() });
+    await setDoc(doc(db, "stages/BBBBB/comments/c3"), { uid: "u1", a: 0, n: 0, num: 1, text: "非公開ステージ", status: "published", reports: 0, createdAt: new Date() });
+    await setDoc(doc(db, "commentMeta/u1"), { lastAt: 1 });
+    await setDoc(doc(db, "commentReports/x"), { stageId: "AAAAA" });
   });
 });
 
@@ -95,5 +104,61 @@ describe("サーバー専用コレクション", () => {
     await assertFails(setDoc(doc(db, "reports/y"), { stageId: "AAAAA" }));
     await assertFails(getDoc(doc(db, "stageReplays/AAAAA")));
     await assertFails(setDoc(doc(db, "admin_alerts/z"), { a: 1 }));
+  });
+});
+
+
+describe("scores(ランキング)", () => {
+  it("ログイン済み(匿名も可)なら、公開ステージのランキングを読める", async () => {
+    await assertSucceeds(getDoc(doc(anon("u9"), "stages/AAAAA/scores/u1")));
+    await assertSucceeds(getDocs(query(collection(anon("u9"), "stages/AAAAA/scores"), limit(50))));
+    await assertSucceeds(getDoc(doc(member("u9"), "stages/AAAAA/scores/u1")));
+  });
+  it("未ログインでは読めない", async () => {
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "stages/AAAAA/scores/u1")));
+  });
+  it("非公開ステージのランキングは読めない", async () => {
+    await assertFails(getDoc(doc(anon("u9"), "stages/BBBBB/scores/u1")));
+  });
+  it("クライアントからは書き込めない(自分の記録でも)", async () => {
+    await assertFails(setDoc(doc(member("u1"), "stages/AAAAA/scores/u1"), { uid: "u1", value: 1 }));
+    await assertFails(updateDoc(doc(member("u1"), "stages/AAAAA/scores/u1"), { value: 1 }));
+    await assertFails(deleteDoc(doc(member("u1"), "stages/AAAAA/scores/u1")));
+    await assertFails(setDoc(doc(anon("u9"), "stages/AAAAA/scores/u9"), { uid: "u9", value: 1 }));
+  });
+  it("操作記録と送信間隔の記録には一切触れない", async () => {
+    await assertFails(getDoc(doc(member("u1"), "scoreReplays/AAAAA_u1")));
+    await assertFails(setDoc(doc(member("u1"), "scoreReplays/AAAAA_u1"), { replay: "x" }));
+    await assertFails(getDoc(doc(member("u1"), "scoreMeta/u1")));
+    await assertFails(setDoc(doc(member("u1"), "scoreMeta/u1"), { lastAt: 0 }));
+  });
+});
+
+
+describe("comments(コメント)", () => {
+  it("ログイン済み(匿名も可)なら、公開ステージの表示中のコメントを読める", async () => {
+    await assertSucceeds(getDoc(doc(anon("u9"), "stages/AAAAA/comments/c1")));
+    const q = query(collection(anon("u9"), "stages/AAAAA/comments"), where("status", "==", "published"), limit(30));
+    await assertSucceeds(getDocs(q));
+  });
+  it("未ログインでは読めない", async () => {
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "stages/AAAAA/comments/c1")));
+  });
+  it("非表示のコメントと、非公開ステージのコメントは読めない", async () => {
+    await assertFails(getDoc(doc(anon("u9"), "stages/AAAAA/comments/c2")));
+    await assertFails(getDoc(doc(anon("u9"), "stages/BBBBB/comments/c3")));
+  });
+  it("絞らない一覧クエリは拒否される(非表示が混ざるため)", async () => {
+    await assertFails(getDocs(query(collection(anon("u9"), "stages/AAAAA/comments"), limit(30))));
+  });
+  it("クライアントからは書き込めない(自分のコメントでも)", async () => {
+    await assertFails(setDoc(doc(member("u1"), "stages/AAAAA/comments/new1"), { uid: "u1", text: "x", status: "published" }));
+    await assertFails(updateDoc(doc(member("u1"), "stages/AAAAA/comments/c1"), { text: "書き換え" }));
+    await assertFails(deleteDoc(doc(member("u1"), "stages/AAAAA/comments/c1")));
+  });
+  it("投稿間隔と通報の記録には一切触れない", async () => {
+    await assertFails(getDoc(doc(member("u1"), "commentMeta/u1")));
+    await assertFails(setDoc(doc(member("u1"), "commentMeta/u1"), { lastAt: 0 }));
+    await assertFails(getDoc(doc(member("u1"), "commentReports/x")));
   });
 });

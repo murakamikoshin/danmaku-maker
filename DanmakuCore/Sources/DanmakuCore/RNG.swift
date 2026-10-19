@@ -31,7 +31,7 @@ extension Stage {
     /// ステージ内容（丸めた数値列）から作る乱数シード。JSON 文字列の並び順などには依存しない
     public var seed: UInt32 {
         var h = FNV1a()
-        h.add(Int32(mode == .boss ? 1 : 0))
+        h.add(Int32(mode == .boss ? 1 : (mode == .damage ? 2 : 0)))
         h.add(Int32(bossHp ?? 0))
         h.add(Int32(bossMove ?? 0))
         h.add(Int32(durationSec))
@@ -39,6 +39,7 @@ extension Stage {
             h.add(m.t.index)
             for q in [m.x, m.y, m.s, m.e, m.i, m.v] { h.add(Int32((q * 100).rounded())) }
             h.add(Int32(m.c)); h.add(Int32(m.r.rounded())); h.add(Int32(m.k)); h.add(Int32(m.ph))
+            if m.p != 0 { h.add(Int32(m.p)) }   // 標準(0)のときは混ぜない: これまでのステージの乱数シードを変えないため
         }
         return h.value
     }

@@ -29,12 +29,12 @@ export function ogpSvg(stage: Stage, shortId: string): string {
   const { bullets } = snapshot(stage);
   const scale = 1.1;
   const fx = 760, fy = (OGP_HEIGHT - H * scale) / 2;
-  const boss = stage.mode === "boss";
+  const boss = stage.mode !== "survive";
   const dots = bullets.map((b) => `<circle cx="${(b.x * scale).toFixed(1)}" cy="${(b.y * scale).toFixed(1)}" r="6.6" fill="${PALETTE[b.k]}"/>`).join("");
   const cores = bullets.map((b) => `<circle cx="${(b.x * scale).toFixed(1)}" cy="${(b.y * scale).toFixed(1)}" r="3.3" fill="#fff"/>`).join("");
   const markers = boss
     ? `<polygon points="${Array.from({ length: 12 }, (_, i) => { const a = (i * Math.PI) / 6, r = i % 2 ? 14 : 22; return `${((W / 2 + Math.cos(a) * r) * scale).toFixed(1)},${((H * 0.18 + Math.sin(a) * r) * scale).toFixed(1)}`; }).join(" ")}" fill="#ff6b9d"/>`
-    : stage.emitters.filter((m) => m.t !== "rain").map((m) => {
+    : stage.emitters.filter((m) => !["rain", "sideL", "sideR", "corner"].includes(m.t)).map((m) => {
         const x = m.x * W * scale, y = m.y * H * scale, d = 8 * scale;
         return `<polygon points="${x},${y - d} ${x + d},${y} ${x},${y + d} ${x - d},${y}" fill="none" stroke="${PALETTE[m.k]}" stroke-width="2"/>`;
       }).join("");

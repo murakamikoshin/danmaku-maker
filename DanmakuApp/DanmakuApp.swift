@@ -42,6 +42,7 @@ struct DanmakuApp: App {
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL) }
                 .onChange(of: scenePhase) { phase in
                     if phase == .background { Task { await ResultsQueue.shared.flush() } }
+                    if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
                 }
         }
     }

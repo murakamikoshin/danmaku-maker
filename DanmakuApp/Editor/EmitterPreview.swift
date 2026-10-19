@@ -17,8 +17,9 @@ final class PreviewEngine {
         last = now
         t += dt
         player = Point(x: 180 + sin(t * 0.9) * 90, y: PreviewEngine.height - 40)
-        let cx = boss ? 180 : m.x * DanmakuConfig.width
-        let cy = boss ? DanmakuConfig.height * 0.18 : m.y * DanmakuConfig.height
+        let atBoss = boss && !m.firesFromPoint
+        let cx = atBoss ? 180 : m.x * DanmakuConfig.width
+        let cy = atBoss ? DanmakuConfig.height * 0.18 : m.y * DanmakuConfig.height
         while t >= next {
             Emit.emit(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, rng: &rng, into: &bullets)
             shot += 1
@@ -39,22 +40,38 @@ struct EmitterPreview: View {
     let emitter: Emitter
     let isBoss: Bool
     @State private var engine = PreviewEngine()
+    @EnvironmentObject private var cosmetics: CosmeticsStore
 
     var body: some View {
+        // いま装備している見た目(弾の色と形・背景・自機・自分の画像)を、そのまま使う
+        let _ = cosmetics.customImageRevision
+        let look = cosmetics.effective
+        let bulletTheme = look.bullets
+        let skin = Skin.of(bulletTheme)
+        let bg = Skin.of(look.background)
+        let bulletImages = SpriteFactory.bulletImages(bulletTheme)
+        let customBullet = look.customBullet ? CustomImageStore.load(.bullet) : nil
+        let shipImage = (look.customShip ? CustomImageStore.load(.ship) : nil) ?? SpriteFactory.shipImage(look.ship)
+        let bossImage = look.customBoss ? CustomImageStore.load(.boss) : nil
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
                 engine.advance(to: timeline.date, emitter: emitter, boss: isBoss)
                 let s = size.width / DanmakuConfig.width
-                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(Palette.background)))
+                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
                 ctx.scaleBy(x: s, y: s)
-                drawSource(&ctx)
-                drawShip(&ctx, engine.player)
+                drawSource(&ctx, skin: skin, bossImage: bossImage)
+                // 自機(当たる場所の白い点つき)
+                let sw: CGFloat = 20, sh: CGFloat = 24
+                let pt = engine.player
+                let shipRect = CGRect(x: pt.x - sw / 2, y: pt.y - sh / 2, width: look.customShip ? 24 : sw, height: look.customShip ? 24 : sh)
+                    .offsetBy(dx: look.customShip ? -2 : 0, dy: look.customShip ? 0 : 0)
+                ctx.draw(Image(uiImage: shipImage), in: shipRect)
+                if look.customShip { ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white)) }
+                // 弾
                 for b in engine.bullets {
-                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - 6, y: b.y - 6, width: 12, height: 12)),
-                             with: .color(Color(Palette.bullets[b.color])))
-                }
-                for b in engine.bullets {
-                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - 3, y: b.y - 3, width: 6, height: 6)), with: .color(.white))
+                    let rect = CGRect(x: b.x - 6, y: b.y - 6, width: 12, height: 12)
+                    if let customBullet { ctx.draw(Image(uiImage: customBullet), in: rect) }
+                    else { ctx.draw(Image(uiImage: bulletImages[min(max(b.color, 0), bulletImages.count - 1)]), in: rect) }
                 }
             }
         }
@@ -63,31 +80,22 @@ struct EmitterPreview: View {
         .accessibilityHidden(true)
     }
 
-    private func drawSource(_ ctx: inout GraphicsContext) {
+    private func drawSource(_ ctx: inout GraphicsContext, skin: Skin, bossImage: UIImage?) {
         if isBoss {
-            var p = Path()
-            let c = CGPoint(x: 180, y: DanmakuConfig.height * 0.18)
-            for i in 0..<12 {
-                let a = Double(i) * .pi / 6, r: Double = i % 2 == 1 ? 14 : 22
-                let pt = CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r)
-                i == 0 ? p.move(to: pt) : p.addLine(to: pt)
+            if let bossImage {
+                ctx.draw(Image(uiImage: bossImage), in: CGRect(x: 180 - 24, y: DanmakuConfig.height * 0.18 - 24, width: 48, height: 48))
+            } else {
+                let c = CGPoint(x: 180, y: DanmakuConfig.height * 0.18)
+                ctx.fill(GameBossShape().path(in: CGRect(x: c.x - 24, y: c.y - 24, width: 48, height: 48)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
             }
-            p.closeSubpath()
-            ctx.fill(p, with: .color(Color(Palette.pink)))
-        } else if emitter.t != .rain {
+        }
+        if (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
             let c = CGPoint(x: emitter.x * DanmakuConfig.width, y: emitter.y * DanmakuConfig.height)
             var p = Path()
             p.move(to: CGPoint(x: c.x, y: c.y - 8)); p.addLine(to: CGPoint(x: c.x + 8, y: c.y))
             p.addLine(to: CGPoint(x: c.x, y: c.y + 8)); p.addLine(to: CGPoint(x: c.x - 8, y: c.y)); p.closeSubpath()
-            ctx.stroke(p, with: .color(Color(Palette.bullets[emitter.k])), lineWidth: 2)
+            ctx.stroke(p, with: .color(Color(skin.bulletColors[min(max(emitter.k, 0), skin.bulletColors.count - 1)])), lineWidth: 2)
         }
     }
 
-    private func drawShip(_ ctx: inout GraphicsContext, _ pt: Point) {
-        var p = Path()
-        p.move(to: CGPoint(x: pt.x, y: pt.y - 11)); p.addLine(to: CGPoint(x: pt.x + 8, y: pt.y + 8))
-        p.addLine(to: CGPoint(x: pt.x, y: pt.y + 4)); p.addLine(to: CGPoint(x: pt.x - 8, y: pt.y + 8)); p.closeSubpath()
-        ctx.fill(p, with: .color(Color(UIColor(hex: 0x5CE1E6))))
-        ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white))
-    }
 }
