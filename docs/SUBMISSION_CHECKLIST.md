@@ -96,3 +96,10 @@ Secrets に `ASC_KEY_ID` `ASC_ISSUER_ID` `ASC_KEY_P8_BASE64` `GOOGLE_SERVICE_INF
 - アプリ側の購入判定は RevenueCat の `allPurchasedProductIdentifiers` を使う。RevenueCat 側でエンタイトルメントを作る必要はない(広告削除の `no_ads` だけは作る)。
 - 審査に出すとき、バージョンページの「アプリ内購入」で、広告削除と14商品のすべてを選ぶ。
 - 商品登録の自動化スクリプト: `tools/asc_create_iaps.mjs`
+
+## 追加: RevenueCat の設定(2026-10-19 完了)
+- アプリ「弾幕メーカー (App Store)」を作成し、アプリ内購入キー(Key ID `VSUPUV2MUC`)を登録済み。
+- 商品15個(広告削除 + 14商品)を登録済み(`tools/rc_create_products.mjs`)。
+- 権利 `no_ads` に `com.koshin.danmakumaker.removeads` を結びつけ済み。
+- オファリング `default` に、Lifetime パッケージ(広告削除)を作成済み。
+- アプリの公開キーは `project.yml` の `REVENUECAT_API_KEY` に設定済み(公開キーなのでコミットしてよい)。
