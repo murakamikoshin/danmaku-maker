@@ -196,19 +196,33 @@ struct LifePreview: View {
     let mode: LifeMode
     let count: Int
 
+    /// 1行に並べる数。多いときは折り返して、画面の幅からはみ出さないようにする
+    private var perRow: Int { mode == .lives ? 8 : 12 }
+    private var rows: [Int] {
+        stride(from: 0, to: max(count, 0), by: perRow).map { min(perRow, count - $0) }
+    }
+
     var body: some View {
         switch mode {
         case .lives:
-            HStack(spacing: 6) {
-                ForEach(0..<count, id: \.self) { _ in
-                    Image(systemName: "heart.fill").font(.system(size: 22)).foregroundStyle(Color(Palette.pink))
-                        .shadow(color: Color(Palette.pink).opacity(0.7), radius: 5)
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, n in
+                    HStack(spacing: 6) {
+                        ForEach(0..<n, id: \.self) { _ in
+                            Image(systemName: "heart.fill").font(.system(size: 22)).foregroundStyle(Color(Palette.pink))
+                                .shadow(color: Color(Palette.pink).opacity(0.7), radius: 5)
+                        }
+                    }
                 }
             }
         case .hp:
-            HStack(spacing: 2) {
-                ForEach(0..<count, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: 2).fill(Color(Palette.bullets[4])).frame(width: 9, height: 16)
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, n in
+                    HStack(spacing: 2) {
+                        ForEach(0..<n, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 2).fill(Color(Palette.bullets[4])).frame(width: 9, height: 16)
+                        }
+                    }
                 }
             }
             .padding(4)

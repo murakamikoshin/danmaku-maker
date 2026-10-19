@@ -286,9 +286,10 @@ private struct LifePanel: View {
                 CountStepper(value: Binding(get: { min(range.upperBound, max(range.lowerBound, model.draft.lifeCount)) },
                                             set: { model.draft.lifeCount = $0 }),
                              range: range, idPrefix: "editor.life.count")
-                Spacer(minLength: 8)
-                LifePreview(mode: model.draft.lifeMode, count: min(range.upperBound, max(range.lowerBound, model.draft.lifeCount)))
+                Spacer(minLength: 0)
             }
+            LifePreview(mode: model.draft.lifeMode, count: min(range.upperBound, max(range.lowerBound, model.draft.lifeCount)))
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(model.draft.lifeMode == .lives ? "editor.life.note.lives" : "editor.life.note.hp")
                 .font(.caption).foregroundStyle(.secondary)
         }
