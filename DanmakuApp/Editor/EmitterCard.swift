@@ -11,9 +11,17 @@ struct EmitterCard: View {
     let duration: Int
     let canDelete: Bool
     let onDelete: () -> Void
+    /// 畳んだ状態を外で持つとき(プレビューを画面の上に固定する画面)。持たなければ、カードの中で持つ
+    var externalCollapsed: Binding<Bool>? = nil
+    /// カードの中にプレビューを出すか(連戦の場面は、場面ごとのカードの中)
+    var showPreview = true
+    @State private var localCollapsed = false
+    private var collapsed: Bool {
+        get { externalCollapsed?.wrappedValue ?? localCollapsed }
+        nonmutating set { if let b = externalCollapsed { b.wrappedValue = newValue } else { localCollapsed = newValue } }
+    }
 
     /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
-    @State private var collapsed = false
     @State private var patternOpen = false
 
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
@@ -50,7 +58,7 @@ struct EmitterCard: View {
                     .font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
             }
             if !collapsed {
-            EmitterPreview(emitter: emitter, isBoss: isBoss, look: look)
+            if showPreview { EmitterPreview(emitter: emitter, isBoss: isBoss, look: look) }
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {

@@ -6,6 +6,12 @@ struct EditorView: View {
     @State private var testRun: TestRun?
     @State private var publishing = false
     @State private var confirmRevert = false
+    @State private var collapsedCards: Set<Int> = []
+
+    private func collapsedBinding(_ i: Int) -> Binding<Bool> {
+        Binding(get: { collapsedCards.contains(i) },
+                set: { if $0 { collapsedCards.insert(i) } else { collapsedCards.remove(i) } })
+    }
     /// 「かんたん」は、モード・名前・時間・発射台だけ。「くわしく」は、ライフ・BGM・見た目・演出なども出す
     @AppStorage("editor.advanced.v1") private var advanced = false
     let onClose: () -> Void
@@ -31,7 +37,7 @@ struct EditorView: View {
                     .foregroundStyle(Color(Palette.bullets[4])).labelStyle(.titleAndIcon)
             }
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
                     GameTabs(items: [(false, "editor.simple"), (true, "editor.advanced")], selection: $advanced, idPrefix: "editor.level")
                     Text(advanced ? "editor.advanced.note" : "editor.simple.note").font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
                     GamePanel(title: "editor.condition") {
@@ -63,10 +69,25 @@ struct EditorView: View {
                     }
                     if model.draft.mode != .sequence {
                         ForEach(Array(model.draft.emitters.indices), id: \.self) { i in
-                            EmitterCard(index: i, emitter: $model.draft.emitters[i], isBoss: model.draft.mode != .survive,
-                                        look: PreviewLook(draft: model.draft), advanced: advanced,
-                                        duration: model.draft.duration == 0 ? 180 : model.draft.duration, canDelete: model.draft.emitters.count > 1,
-                                        onDelete: { model.removeEmitter(at: i) })
+                            // プレビューは、カードの設定を動かしている間も画面の上に残す(下の項目を設定しながら見える)
+                            Section {
+                                EmitterCard(index: i, emitter: $model.draft.emitters[i], isBoss: model.draft.mode != .survive,
+                                            look: PreviewLook(draft: model.draft), advanced: advanced,
+                                            duration: model.draft.duration == 0 ? 180 : model.draft.duration, canDelete: model.draft.emitters.count > 1,
+                                            onDelete: { model.removeEmitter(at: i); collapsedCards = [] },
+                                            externalCollapsed: collapsedBinding(i), showPreview: false)
+                            } header: {
+                                if !collapsedCards.contains(i) {
+                                    EmitterPreview(emitter: model.draft.emitters[i], isBoss: model.draft.mode != .survive, look: PreviewLook(draft: model.draft))
+                                        .frame(maxHeight: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(6)
+                                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 14))
+                                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(GameStyle.edge))
+                                        .padding(.vertical, 4)
+                                        .background(Color(Palette.background))
+                                }
+                            }
                         }
                         AddButton(enabled: model.canAdd) { model.addEmitter() }
                             .accessibilityIdentifier("editor.add")
@@ -693,7 +714,20 @@ private struct WaveCard: View {
             Text(wave.kind == .boss ? "editor.wave.limit" : "editor.endure").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
             ChipGrid(items: wave.durations.map { ($0, String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { wave.duration }, set: { model.draft.waves[i].setDuration($0) }), idPrefix: "editor.wave.duration.\(i)")
-            if wave.kind == .boss {
+            if wave.kind == .boss { bossControls }
+            ForEach(Array(wave.emitters.indices), id: \.self) { e in
+                EmitterCard(index: e, emitter: Binding(get: { model.draft.waves[i].emitters[e] }, set: { model.draft.waves[i].emitters[e] = $0 }),
+                            isBoss: wave.kind == .boss, look: look, advanced: advanced, duration: wave.duration,
+                            canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
+            }
+            AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
+        }
+        .padding(14)
+        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(Palette.bullets[3]).opacity(0.5), lineWidth: 1.5))
+    }
+
+    @ViewBuilder private var bossControls: some View {
                 Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                 BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
@@ -714,17 +748,6 @@ private struct WaveCard: View {
                     }
                     DefeatPicker(selection: Binding(get: { wave.defeat }, set: { model.draft.waves[i].defeat = $0 }))
                 }
-            }
-            ForEach(Array(wave.emitters.indices), id: \.self) { e in
-                EmitterCard(index: e, emitter: Binding(get: { model.draft.waves[i].emitters[e] }, set: { model.draft.waves[i].emitters[e] = $0 }),
-                            isBoss: wave.kind == .boss, look: look, advanced: advanced, duration: wave.duration,
-                            canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
-            }
-            AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
-        }
-        .padding(14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(Palette.bullets[3]).opacity(0.5), lineWidth: 1.5))
     }
 
     private func iconButton(_ symbol: String, enabled: Bool, tint: Color = Color(Palette.text), action: @escaping () -> Void) -> some View {
