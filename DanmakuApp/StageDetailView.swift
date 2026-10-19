@@ -48,7 +48,6 @@ struct StageDetailView: View {
         .sheet(isPresented: $needSignIn) { SignInSheet() }
         .confirmationDialog("detail.report.title", isPresented: $confirmReport, titleVisibility: .visible) {
             Button("report.reason.inappropriate_name") { Task { await report("inappropriate_name") } }
-            Button("report.reason.impossible") { Task { await report("impossible") } }
             Button("report.reason.other") { Task { await report("other") } }
             Button("common.cancel", role: .cancel) {}
         }

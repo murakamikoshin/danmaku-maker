@@ -12,6 +12,10 @@ public enum DanmakuConfig {
     public static let maxEmitters = 8
     /// 追尾弾が曲がり続ける時間(秒)
     public static let homingSeconds = 2.5
+    /// ボスの大きさ(0=小 1=中 2=大)ごとの、プレイヤーの弾が当たる半径(論理px)。見た目の大きさも同じ比率で変わる
+    public static let bossRadii: [Double] = [17, 24, 34]
+    /// ボス・雑魚の見た目の種類の数(0 は標準)。見た目だけで、計算には関わらない
+    public static let enemyLooks = 5
     /// 停止弾: 進む秒数 / 止まっている秒数 / 飛び出すときの速さの倍率
     public static let stopGoMove = 0.55
     public static let stopGoHold = 0.6
@@ -111,10 +115,51 @@ public struct Wave: Codable, Equatable, Sendable {
     public var warning: Bool?
     /// ボスを倒したときの演出(DefeatEffect の番号)。nil は標準(爆発)
     public var defeat: Int?
+    /// ボスの大きさ(0=小 1=中 2=大)。nil は中。当たる範囲も変わる
+    public var bossSize: Int?
+    /// 発射点に、小さな敵(雑魚)の姿を出す大きさ(0=小 1=中 2=大)。nil は出さない。見た目だけで、計算には関わらない
+    public var mooks: Int?
+    /// ボス・雑魚の見た目(0〜4、nil は標準)。見た目だけ
+    public var bossLook: Int?
+    public var mookLook: Int?
 
-    public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil) {
+    public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil,
+                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil) {
         self.kind = kind; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove; self.emitters = emitters; self.warning = warning; self.defeat = defeat
+        self.bossSize = bossSize; self.mooks = mooks; self.bossLook = bossLook; self.mookLook = mookLook
+    }
+
+    /// 生き残りの発射台は、開始が制限時間より前で、終わりが開始より後でないと、サーバーが受け付けない。同じ決まりに揃える
+    static func fixedTiming(_ list: [Emitter], limit: Int) -> [Emitter] {
+        list.map { m in
+            var f = m
+            f.s = min(f.s, max(0, (Double(limit) - 0.5)))
+            f.s = (f.s * 100).rounded() / 100
+            f.e = max(f.e, f.s + 0.5)
+            f.e = (min(f.e, 180) * 100).rounded() / 100
+            if f.e <= f.s { f.s = max(0, f.e - 0.5) }
+            return f
+        }
+    }
+
+    /// 向きを回す角度は、-180〜180 度の整数
+    static func sanitizedAngle(_ v: Int) -> Int { min(180, max(-180, v)) }
+
+    /// 標準(0)は保存しない。範囲外は標準に戻す
+    static func sanitizedLook(_ v: Int?) -> Int? {
+        guard let v, (1..<DanmakuConfig.enemyLooks).contains(v) else { return nil }
+        return v
+    }
+
+    /// 中(標準)は保存しない。範囲外は標準に戻す
+    static func sanitizedSize(_ v: Int?) -> Int? {
+        guard let v, (0...2).contains(v), v != 1 else { return nil }
+        return v
+    }
+    static func sanitizedMooks(_ v: Int?) -> Int? {
+        guard let v, (0...2).contains(v) else { return nil }
+        return v
     }
 
     /// 実際に使う撃破の演出
@@ -149,10 +194,13 @@ public struct Wave: Codable, Equatable, Sendable {
                     i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Int(clamp(Double(m.ph), 0, 3)) : 0,
-                    p: isBoss && m.p == 1 ? 1 : 0)
+                    p: isBoss && m.p == 1 ? 1 : 0,
+                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0)
         }
-        return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: Array(ems), warning: (isBoss && warning == true) ? true : nil,
-                    defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil)
+        return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
+                    defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
+                    bossSize: isBoss ? Wave.sanitizedSize(bossSize) : nil, mooks: Wave.sanitizedMooks(mooks),
+                    bossLook: isBoss ? Wave.sanitizedLook(bossLook) : nil, mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook))
     }
 }
 
@@ -179,17 +227,22 @@ public struct Emitter: Codable, Equatable, Sendable {
     public var ph: Int
     /// 出す場所(ボス戦・ダメージ勝負だけ): 0 = ボスの位置(これまでと同じ)、1 = x, y で決めた場所
     public var p: Int
+    /// パターン全体の向きを、時計回りに回す角度(度)。0 は、これまでと同じ(データに入れない)。輪・自機狙い・形・十字などに効く
+    public var a: Int
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
-        self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p
+        self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
     }
+
+    /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
+    public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner].contains(t) }
 
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -199,6 +252,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         try c.encode(self.c, forKey: .c); try c.encode(v, forKey: .v); try c.encode(r, forKey: .r)
         try c.encode(k, forKey: .k); try c.encode(ph, forKey: .ph)
         if p != 0 { try c.encode(p, forKey: .p) }
+        if a != 0 { try c.encode(a, forKey: .a) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -215,6 +269,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         k = try d.decode(Int.self, forKey: .k)
         ph = try d.decodeIfPresent(Int.self, forKey: .ph) ?? 0
         p = try d.decodeIfPresent(Int.self, forKey: .p) ?? 0
+        a = try d.decodeIfPresent(Int.self, forKey: .a) ?? 0
     }
 }
 
@@ -228,6 +283,11 @@ struct WaveSpec {
     var emitters: [Emitter]
     var warning = false
     var defeat = DefeatEffect.standard
+    var size = 1
+    /// 見た目だけ: ボスの見た目、雑魚の大きさ(nil は出さない)と見た目
+    var look = 0
+    var mooks: Int?
+    var mookLook = 0
 }
 
 public struct Stage: Codable, Equatable, Sendable {
@@ -250,6 +310,15 @@ public struct Stage: Codable, Equatable, Sendable {
     public var bossWarning: Bool?
     /// ボス戦(ダメージ勝負以外)で、ボスを倒したときの演出(DefeatEffect の番号)。nil は標準(爆発)
     public var bossDefeat: Int?
+    /// ボスの大きさ(0=小 1=中 2=大)。nil は中。当たる範囲も変わる
+    public var bossSize: Int?
+    /// 発射点に、小さな敵(雑魚)の姿を出す大きさ(0=小 1=中 2=大)。nil は出さない。見た目だけ
+    public var mooks: Int?
+    public var bossLook: Int?
+    public var mookLook: Int?
+    /// 自機の撃ち方(ステージごとに、作者が決める)。nil は標準。遊ぶ全員が、この撃ち方で遊ぶ
+    public var shot: ShotType?
+    public var shotType: ShotType { shot ?? .standard }
     public var bossDefeatEffect: DefeatEffect { bossDefeat.flatMap(DefeatEffect.init(rawValue:)) ?? .standard }
 
     /// 発射位置の予告(点線のひし形)を出さない。nil は、出す(これまでと同じ)。作者が決める
@@ -278,7 +347,8 @@ public struct Stage: Codable, Equatable, Sendable {
                 emitters: [Emitter], formatVersion: Int = DanmakuConfig.formatVersion,
                 lifeMode: LifeMode? = nil, lifeCount: Int? = nil, bgm: Int? = nil,
                 themeBullets: Theme? = nil, themeBackground: Theme? = nil, themeShip: Theme? = nil,
-                hideMarkers: Bool? = nil, waves: [Wave]? = nil, bossWarning: Bool? = nil, bossDefeat: Int? = nil) {
+                hideMarkers: Bool? = nil, waves: [Wave]? = nil, bossWarning: Bool? = nil, bossDefeat: Int? = nil,
+                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil) {
         self.name = name; self.mode = mode; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove
         self.emitters = emitters; self.formatVersion = formatVersion
@@ -288,21 +358,22 @@ public struct Stage: Codable, Equatable, Sendable {
         self.waves = waves
         self.bossWarning = bossWarning
         self.bossDefeat = bossDefeat
+        self.bossSize = bossSize; self.mooks = mooks; self.bossLook = bossLook; self.mookLook = mookLook; self.shot = shot
     }
 
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
-        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat
+        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot
     }
 
     /// シミュレーションが使う場面の一覧。連戦以外は、これまでのステージ全体を「場面1つ」として扱う
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect)
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0)
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect)]
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0)]
     }
 
     /// 連戦のとき、最後まで通しての所要時間の上限(秒)。場面の合計と、切り替えの時間
@@ -352,6 +423,11 @@ public struct Stage: Codable, Equatable, Sendable {
         waves = try d.decodeIfPresent([Wave].self, forKey: .waves)
         bossWarning = try d.decodeIfPresent(Bool.self, forKey: .bossWarning)
         bossDefeat = try d.decodeIfPresent(Int.self, forKey: .bossDefeat)
+        bossSize = try d.decodeIfPresent(Int.self, forKey: .bossSize)
+        mooks = try d.decodeIfPresent(Int.self, forKey: .mooks)
+        bossLook = try d.decodeIfPresent(Int.self, forKey: .bossLook)
+        mookLook = try d.decodeIfPresent(Int.self, forKey: .mookLook)
+        shot = (try? d.decodeIfPresent(ShotType.self, forKey: .shot)) ?? nil
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -373,6 +449,11 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(waves, forKey: .waves)
         try c.encodeIfPresent(bossWarning, forKey: .bossWarning)
         try c.encodeIfPresent(bossDefeat, forKey: .bossDefeat)
+        try c.encodeIfPresent(bossSize, forKey: .bossSize)
+        try c.encodeIfPresent(mooks, forKey: .mooks)
+        try c.encodeIfPresent(bossLook, forKey: .bossLook)
+        try c.encodeIfPresent(mookLook, forKey: .mookLook)
+        try c.encodeIfPresent(shot, forKey: .shot)
     }
 
     public static let durations: [Mode: [Int]] = [
@@ -402,7 +483,8 @@ public struct Stage: Codable, Equatable, Sendable {
                          themeBullets: lookBullets == .classic ? nil : lookBullets,
                          themeBackground: lookBackground == .classic ? nil : lookBackground,
                          themeShip: lookShip == .classic ? nil : lookShip,
-                         hideMarkers: hideMarkers == true ? true : nil, waves: Array(ws), bossWarning: nil, bossDefeat: nil)
+                         hideMarkers: hideMarkers == true ? true : nil, waves: Array(ws), bossWarning: nil, bossDefeat: nil,
+                         bossSize: nil, mooks: nil, bossLook: nil, mookLook: nil, shot: shot == .standard ? nil : shot)
         }
         let allowed = Stage.durations[mode]!
         // 選択肢にない値は、標準の長さに丸める(生き残りは20秒、ボス戦とダメージ勝負は60秒)
@@ -418,13 +500,14 @@ public struct Stage: Codable, Equatable, Sendable {
                     i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: Int(clamp(Double(m.ph), 0, 3)),
-                    p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0))
+                    p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
+                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0)
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount
         let isDefaultLife = lm == .lives && lc == 1
         return Stage(name: trimmed, mode: mode, durationSec: d, bossHp: hp, bossMove: mv,
-                     emitters: Array(ems), formatVersion: DanmakuConfig.formatVersion,
+                     emitters: mode == .survive ? Wave.fixedTiming(Array(ems), limit: d) : Array(ems), formatVersion: DanmakuConfig.formatVersion,
                      lifeMode: isDefaultLife ? nil : lm, lifeCount: isDefaultLife ? nil : lc,
                      // 標準の曲と同じ指定は保存しない(範囲外も標準に戻す)
                      bgm: (bgm.map { (0..<Stage.bgmCount).contains($0) } ?? false) && bgm != (mode == .survive ? 0 : 1) ? bgm : nil,
@@ -435,6 +518,11 @@ public struct Stage: Codable, Equatable, Sendable {
                      // 予告を出さないときだけ保存する(出す=標準は保存しない)。出さない設定は、生き残りのステージだけ(ボス戦には予告がない)
                      hideMarkers: (hideMarkers == true && mode == .survive) ? true : nil,
                      bossWarning: (bossWarning == true && (mode == .boss || mode == .damage)) ? true : nil,
-                     bossDefeat: mode == .boss ? Wave.sanitizedDefeat(bossDefeat) : nil)
+                     bossDefeat: mode == .boss ? Wave.sanitizedDefeat(bossDefeat) : nil,
+                     bossSize: (mode == .boss || mode == .damage) ? Wave.sanitizedSize(bossSize) : nil,
+                     mooks: Wave.sanitizedMooks(mooks),
+                     bossLook: (mode == .boss || mode == .damage) ? Wave.sanitizedLook(bossLook) : nil,
+                     mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
+                     shot: shot == .standard ? nil : shot)
     }
 }

@@ -21,6 +21,8 @@ export interface Emitter {
   t: Pattern; x: number; y: number; s: number; e: number; i: number; c: number; v: number; r: number; k: number; ph: number;
   /** 出す場所(ボス戦・ダメージ勝負): 0 または未指定 = ボスの位置、1 = x, y の場所 */
   p?: 0 | 1;
+  /** パターン全体を回す角度(度、-180〜180)。0 または未指定 = 回さない */
+  a?: number;
 }
 
 export interface Wave {
@@ -31,6 +33,13 @@ export interface Wave {
   emitters: Emitter[];
   warning?: true;
   defeat?: number;
+  /** ボスの大きさ(0=小 2=大。中=標準は入れない)。当たる範囲も変わる */
+  bossSize?: number;
+  /** 雑魚の姿の大きさ(0〜2)。見た目だけ */
+  mooks?: number;
+  /** ボス・雑魚の見た目(1〜4。標準=0は入れない)。見た目だけ */
+  bossLook?: number;
+  mookLook?: number;
 }
 
 export interface Stage {
@@ -59,6 +68,20 @@ export interface Stage {
   bossWarning?: true;
   /** ボス戦の撃破の演出(標準=爆発は入れない) */
   bossDefeat?: number;
+  bossSize?: number;
+  mooks?: number;
+  bossLook?: number;
+  mookLook?: number;
+  /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
+  shot?: "spread" | "heavy";
+}
+
+/** 大きさ・見た目の共通の検査: 範囲外は不正。標準の値は保存しない(undefined を返す) */
+function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: true; v: number | undefined } | { ok: false } {
+  if (v === undefined || v === null) return { ok: true, v: undefined };
+  const n = int(v, lo, hi);
+  if (n === null) return { ok: false };
+  return { ok: true, v: n === std ? undefined : n };
 }
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
@@ -95,11 +118,14 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     const i = num(item.i, 0.05, 2), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
     const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 3);
     const fp = int(item.p ?? 0, 0, 1);
-    if ([x, y, s, e, i, c, v, r, k, ph, fp].some((n) => n === null)) return { ok: false, error: "emitter-range" };
+    const ang = int(item.a ?? 0, -180, 180);
+    if ([x, y, s, e, i, c, v, r, k, ph, fp, ang].some((n) => n === null)) return { ok: false, error: "emitter-range" };
+    // 回せないパターン(雨・横切り・隅・掃射)に角度は付けられない
+    if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}) });
   }
   return { ok: true, list };
 }
@@ -137,8 +163,17 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       if (dv === null || kind !== "boss") return { ok: false, error: "wave-defeat" };
       if (dv !== 1) defeat = dv;   // 1(爆発)は標準なので、保存しない
     }
+    const wSize = optInt(w.bossSize, 0, 2, 1);
+    const wMooks = optInt(w.mooks, 0, 2, null);
+    const wBossLook = optInt(w.bossLook, 0, 4, 0);
+    const wMookLook = optInt(w.mookLook, 0, 4, 0);
+    if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok) return { ok: false, error: "wave-look" };
+    if ((wSize.v !== undefined || wBossLook.v !== undefined) && kind !== "boss") return { ok: false, error: "wave-look" };
+    if (wMookLook.v !== undefined && wMooks.v === undefined && w.mooks === undefined) return { ok: false, error: "wave-look" };
     total += d;
-    list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}) });
+    list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
+      ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}),
+      ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}) });
   }
   return { ok: true, list, total: total + INTERMISSION_BUDGET * (list.length - 1) };
 }
@@ -239,6 +274,21 @@ export function validatePublish(input: unknown): Validated {
     if (dv !== 1) bossDefeat = dv;
   }
 
+  const bSize = optInt(input.bossSize, 0, 2, 1);
+  const bMooks = optInt(input.mooks, 0, 2, null);
+  const bBossLook = optInt(input.bossLook, 0, 4, 0);
+  const bMookLook = optInt(input.mookLook, 0, 4, 0);
+  if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok) return { ok: false, error: "look" };
+  if ((bSize.v !== undefined || bBossLook.v !== undefined) && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
+  if (mode === "sequence" && (bMooks.v !== undefined || bMookLook.v !== undefined)) return { ok: false, error: "look" };
+  if (bMookLook.v !== undefined && input.mooks === undefined) return { ok: false, error: "look" };
+
+  let shot: "spread" | "heavy" | undefined;
+  if (input.shot !== undefined && input.shot !== null && input.shot !== "standard") {
+    if (input.shot !== "spread" && input.shot !== "heavy") return { ok: false, error: "shot" };
+    shot = input.shot;
+  }
+
   const replay = input.clearReplay;
   if (typeof replay !== "string" || replay.length < 8 || replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(replay)) {
     return { ok: false, error: "replay" };
@@ -247,7 +297,10 @@ export function validatePublish(input: unknown): Validated {
   return {
     ok: true,
     clearReplay: replay,
-    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}) },
+    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
+      ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
+      ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
+      ...(shot ? { shot } : {}) },
   };
 }
 

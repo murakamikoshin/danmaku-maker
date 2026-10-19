@@ -54,6 +54,7 @@ extension Stage {
             h.add(m.t.index)
             for q in [m.x, m.y, m.s, m.e, m.i, m.v] { h.add(Int32((q * 100).rounded())) }
             h.add(Int32(m.c)); h.add(Int32(m.r.rounded())); h.add(Int32(m.k)); h.add(Int32(m.ph))
+            if m.a != 0 { h.add(Int32(1000 + m.a)) }   // 回さないときは混ぜない(これまでのステージのシードを変えない)
             if m.p != 0 { h.add(Int32(m.p)) }   // 標準(0)のときは混ぜない: これまでのステージの乱数シードを変えないため
         }
     }

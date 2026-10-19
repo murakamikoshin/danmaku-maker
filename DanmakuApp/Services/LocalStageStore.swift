@@ -1,6 +1,21 @@
 import DanmakuCore
 import Foundation
 
+/// 作者名。全ステージで共通(同じ人が投稿したステージは、同じ名前で出る)。どのステージで変えても、全部に反映される
+enum AuthorName {
+    private static let key = "authorName"
+    static var current: String { UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespaces) ?? "" }
+    static func set(_ name: String) {
+        let t = name.trimmingCharacters(in: .whitespaces)
+        if !t.isEmpty { UserDefaults.standard.set(t, forKey: key) }
+    }
+    /// 共通の作者名が空なら、いままでのステージに入っていた名前を引き継ぐ
+    static func migrate(from stages: [SavedStage]) {
+        guard current.isEmpty, let n = stages.map(\.draft.authorName).first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty }) else { return }
+        set(n)
+    }
+}
+
 /// 保存したステージ(マイステージ)。作っただけで投稿しなくても、端末に残り、いつでも遊べる・直せる
 struct SavedStage: Identifiable, Codable, Equatable {
     var id = UUID()
@@ -34,6 +49,7 @@ final class LocalStageStore: ObservableObject {
         url = base.appendingPathComponent("saved_stages.json")
         load()
         migrateOldDraftIfNeeded()
+        AuthorName.migrate(from: stages)
     }
 
     var canCreate: Bool { stages.count < Self.maxStages }
@@ -45,7 +61,7 @@ final class LocalStageStore: ObservableObject {
     func create() -> SavedStage? {
         guard canCreate else { return nil }
         var d = Draft()
-        d.authorName = stages.first?.draft.authorName ?? ""
+        d.authorName = AuthorName.current
         let s = SavedStage(draft: d)
         stages.insert(s, at: 0)
         persist()

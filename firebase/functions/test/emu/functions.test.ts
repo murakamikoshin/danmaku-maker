@@ -219,16 +219,27 @@ describe("submitScore(ランキング)", () => {
     expect((await db.doc(`stages/${id}/scores/${auth.currentUser!.uid}`).get()).exists).toBe(false);
   });
 
-  it("標準以外の撃ち方、範囲外の名前、壊れた記録、生き残りステージは拒否される", async () => {
+  it("範囲外の名前、壊れた記録、生き残りステージは拒否される", async () => {
     const boss = await publishAs(bossStage);
     const survive = await publishAs(stage);
     await signOut(auth); await signInAnonymously(auth);
-    expect(await callErr("submitScore", { stageId: boss.id, replay: STILL, shot: "heavy", handle })).toMatch(/shot/);
     expect(await callErr("submitScore", { stageId: boss.id, replay: STILL, shot: "standard", handle: { a: 99, n: 0 } })).toMatch(/handle/);
     expect(await callErr("submitScore", { stageId: boss.id, replay: "AQIDBAUGBwg=", shot: "standard", handle })).toMatch(/replay/);
     await new Promise((r) => setTimeout(r, 3200));
     expect(await callErr("submitScore", { stageId: survive.id, replay: STILL, shot: "standard", handle })).toMatch(/no-ranking/);
     expect(await callErr("submitScore", { stageId: "ZZZZZ", replay: STILL, shot: "standard", handle })).toMatch(/stage|too-fast/);
+  });
+
+  it("撃ち方はステージで決まる: 投稿した撃ち方が保存され、ランキングの検証もその撃ち方で行われる(アプリから届く値は見ない)", async () => {
+    const heavy = await publishAs({ ...bossStage, shot: "heavy" });
+    expect((await db.doc(`stages/${heavy.id}`).get()).get("shot")).toBe("heavy");
+    const std = await publishAs(bossStage);
+    expect((await db.doc(`stages/${std.id}`).get()).get("shot")).toBeUndefined();
+    expect(await callErr("publishStage", { ...bossStage, shot: "laser" })).toMatch(/shot/);
+    await signOut(auth); await signInAnonymously(auth);
+    // 古いアプリは "standard" を送ってくる。ヘビーのステージでも、サーバーはステージの撃ち方で再生する
+    const r = (await call("submitScore", { stageId: heavy.id, replay: STILL, shot: "standard", handle })) as { accepted?: boolean };
+    expect(r.accepted).toBe(true);
   });
 
   it("続けて送ると、間隔をあけるよう求められる", async () => {

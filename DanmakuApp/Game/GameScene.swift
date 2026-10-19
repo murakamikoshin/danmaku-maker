@@ -26,8 +26,10 @@ final class GameScene: SKScene {
     private let bulletTextures: [SKTexture]
     private let shipNode: SKSpriteNode
     private let bossNode: SKSpriteNode
-    private let bossTexture: SKTexture
-    private let bossFlashTexture: SKTexture
+    private var bossTexture: SKTexture
+    private var bossFlashTexture: SKTexture
+    private var customBossTextures: (SKTexture, SKTexture)?
+    private var mookNodes: [SKSpriteNode] = []
     private var bulletNodes: [SKSpriteNode] = []
     private var shotNodes: [SKSpriteNode] = []
     private var markers: [SKShapeNode] = []
@@ -64,6 +66,7 @@ final class GameScene: SKScene {
         shipNode = SKSpriteNode(texture: (loadout.customShip ? SpriteFactory.custom(.ship) : nil) ?? SpriteFactory.ship(loadout.ship))
         if loadout.customBoss, let t = SpriteFactory.custom(.boss), let f = SpriteFactory.custom(.boss, flash: true) {
             bossTexture = t; bossFlashTexture = f
+            customBossTextures = (t, f)
         } else {
             bossTexture = SpriteFactory.boss(flash: false); bossFlashTexture = SpriteFactory.boss(flash: true)
         }
@@ -131,6 +134,33 @@ final class GameScene: SKScene {
         addChild(centerLabel)
     }
 
+    /// 場面ごとに決まっている、ボスの見た目と大きさ(当たる範囲と同じ比率)、発射点の雑魚の姿
+    private func applyEnemyLooks() {
+        let bossSize = CGSize(width: EnemyArt.bossPoints(size: sim.bossSizeIndex), height: EnemyArt.bossPoints(size: sim.bossSizeIndex))
+        if let c = customBossTextures {
+            bossTexture = c.0; bossFlashTexture = c.1
+        } else {
+            let look = sim.bossLookIndex
+            bossTexture = SpriteFactory.bossTexture(look: look, size: sim.bossSizeIndex, flash: false)
+            bossFlashTexture = SpriteFactory.bossTexture(look: look, size: sim.bossSizeIndex, flash: true)
+        }
+        bossNode.texture = bossTexture
+        bossNode.size = bossSize
+        for n in mookNodes { n.removeFromParent() }
+        mookNodes.removeAll()
+        guard let mookSize = sim.mookSizeIndex else { return }
+        let W = GameScene.W, H = GameScene.H
+        let tex = SpriteFactory.mookTexture(look: sim.mookLookIndex, size: mookSize)
+        let side = EnemyArt.mookPoints(size: mookSize)
+        for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) && (!sim.isBoss || m.firesFromPoint) {
+            let n = SKSpriteNode(texture: tex, size: CGSize(width: side, height: side))
+            n.position = pos(m.x * Double(W), m.y * Double(H))
+            n.zPosition = 1.5
+            addChild(n)
+            mookNodes.append(n)
+        }
+    }
+
     /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
     private func enterWave(_ index: Int) {
         shownWave = index
@@ -153,6 +183,7 @@ final class GameScene: SKScene {
             }
         }
         bossNode.isHidden = !sim.isBoss
+        applyEnemyLooks()
         barFill.color = sim.isBoss ? Palette.pink : Palette.gold
         for sep in barSeparators { sep.isHidden = !sim.isBoss }
         waveLabel.isHidden = sim.waveCount <= 1

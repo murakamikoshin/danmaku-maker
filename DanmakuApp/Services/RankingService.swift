@@ -84,10 +84,10 @@ enum RankingService {
     }
 
     /// 操作記録(リプレイ)を送る。サーバーが再生して、本当にクリアできているか確かめてから載せる
-    static func submit(stageID: String, moves: [Move], handle: PlayerHandle) async throws -> SubmitOutcome {
+    static func submit(stageID: String, moves: [Move], handle: PlayerHandle, shot: ShotType = .standard) async throws -> SubmitOutcome {
         guard Backend.isAvailable else { throw RankingError.unavailable }
         let payload: [String: Any] = [
-            "stageId": stageID, "replay": Replay(moves: moves).encoded(), "shot": "standard",
+            "stageId": stageID, "replay": Replay(moves: moves).encoded(), "shot": shot.rawValue,
             "handle": ["a": handle.a, "n": handle.n],
         ]
         do {

@@ -20,6 +20,7 @@
 		348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */ = {isa = PBXBuildFile; fileRef = 61E6BCB8DCD4762D19C79CA3 /* bgm_mystery.caf */; };
 		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
 		39989238F961EAE880CDC817 /* EditorFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */; };
+		3B98C5054EB5F1C20E340941 /* EnemyArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8393515DD0F1156221C5E1B /* EnemyArt.swift */; };
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
 		4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE99B3637315E889FFCC33EC /* GameUI.swift */; };
 		4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
@@ -134,6 +135,7 @@
 		C2ACDBD9418D0E35835B749E /* bgm_boss.caf */ = {isa = PBXFileReference; path = bgm_boss.caf; sourceTree = "<group>"; };
 		C5224F9D0128CAA0F361E5A3 /* se_get.caf */ = {isa = PBXFileReference; path = se_get.caf; sourceTree = "<group>"; };
 		C68321CF2F6D3DCFF7456C66 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
+		C8393515DD0F1156221C5E1B /* EnemyArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnemyArt.swift; sourceTree = "<group>"; };
 		CBED3045376B6993745B32B4 /* DanmakuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmakuApp.swift; sourceTree = "<group>"; };
 		CE2E8AF4C2864B6CCE26CD02 /* se_clear.caf */ = {isa = PBXFileReference; path = se_clear.caf; sourceTree = "<group>"; };
 		D2E13E3660EA4F407B0608E4 /* se_warning.caf */ = {isa = PBXFileReference; path = se_warning.caf; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 		CD8CFC363DC68F19E88DF9D0 /* Game */ = {
 			isa = PBXGroup;
 			children = (
+				C8393515DD0F1156221C5E1B /* EnemyArt.swift */,
 				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
 				FDD3C27E636E8B15E076F52B /* Palette.swift */,
 				4F83BED46E19BBDDDCE011EE /* Skin.swift */,
@@ -466,6 +469,7 @@
 				F379544BE24E12BF703FE682 /* EditorView.swift in Sources */,
 				CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */,
 				E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */,
+				3B98C5054EB5F1C20E340941 /* EnemyArt.swift in Sources */,
 				9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */,
 				4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */,
 				F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */,

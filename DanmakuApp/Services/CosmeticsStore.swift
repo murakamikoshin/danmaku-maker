@@ -68,7 +68,8 @@ final class CosmeticsStore: ObservableObject {
             l.background = stage.lookBackground
             l.ship = stage.lookShip
         }
-        l.shot = isTest || !ownership.has(loadout.shot) ? .standard : loadout.shot
+        // 撃ち方はステージで決まっている(作った人が選ぶ)。テストプレイも、遊ぶ人も、同じ
+        l.shot = stage.shotType
         if ownership.hasCustomImages {
             l.customBoss = customs.boss && CustomImageStore.exists(.boss)
             l.customBullet = customs.bullet && CustomImageStore.exists(.bullet)

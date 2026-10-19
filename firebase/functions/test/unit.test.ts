@@ -328,3 +328,39 @@ describe("validatePublish: 連戦(場面)", () => {
     expect(html.html).toContain("連戦 2場面");
   });
 });
+
+describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの回転", () => {
+  const boss = (o: object = {}) => good({ mode: "boss", durationSec: 60, bossHp: 300, bossMove: 0, emitters: [em({ ph: 0 })], ...o });
+
+  it("撃ち方はステージに入る。標準は入れない。知らない値は拒否", () => {
+    const a = validatePublish(good({ shot: "heavy" }));
+    expect(a.ok && a.stage.shot).toBe("heavy");
+    const b = validatePublish(good({ shot: "standard" }));
+    expect(b.ok && "shot" in b.stage).toBe(false);
+    expect(validatePublish(good({ shot: "laser" }))).toEqual({ ok: false, error: "shot" });
+  });
+
+  it("ボスの大きさ(小・大)と見た目を受け付け、標準(中・見た目0)は入れない", () => {
+    const a = validatePublish(boss({ bossSize: 0, bossLook: 3, mooks: 2, mookLook: 4 }));
+    expect(a.ok && [a.stage.bossSize, a.stage.bossLook, a.stage.mooks, a.stage.mookLook]).toEqual([0, 3, 2, 4]);
+    const b = validatePublish(boss({ bossSize: 1, bossLook: 0 }));
+    expect(b.ok && ("bossSize" in b.stage || "bossLook" in b.stage)).toBe(false);
+  });
+
+  it("ボスのないステージには、ボスの大きさ・見た目は付けられない。範囲外も拒否", () => {
+    expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 5 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
+  });
+
+  it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {
+    const a = validatePublish(good({ emitters: [em({ a: 45 })] }));
+    expect(a.ok && a.stage.emitters[0]!.a).toBe(45);
+    const b = validatePublish(good({ emitters: [em({ a: 0 })] }));
+    expect(b.ok && "a" in b.stage.emitters[0]!).toBe(false);
+    expect(validatePublish(good({ emitters: [em({ a: 200 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ t: "rain", a: 15 })] }))).toEqual({ ok: false, error: "emitter-range" });
+  });
+});

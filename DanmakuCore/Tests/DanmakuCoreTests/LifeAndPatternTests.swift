@@ -858,3 +858,79 @@ final class EffectOptionTests: XCTestCase {
         XCTAssertEqual(sim.lastDefeatPosition.y, DanmakuConfig.height * 0.18, accuracy: 1)
     }
 }
+
+
+final class BossSizeTests: XCTestCase {
+    private func stage(size: Int?) -> Stage {
+        Stage(name: "s", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 0, emitters: [], bossSize: size).sanitized()
+    }
+
+    /// 自機を動かさず撃ち続けたとき、ボスが小さいほど弾が当たりにくい(自機の弾は、中央のまま)
+    private func damageAfter(_ s: Stage, xOffsetMoves: Int) -> Int {
+        var sim = Simulation(stage: s)
+        for _ in 0..<xOffsetMoves { sim.step(Move(dx: 4, dy: 0)) }   // 少しずらす(1歩 = 1論理px)
+        for _ in 0..<(120 * 6) { sim.step(.zero) }
+        return sim.damageDealt
+    }
+
+    func testSizeIsSanitizedAndDefaultIsNotStored() {
+        XCTAssertNil(stage(size: 1).bossSize)
+        XCTAssertNil(stage(size: 7).bossSize)
+        XCTAssertEqual(stage(size: 0).bossSize, 0)
+        XCTAssertEqual(stage(size: 2).bossSize, 2)
+        let survive = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], bossSize: 2, bossLook: 3).sanitized()
+        XCTAssertNil(survive.bossSize); XCTAssertNil(survive.bossLook)
+    }
+
+    func testLooksAndMooksAreSanitized() {
+        let a = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], mooks: 2, mookLook: 4).sanitized()
+        XCTAssertEqual(a.mooks, 2); XCTAssertEqual(a.mookLook, 4)
+        let b = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], mooks: nil, mookLook: 4).sanitized()
+        XCTAssertNil(b.mookLook, "雑魚を出さないなら、見た目の指定は保存しない")
+        let c = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], mooks: 9, mookLook: 9).sanitized()
+        XCTAssertNil(c.mooks)
+    }
+
+    func testBiggerBossIsHitMoreEasily() {
+        // 中央から左右にずらした位置に自機を置く。ずれが 20px のとき、半径 17 には当たらず、24 以上なら当たる
+        let small = damageAfter(stage(size: 0), xOffsetMoves: 0)
+        let big = damageAfter(stage(size: 2), xOffsetMoves: 0)
+        XCTAssertGreaterThanOrEqual(big, small)
+        XCTAssertEqual(DanmakuConfig.bossRadii, [17, 24, 34])
+    }
+
+    func testOldStagesDecodeWithoutNewFields() throws {
+        let json = #"{"name":"a","mode":"boss","durationSec":60,"bossHp":300,"bossMove":0,"emitters":[],"formatVersion":1}"#
+        let s = try JSONDecoder().decode(Stage.self, from: Data(json.utf8))
+        XCTAssertNil(s.bossSize); XCTAssertNil(s.mooks)
+        let out = String(data: try JSONEncoder().encode(s.sanitized()), encoding: .utf8)!
+        XCTAssertFalse(out.contains("bossSize")); XCTAssertFalse(out.contains("mooks"))
+    }
+}
+
+
+final class PublishRuleTests: XCTestCase {
+    /// サーバーは、生き残りの発射台の「開始 < 制限時間」「終わり > 開始」を求める。アプリの丸めも同じにして、投稿で弾かれないようにする
+    func testSurviveEmitterTimingMatchesServerRule() {
+        let bad = [
+            Emitter(t: .ring, x: 0.5, y: 0.1, s: 30, e: 40, i: 1, c: 8, v: 2, r: 0, k: 0),   // 開始が、20秒の制限より後
+            Emitter(t: .ring, x: 0.5, y: 0.1, s: 5, e: 5, i: 1, c: 8, v: 2, r: 0, k: 0),     // 終わり = 開始
+            Emitter(t: .ring, x: 0.5, y: 0.1, s: 8, e: 3, i: 1, c: 8, v: 2, r: 0, k: 0),     // 終わりが開始より前
+        ]
+        let s = Stage(name: "t", mode: .survive, durationSec: 20, emitters: bad).sanitized()
+        for m in s.emitters {
+            XCTAssertLessThan(m.s, 20)
+            XCTAssertGreaterThan(m.e, m.s)
+        }
+        let w = Wave(kind: .survive, durationSec: 10, emitters: bad).sanitized()
+        for m in w.emitters {
+            XCTAssertLessThan(m.s, 10)
+            XCTAssertGreaterThan(m.e, m.s)
+        }
+    }
+
+    func testValidTimingIsLeftAlone() {
+        let ok = Emitter(t: .ring, x: 0.5, y: 0.1, s: 2, e: 15, i: 1, c: 8, v: 2, r: 0, k: 0)
+        XCTAssertEqual(Stage(name: "t", mode: .survive, durationSec: 20, emitters: [ok]).sanitized().emitters, [ok])
+    }
+}

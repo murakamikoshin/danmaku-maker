@@ -12,6 +12,10 @@ struct EmitterCard: View {
     let canDelete: Bool
     let onDelete: () -> Void
 
+    /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
+    @State private var collapsed = false
+    @State private var patternOpen = false
+
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
     private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
 
@@ -23,6 +27,12 @@ struct EmitterCard: View {
                     Text(String(format: L("editor.emitter"), index + 1)).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
                 }
                 Spacer()
+                Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { collapsed.toggle() } } label: {
+                    Image(systemName: collapsed ? "chevron.down.circle.fill" : "chevron.up.circle.fill")
+                        .font(.system(size: 22)).foregroundStyle(Color(Palette.text).opacity(0.6))
+                }
+                .buttonStyle(BounceButtonStyle())
+                .accessibilityIdentifier("emitter.collapse.\(index)")
                 if canDelete {
                     Button { gameTap(); onDelete() } label: {
                         Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy, design: .rounded))
@@ -34,11 +44,33 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.delete.\(index)")
                 }
             }
+            if collapsed {
+                // 畳んだときは、1行の要約だけ
+                Text("\(L("pattern.\(emitter.t.rawValue)")) · \(String(format: "%.2fs", emitter.i)) · \(emitter.c)")
+                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+            }
+            if !collapsed {
             EmitterPreview(emitter: emitter, isBoss: isBoss, look: look)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("editor.pattern").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0) }), index: index)
+                HStack {
+                    Text("editor.pattern").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Spacer()
+                    // 一覧は大きいので、選んだら畳む。いまのパターンだけを見せて、下の設定に早く行けるようにする
+                    Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { patternOpen.toggle() } } label: {
+                        HStack(spacing: 4) {
+                            Text(L("pattern.\(emitter.t.rawValue)")).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Image(systemName: patternOpen ? "chevron.up" : "chevron.down").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 5).padding(.horizontal, 10)
+                        .background(Color.white.opacity(0.1), in: Capsule())
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
+                }
+                if patternOpen {
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index)
+                }
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -77,9 +109,12 @@ struct EmitterCard: View {
             SliderRow(label: "editor.interval", value: $emitter.i, range: 0.05...2, step: 0.05) { String(format: "%.2fs", $0) }
             SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
             SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
+            SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),
+                      range: -180...180, step: 15, disabled: !emitter.canRotate) { "\(Int($0))°" }
             if advanced {
                 SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart) { "\(Int($0))°" }
             }
+            }   // if !collapsed
         }
         .padding(14)
         .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))

@@ -26,13 +26,19 @@ final class PreviewEngine {
             next += max(0.05, m.i)
         }
         var w = 0
+        var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
-            b.x += b.vx * dt; b.y += b.vy * dt
+            // ゲーム本体と同じ動き(止まる・分裂・追尾・加速・反射)
+            if b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y) == .burst {
+                born.append(contentsOf: b.fragments())
+                continue
+            }
             if b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > PreviewEngine.height + 20 { continue }
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
+        bullets.append(contentsOf: born)
     }
 }
 
@@ -83,12 +89,16 @@ struct EmitterPreview: View {
 
     private func drawSource(_ ctx: inout GraphicsContext, skin: Skin, bossImage: UIImage?) {
         if isBoss {
-            if let bossImage {
-                ctx.draw(Image(uiImage: bossImage), in: CGRect(x: 180 - 24, y: DanmakuConfig.height * 0.18 - 24, width: 48, height: 48))
-            } else {
-                let c = CGPoint(x: 180, y: DanmakuConfig.height * 0.18)
-                ctx.fill(GameBossShape().path(in: CGRect(x: c.x - 24, y: c.y - 24, width: 48, height: 48)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
-            }
+            // ボスの大きさは、当たる範囲と同じ比率(小・中・大)
+            let side = EnemyArt.bossPoints(size: look.bossSize)
+            let rect = CGRect(x: 180 - side / 2, y: DanmakuConfig.height * 0.18 - side / 2, width: side, height: side)
+            if let bossImage { ctx.draw(Image(uiImage: bossImage), in: rect) }
+            else { ctx.draw(Image(uiImage: EnemyArt.bossImage(look: look.bossLook, size: look.bossSize, flash: false)), in: rect) }
+        }
+        if let mooks = look.mooks, (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
+            let side = EnemyArt.mookPoints(size: mooks)
+            let c = CGPoint(x: emitter.x * DanmakuConfig.width, y: emitter.y * DanmakuConfig.height)
+            ctx.draw(Image(uiImage: EnemyArt.mookImage(look: look.mookLook, size: mooks)), in: CGRect(x: c.x - side / 2, y: c.y - side / 2, width: side, height: side))
         }
         if (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
             let c = CGPoint(x: emitter.x * DanmakuConfig.width, y: emitter.y * DanmakuConfig.height)

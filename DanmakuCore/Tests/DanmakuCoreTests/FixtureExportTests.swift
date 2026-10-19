@@ -22,6 +22,7 @@ final class FixtureExportTests: XCTestCase {
         var defeats: Int
         var bulletCount: Int
         var bulletHash: UInt32
+        var bulletHashCoarse: UInt32
     }
 
     /// 決まった乱数で、操作記録を作る
@@ -62,7 +63,7 @@ final class FixtureExportTests: XCTestCase {
             let s: Double = boss ? 0 : Double(idx) * 0.7
             let ph: Int = boss ? idx % 4 : 0
             out.append(Emitter(t: p, x: x, y: y, s: s, e: 30, i: intervals[idx % 4], c: counts[idx % 4],
-                               v: speeds[idx % 4], r: angles[idx % 4], k: idx % 5, ph: ph))
+                               v: speeds[idx % 4], r: angles[idx % 4], k: idx % 5, ph: ph, a: [0, 45, -90, 135][idx % 4]))
         }
         return out
     }
@@ -83,6 +84,9 @@ final class FixtureExportTests: XCTestCase {
             stages.append(("boss-hp\(hp)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: hp, bossMove: 1, emitters: emitters([.ring, .aim, .sweep, .corner], boss: true)).sanitized()))
         }
         stages.append(("boss-lives5", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 2, emitters: emitters([.spiral, .sideL, .sideR], boss: true), lifeMode: .lives, lifeCount: 5).sanitized()))
+        for size in [0, 2] {
+            stages.append(("boss-size\(size)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1, emitters: emitters([.ring, .aim, .sweep], boss: true), bossSize: size, mooks: 1, bossLook: 2, mookLook: 3).sanitized()))
+        }
         stages.append(("boss-unlimited", Stage(name: "b", mode: .boss, durationSec: 0, bossHp: 700, bossMove: 1, emitters: emitters([.ring, .homing, .sideL], boss: true)).sanitized()))
         stages.append(("boss-firepoint", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1, emitters: [
             Emitter(t: .spiral, x: 0.15, y: 0.45, s: 0, e: 30, i: 0.2, c: 3, v: 2, r: 11, k: 1, ph: 0, p: 1),
@@ -129,7 +133,7 @@ final class FixtureExportTests: XCTestCase {
                     cases.append(Case(name: "\(name)/\(shot.rawValue)/m\(style)", stage: st, shot: shot.rawValue,
                                       replay: Replay(moves: trimmed).encoded(), steps: used,
                                       expect: Expect(outcome: outcome, tick: sim.tick, hp: sim.hp, damage: sim.damageDealt,
-                                                     lifeLeft: sim.lifeLeft, wave: sim.waveIndex, defeats: sim.defeats, bulletCount: r.bulletCount, bulletHash: r.bulletHash)))
+                                                     lifeLeft: sim.lifeLeft, wave: sim.waveIndex, defeats: sim.defeats, bulletCount: r.bulletCount, bulletHash: r.bulletHash, bulletHashCoarse: r.bulletHashCoarse)))
                 }
             }
         }

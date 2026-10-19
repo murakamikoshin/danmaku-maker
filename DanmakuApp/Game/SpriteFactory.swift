@@ -133,6 +133,9 @@ enum SpriteFactory {
         return texture(img)
     }
 
+    static func bossTexture(look: Int, size: Int, flash: Bool) -> SKTexture { texture(EnemyArt.bossImage(look: look, size: size, flash: flash)) }
+    static func mookTexture(look: Int, size: Int) -> SKTexture { texture(EnemyArt.mookImage(look: look, size: size)) }
+
     static func boss(flash: Bool) -> SKTexture {
         texture(size: CGSize(width: 48, height: 48)) { c in
             c.setFillColor((flash ? UIColor.white : Palette.pink).cgColor)

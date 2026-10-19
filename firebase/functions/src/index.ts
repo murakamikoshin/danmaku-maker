@@ -58,7 +58,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
   const played = decodeReplay(v.clearReplay, maxSteps);
   if (!played) throw new HttpsError("invalid-argument", "replay");
-  if (simulate(v.stage, played.moves, played.steps, "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
+  if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
   const langRaw = (req.data as { lang?: unknown }).lang;
   const lang = typeof langRaw === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(langRaw) ? langRaw : "und";
 
@@ -185,14 +185,14 @@ function handleNumber(uid: string): number {
 
 /**
  * ランキングに記録する。アプリから届いた操作記録(リプレイ)をサーバーが再生して、本当にクリアできているか確かめてから載せる。
- * ボス戦は「クリアまでのステップ数」(少ないほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)。標準の撃ち方だけが対象。
+ * ボス戦は「クリアまでのステップ数」(少ないほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)。撃ち方はステージごとに決まっていて、全員同じ。
  * 名前は自由入力にせず、決まった言葉の組み合わせ(番号で選ぶ)だけにする。
  */
 export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, async (req) => {
   const uid = requireAny(req);
   const id = stageIdFrom(req.data);
   const d = req.data as { replay?: unknown; shot?: unknown; handle?: { a?: unknown; n?: unknown } };
-  if (!isShotType(d.shot) || d.shot !== "standard") throw new HttpsError("invalid-argument", "shot");
+  // 撃ち方はステージで決まっている。アプリから届く値は見ない(古い版は "standard" を送ってくる)
   const a = d.handle?.a, n = d.handle?.n;
   if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
     throw new HttpsError("invalid-argument", "handle");
@@ -217,7 +217,7 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
 
   const played = decodeReplay(d.replay, (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144);
   if (!played) throw new HttpsError("invalid-argument", "replay");
-  const result = simulate(stage, played.moves, played.steps, "standard");
+  const result = simulate(stage, played.moves, played.steps, isShotType(stage.shot) ? stage.shot : "standard");
   if (result.outcome !== "cleared") return { accepted: false, reason: "not-cleared" };
 
   // ボス戦と連戦は「クリアまでの時間」(短いほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)

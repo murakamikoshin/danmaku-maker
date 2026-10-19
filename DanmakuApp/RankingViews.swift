@@ -14,7 +14,8 @@ struct RankingSubmitPanel: View {
     struct SubmitSummary: Equatable { var rank: Int; var value: Int; var improved: Bool }
 
     private var mode: Mode { context.stage.mode }
-    private var standard: Bool { result.shot == .standard }
+    /// 撃ち方はステージで決まっていて全員同じなので、どの撃ち方でもランキングに送れる
+    private var standard: Bool { true }
 
     var body: some View {
         VStack(spacing: 10) {
@@ -61,7 +62,7 @@ struct RankingSubmitPanel: View {
     private func send() async {
         state = .sending
         do {
-            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, handle: handles.handle)
+            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, handle: handles.handle, shot: context.stage.shotType)
             state = .done(SubmitSummary(rank: o.rank, value: o.value, improved: o.improved))
         } catch RankingError.tooFast { state = .failed("ranking.error.tooFast") }
         catch RankingError.notCleared { state = .failed("ranking.error.notCleared") }

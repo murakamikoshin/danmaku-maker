@@ -68,7 +68,7 @@ struct HomeView: View {
         }
         .sheet(item: $publishingEntry) { entry in
             if let r = entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) {
-                PublishFlowView(stage: entry.stage, authorName: entry.draft.authorName, replay: r) { id in
+                PublishFlowView(stage: entry.stage, authorName: AuthorName.current.isEmpty ? entry.draft.authorName : AuthorName.current, replay: r) { id in
                     var e = saved.stage(id: entry.id) ?? entry
                     e.publishedStage = e.stage; e.publishedID = id
                     saved.update(e)
@@ -117,7 +117,7 @@ struct HomeView: View {
                 .padding(.vertical, 24).frame(maxWidth: .infinity)
             } else {
                 ForEach(saved.stages) { e in MyStageRow(entry: e, onPlay: { playingMine = e }, onEdit: { editingEntry = e },
-                                                         onPublish: { publishingEntry = e }, onDelete: { deletingEntry = e }) }
+                                                         onPublish: { if e.draft.name.trimmingCharacters(in: .whitespaces).isEmpty || (AuthorName.current.isEmpty && e.draft.authorName.trimmingCharacters(in: .whitespaces).isEmpty) { editingEntry = e } else { publishingEntry = e } }, onDelete: { deletingEntry = e }) }
             }
         }
     }
@@ -313,8 +313,8 @@ struct MyStageRow: View {
             HStack(spacing: 8) {
                 action("mystage.edit", "pencil", Color(UIColor(hex: 0x5CE1E6)), onEdit)
                 action(entry.isPublished ? "mystage.posted" : "mystage.publish", "paperplane.fill", Color(Palette.pink), onPublish)
-                    .opacity(entry.isVerified && !entry.isPublished && !entry.draft.name.isEmpty && !entry.draft.authorName.isEmpty ? 1 : 0.4)
-                    .disabled(!(entry.isVerified && !entry.isPublished && !entry.draft.name.isEmpty && !entry.draft.authorName.isEmpty))
+                    .opacity(entry.isVerified && !entry.isPublished ? 1 : 0.4)
+                    .disabled(!(entry.isVerified && !entry.isPublished))
                 action("mystage.delete", "trash", Color(Palette.pink).opacity(0.8), onDelete)
             }
             .padding(.horizontal, 4)

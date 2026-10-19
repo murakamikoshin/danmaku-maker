@@ -30,6 +30,7 @@ extension Emitter {
     mutating func changePattern(to p: Pattern) {
         let d = Emitter.make(p, end: e)
         t = p; i = d.i; c = d.c; v = d.v; r = d.r
+        if !canRotate { a = 0 }
     }
 }
 
@@ -42,6 +43,11 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var bossMove = 1
     var warning = true
     var defeat = DefeatEffect.standard.rawValue
+    /// ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の姿の大きさ(nil は出さない)と見た目。なければ標準
+    var bossSize: Int?
+    var bossLook: Int?
+    var mooks: Int?
+    var mookLook: Int?
     var emitters: [Emitter]
 
     init(kind: WaveKind) {
@@ -53,7 +59,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
 
     var wave: Wave {
         Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
-             emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil)
+             emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
+             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook)
     }
 
     var durations: [Int] { kind == .boss ? Wave.bossDurations : Wave.surviveDurations }
@@ -102,12 +109,19 @@ struct Draft: Codable, Equatable {
     /// ボス戦・ダメージ勝負の、開始前の警告と、撃破の演出(DefeatEffect の番号)
     var bossWarning = false
     var bossDefeat = DefeatEffect.standard.rawValue
+    /// 自機の撃ち方(ステージごと。遊ぶ全員が、この撃ち方になる)
+    var shot = ShotType.standard
+    /// ボスの大きさ・見た目、雑魚の姿の大きさ(nil は出さない)・見た目
+    var bossSize = 1
+    var bossLook = 0
+    var mooks: Int?
+    var mookLook = 0
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, bossSize, bossLook, mooks, mookLook }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -128,6 +142,11 @@ struct Draft: Codable, Equatable {
         waves = try c.decodeIfPresent([DraftWave].self, forKey: .waves) ?? [DraftWave(kind: .survive), DraftWave(kind: .boss)]
         bossWarning = try c.decodeIfPresent(Bool.self, forKey: .bossWarning) ?? false
         bossDefeat = try c.decodeIfPresent(Int.self, forKey: .bossDefeat) ?? DefeatEffect.standard.rawValue
+        shot = (try? c.decodeIfPresent(ShotType.self, forKey: .shot)) ?? .standard
+        bossSize = try c.decodeIfPresent(Int.self, forKey: .bossSize) ?? 1
+        bossLook = try c.decodeIfPresent(Int.self, forKey: .bossLook) ?? 0
+        mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
+        mookLook = try c.decodeIfPresent(Int.self, forKey: .mookLook) ?? 0
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.spiral, end: 20)]
     }
 
@@ -143,7 +162,9 @@ struct Draft: Codable, Equatable {
               hideMarkers: hideMarkers ? true : nil,
               waves: isSeq ? waves.map(\.wave) : nil,
               bossWarning: bossWarning ? true : nil,
-              bossDefeat: mode == .boss ? bossDefeat : nil).sanitized()
+              bossDefeat: mode == .boss ? bossDefeat : nil,
+              bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
+              shot: shot).sanitized()
     }
 
     /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)
@@ -171,6 +192,8 @@ final class EditorModel: ObservableObject {
         self.entry = entry
         self.store = store
         draft = entry.draft
+        // 作者名は全ステージ共通
+        if !AuthorName.current.isEmpty { draft.authorName = AuthorName.current }
     }
 
     var entryID: UUID { entry.id }
@@ -188,6 +211,7 @@ final class EditorModel: ObservableObject {
 
     /// 自動保存(内容が変わるたびに、マイステージへ書く)
     func save() {
+        AuthorName.set(draft.authorName)
         entry.draft = draft
         store.update(entry)
     }

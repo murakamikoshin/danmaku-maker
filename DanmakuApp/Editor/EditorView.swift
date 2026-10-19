@@ -33,6 +33,7 @@ struct EditorView: View {
                     GamePanel(title: "editor.section.basic", tint: Color(UIColor(hex: 0x5CE1E6))) {
                         NameFields(draft: $model.draft)
                     }
+                    ShotPanel(model: model)
                     if model.draft.mode == .sequence {
                         WavesSection(model: model, advanced: advanced)
                     } else {
@@ -43,6 +44,13 @@ struct EditorView: View {
                         LifePanel(model: model)
                         BGMPanel(model: model)
                         LookPanel(model: model)
+                        if model.draft.mode != .sequence {
+                            GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
+                                EnemyControls(showBoss: model.draft.mode != .survive,
+                                              bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
+                                              mooks: $model.draft.mooks, mookLook: $model.draft.mookLook)
+                            }
+                        }
                         MarkerPanel(model: model)
                         CustomLookPanel(model: model)
                     }
@@ -66,6 +74,12 @@ struct EditorView: View {
                         GameActionButton(title: model.isPublished ? "editor.posted" : "editor.post", systemImage: "paperplane.fill", fill: GameStyle.accent,
                                          enabled: model.isVerified && model.canPublish && !model.isPublished) { publishing = true }
                         .accessibilityIdentifier("editor.post")
+                    }
+                    // 投稿ボタンが押せない理由を、はっきり出す
+                    if !model.isPublished, model.isVerified, !model.canPublish {
+                        Text("editor.hint.name").font(.caption.bold()).foregroundStyle(Color(Palette.gold)).frame(maxWidth: .infinity, alignment: .leading)
+                    } else if !model.isPublished, !model.isVerified {
+                        Text("editor.hint.clear").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(16)
@@ -102,11 +116,17 @@ struct PreviewLook: Equatable {
     var background: Theme = .classic
     var ship: Theme = .classic
     var customs: CustomImageChoice = .none
+    /// ボスの大きさ・見た目、雑魚の姿の大きさ(nil は出さない)・見た目
+    var bossSize = 1
+    var bossLook = 0
+    var mooks: Int?
+    var mookLook = 0
 
     init() {}
     init(draft: Draft) {
         bullets = draft.themeBullets; background = draft.themeBackground; ship = draft.themeShip
         customs = draft.customImages
+        bossSize = draft.bossSize; bossLook = draft.bossLook; mooks = draft.mooks; mookLook = draft.mookLook
     }
 }
 
@@ -162,6 +182,92 @@ private struct TimingPanel: View {
             } else if model.draft.mode == .damage {
                 Text("editor.damage.note").font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+/// 自機の撃ち方。ステージごとに作者が決めて、遊ぶ全員が同じ撃ち方になる(買った撃ち方だけ選べる)
+private struct ShotPanel: View {
+    @ObservedObject var model: EditorModel
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showShop = false
+
+    var body: some View {
+        GamePanel(title: "editor.shot", tint: Color(Palette.gold)) {
+            Text("editor.shot.note").font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                ForEach(ShotType.allCases, id: \.self) { shot in
+                    let owned = cosmetics.ownership.has(shot) || model.draft.shot == shot
+                    Button {
+                        gameTap()
+                        if owned { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { model.draft.shot = shot } } else { showShop = true }
+                    } label: {
+                        VStack(spacing: 4) {
+                            ZStack(alignment: .topTrailing) {
+                                Chip(title: L(shot.nameKey), selected: model.draft.shot == shot)
+                                if !owned { Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(Color(Palette.gold)).padding(4) }
+                            }
+                        }
+                        .opacity(owned ? 1 : 0.7)
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("editor.shot.\(shot.rawValue)")
+                }
+            }
+            Text(LocalizedStringKey(model.draft.shot.detailKey)).font(.caption2).foregroundStyle(.secondary)
+        }
+        .sheet(isPresented: $showShop) { ShopView() }
+    }
+}
+
+/// ボスの大きさと見た目、雑魚の姿(見た目だけ)。ボスの大きさは、弾が当たる範囲も変える
+private struct EnemyControls: View {
+    let showBoss: Bool
+    @Binding var bossSize: Int
+    @Binding var bossLook: Int
+    @Binding var mooks: Int?
+    @Binding var mookLook: Int
+
+    private func sizeItems() -> [(Int, String)] { [(0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))] }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if showBoss {
+                Text("editor.enemy.size").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                ChipGrid(items: sizeItems(), selection: $bossSize, idPrefix: "editor.boss.size")
+                Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
+                Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                looks(selection: $bossLook, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+            }
+            Text("editor.enemy.mooks").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            ChipGrid(items: [(-1, L("editor.enemy.none")), (0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))],
+                     selection: Binding(get: { mooks ?? -1 }, set: { mooks = $0 < 0 ? nil : $0 }), idPrefix: "editor.mook.size")
+            if mooks != nil {
+                Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                looks(selection: $mookLook, idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
+            }
+        }
+    }
+
+    private func looks(selection: Binding<Int>, idPrefix: String, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(0..<EnemyArt.looks, id: \.self) { n in
+                    let selected = selection.wrappedValue == n
+                    Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection.wrappedValue = n } } label: {
+                        VStack(spacing: 4) {
+                            Image(uiImage: image(n)).resizable().frame(width: 36, height: 36)
+                            Text(name(n)).font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.75))
+                        }
+                        .padding(.vertical, 8).padding(.horizontal, 10)
+                        .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("\(idPrefix).\(n)")
+                }
+            }.padding(.vertical, 2)
         }
     }
 }
@@ -555,7 +661,8 @@ private struct WaveCard: View {
     }
 
     private var content: some View {
-        let look = PreviewLook(draft: model.draft)
+        var look = PreviewLook(draft: model.draft)
+        look.bossSize = wave.bossSize ?? 1; look.bossLook = wave.bossLook ?? 0; look.mooks = wave.mooks; look.mookLook = wave.mookLook ?? 0
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(String(format: L("editor.wave.title"), i + 1)).font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
@@ -578,6 +685,11 @@ private struct WaveCard: View {
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
                           range: 100...1000, step: 50) { String(Int($0)) }
                 if advanced {
+                    EnemyControls(showBoss: true,
+                                  bossSize: Binding(get: { wave.bossSize ?? 1 }, set: { model.draft.waves[i].bossSize = $0 }),
+                                  bossLook: Binding(get: { wave.bossLook ?? 0 }, set: { model.draft.waves[i].bossLook = $0 }),
+                                  mooks: Binding(get: { wave.mooks }, set: { model.draft.waves[i].mooks = $0 }),
+                                  mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }))
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("editor.warning").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))

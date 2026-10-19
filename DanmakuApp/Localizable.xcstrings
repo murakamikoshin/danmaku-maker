@@ -1158,13 +1158,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Author"
+            "value": "Author (shared by all stages)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "作者名"
+            "value": "作者名(全ステージ共通)"
           }
         }
       }
@@ -5766,13 +5766,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Test plays before publishing always use the standard shot."
+            "value": "Owned shots can be picked when creating a stage. The creator decides it per stage, so everyone plays with the same shot."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "投稿前のテストプレイは、いつも標準の撃ち方で行います。"
+            "value": "買った打ち方は、ステージ作りで選べます。打ち方はステージごとに作る人が決めて、遊ぶ人は全員同じになります。"
           }
         }
       }
@@ -6669,6 +6669,406 @@
           "stringUnit": {
             "state": "translated",
             "value": "あと%d個投稿すると解放されます"
+          }
+        }
+      }
+    },
+    "editor.shot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shot style"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打ち方"
+          }
+        }
+      }
+    },
+    "editor.shot.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone who plays this stage uses this shot (test plays too). Only shots you own can be picked."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージを遊ぶ全員が、この打ち方になります(テストプレイも同じ)。買った打ち方だけ選べます。"
+          }
+        }
+      }
+    },
+    "editor.enemy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss & enemy looks"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスと雑魚の見た目"
+          }
+        }
+      }
+    },
+    "editor.enemy.size": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss size"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの大きさ"
+          }
+        }
+      }
+    },
+    "editor.enemy.size.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bigger bosses are easier to hit; smaller ones are harder."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大きいほど弾が当たりやすく、小さいほど難しくなります。"
+          }
+        }
+      }
+    },
+    "editor.enemy.bosslook": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss look"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの見た目"
+          }
+        }
+      }
+    },
+    "editor.enemy.mooks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enemies at fire points (looks only)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚の姿(発射点に出る小さな敵。見た目だけ)"
+          }
+        }
+      }
+    },
+    "editor.enemy.mooklook": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enemy look"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚の見た目"
+          }
+        }
+      }
+    },
+    "editor.enemy.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "なし"
+          }
+        }
+      }
+    },
+    "editor.size.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小"
+          }
+        }
+      }
+    },
+    "editor.size.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中"
+          }
+        }
+      }
+    },
+    "editor.size.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大"
+          }
+        }
+      }
+    },
+    "enemy.boss.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Classic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ふつう"
+          }
+        }
+      }
+    },
+    "enemy.boss.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eye"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目玉"
+          }
+        }
+      }
+    },
+    "enemy.boss.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crystal"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリスタル"
+          }
+        }
+      }
+    },
+    "enemy.boss.3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UFO"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "円盤"
+          }
+        }
+      }
+    },
+    "enemy.boss.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spiky"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "とげ"
+          }
+        }
+      }
+    },
+    "enemy.mook.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blob"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まるい子"
+          }
+        }
+      }
+    },
+    "enemy.mook.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UFO"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "円盤"
+          }
+        }
+      }
+    },
+    "enemy.mook.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bat"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コウモリ"
+          }
+        }
+      }
+    },
+    "enemy.mook.3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spike ball"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "とげ玉"
+          }
+        }
+      }
+    },
+    "enemy.mook.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "おばけ"
+          }
+        }
+      }
+    },
+    "editor.hint.name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To publish, fill in the stage name and author name above."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿するには、上の「ステージ名」と「作者名」を入れてください。"
+          }
+        }
+      }
+    },
+    "editor.hint.clear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To publish, clear the stage in a test play (changing it requires clearing again)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿するには、テストプレイでクリアしてください(内容を変えると、もう一度クリアが必要です)。"
+          }
+        }
+      }
+    },
+    "editor.rotate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate pattern"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パターンの向き(回転)"
           }
         }
       }

@@ -35,6 +35,62 @@ public struct Bullet: Equatable, Sendable {
     }
 }
 
+/// 弾の1ステップの結果。burst は、分裂弾がはじけて消えたこと(散った小さな弾は fragments() で作る)
+public enum BulletMotion: Sendable { case alive, burst }
+
+extension Bullet {
+    /// 1ステップ分の弾の動き(時間で変わる動き・追尾・加速・移動・壁での反射)。ゲーム本体、ショップの見本、
+    /// エディタのプレビューが、同じ計算を使う。画面の外に出たか、自機に当たったかは、呼ぶ側で調べる
+    public mutating func advance(dt: Double, width W: Double, playerX: Double, playerY: Double) -> BulletMotion {
+        var frozen = false
+        if script != 0 {
+            age += dt
+            switch script {
+            case 1:
+                if age >= DanmakuConfig.stopGoMove + DanmakuConfig.stopGoHold {
+                    // 止まっていた弾が、自機に向かって、少し速く飛び出す
+                    let speed = (vx * vx + vy * vy).squareRoot() * DanmakuConfig.stopGoBoost
+                    let a = atan2(playerY - y, playerX - x)
+                    vx = cos(a) * speed; vy = sin(a) * speed
+                    script = 0
+                } else if age >= DanmakuConfig.stopGoMove { frozen = true }
+            case 2:
+                if age >= DanmakuConfig.splitAfter { return .burst }
+            default:
+                if age >= DanmakuConfig.timedHold { script = 0 } else { frozen = true }
+            }
+        }
+        if homeLeft > 0 {
+            // 追尾: 速さはそのまま、向きだけを、1ステップあたり turn*dt まで自機のほうへ回す
+            let want = atan2(playerY - y, playerX - x)
+            let cur = atan2(vy, vx)
+            var diff = want - cur
+            while diff > Double.pi { diff -= 2 * Double.pi }
+            while diff < -Double.pi { diff += 2 * Double.pi }
+            let maxTurn = turn * dt
+            let na = cur + min(maxTurn, max(-maxTurn, diff))
+            let speed = (vx * vx + vy * vy).squareRoot()
+            vx = cos(na) * speed
+            vy = sin(na) * speed
+            homeLeft -= dt
+        }
+        if accel != 0 {
+            let speed = (vx * vx + vy * vy).squareRoot()
+            if speed < maxSpeed {
+                // 上限を超えないように、増やす割合を頭打ちにする
+                let g = min(1 + accel * dt, maxSpeed / speed)
+                vx *= g; vy *= g
+            }
+        }
+        if !frozen { x += vx * dt; y += vy * dt }
+        if bounces > 0 {
+            if x < 0 { x = -x; vx = -vx; bounces -= 1 }
+            else if x > W { x = 2 * W - x; vx = -vx; bounces -= 1 }
+        }
+        return .alive
+    }
+}
+
 /// 1ステップ分の自機移動量。単位は 0.25 論理px（リプレイに入れるため整数にしてある）
 public struct Move: Equatable, Sendable {
     public static let unit = 0.25
@@ -55,6 +111,7 @@ public enum Emit {
         let sp = m.v * 60
         let n = max(1, m.c)
         let deg = Double.pi / 180
+        let off = Double(m.a) * deg   // パターン全体を回す角度
         func add(_ x: Double, _ y: Double, _ a: Double) {
             if out.count < DanmakuConfig.maxBullets {
                 out.append(Bullet(x: x, y: y, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k))
@@ -62,9 +119,9 @@ public enum Emit {
         }
         switch m.t {
         case .ring, .spiral:
-            for j in 0..<n { add(cx, cy, Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg) }
+            for j in 0..<n { add(cx, cy, Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg + off) }
         case .aim:
-            let b = atan2(py - cy, px - cx)
+            let b = atan2(py - cy, px - cx) + off
             for j in 0..<n {
                 add(cx, cy, b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0))
             }
@@ -76,7 +133,7 @@ public enum Emit {
             }
         case .homing:
             // 最初は自機の方向へ。複数のときは少しずつ角度をずらして出す。曲がる速さは r で決める(大きいほど急に曲がる)
-            let b = atan2(py - cy, px - cx)
+            let b = atan2(py - cy, px - cx) + off
             let turn = max(25.0, abs(m.r) * 2.0) * deg
             for j in 0..<n {
                 let a = b + (Double(j) - Double(n - 1) / 2) * 0.35
@@ -88,8 +145,8 @@ public enum Emit {
             // 輪の形の弾幕: 角度ごとに速さを変えて、花・星・ハートの輪郭をつくる(r は、1回ごとの回転)
             let rot = Double(k) * m.r * deg
             for j in 0..<n {
-                let th = Double(j) * 2 * Double.pi / Double(n) + rot
-                let rel = th - rot     // 形は、回転とは別に決める(回転させると、形ごと回る)
+                let th = Double(j) * 2 * Double.pi / Double(n) + rot + off
+                let rel = th - rot - off     // 形は、回転とは別に決める(回転させると、形ごと回る)
                 let f: Double
                 switch m.t {
                 case .flower: f = 0.4 + 0.6 * abs(cos(2.5 * rel))
@@ -110,7 +167,7 @@ public enum Emit {
             }
         case .beam:
             // 自機に向けて、速さをずらした弾を一直線に出す(c 個)。r は、狙いのずれ(度)
-            let b = atan2(py - cy, px - cx) + m.r * deg * 0.2
+            let b = atan2(py - cy, px - cx) + off + m.r * deg * 0.2
             for j in 0..<n {
                 let f = 1 + Double(j) * 0.18
                 if out.count < DanmakuConfig.maxBullets {
@@ -122,7 +179,7 @@ public enum Emit {
             let per = max(1, n / 4)
             let rot = Double(k) * m.r * deg
             for arm in 0..<4 {
-                let a = Double(arm) * Double.pi / 2 + rot
+                let a = Double(arm) * Double.pi / 2 + rot + off
                 for j in 0..<per {
                     let f = 1 + Double(j) * 0.25
                     if out.count < DanmakuConfig.maxBullets {
@@ -131,7 +188,7 @@ public enum Emit {
                 }
             }
         case .accel:
-            let b = atan2(py - cy, px - cx)
+            let b = atan2(py - cy, px - cx) + off
             for j in 0..<n {
                 let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
                 if out.count < DanmakuConfig.maxBullets {
@@ -139,7 +196,7 @@ public enum Emit {
                 }
             }
         case .bounce:
-            let b = atan2(py - cy, px - cx)
+            let b = atan2(py - cy, px - cx) + off
             for j in 0..<n {
                 let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
                 if out.count < DanmakuConfig.maxBullets {
@@ -147,7 +204,7 @@ public enum Emit {
                 }
             }
         case .stopgo, .split:
-            let b = atan2(py - cy, px - cx)
+            let b = atan2(py - cy, px - cx) + off
             for j in 0..<n {
                 let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
                 if out.count < DanmakuConfig.maxBullets {
@@ -156,7 +213,7 @@ public enum Emit {
             }
         case .timed:
             for j in 0..<n {
-                let a = Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg
+                let a = Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg + off
                 if out.count < DanmakuConfig.maxBullets {
                     out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, script: 3))
                 }
@@ -238,8 +295,9 @@ public struct Simulation {
 
     static let bossMoves: [(a: Double, w: Double)] = [(0, 0), (0.25, 0.6), (0.32, 1.3)]
 
-    public init(stage: Stage, shotType: ShotType = .standard) {
-        self.init(stage: stage, seed: stage.seed, shotType: shotType)
+    /// shotType を省くと、ステージで決まっている撃ち方を使う(ふつうは、これ)
+    public init(stage: Stage, shotType: ShotType? = nil) {
+        self.init(stage: stage, seed: stage.seed, shotType: shotType ?? stage.shotType)
     }
 
     init(stage: Stage, seed: UInt32, shotType: ShotType = .standard) {
@@ -257,6 +315,11 @@ public struct Simulation {
     }
 
     private var spec: WaveSpec { specs[waveIndex] }
+    /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
+    public var bossSizeIndex: Int { spec.size }
+    public var bossLookIndex: Int { spec.look }
+    public var mookSizeIndex: Int? { spec.mooks }
+    public var mookLookIndex: Int { spec.mookLook }
     /// 場面の数
     public var waveCount: Int { specs.count }
     /// いまの場面の中の経過時間(秒)。切り替えの間と、READY の間は負
@@ -355,7 +418,8 @@ public struct Simulation {
                 s.y -= 600 * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
-                if dx * dx + dy * dy < 24 * 24 {
+                let br = DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
+                if dx * dx + dy * dy < br * br {
                     damageDealt += s.damage
                     if !isDamageRace { hp -= s.damage }
                     flash = 0.06; continue
@@ -402,54 +466,10 @@ public struct Simulation {
         var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
-            var frozen = false
-            if b.script != 0 {
-                b.age += dt
-                switch b.script {
-                case 1:
-                    if b.age >= DanmakuConfig.stopGoMove + DanmakuConfig.stopGoHold {
-                        // 止まっていた弾が、自機に向かって、少し速く飛び出す
-                        let speed = (b.vx * b.vx + b.vy * b.vy).squareRoot() * DanmakuConfig.stopGoBoost
-                        let a = atan2(player.y - b.y, player.x - b.x)
-                        b.vx = cos(a) * speed; b.vy = sin(a) * speed
-                        b.script = 0
-                    } else if b.age >= DanmakuConfig.stopGoMove { frozen = true }
-                case 2:
-                    if b.age >= DanmakuConfig.splitAfter {
-                        let room = max(0, DanmakuConfig.maxBullets - (w + born.count + (bullets.count - i - 1)))
-                        born.append(contentsOf: b.fragments().prefix(room))
-                        continue
-                    }
-                default:
-                    if b.age >= DanmakuConfig.timedHold { b.script = 0 } else { frozen = true }
-                }
-            }
-            if b.homeLeft > 0 {
-                // 追尾: 速さはそのまま、向きだけを、1ステップあたり turn*dt まで自機のほうへ回す
-                let want = atan2(player.y - b.y, player.x - b.x)
-                let cur = atan2(b.vy, b.vx)
-                var diff = want - cur
-                while diff > Double.pi { diff -= 2 * Double.pi }
-                while diff < -Double.pi { diff += 2 * Double.pi }
-                let maxTurn = b.turn * dt
-                let na = cur + min(maxTurn, max(-maxTurn, diff))
-                let speed = (b.vx * b.vx + b.vy * b.vy).squareRoot()
-                b.vx = cos(na) * speed
-                b.vy = sin(na) * speed
-                b.homeLeft -= dt
-            }
-            if b.accel != 0 {
-                let speed = (b.vx * b.vx + b.vy * b.vy).squareRoot()
-                if speed < b.maxSpeed {
-                    // 上限を超えないように、増やす割合を頭打ちにする
-                    let g = min(1 + b.accel * dt, b.maxSpeed / speed)
-                    b.vx *= g; b.vy *= g
-                }
-            }
-            if !frozen { b.x += b.vx * dt; b.y += b.vy * dt }
-            if b.bounces > 0 {
-                if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
-                else if b.x > W { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1 }
+            if b.advance(dt: dt, width: W, playerX: player.x, playerY: player.y) == .burst {
+                let room = max(0, DanmakuConfig.maxBullets - (w + born.count + (bullets.count - i - 1)))
+                born.append(contentsOf: b.fragments().prefix(room))
+                continue
             }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
@@ -489,6 +509,8 @@ extension Simulation {
         public var hp: Int
         /// 終了時の弾の位置から作ったハッシュ（完全一致の確認用）
         public var bulletHash: UInt32
+        /// 弾の位置を、小数第3位に丸めて作ったハッシュ(sin/cos の最後の桁の違いに左右されない。サーバーとの一致の確認用)
+        public var bulletHashCoarse: UInt32
     }
 
     /// 入力列を再生して結果を返す。入力が尽きたら動かさずに続ける
@@ -509,6 +531,8 @@ extension Simulation {
                 for shift in stride(from: 0, to: 64, by: 8) { h.add(UInt8((bits >> UInt64(shift)) & 0xFF)) }
             }
         }
-        return Result(outcome: outcome, steps: tick, bulletCount: bullets.count, hp: hp, bulletHash: h.value)
+        var c = FNV1a()
+        for b in bullets { for q in [b.x, b.y] { c.add(Int32((q * 1000).rounded())) } }
+        return Result(outcome: outcome, steps: tick, bulletCount: bullets.count, hp: hp, bulletHash: h.value, bulletHashCoarse: c.value)
     }
 }

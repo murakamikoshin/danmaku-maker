@@ -43,13 +43,19 @@ struct ShopView: View {
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
                     ThemeCard(theme: .classic)
 
-                    Button("store.restore") { Task { await purchases.restore() } }
-                        .frame(maxWidth: .infinity)
-                        .disabled(purchases.isBusy)
-                        .accessibilityIdentifier("shop.restore")
+                    Button { gameTap(); Task { await purchases.restore() } } label: {
+                        Label("store.restore", systemImage: "arrow.clockwise")
+                            .font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(purchases.isBusy)
+                    .accessibilityIdentifier("shop.restore")
                     if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity) }
                 }
-                .padding(.horizontal, 16).padding(.vertical, 12)
+                // 下のタブに隠れないように、タブの高さぶん空ける
+                .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 110)
             }
             .onAppear {
                 #if DEBUG
@@ -218,7 +224,7 @@ private struct ShotTile: View {
             HStack {
                 Spacer()
                 if cosmetics.ownership.has(shot) {
-                    if cosmetics.loadout.shot == shot { EquippedLabel() } else { EquipButton { cosmetics.equip(shot) } }
+                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
                 } else {
                     PriceButton(product: .shot(shot))
                 }
@@ -227,7 +233,7 @@ private struct ShotTile: View {
         .padding(12)
         .frame(width: 210)
         .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(cosmetics.loadout.shot == shot ? Color(Palette.bullets[4]).opacity(0.7) : Color.white.opacity(0.08), lineWidth: 1.5))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1.5))
     }
 }
 
@@ -596,42 +602,10 @@ final class PatternDemoEngine {
         var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
-            var frozen = false
-            if b.script != 0 {
-                b.age += dt
-                switch b.script {
-                case 1:
-                    if b.age >= DanmakuConfig.stopGoMove + DanmakuConfig.stopGoHold {
-                        let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot() * DanmakuConfig.stopGoBoost
-                        let a = atan2(player.y - b.y, player.x - b.x)
-                        b.vx = cos(a) * sp; b.vy = sin(a) * sp; b.script = 0
-                    } else if b.age >= DanmakuConfig.stopGoMove { frozen = true }
-                case 2:
-                    if b.age >= DanmakuConfig.splitAfter {
-                        born.append(contentsOf: b.fragments())
-                        continue
-                    }
-                default:
-                    if b.age >= DanmakuConfig.timedHold { b.script = 0 } else { frozen = true }
-                }
-            }
-            if b.homeLeft > 0 {
-                let want = atan2(player.y - b.y, player.x - b.x), cur = atan2(b.vy, b.vx)
-                var d = want - cur
-                while d > .pi { d -= 2 * .pi }
-                while d < -.pi { d += 2 * .pi }
-                let na = cur + min(b.turn * dt, max(-b.turn * dt, d))
-                let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot()
-                b.vx = cos(na) * sp; b.vy = sin(na) * sp; b.homeLeft -= dt
-            }
-            if b.accel != 0 {
-                let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot()
-                if sp < b.maxSpeed { let g = min(1 + b.accel * dt, b.maxSpeed / sp); b.vx *= g; b.vy *= g }
-            }
-            if !frozen { b.x += b.vx * dt; b.y += b.vy * dt }
-            if b.bounces > 0 {
-                if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
-                else if b.x > 360 { b.x = 720 - b.x; b.vx = -b.vx; b.bounces -= 1 }
+            // ゲーム本体と同じ動き(止まる・分裂・追尾・加速・反射)
+            if b.advance(dt: dt, width: 360, playerX: player.x, playerY: player.y) == .burst {
+                born.append(contentsOf: b.fragments())
+                continue
             }
             if b.x < -20 || b.x > 380 || b.y < -20 || b.y > 350 { continue }
             bullets[w] = b; w += 1
