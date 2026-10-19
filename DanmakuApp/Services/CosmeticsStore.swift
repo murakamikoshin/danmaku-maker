@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import DanmakuCore
 
 /// 買ったものと、いま選んでいる組み合わせ。端末に保存する（買った記録の本体は App Store / RevenueCat 側）
@@ -28,8 +29,49 @@ final class CosmeticsStore: ObservableObject {
         #endif
     }
 
-    /// 持っていないものを標準に戻した、実際に遊ぶときの組み合わせ
-    var effective: Loadout { loadout.effective(ownership) }
+    /// 画像を差し替えたときに画面を更新するための番号
+    @Published private(set) var customImageRevision = 0
+
+    /// 持っていないものを標準に戻した、実際に遊ぶときの組み合わせ(画像が登録されていない枠も標準に戻す)
+    var effective: Loadout {
+        var l = loadout.effective(ownership)
+        if !CustomImageStore.exists(.boss) { l.customBoss = false }
+        if !CustomImageStore.exists(.bullet) { l.customBullet = false }
+        if !CustomImageStore.exists(.ship) { l.customShip = false }
+        return l
+    }
+
+    func isCustomEnabled(_ slot: CustomSlot) -> Bool {
+        switch slot {
+        case .boss: return loadout.customBoss
+        case .bullet: return loadout.customBullet
+        case .ship: return loadout.customShip
+        }
+    }
+
+    func setCustomEnabled(_ slot: CustomSlot, _ on: Bool) {
+        guard ownership.hasCustomImages else { return }
+        switch slot {
+        case .boss: loadout.customBoss = on
+        case .bullet: loadout.customBullet = on
+        case .ship: loadout.customShip = on
+        }
+    }
+
+    /// 選んだ画像を保存して、そのまま使う設定にする
+    @discardableResult
+    func setCustomImage(_ image: UIImage, for slot: CustomSlot) -> Bool {
+        guard ownership.hasCustomImages, CustomImageStore.save(image, for: slot) else { return false }
+        setCustomEnabled(slot, true)
+        customImageRevision += 1
+        return true
+    }
+
+    func removeCustomImage(_ slot: CustomSlot) {
+        CustomImageStore.remove(slot)
+        setCustomEnabled(slot, false)
+        customImageRevision += 1
+    }
 
     /// 投稿前のテストプレイは、誰でもクリアできる標準の撃ち方に固定する
     func forPlay(isTest: Bool) -> Loadout {

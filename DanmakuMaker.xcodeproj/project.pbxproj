@@ -10,6 +10,7 @@
 		09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE917C9BB76D326485AC381 /* SettingsView.swift */; };
 		1824196EED242121C72C2DD2 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F59B3D178DDB070FCACBB /* PlayView.swift */; };
 		1BFBA87BDE46B43E2AFD555C /* PublishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336990F3C2805B0B289AF111 /* PublishService.swift */; };
+		1C20487B71E38F28F475A332 /* CustomImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */; };
 		1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */; };
 		2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */; };
 		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
@@ -87,6 +88,7 @@
 		92A243990CAD3948B58BBC48 /* EmitterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterPreview.swift; sourceTree = "<group>"; };
 		9391B5CB3600EA4B42088BAD /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		95160D2A88138F6429741ED2 /* StoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreView.swift; sourceTree = "<group>"; };
+		9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomImageStore.swift; sourceTree = "<group>"; };
 		966ADA412BC3686AAAF4587D /* official_stages.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages.json; sourceTree = "<group>"; };
 		98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsService.swift; sourceTree = "<group>"; };
 		999CC41D43E16FE0C7135EDD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 				C68321CF2F6D3DCFF7456C66 /* Backend.swift */,
 				10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */,
 				8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */,
+				9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */,
 				336990F3C2805B0B289AF111 /* PublishService.swift */,
 				8FABAD127D8EABEA2C29870E /* PurchaseService.swift */,
 				B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */,
@@ -363,6 +366,7 @@
 				4FB11696D193E6302F80B9DA /* Backend.swift in Sources */,
 				1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */,
 				87237EE186219FB19202E0D5 /* CosmeticsStore.swift in Sources */,
+				1C20487B71E38F28F475A332 /* CustomImageStore.swift in Sources */,
 				AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */,
 				84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */,
 				F379544BE24E12BF703FE682 /* EditorView.swift in Sources */,

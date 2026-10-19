@@ -30,6 +30,8 @@ for (const t of themes) {
   );
 }
 products.push(
+  { id: 'customimages', yen: 500, ref: 'Custom Images', ja: ['じぶんの画像', 'ボス・弾・自機を、自分で選んだ画像に変えます。'], en: ['Your Own Images', 'Use your own pictures for the boss, bullets and ship.'],
+    notes: 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy "Your own images" near the top of the list. After purchase, tap "Choose" next to Boss, Bullets or Your ship and pick any photo. Images are only stored on the device and are never uploaded. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.' },
   { id: 'shot.spread', yen: 300, ref: 'Wide Shot', ja: ['ワイドショット', '3方向に少し広がる撃ち方です。'], en: ['Wide Shot', 'A narrow three-way shot style.'] },
   { id: 'shot.heavy', yen: 300, ref: 'Heavy Shot', ja: ['ヘビーショット', '太い1発でダメージ4倍の撃ち方です。'], en: ['Heavy Shot', 'One thick shot with 4x damage.'] },
 );
@@ -127,13 +129,13 @@ async function addLocalization(localeLabel, shown, name, desc, first) {
   throw new Error('localization save kept failing');
 }
 
-async function setReviewInfo() {
+async function setReviewInfo(prod) {
   const input = p.locator('input[id^="iap_review_info"]');
   if (shotPath !== 'skip' && (await input.count())) {
     await input.setInputFiles(shotPath);
     await sleep(5000);
   }
-  await p.locator('#iap-or-subscription-review-notes').fill(NOTES);
+  await p.locator('#iap-or-subscription-review-notes').fill(prod.notes ?? NOTES);
   const save = p.getByRole('button', { name: '保存', exact: true }).first();
   if (await save.isEnabled()) {               // 変更がないときは押せない
     await save.click();
@@ -154,7 +156,7 @@ for (const prod of products) {
     const hasAny = t.includes('ローカリゼーション');
     if (!hasJa) await addLocalization('日本語', 'ja', prod.ja[0], prod.ja[1], !hasAny);
     if (!hasEn) await addLocalization('英語（アメリカ）', 'en', prod.en[0], prod.en[1], false);
-    await setReviewInfo();
+    await setReviewInfo(prod);
     const final = await body();
     const ok = final.includes('174個が選択') && final.includes(prod.ja[0]) && final.includes(prod.en[0]) && !final.includes('価格を追加');
     results.push(`${ok ? 'OK ' : 'NG '} ${prod.id}`);

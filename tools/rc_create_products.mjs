@@ -9,12 +9,14 @@ const items = [['removeads', 'Remove Ads']];
 for (const [id, en] of themes) {
   items.push([`${id}.bullets`, `${en} Bullets`], [`${id}.background`, `${en} Background`], [`${id}.ship`, `${en} Ship`], [`${id}.set`, `${en} Set`]);
 }
-items.push(['shot.spread', 'Wide Shot'], ['shot.heavy', 'Heavy Shot']);
+items.push(['shot.spread', 'Wide Shot'], ['shot.heavy', 'Heavy Shot'], ['customimages', 'Custom Images']);
+const only = process.argv[2];
 
 const b = await chromium.connectOverCDP('http://localhost:9222');
 const p = await b.contexts()[0].newPage();
 const results = [];
 for (const [id, name] of items) {
+  if (only && !id.includes(only)) continue;
   try {
     await p.goto(APP, { waitUntil: 'domcontentloaded' });
     const ident = p.locator('#app_store-product-identifier');

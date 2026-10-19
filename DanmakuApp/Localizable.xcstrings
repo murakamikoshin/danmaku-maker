@@ -145,6 +145,54 @@
         }
       }
     },
+    "custom.slot.boss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボス"
+          }
+        }
+      }
+    },
+    "custom.slot.bullet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾"
+          }
+        }
+      }
+    },
+    "custom.slot.ship": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your ship"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機"
+          }
+        }
+      }
+    },
     "delete.body": {
       "localizations": {
         "en": {
@@ -2333,6 +2381,134 @@
           "stringUnit": {
             "state": "translated",
             "value": "『%@』%@秒で被弾…誰かクリアして #弾幕メーカー %@"
+          }
+        }
+      }
+    },
+    "shop.custom.change": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変える"
+          }
+        }
+      }
+    },
+    "shop.custom.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未設定"
+          }
+        }
+      }
+    },
+    "shop.custom.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load that image"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を読み込めませんでした"
+          }
+        }
+      }
+    },
+    "shop.custom.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets are shown small, so simple pictures work best. The white dot at the center of your ship (the hit spot) is always shown on top of your image."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾は小さく表示されるので、シンプルな絵がおすすめです。自機の中心の白い点(当たる場所)は、画像の上にそのまま表示されます。"
+          }
+        }
+      }
+    },
+    "shop.custom.intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace the boss, bullets and your ship with an image from your photos. Only the look changes. Images stay on your device and are never uploaded."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボス・弾・自機を、写真アプリから選んだ画像に変えられます。見た目だけが変わります。画像は端末の中にだけ保存され、送信されません。"
+          }
+        }
+      }
+    },
+    "shop.custom.pick": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を選ぶ"
+          }
+        }
+      }
+    },
+    "shop.custom.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your own images"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "じぶんの画像"
+          }
+        }
+      }
+    },
+    "shop.custom.use": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使う"
           }
         }
       }

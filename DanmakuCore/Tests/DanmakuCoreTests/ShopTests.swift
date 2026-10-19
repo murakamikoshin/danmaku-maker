@@ -49,8 +49,8 @@ final class ShopTests: XCTestCase {
     }
 
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 14)
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 14)
+        XCTAssertEqual(Product.all.count, 15)
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 15)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))
@@ -89,6 +89,34 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(e.bullets, .sakura)
         XCTAssertEqual(e.ship, .classic)
         XCTAssertEqual(e.shot, .standard)
+    }
+
+    func testCustomImagesProduct() {
+        XCTAssertEqual(Product.customImages.id, "com.koshin.danmakumaker.customimages")
+        XCTAssertEqual(Product(id: "com.koshin.danmakumaker.customimages"), .customImages)
+        XCTAssertEqual(Product.customImages.yen, 500)
+        XCTAssertFalse(Ownership().hasCustomImages)
+        XCTAssertTrue(Ownership().canBuy(.customImages))
+        let own = Ownership(productIDs: [Product.customImages.id])
+        XCTAssertTrue(own.hasCustomImages)
+        XCTAssertFalse(own.canBuy(.customImages))
+    }
+
+    func testCustomImageFlagsOnlyWorkWhenOwned() {
+        var l = Loadout()
+        l.customBoss = true; l.customBullet = true; l.customShip = true
+        let none = l.effective(Ownership())
+        XCTAssertFalse(none.customBoss || none.customBullet || none.customShip)
+        let owned = l.effective(Ownership(productIDs: [Product.customImages.id]))
+        XCTAssertTrue(owned.customBoss && owned.customBullet && owned.customShip)
+    }
+
+    func testOldSavedLoadoutStillDecodes() throws {
+        let old = #"{"bullets":"sakura","background":"classic","ship":"classic","shot":"spread"}"#.data(using: .utf8)!
+        let l = try JSONDecoder().decode(Loadout.self, from: old)
+        XCTAssertEqual(l.bullets, .sakura)
+        XCTAssertEqual(l.shot, .spread)
+        XCTAssertFalse(l.customBoss)
     }
 
     func testLoadoutCodable() throws {

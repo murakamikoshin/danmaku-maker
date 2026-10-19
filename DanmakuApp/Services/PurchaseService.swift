@@ -78,6 +78,7 @@ final class PurchaseService: NSObject, ObservableObject {
         case .part(let t, let p): cosmetics.equip(t, for: p)
         case .set(let t): for p in ThemePart.allCases { cosmetics.equip(t, for: p) }
         case .shot(let s): cosmetics.equip(s)
+        case .customImages: break   // 画像を選んだときに使う設定になる
         }
     }
 

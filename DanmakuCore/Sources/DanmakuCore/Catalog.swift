@@ -17,6 +17,8 @@ public enum Product: Hashable, Sendable {
     /// テーマの3部品をまとめたセット（単品で買うよりお得）
     case set(Theme)
     case shot(ShotType)
+    /// ボス・弾・自機を、自分で選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ置く)
+    case customImages
 
     public static let idPrefix = "com.koshin.danmakumaker."
 
@@ -25,11 +27,13 @@ public enum Product: Hashable, Sendable {
         case .part(let t, let p): return Product.idPrefix + "\(t.rawValue).\(p.rawValue)"
         case .set(let t): return Product.idPrefix + "\(t.rawValue).set"
         case .shot(let s): return Product.idPrefix + "shot.\(s.rawValue)"
+        case .customImages: return Product.idPrefix + "customimages"
         }
     }
 
     public init?(id: String) {
         guard id.hasPrefix(Product.idPrefix) else { return nil }
+        if id == Product.idPrefix + "customimages" { self = .customImages; return }
         let rest = id.dropFirst(Product.idPrefix.count).split(separator: ".").map(String.init)
         if rest.count == 2, rest[0] == "shot", let s = ShotType(rawValue: rest[1]), s != .standard {
             self = .shot(s); return
@@ -46,6 +50,7 @@ public enum Product: Hashable, Sendable {
         case .part: return 100
         case .set: return 200
         case .shot: return 300
+        case .customImages: return 500
         }
     }
 
@@ -57,6 +62,7 @@ public enum Product: Hashable, Sendable {
             list.append(.set(t))
         }
         for s in ShotType.allCases where s != .standard { list.append(.shot(s)) }
+        list.append(.customImages)
         return list
     }
 }
@@ -80,12 +86,16 @@ public struct Ownership: Equatable, Sendable {
         shot == .standard || owned.contains(.shot(shot))
     }
 
+    /// 自分の画像を使う権利があるか
+    public var hasCustomImages: Bool { owned.contains(.customImages) }
+
     /// その商品を買う意味があるか（すでに全部使えるなら false）
     public func canBuy(_ product: Product) -> Bool {
         switch product {
         case .part(let t, let p): return !has(p, of: t)
         case .set(let t): return !ThemePart.allCases.allSatisfy { has($0, of: t) }
         case .shot(let s): return !has(s)
+        case .customImages: return !hasCustomImages
         }
     }
 }
@@ -96,8 +106,28 @@ public struct Loadout: Equatable, Codable, Sendable {
     public var background: Theme = .classic
     public var ship: Theme = .classic
     public var shot: ShotType = .standard
+    /// 自分の画像を使うか(権利があり、画像が登録されているものだけ実際に使われる)
+    public var customBoss = false
+    public var customBullet = false
+    public var customShip = false
 
     public init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case bullets, background, ship, shot, customBoss, customBullet, customShip
+    }
+
+    /// 古い保存データ(自分の画像の項目がない)も読めるようにする
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bullets = try c.decodeIfPresent(Theme.self, forKey: .bullets) ?? .classic
+        background = try c.decodeIfPresent(Theme.self, forKey: .background) ?? .classic
+        ship = try c.decodeIfPresent(Theme.self, forKey: .ship) ?? .classic
+        shot = try c.decodeIfPresent(ShotType.self, forKey: .shot) ?? .standard
+        customBoss = try c.decodeIfPresent(Bool.self, forKey: .customBoss) ?? false
+        customBullet = try c.decodeIfPresent(Bool.self, forKey: .customBullet) ?? false
+        customShip = try c.decodeIfPresent(Bool.self, forKey: .customShip) ?? false
+    }
 
     public func theme(for part: ThemePart) -> Theme {
         switch part {
@@ -120,6 +150,7 @@ public struct Loadout: Equatable, Codable, Sendable {
         var l = self
         for p in ThemePart.allCases where !own.has(p, of: theme(for: p)) { l.set(.classic, for: p) }
         if !own.has(shot) { l.shot = .standard }
+        if !own.hasCustomImages { l.customBoss = false; l.customBullet = false; l.customShip = false }
         return l
     }
 }

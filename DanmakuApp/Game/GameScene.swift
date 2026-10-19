@@ -22,9 +22,9 @@ final class GameScene: SKScene {
     private let skin: Skin
     private let bulletTextures: [SKTexture]
     private let shipNode: SKSpriteNode
-    private let bossNode = SKSpriteNode(texture: SpriteFactory.boss(flash: false))
-    private let bossTexture = SpriteFactory.boss(flash: false)
-    private let bossFlashTexture = SpriteFactory.boss(flash: true)
+    private let bossNode: SKSpriteNode
+    private let bossTexture: SKTexture
+    private let bossFlashTexture: SKTexture
     private var bulletNodes: [SKSpriteNode] = []
     private var shotNodes: [SKSpriteNode] = []
     private var markers: [SKShapeNode] = []
@@ -41,8 +41,19 @@ final class GameScene: SKScene {
         let ship = Skin.of(loadout.ship)
         skin.shipColor = ship.shipColor; skin.shipShape = ship.shipShape
         self.skin = skin
-        bulletTextures = SpriteFactory.bullets(loadout.bullets)
-        shipNode = SKSpriteNode(texture: SpriteFactory.ship(loadout.ship))
+        // 自分の画像(購入者のみ)。画像がなければ標準の絵に戻る
+        if loadout.customBullet, let t = SpriteFactory.custom(.bullet) {
+            bulletTextures = Array(repeating: t, count: Skin.of(.classic).bulletColors.count)
+        } else {
+            bulletTextures = SpriteFactory.bullets(loadout.bullets)
+        }
+        shipNode = SKSpriteNode(texture: (loadout.customShip ? SpriteFactory.custom(.ship) : nil) ?? SpriteFactory.ship(loadout.ship))
+        if loadout.customBoss, let t = SpriteFactory.custom(.boss), let f = SpriteFactory.custom(.boss, flash: true) {
+            bossTexture = t; bossFlashTexture = f
+        } else {
+            bossTexture = SpriteFactory.boss(flash: false); bossFlashTexture = SpriteFactory.boss(flash: true)
+        }
+        bossNode = SKSpriteNode(texture: bossTexture)
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
         #endif

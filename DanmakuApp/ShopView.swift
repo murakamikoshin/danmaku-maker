@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 import DanmakuCore
 
 /// きせかえ・ショップ。弾の色・背景・自機の見た目と、自機の撃ち方を買って、選ぶ画面
@@ -18,6 +19,8 @@ struct ShopView: View {
                             .accessibilityIdentifier("shop.removeads")
                     }
                 }
+                CustomImagesSection()
+
                 Section {
                     ForEach(ShotType.allCases, id: \.self) { ShotRow(shot: $0) }
                 } header: { Text("shop.section.shot") } footer: { Text("shop.shot.footer") }
@@ -155,6 +158,86 @@ private struct PartRow: View {
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.2)))
         case .ship:
             Image(uiImage: SpriteFactory.shipImage(theme)).resizable().frame(width: 20, height: 24)
+        }
+    }
+}
+
+
+/// 自分の画像: ボス・弾・自機を、写真アプリから選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ保存する)
+private struct CustomImagesSection: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        Section {
+            if cosmetics.ownership.hasCustomImages {
+                ForEach(CustomSlot.allCases) { CustomSlotRow(slot: $0) }
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("shop.custom.title").font(.headline)
+                    Text("shop.custom.intro").font(.caption).foregroundStyle(.secondary)
+                }
+                HStack {
+                    Spacer()
+                    PriceButton(product: .customImages)
+                }
+            }
+        } header: {
+            Text("shop.custom.title")
+        } footer: {
+            Text("shop.custom.footer")
+        }
+    }
+}
+
+private struct CustomSlotRow: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    let slot: CustomSlot
+    @State private var item: PhotosPickerItem?
+    @State private var failed = false
+
+    var body: some View {
+        // 画像が変わったら見た目を更新するため、番号を読む
+        let _ = cosmetics.customImageRevision
+        let image = CustomImageStore.load(slot)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle().fill(Color.white.opacity(0.08))
+                if let image {
+                    Image(uiImage: image).resizable().scaledToFill().clipShape(Circle())
+                } else {
+                    Image(systemName: "photo").foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey(slot.nameKey)).font(.body)
+                if failed { Text("shop.custom.failed").font(.caption).foregroundStyle(.red) }
+                else if image == nil { Text("shop.custom.empty").font(.caption).foregroundStyle(.secondary) }
+            }
+            Spacer()
+            if image != nil {
+                Toggle("shop.custom.use", isOn: Binding(get: { cosmetics.isCustomEnabled(slot) },
+                                                       set: { cosmetics.setCustomEnabled(slot, $0) }))
+                    .labelsHidden()
+                Button(role: .destructive) { cosmetics.removeCustomImage(slot) } label: { Image(systemName: "trash") }
+                    .buttonStyle(.borderless)
+            }
+            PhotosPicker(selection: $item, matching: .images) {
+                Text(image == nil ? "shop.custom.pick" : "shop.custom.change").font(.footnote.bold())
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("shop.custom.pick.\(slot.rawValue)")
+        }
+        .onChange(of: item) { newItem in
+            guard let newItem else { return }
+            Task {
+                let data = try? await newItem.loadTransferable(type: Data.self)
+                await MainActor.run {
+                    if let data, let ui = UIImage(data: data), cosmetics.setCustomImage(ui, for: slot) { failed = false }
+                    else { failed = true }
+                    item = nil
+                }
+            }
         }
     }
 }

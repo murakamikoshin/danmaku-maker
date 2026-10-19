@@ -101,6 +101,30 @@ enum SpriteFactory {
         return t
     }
 
+    /// 自分の画像から作る絵。ゲーム内の大きさ(ポイント)に合わせる。
+    /// 自機は、当たる場所が分かるように中心に白い点を重ねる。ボスは被弾したとき白くひらめく
+    static func custom(_ slot: CustomSlot, flash: Bool = false) -> SKTexture? {
+        guard let src = CustomImageStore.load(slot) else { return nil }
+        let size = slot.pointSize
+        let img = image(size: size) { c in
+            let rect = CGRect(origin: .zero, size: size)
+            UIImage(cgImage: src.cgImage!, scale: 1, orientation: .up).draw(in: rect)
+            if flash {
+                c.setBlendMode(.sourceAtop)
+                c.setFillColor(UIColor.white.withAlphaComponent(0.7).cgColor)
+                c.fill(rect)
+                c.setBlendMode(.normal)
+            }
+            if slot == .ship {
+                c.setFillColor(UIColor.black.withAlphaComponent(0.45).cgColor)
+                c.fillEllipse(in: CGRect(x: size.width / 2 - 3.6, y: size.height / 2 - 3.6, width: 7.2, height: 7.2))
+                c.setFillColor(UIColor.white.cgColor)
+                c.fillEllipse(in: CGRect(x: size.width / 2 - 2.5, y: size.height / 2 - 2.5, width: 5, height: 5))
+            }
+        }
+        return texture(img)
+    }
+
     static func boss(flash: Bool) -> SKTexture {
         texture(size: CGSize(width: 48, height: 48)) { c in
             c.setFillColor((flash ? UIColor.white : Palette.pink).cgColor)
