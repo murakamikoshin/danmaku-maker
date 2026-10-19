@@ -6,8 +6,12 @@ import Foundation
 final class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
-    enum Track: String { case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss" }
-    enum Effect: String, CaseIterable { case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life" }
+    enum Track: String {
+        case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery"
+        /// ステージの BGM 番号(0=ビビッド 1=ダーク 2=ゆったり 3=キラキラ 4=ミステリアス)の曲
+        static func forNumber(_ n: Int) -> Track { [Track.stage, .boss, .menu, .bright, .mystery][min(max(n, 0), 4)] }
+    }
+    enum Effect: String, CaseIterable { case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life", warning = "se_warning", boom = "se_boom", sparkle = "se_sparkle" }
 
     @Published var bgmOn: Bool { didSet { UserDefaults.standard.set(bgmOn, forKey: "audio.bgm"); if bgmOn { resume() } else { fadeOut() } } }
     @Published var seOn: Bool { didSet { UserDefaults.standard.set(seOn, forKey: "audio.se") } }
@@ -45,6 +49,18 @@ final class AudioManager: ObservableObject {
         old?.setVolume(0, fadeDuration: 0.6)
         player = p
         if let old { DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { old.stop() } }
+    }
+
+    /// 試聴(BGM の設定がオフでも、選んだ曲を聴けるようにする)
+    func preview(_ track: Track) {
+        current = track
+        guard let u = url(track.rawValue), let p = try? AVAudioPlayer(contentsOf: u) else { return }
+        let old = player
+        p.numberOfLoops = -1
+        p.volume = bgmVolume
+        p.prepareToPlay(); p.play()
+        old?.stop()
+        player = p
     }
 
     func stopBGM() { current = nil; fadeOut() }

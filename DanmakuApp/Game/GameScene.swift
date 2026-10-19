@@ -34,8 +34,19 @@ final class GameScene: SKScene {
     private var starNodes: [(node: SKSpriteNode, y: Double, v: Double)] = []
     private let barFill = SKSpriteNode(color: Palette.gold, size: CGSize(width: 1, height: 5))
     private let centerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+    private var barSeparators: [SKSpriteNode] = []
+    /// 演出(警告・撃破)を出すか。遊ぶ人の設定でオフにできる
+    private let effectsOn: Bool
+    private var shownWave = -1
+    private var shownDefeats = 0
+    /// 最後のボスを倒したとき、爆発を見せてから結果を出すための待ち(秒)
+    private var finishDelay = 0.0
+    private var warningLeft = 0.0
+    private let warningOverlay = SKSpriteNode(color: UIColor(red: 1, green: 0.1, blue: 0.2, alpha: 1), size: CGSize(width: 360, height: 540))
+    private let waveLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
 
-    init(stage: Stage, loadout: Loadout = Loadout()) {
+    init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true) {
+        effectsOn = effects
         sim = Simulation(stage: stage, shotType: loadout.shot)
         // 弾・背景・自機は別々のテーマを選べる
         var skin = Skin.of(loadout.bullets)
@@ -82,24 +93,9 @@ final class GameScene: SKScene {
             addChild(n)
             starNodes.append((n, y, v))
         }
-        if !sim.isBoss {
-            for m in sim.stage.emitters where m.t != .rain {
-                let p = CGMutablePath()
-                p.move(to: CGPoint(x: 0, y: 7)); p.addLine(to: CGPoint(x: 7, y: 0))
-                p.addLine(to: CGPoint(x: 0, y: -7)); p.addLine(to: CGPoint(x: -7, y: 0)); p.closeSubpath()
-                let n = SKShapeNode(path: p)
-                n.strokeColor = skin.bulletColors[m.k]
-                n.lineWidth = 1
-                n.position = pos(m.x * Double(W), m.y * Double(H))
-                n.zPosition = 1
-                n.isHidden = true
-                addChild(n)
-                markers.append(n)
-            }
-        } else {
-            bossNode.zPosition = 2
-            addChild(bossNode)
-        }
+        bossNode.zPosition = 2
+        bossNode.isHidden = !sim.isBoss
+        addChild(bossNode)
         shipNode.zPosition = 3
         addChild(shipNode)
 
@@ -107,15 +103,26 @@ final class GameScene: SKScene {
         back.anchorPoint = CGPoint(x: 0, y: 1); back.position = CGPoint(x: 0, y: H); back.zPosition = 5
         addChild(back)
         barFill.anchorPoint = CGPoint(x: 0, y: 1); barFill.position = CGPoint(x: 0, y: H); barFill.zPosition = 6
-        barFill.color = sim.isBoss ? Palette.pink : Palette.gold
         addChild(barFill)
-        if sim.isBoss {
-            for f in [CGFloat(1) / 3, CGFloat(2) / 3] {
-                let s = SKSpriteNode(color: skin.background, size: CGSize(width: 2, height: 5))
-                s.anchorPoint = CGPoint(x: 0.5, y: 1); s.position = CGPoint(x: W * f, y: H); s.zPosition = 7
-                addChild(s)
-            }
+        for f in [CGFloat(1) / 3, CGFloat(2) / 3] {
+            let sep = SKSpriteNode(color: skin.background, size: CGSize(width: 2, height: 5))
+            sep.anchorPoint = CGPoint(x: 0.5, y: 1); sep.position = CGPoint(x: W * f, y: H); sep.zPosition = 7
+            addChild(sep)
+            barSeparators.append(sep)
         }
+        waveLabel.fontSize = 14
+        waveLabel.fontColor = Palette.text
+        waveLabel.horizontalAlignmentMode = .right
+        waveLabel.verticalAlignmentMode = .top
+        waveLabel.position = CGPoint(x: W - 8, y: H - 10)
+        waveLabel.zPosition = 8
+        waveLabel.isHidden = true
+        addChild(waveLabel)
+        warningOverlay.position = CGPoint(x: W / 2, y: H / 2)
+        warningOverlay.zPosition = 9
+        warningOverlay.alpha = 0
+        addChild(warningOverlay)
+        enterWave(sim.waveIndex)
         centerLabel.fontSize = 28
         centerLabel.fontColor = Palette.text
         centerLabel.verticalAlignmentMode = .center
@@ -124,9 +131,48 @@ final class GameScene: SKScene {
         addChild(centerLabel)
     }
 
+    /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
+    private func enterWave(_ index: Int) {
+        shownWave = index
+        for m in markers { m.removeFromParent() }
+        markers.removeAll()
+        if !sim.isBoss && sim.stage.showsMarkers {
+            let W = GameScene.W, H = GameScene.H
+            for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {
+                let p = CGMutablePath()
+                p.move(to: CGPoint(x: 0, y: 7)); p.addLine(to: CGPoint(x: 7, y: 0))
+                p.addLine(to: CGPoint(x: 0, y: -7)); p.addLine(to: CGPoint(x: -7, y: 0)); p.closeSubpath()
+                let n = SKShapeNode(path: p)
+                n.strokeColor = skin.bulletColors[min(max(m.k, 0), skin.bulletColors.count - 1)]
+                n.lineWidth = 1
+                n.position = pos(m.x * Double(W), m.y * Double(H))
+                n.zPosition = 1
+                n.isHidden = true
+                addChild(n)
+                markers.append(n)
+            }
+        }
+        bossNode.isHidden = !sim.isBoss
+        barFill.color = sim.isBoss ? Palette.pink : Palette.gold
+        for sep in barSeparators { sep.isHidden = !sim.isBoss }
+        waveLabel.isHidden = sim.waveCount <= 1
+        waveLabel.text = "WAVE \(index + 1)/\(sim.waveCount)"
+        // 警告: ボスの場面の開始前に、赤い点滅とサイレン(演出がオフなら、出さない)
+        if sim.warningNow && effectsOn {
+            warningLeft = index == 0 ? DanmakuConfig.readySeconds : Wave.intermissionSeconds
+            AudioManager.shared.se(.warning)
+        }
+        if index > 0 {
+            centerLabel.text = "WAVE \(index + 1)"
+            centerLabel.fontColor = Palette.gold
+            centerLabel.isHidden = false
+        }
+    }
+
     /// 被弾した場所から復活する（広告を見たあと／広告削除の購入者）
     func revive() {
         sim.revive()
+        finishDelay = 0
         finished = false
         lastTime = nil
         accumulator = 0
@@ -175,6 +221,11 @@ final class GameScene: SKScene {
         }
         render(currentTime)
         if !finished && sim.outcome != .playing {
+            // 最後のボスを倒したときは、爆発を少し見せてから結果を出す(演出がオフなら、すぐ)
+            if sim.outcome == .cleared && sim.defeats > 0 && effectsOn && sim.lastDefeatEffect != .none && finishDelay < 1.4 {
+                finishDelay += 1.0 / 60.0
+                return
+            }
             finished = true
             onFinish?(sim, moves)
         }
@@ -208,6 +259,20 @@ final class GameScene: SKScene {
             }
         }
 
+        if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
+        if sim.defeats > shownDefeats {
+            shownDefeats = sim.defeats
+            if effectsOn { playDefeat(at: sim.lastDefeatPosition, effect: sim.lastDefeatEffect) }
+        }
+        if warningLeft > 0 {
+            warningLeft -= 1.0 / 60.0
+            let phase = sin(now * 14)
+            warningOverlay.alpha = CGFloat(max(0, phase)) * 0.28
+            centerLabel.text = "WARNING!"
+            centerLabel.fontColor = UIColor(red: 1, green: 0.35, blue: 0.4, alpha: 1)
+            centerLabel.isHidden = false
+            if warningLeft <= 0 { warningOverlay.alpha = 0 }
+        }
         if sim.isBoss {
             let bp = sim.bossPosition
             bossNode.position = pos(bp.x, bp.y)
@@ -229,25 +294,30 @@ final class GameScene: SKScene {
                 }
                 else { shotNodes[i].isHidden = true }
             }
-            let ratio = max(0, Double(sim.hp)) / Double(sim.stage.bossHp ?? 1)
+            let ratio = sim.isDamageRace ? 1.0 : max(0, Double(sim.hp)) / Double(max(1, sim.waveBossHp))
             barFill.size.width = max(0.001, W * CGFloat(ratio))
         } else {
             // 発射台の印：撃ち始める0.6秒前から点滅し、撃ち終わったら消す
             var idx = 0
-            for m in sim.stage.emitters where m.t != .rain {
+            for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {
+                guard idx < markers.count else { break }
                 let n = markers[idx]; idx += 1
-                let lead = m.s - sim.t
-                let end = min(m.e, Double(sim.stage.durationSec))
-                if sim.t >= end || lead > 0.6 { n.isHidden = true; continue }
+                let lead = m.s - sim.waveT
+                let end = min(m.e, sim.waveLimit)
+                if sim.waveT >= end || lead > 0.6 { n.isHidden = true; continue }
                 n.isHidden = false
                 n.alpha = lead > 0 ? (Int(floor(lead * 10)) % 2 != 0 ? 0.15 : 0.7) : 0.35
             }
-            let p = max(0, min(1, sim.t / Double(sim.stage.durationSec)))
+            let p = max(0, min(1, sim.waveT / max(1, sim.waveLimit)))
             barFill.size.width = max(0.001, W * CGFloat(p))
         }
 
-        if sim.t < 0 {
-            centerLabel.text = L("play.ready"); centerLabel.isHidden = false
+        if warningLeft > 0 {
+            // 警告の表示中は、上で文字を出している
+        } else if sim.t < 0 {
+            centerLabel.text = L("play.ready"); centerLabel.fontColor = Palette.text; centerLabel.isHidden = false
+        } else if sim.isIntermission {
+            centerLabel.text = "WAVE \(sim.waveIndex + 1)"; centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
         } else if sim.isBoss && sim.banner > 0 {
             centerLabel.text = String(format: L("play.phase"), sim.phase)
             centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
@@ -255,7 +325,7 @@ final class GameScene: SKScene {
             centerLabel.isHidden = true
             centerLabel.fontColor = Palette.text
         }
-        onTime?(sim.stage.isUnlimitedTime ? max(0, sim.t) : max(0, Double(sim.stage.durationSec) - max(0, sim.t)))
+        onTime?(sim.stage.isUnlimitedTime ? max(0, sim.t) : max(0, sim.waveLimit - max(0, sim.waveT)))
         let status = (sim.lifeLeft, sim.lifeMax, sim.damageDealt)
         if status != lastStatus {
             if lastStatus.0 > status.0 && lastStatus.0 >= 0 {
@@ -268,5 +338,100 @@ final class GameScene: SKScene {
         // 被弾したら、自機が赤くひらめく
         shipNode.color = .red
         shipNode.colorBlendFactor = sim.hitFlash > 0 ? 0.85 : 0
+    }
+
+    // MARK: 撃破の演出(見た目だけ。計算には関わらない)
+
+    /// ボスを倒した場所に、選ばれた演出を出す
+    private func playDefeat(at p: Point, effect: DefeatEffect) {
+        guard effect != .none else { return }
+        let center = pos(p.x, p.y)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        switch effect {
+        case .none: return
+        case .explosion:
+            AudioManager.shared.se(.boom)
+            flashScreen(UIColor.white, peak: 0.55, duration: 0.35)
+            ring(at: center, color: UIColor(hex: 0xFFD166), maxRadius: 150, width: 6, duration: 0.55)
+            ring(at: center, color: UIColor(hex: 0xFF6B9D), maxRadius: 100, width: 4, duration: 0.45)
+            burst(at: center, count: 46, colors: [0xFFD166, 0xFF8A5C, 0xFF6B9D, 0xFFFFFF].map { UIColor(hex: $0) }, speed: 70...230, size: 3...7, life: 0.6...1.1, gravity: 60)
+        case .fireworks:
+            AudioManager.shared.se(.sparkle)
+            for (i, c) in [0xFF6B9D, 0x5CE1E6, 0xFFD166, 0xB28DFF, 0x7CF29C].enumerated() {
+                let off = CGPoint(x: center.x + CGFloat(cos(Double(i) * 1.26) * 38), y: center.y + CGFloat(sin(Double(i) * 1.26) * 38))
+                run(after: Double(i) * 0.12) { [weak self] in
+                    self?.burst(at: off, count: 22, colors: [UIColor(hex: UInt32(c)), .white], speed: 60...170, size: 3...6, life: 0.7...1.2, gravity: 40)
+                }
+            }
+            ring(at: center, color: .white, maxRadius: 120, width: 3, duration: 0.5)
+        case .hearts:
+            AudioManager.shared.se(.sparkle)
+            for i in 0..<16 {
+                let n = SKLabelNode(text: "♥")
+                n.fontName = "AvenirNext-Heavy"
+                n.fontSize = CGFloat.random(in: 16...30)
+                n.fontColor = [UIColor(hex: 0xFF6B9D), UIColor(hex: 0xFF8FB8), UIColor(hex: 0xFFB3D1)][i % 3]
+                n.position = center
+                n.zPosition = 7
+                addChild(n)
+                let dx = CGFloat.random(in: -90...90), dy = CGFloat.random(in: 60...190)
+                let t = Double.random(in: 0.9...1.5)
+                n.run(.sequence([.group([.moveBy(x: dx, y: dy, duration: t), .fadeOut(withDuration: t), .scale(to: 1.5, duration: t)]), .removeFromParent()]))
+            }
+            ring(at: center, color: UIColor(hex: 0xFF6B9D), maxRadius: 110, width: 4, duration: 0.5)
+        case .stardust:
+            AudioManager.shared.se(.sparkle)
+            for i in 0..<28 {
+                let n = SKLabelNode(text: i % 3 == 0 ? "✦" : "★")
+                n.fontName = "AvenirNext-Heavy"
+                n.fontSize = CGFloat.random(in: 10...24)
+                n.fontColor = [UIColor(hex: 0xFFD166), UIColor(hex: 0xFFF2B3), .white][i % 3]
+                n.position = center
+                n.zPosition = 7
+                addChild(n)
+                let a = Double.random(in: 0...(2 * .pi)), r = CGFloat.random(in: 40...170)
+                let t = Double.random(in: 0.7...1.3)
+                n.run(.sequence([.group([.moveBy(x: CGFloat(cos(a)) * r, y: CGFloat(sin(a)) * r, duration: t), .fadeOut(withDuration: t), .rotate(byAngle: CGFloat.random(in: -3...3), duration: t)]), .removeFromParent()]))
+            }
+            flashScreen(UIColor(hex: 0xFFD166), peak: 0.25, duration: 0.5)
+        }
+    }
+
+    private func run(after delay: Double, _ block: @escaping () -> Void) {
+        self.run(.sequence([.wait(forDuration: delay), .run(block)]))
+    }
+
+    private func flashScreen(_ color: UIColor, peak: CGFloat, duration: Double) {
+        let n = SKSpriteNode(color: color, size: CGSize(width: GameScene.W, height: GameScene.H))
+        n.position = CGPoint(x: GameScene.W / 2, y: GameScene.H / 2)
+        n.zPosition = 9
+        n.alpha = 0
+        addChild(n)
+        n.run(.sequence([.fadeAlpha(to: peak, duration: duration * 0.2), .fadeOut(withDuration: duration * 0.8), .removeFromParent()]))
+    }
+
+    private func ring(at p: CGPoint, color: UIColor, maxRadius: CGFloat, width: CGFloat, duration: Double) {
+        let n = SKShapeNode(circleOfRadius: 4)
+        n.strokeColor = color
+        n.fillColor = .clear
+        n.lineWidth = width
+        n.position = p
+        n.zPosition = 7
+        addChild(n)
+        n.run(.sequence([.group([.scale(to: maxRadius / 4, duration: duration), .fadeOut(withDuration: duration)]), .removeFromParent()]))
+    }
+
+    private func burst(at p: CGPoint, count: Int, colors: [UIColor], speed: ClosedRange<CGFloat>, size: ClosedRange<CGFloat>,
+                       life: ClosedRange<Double>, gravity: CGFloat) {
+        for i in 0..<count {
+            let d = CGFloat.random(in: size)
+            let n = SKSpriteNode(color: colors[i % colors.count], size: CGSize(width: d, height: d))
+            n.position = p
+            n.zPosition = 7
+            addChild(n)
+            let a = Double.random(in: 0...(2 * .pi)), v = CGFloat.random(in: speed), t = Double.random(in: life)
+            let dx = CGFloat(cos(a)) * v * CGFloat(t), dy = CGFloat(sin(a)) * v * CGFloat(t) - gravity * CGFloat(t) * CGFloat(t)
+            n.run(.sequence([.group([.moveBy(x: dx, y: dy, duration: t), .fadeOut(withDuration: t), .scale(to: 0.2, duration: t)]), .removeFromParent()]))
+        }
     }
 }

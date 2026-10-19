@@ -78,11 +78,10 @@ final class PurchaseService: NSObject, ObservableObject {
 
     private func autoEquip(_ product: Product) {
         switch product {
-        case .part(let t, let p): cosmetics.equip(t, for: p)
-        case .set(let t): for p in ThemePart.allCases { cosmetics.equip(t, for: p) }
+        case .part, .set: break   // 見た目は、ステージ作りで選ぶ(装備はない)
         case .shot(let s): cosmetics.equip(s)
         case .customImages: break   // 画像を選んだときに使う設定になる
-        case .homing: break         // ステージ作りで、追尾弾のパターンが選べるようになる
+        case .pattern, .patternPack: break   // ステージ作りで、そのパターンが選べるようになる
         }
     }
 

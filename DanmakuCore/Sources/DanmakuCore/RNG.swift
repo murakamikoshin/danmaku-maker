@@ -31,16 +31,30 @@ extension Stage {
     /// ステージ内容（丸めた数値列）から作る乱数シード。JSON 文字列の並び順などには依存しない
     public var seed: UInt32 {
         var h = FNV1a()
-        h.add(Int32(mode == .boss ? 1 : (mode == .damage ? 2 : 0)))
+        h.add(Int32(mode == .boss ? 1 : (mode == .damage ? 2 : (mode == .sequence ? 3 : 0))))
         h.add(Int32(bossHp ?? 0))
         h.add(Int32(bossMove ?? 0))
         h.add(Int32(durationSec))
-        for m in emitters {
+        Stage.hashEmitters(emitters, into: &h)
+        if mode == .sequence {
+            // 連戦は、場面ごとに(種類・時間・HP・動き・発射台)を、順番に混ぜる
+            for w in waves ?? [] {
+                h.add(Int32(w.kind == .boss ? 1 : 0))
+                h.add(Int32(w.durationSec))
+                h.add(Int32(w.bossHp ?? 0))
+                h.add(Int32(w.bossMove ?? 0))
+                Stage.hashEmitters(w.emitters, into: &h)
+            }
+        }
+        return h.value
+    }
+
+    static func hashEmitters(_ list: [Emitter], into h: inout FNV1a) {
+        for m in list {
             h.add(m.t.index)
             for q in [m.x, m.y, m.s, m.e, m.i, m.v] { h.add(Int32((q * 100).rounded())) }
             h.add(Int32(m.c)); h.add(Int32(m.r.rounded())); h.add(Int32(m.k)); h.add(Int32(m.ph))
             if m.p != 0 { h.add(Int32(m.p)) }   // 標準(0)のときは混ぜない: これまでのステージの乱数シードを変えないため
         }
-        return h.value
     }
 }

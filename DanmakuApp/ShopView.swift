@@ -11,6 +11,7 @@ struct ShopView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
                     ShopHero()
@@ -35,9 +36,9 @@ struct ShopView: View {
                         .accessibilityIdentifier("shop.removeads")
                     }
 
-                    CustomImagesCard()
-                    ShotSection()
-                    HomingCard()
+                    CustomImagesCard().id("customimages")
+                    ShotSection().id("shots")
+                    PatternShop().id("patterns")
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
                     ThemeCard(theme: .classic)
 
@@ -49,7 +50,19 @@ struct ShopView: View {
                 }
                 .padding(.horizontal, 16).padding(.vertical, 12)
             }
+            .onAppear {
+                #if DEBUG
+                // 画面確認用: 起動引数 -shop-focus patterns|shots|customimages で、そこまで自動で移動する
+                let args = ProcessInfo.processInfo.arguments
+                if let i = args.firstIndex(of: "-shop-focus"), args.indices.contains(i + 1) {
+                    let target = args[i + 1]
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { proxy.scrollTo(target, anchor: .top) }
+                }
+                #endif
+            }
+            }
             .background(Color(Palette.background).ignoresSafeArea())
+            .overlay(alignment: .top) { Color(Palette.background).ignoresSafeArea(edges: .top).frame(height: 1) }
             .toolbar(.hidden, for: .navigationBar)
             .task { await purchases.refresh() }
             .overlay {
@@ -290,8 +303,7 @@ private struct PartRow: View {
             Text(LocalizedStringKey(part.nameKey)).font(.body.weight(.semibold))
             Spacer()
             if cosmetics.ownership.has(part, of: theme) {
-                if cosmetics.loadout.theme(for: part) == theme { EquippedLabel() }
-                else { EquipButton { cosmetics.equip(theme, for: part) } }
+                Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
             } else {
                 PriceButton(product: .part(theme, part))
             }
@@ -390,9 +402,6 @@ private struct CustomSlotRow: View {
             }
             Spacer()
             if image != nil {
-                Toggle("shop.custom.use", isOn: Binding(get: { cosmetics.isCustomEnabled(slot) },
-                                                       set: { cosmetics.setCustomEnabled(slot, $0) }))
-                    .labelsHidden()
                 Button(role: .destructive) { cosmetics.removeCustomImage(slot) } label: { Image(systemName: "trash") }
                     .buttonStyle(.borderless)
             }
@@ -419,65 +428,154 @@ private struct CustomSlotRow: View {
 }
 
 
-// MARK: 追尾弾(ステージ作りで使える新しい弾のパターン)
+// MARK: 弾幕(ステージ作りで使える新しい弾のパターン)
 
-private struct HomingCard: View {
+private struct PatternShop: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
 
+    private var singlesYen: Int { Pattern.paid.map { Product.pattern($0).yen }.reduce(0, +) }
+
     var body: some View {
-        ShopCard(title: "shop.homing.title", footer: "shop.homing.footer") {
-            CardBody {
-                VStack(alignment: .leading, spacing: 10) {
-                    HomingDemo()
-                        .frame(height: 110)
-                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    Text("shop.homing.intro").font(.footnote).foregroundStyle(.secondary)
-                    HStack {
-                        Spacer()
-                        if cosmetics.ownership.hasHoming {
-                            Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
-                        } else {
-                            PriceButton(product: .homing)
-                        }
-                    }
+        ShopCard(title: "shop.pattern.title", footer: "shop.pattern.footer") {
+            VStack(spacing: 10) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) { ForEach(Pattern.paid, id: \.self) { PatternTile(pattern: $0) } }
+                        .padding(.horizontal, 2).padding(.vertical, 2)
                 }
-                .padding(14)
+                CardBody {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("shop.pattern.pack").font(.system(size: 17, weight: .heavy, design: .rounded))
+                            HStack(spacing: 6) {
+                                Text("¥\(singlesYen)").strikethrough().foregroundStyle(.secondary)
+                                Text("→").foregroundStyle(.secondary)
+                                Text("¥\(Product.patternPack.yen)").foregroundStyle(Color(Palette.gold)).bold()
+                            }.font(.caption)
+                        }
+                        Spacer()
+                        if cosmetics.ownership.canBuy(.patternPack) { PriceButton(product: .patternPack) }
+                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+                    }
+                    .padding(14)
+                    .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.18), Color(Palette.gold).opacity(0.10)], startPoint: .leading, endPoint: .trailing))
+                }
             }
         }
     }
 }
 
-/// 追尾弾が、動く自機を追いかけて曲がる様子
-private struct HomingDemo: View {
+private struct PatternTile: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    let pattern: Pattern
+    private static let keys: [Pattern: String] = [
+        .homing: "pattern.homing", .flower: "pattern.flower", .star: "pattern.star", .heart: "pattern.heart",
+        .beam: "pattern.beam", .cross: "pattern.cross", .accel: "pattern.accel", .bounce: "pattern.bounce",
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PatternDemo(pattern: pattern)
+                .frame(height: 120)
+                .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Text(LocalizedStringKey(Self.keys[pattern] ?? "")).font(.system(size: 18, weight: .heavy, design: .rounded))
+            Text(L("shop.pattern.\(pattern.rawValue)")).font(.caption).foregroundStyle(.secondary)
+                .frame(height: 44, alignment: .topLeading)
+            HStack {
+                Spacer()
+                if cosmetics.ownership.has(pattern) {
+                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                } else {
+                    PriceButton(product: .pattern(pattern))
+                }
+            }
+        }
+        .padding(12)
+        .frame(width: 200)
+        .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1.5))
+    }
+}
+
+/// そのパターンを、実際のゲームと同じ計算で動かして見せる(DanmakuCore の emit をそのまま使う)
+private struct PatternDemo: View {
+    let pattern: Pattern
+    @State private var engine = PatternDemoEngine()
+
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
             Canvas { ctx, size in
-                let t = tl.date.timeIntervalSinceReferenceDate
-                let ship = CGPoint(x: size.width * (0.5 + 0.38 * sin(t * 0.9)), y: size.height * 0.84)
-                let src = CGPoint(x: size.width * 0.5, y: 14)
-                // 3発を、時間差で出して、自機の動きを追って曲がらせる(簡易)
-                for k in 0..<3 {
-                    let phase = fmod(t * 0.5 + Double(k) / 3.0, 1.0)
-                    var p = src
-                    var angle = Double.pi / 2
-                    let steps = Int(phase * 60)
-                    for _ in 0..<steps {
-                        let want = atan2(Double(ship.y - p.y), Double(ship.x - p.x))
-                        var d = want - angle
-                        while d > .pi { d -= 2 * .pi }
-                        while d < -.pi { d += 2 * .pi }
-                        angle += min(0.09, max(-0.09, d))
-                        p.x += CGFloat(cos(angle)) * size.height * 0.011
-                        p.y += CGFloat(sin(angle)) * size.height * 0.011
-                    }
-                    let r: CGFloat = 6
-                    ctx.fill(Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)), with: .color(Color(Palette.bullets[(k + 1) % 5])))
-                    ctx.fill(Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6)), with: .color(.white))
+                engine.advance(to: tl.date, pattern: pattern)
+                let sx = size.width / 360
+                let sy = size.height / 330
+                ctx.scaleBy(x: sx, y: sy)
+                let c = engine.source
+                ctx.fill(GameBossShape().path(in: CGRect(x: c.x - 18, y: c.y - 18, width: 36, height: 36)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                let ship = engine.player
+                ctx.fill(GameShipShape().path(in: CGRect(x: ship.x - 9, y: ship.y - 11, width: 18, height: 22)), with: .color(Color(UIColor(hex: 0x5CE1E6))))
+                for b in engine.bullets {
+                    let r: CGFloat = 8
+                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)), with: .color(Color(Palette.bullets[b.color % 5])))
+                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - 3.5, y: b.y - 3.5, width: 7, height: 7)), with: .color(.white))
                 }
-                ctx.fill(GameBossShape().path(in: CGRect(x: src.x - 11, y: src.y - 11, width: 22, height: 22)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
-                ctx.fill(GameShipShape().path(in: CGRect(x: ship.x - 8, y: ship.y - 10, width: 16, height: 20)), with: .color(Color(UIColor(hex: 0x5CE1E6))))
             }
         }
+    }
+}
+
+final class PatternDemoEngine {
+    private var sim: Simulation?
+    private var t = 0.0
+    private var next = 0.0
+    private var shot = 0
+    private var rng = Mulberry32(seed: 5)
+    private var last: Date?
+    private(set) var bullets: [Bullet] = []
+    private(set) var player = Point(x: 180, y: 290)
+    let source = Point(x: 180, y: 50)
+    private var emitter: Emitter?
+    private var emitterPattern: Pattern?
+
+    func advance(to now: Date, pattern: Pattern) {
+        if emitterPattern != pattern {
+            var m = Emitter.make(pattern, end: 60)
+            m.k = pattern == .heart ? 0 : (pattern == .flower ? 3 : pattern == .star ? 2 : 1)
+            emitter = m; emitterPattern = pattern; bullets = []; t = 0; next = 0; shot = 0
+        }
+        guard let m = emitter else { return }
+        let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
+        last = now
+        t += dt
+        player = Point(x: 180 + sin(t * 0.8) * 100, y: 290)
+        while t >= next {
+            Emit.emit(m, shot: shot, cx: source.x, cy: source.y, px: player.x, py: player.y, rng: &rng, into: &bullets)
+            shot += 1
+            next += max(0.05, m.i)
+        }
+        var w = 0
+        for i in 0..<bullets.count {
+            var b = bullets[i]
+            if b.homeLeft > 0 {
+                let want = atan2(player.y - b.y, player.x - b.x), cur = atan2(b.vy, b.vx)
+                var d = want - cur
+                while d > .pi { d -= 2 * .pi }
+                while d < -.pi { d += 2 * .pi }
+                let na = cur + min(b.turn * dt, max(-b.turn * dt, d))
+                let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot()
+                b.vx = cos(na) * sp; b.vy = sin(na) * sp; b.homeLeft -= dt
+            }
+            if b.accel != 0 {
+                let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot()
+                if sp < b.maxSpeed { let g = min(1 + b.accel * dt, b.maxSpeed / sp); b.vx *= g; b.vy *= g }
+            }
+            b.x += b.vx * dt; b.y += b.vy * dt
+            if b.bounces > 0 {
+                if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
+                else if b.x > 360 { b.x = 720 - b.x; b.vx = -b.vx; b.bounces -= 1 }
+            }
+            if b.x < -20 || b.x > 380 || b.y < -20 || b.y > 350 { continue }
+            bullets[w] = b; w += 1
+        }
+        bullets.removeSubrange(w...)
     }
 }

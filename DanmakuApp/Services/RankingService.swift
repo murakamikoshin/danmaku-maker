@@ -63,10 +63,12 @@ enum RankingService {
     static let listSize = 30
 
     static func ranks(for mode: Mode) -> Bool { mode != .survive }
+    /// 時間で競うモードか(ボス戦と連戦は、クリアまでの時間。ダメージ勝負は、ダメージ)
+    static func byTime(_ mode: Mode) -> Bool { mode == .boss || mode == .sequence }
 
     static func top(stageID: String, mode: Mode) async throws -> [ScoreEntry] {
         let col = Firestore.firestore().collection("stages/\(stageID)/scores")
-        let snap = try await col.order(by: "value", descending: mode == .damage).limit(to: listSize).getDocuments()
+        let snap = try await col.order(by: "value", descending: !byTime(mode)).limit(to: listSize).getDocuments()
         return snap.documents.compactMap { doc in
             let d = doc.data()
             guard let uid = d["uid"] as? String, let value = (d["value"] as? NSNumber)?.intValue else { return nil }
@@ -77,7 +79,7 @@ enum RankingService {
 
     /// 記録の表示(ボス戦は秒、ダメージ勝負はダメージ)
     static func format(_ value: Int, mode: Mode) -> String {
-        if mode == .damage { return value.formatted() }
+        if !byTime(mode) { return value.formatted() }
         return String(format: "%.2f", Double(value) * DanmakuConfig.step) + L("unit.s")
     }
 

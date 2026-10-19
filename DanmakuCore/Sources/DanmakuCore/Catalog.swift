@@ -19,8 +19,10 @@ public enum Product: Hashable, Sendable {
     case shot(ShotType)
     /// ボス・弾・自機を、自分で選んだ画像に差し替える(見た目だけ。画像は端末の中にだけ置く)
     case customImages
-    /// 追尾弾のパターンを、ステージ作りで使える(遊ぶのは誰でもできる)
-    case homing
+    /// 弾のパターンを、ステージ作りで使える(遊ぶのは誰でもできる)
+    case pattern(Pattern)
+    /// 買えるパターンの全部入り(単品で全部買うよりお得)
+    case patternPack
 
     public static let idPrefix = "com.koshin.danmakumaker."
 
@@ -30,14 +32,19 @@ public enum Product: Hashable, Sendable {
         case .set(let t): return Product.idPrefix + "\(t.rawValue).set"
         case .shot(let s): return Product.idPrefix + "shot.\(s.rawValue)"
         case .customImages: return Product.idPrefix + "customimages"
-        case .homing: return Product.idPrefix + "homing"
+        case .pattern(let p): return Product.idPrefix + (p == .homing ? "homing" : "pattern.\(p.rawValue)")
+        case .patternPack: return Product.idPrefix + "patternpack"
         }
     }
 
     public init?(id: String) {
         guard id.hasPrefix(Product.idPrefix) else { return nil }
         if id == Product.idPrefix + "customimages" { self = .customImages; return }
-        if id == Product.idPrefix + "homing" { self = .homing; return }
+        if id == Product.idPrefix + "homing" { self = .pattern(.homing); return }
+        if id == Product.idPrefix + "patternpack" { self = .patternPack; return }
+        if id.hasPrefix(Product.idPrefix + "pattern."), let p = Pattern(rawValue: String(id.dropFirst((Product.idPrefix + "pattern.").count))), p.isPaid, p != .homing {
+            self = .pattern(p); return
+        }
         let rest = id.dropFirst(Product.idPrefix.count).split(separator: ".").map(String.init)
         if rest.count == 2, rest[0] == "shot", let s = ShotType(rawValue: rest[1]), s != .standard {
             self = .shot(s); return
@@ -55,7 +62,8 @@ public enum Product: Hashable, Sendable {
         case .set: return 200
         case .shot: return 300
         case .customImages: return 500
-        case .homing: return 300
+        case .pattern(let p): return p == .homing ? 300 : 100
+        case .patternPack: return 600
         }
     }
 
@@ -68,7 +76,8 @@ public enum Product: Hashable, Sendable {
         }
         for s in ShotType.allCases where s != .standard { list.append(.shot(s)) }
         list.append(.customImages)
-        list.append(.homing)
+        for p in Pattern.paid { list.append(.pattern(p)) }
+        list.append(.patternPack)
         return list
     }
 }
@@ -92,8 +101,10 @@ public struct Ownership: Equatable, Sendable {
         shot == .standard || owned.contains(.shot(shot))
     }
 
-    /// 追尾弾をステージ作りで使えるか
-    public var hasHoming: Bool { owned.contains(.homing) }
+    /// そのパターンをステージ作りで使えるか(無料のパターンは、いつでも使える)
+    public func has(_ pattern: Pattern) -> Bool {
+        !pattern.isPaid || owned.contains(.pattern(pattern)) || owned.contains(.patternPack)
+    }
 
     /// 自分の画像を使う権利があるか
     public var hasCustomImages: Bool { owned.contains(.customImages) }
@@ -105,7 +116,8 @@ public struct Ownership: Equatable, Sendable {
         case .set(let t): return !ThemePart.allCases.allSatisfy { has($0, of: t) }
         case .shot(let s): return !has(s)
         case .customImages: return !hasCustomImages
-        case .homing: return !hasHoming
+        case .pattern(let p): return !has(p)
+        case .patternPack: return !Pattern.paid.allSatisfy { has($0) }
         }
     }
 }

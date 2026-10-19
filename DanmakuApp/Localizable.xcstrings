@@ -1,6 +1,22 @@
 {
   "sourceLanguage": "ja",
   "strings": {
+    "angle.aimshift": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aim offset"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "狙いのずれ"
+          }
+        }
+      }
+    },
     "angle.jitter": {
       "localizations": {
         "en": {
@@ -161,6 +177,22 @@
         }
       }
     },
+    "badge.sequence": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUSH"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連戦"
+          }
+        }
+      }
+    },
     "badge.survive": {
       "localizations": {
         "en": {
@@ -173,6 +205,166 @@
           "stringUnit": {
             "state": "translated",
             "value": "耐久"
+          }
+        }
+      }
+    },
+    "bgm.0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vivid"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ビビッド"
+          }
+        }
+      }
+    },
+    "bgm.0.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fast and energetic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "疾走感のある、元気な曲"
+          }
+        }
+      }
+    },
+    "bgm.1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダーク"
+          }
+        }
+      }
+    },
+    "bgm.1.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tense, made for boss fights"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "緊迫感のある、ボス戦向きの曲"
+          }
+        }
+      }
+    },
+    "bgm.2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calm"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゆったり"
+          }
+        }
+      }
+    },
+    "bgm.2.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relaxed and easygoing"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "のんびり遊べる、落ち着いた曲"
+          }
+        }
+      }
+    },
+    "bgm.3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparkle"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キラキラ"
+          }
+        }
+      }
+    },
+    "bgm.3.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bright and bouncy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "明るくて軽快な曲"
+          }
+        }
+      }
+    },
+    "bgm.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mystery"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ミステリアス"
+          }
+        }
+      }
+    },
+    "bgm.4.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strange and a little eerie"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不思議で少し不気味な曲"
           }
         }
       }
@@ -481,6 +673,86 @@
         }
       }
     },
+    "defeat.explosion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explosion"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "爆発"
+          }
+        }
+      }
+    },
+    "defeat.fireworks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fireworks"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "花火"
+          }
+        }
+      }
+    },
+    "defeat.hearts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hearts"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハート"
+          }
+        }
+      }
+    },
+    "defeat.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "なし"
+          }
+        }
+      }
+    },
+    "defeat.stardust": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stardust"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "星くず"
+          }
+        }
+      }
+    },
     "delete.body": {
       "localizations": {
         "en": {
@@ -753,6 +1025,22 @@
         }
       }
     },
+    "detail.sequence": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss rush · %lld waves · %lld s"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連戦 %lld場面・合計%lld秒"
+          }
+        }
+      }
+    },
     "detail.share": {
       "localizations": {
         "en": {
@@ -833,6 +1121,38 @@
         }
       }
     },
+    "editor.advanced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "くわしく"
+          }
+        }
+      }
+    },
+    "editor.advanced.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lives, music, looks, effects, fire points and more."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライフ・BGM・見た目・演出・発射位置など、細かい設定も使えます。"
+          }
+        }
+      }
+    },
     "editor.author": {
       "localizations": {
         "en": {
@@ -861,6 +1181,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "例：弾幕太郎"
+          }
+        }
+      }
+    },
+    "editor.autosaved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto-saved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動で保存"
+          }
+        }
+      }
+    },
+    "editor.bgm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGM"
+          }
+        }
+      }
+    },
+    "editor.bgm.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to preview. Players hear the song you pick here (unless they turn music off)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "押すと試聴できます。遊ぶ人には、ここで選んだ曲が流れます(音を消している人には流れません)。"
           }
         }
       }
@@ -1041,6 +1409,70 @@
         }
       }
     },
+    "editor.custom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your own images"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "じぶんの画像"
+          }
+        }
+      }
+    },
+    "editor.custom.buy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get Your own images in the shop"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショップで じぶんの画像 を買う"
+          }
+        }
+      }
+    },
+    "editor.custom.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only used when you play on this device. When you post, the images are removed (others see the stage look above)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この端末で遊ぶときだけ使えます。投稿すると、画像は外れます(他の人には、上の見た目だけが見えます)。"
+          }
+        }
+      }
+    },
+    "editor.custom.pick": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose image"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を選ぶ"
+          }
+        }
+      }
+    },
     "editor.damage.note": {
       "localizations": {
         "en": {
@@ -1057,6 +1489,22 @@
         }
       }
     },
+    "editor.defeat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When defeated"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒したときの演出"
+          }
+        }
+      }
+    },
     "editor.delete": {
       "localizations": {
         "en": {
@@ -1069,6 +1517,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "削除"
+          }
+        }
+      }
+    },
+    "editor.effects": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effects"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "演出"
           }
         }
       }
@@ -1233,6 +1697,102 @@
         }
       }
     },
+    "editor.look": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stage look"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージの見た目"
+          }
+        }
+      }
+    },
+    "editor.look.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show your own look to everyone who plays this stage. Pick from what you have bought in the shop."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾・背景・自機の見た目を、このステージを遊ぶ全員に見せられます。ショップで買ったものから選べます。"
+          }
+        }
+      }
+    },
+    "editor.look.shop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get more looks in the shop"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショップで見た目を買う"
+          }
+        }
+      }
+    },
+    "editor.markers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fire-point hints"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "発射位置の予告"
+          }
+        }
+      }
+    },
+    "editor.markers.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A dotted diamond appears just before bullets fire. Hiding it makes the stage much harder."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾が出る場所に、出る少し前から点線のひし形が出ます。消すと、ぐっと難しくなります。"
+          }
+        }
+      }
+    },
+    "editor.markers.show": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show dotted hints"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "予告の点線を出す"
+          }
+        }
+      }
+    },
     "editor.mode.boss": {
       "localizations": {
         "en": {
@@ -1293,6 +1853,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "制限時間まで生き残って、ボスに与えたダメージを競う"
+          }
+        }
+      }
+    },
+    "editor.mode.sequence": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss rush"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連戦"
+          }
+        }
+      }
+    },
+    "editor.mode.sequence.sub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go through scenes in order (mid-boss → minions → final boss…)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "場面を順番に進む(中ボス → 雑魚だけ → 大ボス など)"
           }
         }
       }
@@ -1457,6 +2049,22 @@
         }
       }
     },
+    "editor.posted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posted"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿済み"
+          }
+        }
+      }
+    },
     "editor.section.basic": {
       "localizations": {
         "en": {
@@ -1469,6 +2077,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "ステージの名前"
+          }
+        }
+      }
+    },
+    "editor.simple": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simple"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "かんたん"
+          }
+        }
+      }
+    },
+    "editor.simple.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just the basics: name, time, bullet type and color are enough to play."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まずは基本だけ。名前・時間・弾の種類と色を決めれば、遊べます。"
           }
         }
       }
@@ -1629,6 +2269,182 @@
           "stringUnit": {
             "state": "translated",
             "value": "最後まで"
+          }
+        }
+      }
+    },
+    "editor.warning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning before start"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始前の警告"
+          }
+        }
+      }
+    },
+    "editor.warning.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The screen flashes red and a siren sounds. For a big boss entrance."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面が赤く点滅して、サイレンが鳴ります。大ボスの登場に。"
+          }
+        }
+      }
+    },
+    "editor.wave.add.boss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add boss wave"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの場面を足す"
+          }
+        }
+      }
+    },
+    "editor.wave.add.survive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add minion wave"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚の場面を足す"
+          }
+        }
+      }
+    },
+    "editor.wave.kind.boss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss fight"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボス戦"
+          }
+        }
+      }
+    },
+    "editor.wave.kind.survive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minions (survive)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚だけ(耐える)"
+          }
+        }
+      }
+    },
+    "editor.wave.limit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss time limit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの制限時間"
+          }
+        }
+      }
+    },
+    "editor.wave.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wave %lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "場面 %lld"
+          }
+        }
+      }
+    },
+    "editor.waves": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waves"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "場面"
+          }
+        }
+      }
+    },
+    "editor.waves.count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld waves"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld つの場面"
+          }
+        }
+      }
+    },
+    "editor.waves.total": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %lld s total"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "合計 約%lld秒"
           }
         }
       }
@@ -2529,6 +3345,54 @@
         }
       }
     },
+    "home.mine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My stages"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マイステージ"
+          }
+        }
+      }
+    },
+    "home.mine.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No stages yet. Make your first one!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだステージがありません。まず1つ作ってみよう！"
+          }
+        }
+      }
+    },
+    "home.mine.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stages you make are saved automatically. Play and edit them anytime, even without posting."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作ったステージは、自動で保存されます。投稿しなくても、いつでも遊べて、直せます。"
+          }
+        }
+      }
+    },
     "home.samples": {
       "localizations": {
         "en": {
@@ -2609,6 +3473,22 @@
         }
       }
     },
+    "home.tab.mine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My stages"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マイステージ"
+          }
+        }
+      }
+    },
     "home.tab.samples": {
       "localizations": {
         "en": {
@@ -2637,6 +3517,150 @@
           "stringUnit": {
             "state": "translated",
             "value": "世界のステージ"
+          }
+        }
+      }
+    },
+    "mystage.cleared": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cleared"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリア確認済み"
+          }
+        }
+      }
+    },
+    "mystage.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除"
+          }
+        }
+      }
+    },
+    "mystage.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It will be removed from this device. A posted stage stays online."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端末から消えます。投稿済みのステージは、世界のステージとして残ります。"
+          }
+        }
+      }
+    },
+    "mystage.delete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this stage?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージを削除しますか？"
+          }
+        }
+      }
+    },
+    "mystage.edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "編集"
+          }
+        }
+      }
+    },
+    "mystage.notcleared": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not cleared"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未クリア"
+          }
+        }
+      }
+    },
+    "mystage.posted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posted"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿済み"
+          }
+        }
+      }
+    },
+    "mystage.publish": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿"
+          }
+        }
+      }
+    },
+    "mystage.unnamed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled stage"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名前のないステージ"
           }
         }
       }
@@ -2689,6 +3713,22 @@
         }
       }
     },
+    "pattern.accel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accelerate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加速"
+          }
+        }
+      }
+    },
     "pattern.aim": {
       "localizations": {
         "en": {
@@ -2705,6 +3745,38 @@
         }
       }
     },
+    "pattern.beam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beam"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "光線"
+          }
+        }
+      }
+    },
+    "pattern.bounce": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bounce"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "反射"
+          }
+        }
+      }
+    },
     "pattern.corner": {
       "localizations": {
         "en": {
@@ -2717,6 +3789,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "四隅から"
+          }
+        }
+      }
+    },
+    "pattern.cross": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "十字"
+          }
+        }
+      }
+    },
+    "pattern.flower": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flower"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "花"
+          }
+        }
+      }
+    },
+    "pattern.heart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハート"
           }
         }
       }
@@ -2813,6 +3933,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "渦巻き"
+          }
+        }
+      }
+    },
+    "pattern.star": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Star"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "星"
           }
         }
       }
@@ -3761,6 +4897,54 @@
         }
       }
     },
+    "settings.display": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示"
+          }
+        }
+      }
+    },
+    "settings.effects": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning & defeat effects"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "警告・撃破の演出"
+          }
+        }
+      }
+    },
+    "settings.effects.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows red flashes and explosions. Turn off if flashing bothers you."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "赤い点滅や爆発の演出を出します。点滅が苦手なときは、オフにしてください。"
+          }
+        }
+      }
+    },
     "settings.guest": {
       "localizations": {
         "en": {
@@ -3869,6 +5053,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "サインアウト"
+          }
+        }
+      }
+    },
+    "settings.stagelook": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show stage looks"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージの見た目を表示"
+          }
+        }
+      }
+    },
+    "settings.stagelook.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off to play with the standard look instead of the creator's (if it is hard to see)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフにすると、作った人が選んだ見た目を使わず、標準の見た目で遊べます(見づらいときに)。"
           }
         }
       }
@@ -4065,6 +5281,22 @@
         }
       }
     },
+    "shop.creator.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looks you buy here are used in the stages you create. Players see the creator's look in that stage, even without buying it."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ここで買った見た目は、あなたが作るステージで使えます。遊ぶ人は、買っていなくても、そのステージでは作者の見た目で遊べます。"
+          }
+        }
+      }
+    },
     "shop.custom.change": {
       "localizations": {
         "en": {
@@ -4134,13 +5366,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replace the boss, bullets and your ship with an image from your photos. Only the look changes. Images stay on your device and are never uploaded."
+            "value": "Replace the boss, bullets and your ship with an image from your photos. Only the look changes. Choose per stage whether to use them; they only apply on this device (removed when you post). Images stay on your device and are never uploaded."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ボス・弾・自機を、写真アプリから選んだ画像に変えられます。見た目だけが変わります。画像は端末の中にだけ保存され、送信されません。"
+            "value": "ボス・弾・自機を、写真アプリから選んだ画像に変えられます。見た目だけが変わります。作るステージごとに使うかを選べて、この端末で遊ぶときだけ使えます(投稿すると外れます)。画像は端末の中にだけ保存され、送信されません。"
           }
         }
       }
@@ -4257,66 +5489,18 @@
         }
       }
     },
-    "shop.homing.footer": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anyone can play stages that use homing bullets, even without buying it."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "追尾弾を使ったステージは、買っていない人も遊べます。"
-          }
-        }
-      }
-    },
-    "shop.homing.intro": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use bullets that curve toward your ship when building stages. They only home in for 2.5 seconds after firing. Works in survive, boss and damage stages."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "自機を追いかけて曲がる弾を、ステージ作りで使えるようになります。曲がるのは出てから2.5秒だけ。ボス戦・ダメージ勝負・生き残りのどれでも使えます。"
-          }
-        }
-      }
-    },
-    "shop.homing.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Homing bullets"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "追尾弾"
-          }
-        }
-      }
-    },
     "shop.intro": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Buy new looks for bullets, backgrounds and your ship, plus new shot styles. All shot styles deal the same damage per second; only the feel differs. Everything is a one-time purchase."
+            "value": "Buy looks, bullet patterns and shot styles for your stages. All shot styles deal the same damage per second; only the feel differs. Everything is a one-time purchase."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "弾の色・背景・自機の見た目と、自機の撃ち方を買えます。撃ち方は1秒あたりの威力が同じで、撃ち味だけが違います。どれも買い切りです。"
+            "value": "ステージ作りで使える、見た目・弾幕・撃ち方などを買えます。撃ち方は1秒あたりの威力が同じで、撃ち味だけが違います。どれも買い切りです。"
           }
         }
       }
@@ -4349,6 +5533,182 @@
           "stringUnit": {
             "state": "translated",
             "value": "購入済み"
+          }
+        }
+      }
+    },
+    "shop.pattern.accel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slow at first, then faster and faster, fanned toward you."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゆっくり出て、どんどん速くなる自機狙いの扇。"
+          }
+        }
+      }
+    },
+    "shop.pattern.beam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A beam of bullets of different speeds stretching toward you."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機に向けて、速さの違う弾が一直線に伸びる光線。"
+          }
+        }
+      }
+    },
+    "shop.pattern.bounce": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan toward you that bounces twice off the side walls."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左右の壁で2回はね返る自機狙いの扇。"
+          }
+        }
+      }
+    },
+    "shop.pattern.cross": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lines of bullets stretching in four directions."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下左右に、弾が列になって伸びる十字。"
+          }
+        }
+      }
+    },
+    "shop.pattern.flower": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A ring shaped like a five-petal flower. It can slowly spin."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5枚の花びらの形に広がる輪。ゆっくり回せます。"
+          }
+        }
+      }
+    },
+    "shop.pattern.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New patterns for building stages. Anyone can play stages that use them, even without buying."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージ作りで使える新しい弾幕です。使ったステージは、買っていない人も遊べます。"
+          }
+        }
+      }
+    },
+    "shop.pattern.heart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A ring shaped like a heart."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハートの形に広がる輪。"
+          }
+        }
+      }
+    },
+    "shop.pattern.homing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets that curve toward your ship (for 2.5 s after firing)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機を追いかけて曲がる弾。曲がるのは出てから2.5秒だけ。"
+          }
+        }
+      }
+    },
+    "shop.pattern.pack": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All patterns pack"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾幕パック(全部入り)"
+          }
+        }
+      }
+    },
+    "shop.pattern.star": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A ring shaped like a star. The points fly faster."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "星の形に広がる輪。角の先ほど速く飛びます。"
+          }
+        }
+      }
+    },
+    "shop.pattern.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullet patterns"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾幕"
           }
         }
       }

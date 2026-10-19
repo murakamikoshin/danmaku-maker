@@ -224,7 +224,7 @@ struct ModeCards: View {
     let onSelect: (Mode) -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
             card(.survive, "editor.mode.survive", "editor.mode.survive.sub") {
                 ZStack {
                     GameShipShape().fill(Color(UIColor(hex: 0x5CE1E6)))
@@ -234,6 +234,12 @@ struct ModeCards: View {
             card(.boss, "editor.mode.boss", "editor.mode.boss.sub") {
                 GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 34, height: 34)
             }
+            card(.sequence, "editor.mode.sequence", "editor.mode.sequence.sub") {
+                ZStack {
+                    GameBossShape().fill(Color(Palette.bullets[3]), style: FillStyle(eoFill: true)).frame(width: 30, height: 30).offset(x: 6, y: 4)
+                    GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 24, height: 24).offset(x: -8, y: -3)
+                }.frame(width: 40, height: 34)
+            }
             card(.damage, "editor.mode.damage", "editor.mode.damage.sub") {
                 ZStack {
                     GameBossShape().fill(Color(Palette.gold), style: FillStyle(eoFill: true)).frame(width: 34, height: 34)
@@ -241,7 +247,6 @@ struct ModeCards: View {
                 }
             }
         }
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func card<Icon: View>(_ m: Mode, _ title: LocalizedStringKey, _ sub: LocalizedStringKey, @ViewBuilder icon: () -> Icon) -> some View {
@@ -299,7 +304,7 @@ struct BossMoveCards: View {
                             }
                         }
                         .frame(height: 34)
-                        Text(LocalizedStringKey("editor.boss.move.\(i)")).font(.system(size: 12, weight: .heavy, design: .rounded))
+                        Text(L("editor.boss.move.\(i)")).font(.system(size: 12, weight: .heavy, design: .rounded))
                             .foregroundStyle(Color(Palette.text))
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 4)
@@ -325,13 +330,15 @@ struct PatternTiles: View {
     private let keys: [DanmakuCore.Pattern: String] = [
         .ring: "pattern.ring", .spiral: "pattern.spiral", .aim: "pattern.aim", .rain: "pattern.rain", .sweep: "pattern.sweep",
         .sideL: "pattern.sideL", .sideR: "pattern.sideR", .corner: "pattern.corner", .homing: "pattern.homing",
+        .flower: "pattern.flower", .star: "pattern.star", .heart: "pattern.heart", .beam: "pattern.beam",
+        .cross: "pattern.cross", .accel: "pattern.accel", .bounce: "pattern.bounce",
     ]
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
             ForEach(DanmakuCore.Pattern.allCases, id: \.self) { p in
                 let selected = selection == p
-                let locked = p == .homing && !cosmetics.ownership.hasHoming && selection != .homing
+                let locked = !cosmetics.ownership.has(p) && selection != p
                 Button {
                     gameTap()
                     if locked { showShop = true; return }
@@ -394,6 +401,44 @@ struct PatternIcon: View {
                 for (i, y) in [8.0, 18, 28, 36].enumerated() { for k in 0..<3 { dot(4 + Double(k) * 9 + Double(i % 2) * 4, y, 2.2) } }
             case .sideR:
                 for (i, y) in [8.0, 18, 28, 36].enumerated() { for k in 0..<3 { dot(w - 4 - Double(k) * 9 - Double(i % 2) * 4, y, 2.2) } }
+            case .flower:
+                for i in 0..<20 {
+                    let a = Double(i) * .pi / 10
+                    let f = 0.4 + 0.6 * abs(cos(2.5 * a))
+                    dot(c.x + cos(a) * 17 * f, c.y + sin(a) * 17 * f, 2.2)
+                }
+            case .star:
+                for i in 0..<20 {
+                    let a = Double(i) * .pi / 10 - .pi / 2
+                    let u = (Double(i) / 4).truncatingRemainder(dividingBy: 1)
+                    let f = 0.45 + 0.55 * abs(u - 0.5) * 2
+                    dot(c.x + cos(a) * 17 * f, c.y + sin(a) * 17 * f, 2.2)
+                }
+            case .heart:
+                for i in 0..<24 {
+                    let a = Double(i) * .pi / 12
+                    let q = -a
+                    let sq = abs(cos(q)).squareRoot()
+                    let rr = (2 - 2 * sin(q) + sin(q) * sq / (sin(q) + 1.4)) / 4
+                    let f = 0.15 + 0.85 * max(0, min(1, rr))
+                    dot(c.x + cos(a) * 17 * f, c.y + sin(a) * 17 * f, 2.2)
+                }
+            case .beam:
+                dot(c.x, 5, 3.4)
+                for k in 1...5 { dot(c.x, 5 + Double(k) * 6.5, 2.2) }
+            case .cross:
+                for arm in 0..<4 {
+                    let a = Double(arm) * .pi / 2
+                    for k in 1...3 { dot(c.x + cos(a) * Double(k) * 6, c.y + sin(a) * Double(k) * 6, 2.2) }
+                }
+                dot(c.x, c.y, 3)
+            case .accel:
+                dot(c.x, 5, 3.4)
+                for k in 1...4 { dot(c.x, 5 + Double(k * k) * 1.9 + 4, 1.6 + Double(k) * 0.35) }
+            case .bounce:
+                dot(c.x, 5, 3.4)
+                let pts: [(Double, Double)] = [(c.x + 1, 11), (c.x - 8, 18), (c.x - 15, 24), (c.x - 8, 30), (c.x + 1, 36)]
+                for q in pts { dot(q.0, q.1, 2) }
             case .homing:
                 // 弧を描いて、下の自機へ曲がっていく弾
                 dot(c.x, 5, 3.4)
@@ -417,6 +462,7 @@ struct PatternIcon: View {
 /// アプリのロゴ風タイトル(光る文字と、弾の飾り)
 struct LogoTitle: View {
     let text: LocalizedStringKey
+    var size: CGFloat = 32
 
     var body: some View {
         VStack(spacing: 2) {
@@ -431,7 +477,8 @@ struct LogoTitle: View {
                 }
             }
             Text(text)
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                .font(.system(size: size, weight: .heavy, design: .rounded))
+                .lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(LinearGradient(colors: [.white, Color(Palette.pink), Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
                 .shadow(color: Color(Palette.pink).opacity(0.8), radius: 10)
                 .shadow(color: .black.opacity(0.5), radius: 2, y: 2)
@@ -550,6 +597,7 @@ struct ModeIcon: View {
         case .survive: return Color(UIColor(hex: 0x5CE1E6))
         case .boss: return Color(Palette.pink)
         case .damage: return Color(Palette.gold)
+        case .sequence: return Color(Palette.bullets[3])
         }
     }
 
@@ -565,6 +613,11 @@ struct ModeIcon: View {
                 }.frame(width: size * 0.42, height: size * 0.5)
             case .boss:
                 GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.6, height: size * 0.6)
+            case .sequence:
+                ZStack {
+                    GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.5, height: size * 0.5).offset(x: size * 0.1, y: size * 0.06)
+                    GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: size * 0.42, height: size * 0.42).offset(x: -size * 0.13, y: -size * 0.05)
+                }
             case .damage:
                 ZStack {
                     GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.6, height: size * 0.6)
@@ -586,6 +639,7 @@ struct StageCardShell<Content: View>: View {
         case .survive: return Color(UIColor(hex: 0x5CE1E6))
         case .boss: return Color(Palette.pink)
         case .damage: return Color(Palette.gold)
+        case .sequence: return Color(Palette.bullets[3])
         }
     }
 

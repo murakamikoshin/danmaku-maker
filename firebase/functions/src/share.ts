@@ -21,6 +21,7 @@ const T = {
     survive: (s: number) => `${s}秒耐える`,
     boss: (hp: number, s: number) => (s === 0 ? `ボス戦 HP${hp}・時間無制限` : `ボス戦 HP${hp}・制限${s}秒`),
     damage: (s: number) => `ダメージ勝負 ${s}秒`,
+    sequence: (n: number) => `連戦 ${n}場面`,
     desc: (a: string, mode: string, rate: string, plays: number) => `${a} さんが作った弾幕ステージ。${mode}・クリア率${rate}・挑戦${plays}回。クリアできる？`,
     by: "作者", plays: "挑戦", clears: "クリア", rate: "クリア率", likes: "いいね",
     open: "アプリで遊ぶ", store: "App Store でダウンロード",
@@ -33,6 +34,7 @@ const T = {
     survive: (s: number) => `Survive ${s} s`,
     boss: (hp: number, s: number) => (s === 0 ? `Boss fight · HP ${hp} · no time limit` : `Boss fight · HP ${hp} · ${s} s limit`),
     damage: (s: number) => `Damage race · ${s} s`,
+    sequence: (n: number) => `Boss rush · ${n} waves`,
     desc: (a: string, mode: string, rate: string, plays: number) => `A bullet-hell stage by ${a}. ${mode} · ${rate} clear rate · ${plays} plays. Can you clear it?`,
     by: "By", plays: "Plays", clears: "Clears", rate: "Clear rate", likes: "Likes",
     open: "Play in the app", store: "Download on the App Store",
@@ -73,7 +75,7 @@ export function renderSharePage(i: PageInput): { status: number; html: string } 
   }
   const s = i.stage;
   const rate = s.plays > 0 ? `${Math.round((s.clears / s.plays) * 100)}%` : "—";
-  const modeText = s.mode === "boss" ? t.boss(s.bossHp ?? 0, s.durationSec) : s.mode === "damage" ? t.damage(s.durationSec) : t.survive(s.durationSec);
+  const modeText = s.mode === "boss" ? t.boss(s.bossHp ?? 0, s.durationSec) : s.mode === "damage" ? t.damage(s.durationSec) : s.mode === "sequence" ? t.sequence((s as unknown as { waves?: unknown[] }).waves?.length ?? 1) : t.survive(s.durationSec);
   const url = `${i.origin}/s/${i.id}`;
   const title = `${s.name} | ${t.app}`;
   const desc = t.desc(s.authorName, modeText, rate, s.plays);
@@ -87,7 +89,7 @@ export function renderSharePage(i: PageInput): { status: number; html: string } 
 <meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${esc(`${i.origin}/og/${i.id}.png`)}">
 <link rel="canonical" href="${esc(url)}">`;
   const body = `<div class="brand">${t.app}</div>
-<div><span class="badge ${s.mode === "survive" ? "" : "boss"}">${s.mode === "boss" ? "BOSS" : s.mode === "damage" ? "DAMAGE" : "SURVIVE"}</span>${esc(modeText)}</div>
+<div><span class="badge ${s.mode === "survive" ? "" : "boss"}">${s.mode === "boss" ? "BOSS" : s.mode === "damage" ? "DAMAGE" : s.mode === "sequence" ? "WAVES" : "SURVIVE"}</span>${esc(modeText)}</div>
 <h1>${esc(s.name)}</h1><p>${t.by}: ${esc(s.authorName)}</p>
 <section class="card"><div><span>${t.rate}</span><b>${rate}</b></div><div><span>${t.likes}</span><b>${s.likes}</b></div><div><span>${t.plays}</span><b>${s.plays}</b></div><div><span>${t.clears}</span><b>${s.clears}</b></div></section>
 <a class="btn primary" href="${esc(i.appStoreUrl)}">${esc(t.store)}</a>

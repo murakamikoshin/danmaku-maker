@@ -1,5 +1,5 @@
 import { inflateRawSync } from "node:zlib";
-import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode } from "./validate.js";
+import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
  * ゲーム計算の完全版(アプリの DanmakuCore.Simulation の移植)。ランキングの記録を、
@@ -32,10 +32,22 @@ export interface SimStage {
   emitters: Emitter[];
   lifeMode?: LifeMode | null;
   lifeCount?: number | null;
+  waves?: Wave[] | null;
+}
+
+/** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[] }
+const INTERMISSION = 1.5;
+
+function specsOf(st: SimStage): Spec[] {
+  if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters }));
+  }
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
-export interface SimResult { outcome: Outcome; tick: number; hp: number; damage: number; lifeLeft: number; bulletCount: number; bulletHash: number }
+export interface SimResult { outcome: Outcome; tick: number; hp: number; damage: number; lifeLeft: number; wave: number; defeats: number; bulletCount: number; bulletHash: number }
 
 // --- 乱数(mulberry32)とハッシュ(FNV-1a)
 function mulberry(seed: number) {
@@ -57,20 +69,33 @@ class Fnv {
 /** アプリの Stage.seed と同じ。ライフの設定は入れない */
 export function stageSeed(st: SimStage): number {
   const h = new Fnv();
-  h.addInt32(st.mode === "boss" ? 1 : st.mode === "damage" ? 2 : 0);
+  h.addInt32(st.mode === "boss" ? 1 : st.mode === "damage" ? 2 : st.mode === "sequence" ? 3 : 0);
   h.addInt32(st.bossHp ?? 0);
   h.addInt32(st.bossMove ?? 0);
   h.addInt32(st.durationSec);
-  for (const m of st.emitters) {
+  hashEmitters(h, st.emitters);
+  if (st.mode === "sequence") {
+    for (const w of st.waves ?? []) {
+      h.addInt32(w.kind === "boss" ? 1 : 0);
+      h.addInt32(w.durationSec);
+      h.addInt32(w.bossHp ?? 0);
+      h.addInt32(w.bossMove ?? 0);
+      hashEmitters(h, w.emitters);
+    }
+  }
+  return h.value;
+}
+
+function hashEmitters(h: Fnv, list: Emitter[]) {
+  for (const m of list) {
     h.addInt32((PATTERNS as readonly string[]).indexOf(m.t));
     for (const q of [m.x, m.y, m.s, m.e, m.i, m.v]) h.addInt32(Math.round(q * 100));
     h.addInt32(m.c); h.addInt32(Math.round(m.r)); h.addInt32(m.k); h.addInt32(m.ph);
     if (m.p) h.addInt32(m.p);   // 標準(0)のときは混ぜない: アプリの Stage.seed と同じ
   }
-  return h.value;
 }
 
-interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number }
+interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
 function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[]) {
@@ -78,7 +103,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
   const n = Math.max(1, m.c);
   const deg = Math.PI / 180;
   const add = (x: number, y: number, a: number) => {
-    if (out.length < MAX_BULLETS) out.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0 });
+    if (out.length < MAX_BULLETS) out.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
   };
   switch (m.t) {
     case "ring": case "spiral":
@@ -97,7 +122,58 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       const turn = Math.max(25, Math.abs(m.r) * 2) * deg;
       for (let j = 0; j < n; j++) {
         const a = b + (j - (n - 1) / 2) * 0.35;
-        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn, homeLeft: HOMING_SECONDS });
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn, homeLeft: HOMING_SECONDS, accel: 0, maxSpeed: 0, bounces: 0 });
+      }
+      break;
+    }
+    case "flower": case "star": case "heart": {
+      const rot = k * m.r * deg;
+      for (let j = 0; j < n; j++) {
+        const th = (j * 2 * Math.PI) / n + rot;
+        const rel = th - rot;
+        let f: number;
+        if (m.t === "flower") f = 0.4 + 0.6 * Math.abs(Math.cos(2.5 * rel));
+        else if (m.t === "star") {
+          const u = (rel * 5 / (2 * Math.PI)) % 1;
+          const ph = u < 0 ? u + 1 : u;
+          f = 0.45 + 0.55 * Math.abs(ph - 0.5) * 2;
+        } else {
+          const q = -rel;
+          const sq = Math.sqrt(Math.abs(Math.cos(q)));
+          const rr = (2 - 2 * Math.sin(q) + (Math.sin(q) * sq) / (Math.sin(q) + 1.4)) / 4;
+          f = 0.15 + 0.85 * Math.max(0, Math.min(1, rr));
+        }
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(th) * sp * f, vy: Math.sin(th) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+      }
+      break;
+    }
+    case "beam": {
+      const b = Math.atan2(py - cy, px - cx) + m.r * deg * 0.2;
+      for (let j = 0; j < n; j++) {
+        const f = 1 + j * 0.18;
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(b) * sp * f, vy: Math.sin(b) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+      }
+      break;
+    }
+    case "cross": {
+      const per = Math.max(1, Math.trunc(n / 4));
+      const rot = k * m.r * deg;
+      for (let arm = 0; arm < 4; arm++) {
+        const a = (arm * Math.PI) / 2 + rot;
+        for (let j = 0; j < per; j++) {
+          const f = 1 + j * 0.25;
+          if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * f, vy: Math.sin(a) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+        }
+      }
+      break;
+    }
+    case "accel": case "bounce": {
+      const b = Math.atan2(py - cy, px - cx);
+      for (let j = 0; j < n; j++) {
+        const a = b + (n > 1 ? (j / (n - 1) - 0.5) * m.r * deg : 0);
+        if (out.length >= MAX_BULLETS) continue;
+        if (m.t === "accel") out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * 0.3, vy: Math.sin(a) * sp * 0.3, color: m.k, turn: 0, homeLeft: 0, accel: 0.9, maxSpeed: sp * 2, bounces: 0 });
+        else out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 2 });
       }
       break;
     }
@@ -132,32 +208,47 @@ const LIVES_RANGE = [1, 5] as const, HP_RANGE = [3, 20] as const;
 
 /** 操作記録(dx, dy は 0.25 論理px 単位)を再生して、結果を返す。入力が尽きたら動かさずに続ける */
 export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard"): SimResult {
-  const isBoss = stage.mode !== "survive";
-  const isDamage = stage.mode === "damage";
+  const specs = specsOf(stage);
+  let wi = 0;
+  const spec = () => specs[wi]!;
   const lifeMode: LifeMode = stage.lifeMode ?? "lives";
   const range = lifeMode === "lives" ? LIVES_RANGE : HP_RANGE;
   const lifeMax = clamp(stage.lifeCount ?? 1, range[0], range[1]);
   let lifeLeft = lifeMax;
-  let hp = stage.bossHp ?? 0;
+  let hp = specs[0]!.hp;
   let damage = 0;
+  let defeats = 0;
   const shotDef = SHOTS[shotType];
   const rng = mulberry(stageSeed(stage));
-  const next = stage.emitters.map((m) => m.s);
-  const shotCount = stage.emitters.map(() => 0);
+  let next = specs[0]!.emitters.map((m) => m.s);
+  let shotCount = specs[0]!.emitters.map(() => 0);
   let bullets: Bullet[] = [];
-  const shots: Shot[] = [];
-  let tick = 0, t = -READY;
+  let shots: Shot[] = [];
+  let tick = 0, t = -READY, waveStart = 0;
   let px = W / 2, py = H * 0.85;
   let phase = 1, banner = 0, flash = 0, cooldown = 0, shieldUntil = 0;
   let outcome: Outcome = "playing";
   const limitSec = timeLimitSec(stage.mode, stage.durationSec);
   const limit = (limitSec + 3) * 120 + 144;
-  const bm = BOSS_MOVES[stage.bossMove ?? 0] ?? BOSS_MOVES[0];
 
-  const phaseOf = () => {
-    if (isDamage) { const f = Math.max(0, t) / stage.durationSec; return f < 1 / 3 ? 1 : f < 2 / 3 ? 2 : 3; }
-    const r = hp / (stage.bossHp ?? 1);
+  const phaseOf = (waveT: number) => {
+    const sp = spec();
+    if (sp.damage) { const f = Math.max(0, waveT) / sp.limit; return f < 1 / 3 ? 1 : f < 2 / 3 ? 2 : 3; }
+    const r = hp / Math.max(1, sp.hp);
     return r > 2 / 3 ? 1 : r > 1 / 3 ? 2 : 3;
+  };
+
+  /** 次の場面へ: 画面の弾と自機の弾を消し、切り替えの間(自機は動ける)のあとに新しい場面が始まる */
+  const advanceWave = (dt: number) => {
+    wi += 1;
+    waveStart = t + INTERMISSION;
+    bullets = [];
+    shots = [];
+    next = spec().emitters.map((m) => m.s);
+    shotCount = spec().emitters.map(() => 0);
+    hp = spec().hp;
+    phase = 1; banner = 0; flash = 0; cooldown = 0;
+    shieldUntil = Math.max(shieldUntil, tick + Math.round(INTERMISSION / dt));
   };
 
   while (outcome === "playing" && tick < limit) {
@@ -169,17 +260,20 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     px = clamp(px + dx0 * MOVE_UNIT, 6, W - 6);
     py = clamp(py + dy0 * MOVE_UNIT, 6, H - 6);
 
-    const bx = isBoss ? W * (0.5 + bm.a * Math.sin(Math.max(0, t) * bm.w)) : 0;
-    const by = isBoss ? H * 0.18 : 0;
-    if (isBoss) {
-      const ph = phaseOf();
+    const sp = spec();
+    const waveT = t - waveStart;
+    const bm = BOSS_MOVES[sp.move] ?? BOSS_MOVES[0];
+    const bx = sp.boss ? W * (0.5 + bm.a * Math.sin(Math.max(0, waveT) * bm.w)) : 0;
+    const by = sp.boss ? H * 0.18 : 0;
+    if (sp.boss) {
+      const ph = phaseOf(waveT);
       if (ph !== phase) {
         phase = ph;
         if (ph > 1) { bullets = []; banner = 1.2; }
       }
       if (banner > 0) banner -= dt;
       cooldown -= dt;
-      if (t >= 0 && cooldown <= 0) {
+      if (waveT >= 0 && cooldown <= 0) {
         cooldown = shotDef.interval;
         for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage });
       }
@@ -192,28 +286,32 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         const dx = s.x - bx, dy = s.y - by;
         if (dx * dx + dy * dy < 24 * 24) {
           damage += s.damage;
-          if (!isDamage) hp -= s.damage;
+          if (!sp.damage) hp -= s.damage;
           flash = 0.06; continue;
         }
         shots[w++] = s;
       }
       shots.length = w;
       if (flash > 0) flash -= dt;
-      if (!isDamage && hp <= 0) { outcome = "cleared"; break; }
+      if (!sp.damage && hp <= 0) {
+        defeats += 1;
+        if (wi + 1 < specs.length) advanceWave(dt); else outcome = "cleared";
+        continue;
+      }
     }
 
-    if (t >= 0) {
-      stage.emitters.forEach((m, idx) => {
-        if (isBoss) {
-          if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = t; return; }
-          while (t >= next[idx]!) {
+    if (waveT >= 0) {
+      sp.emitters.forEach((m, idx) => {
+        if (sp.boss) {
+          if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = waveT; return; }
+          while (waveT >= next[idx]!) {
             emit(m, shotCount[idx]!, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by, px, py, rng, bullets);
             shotCount[idx]!++;
             next[idx]! += Math.max(0.05, m.i);
           }
         } else {
-          const end = Math.min(m.e, stage.durationSec);
-          while (t >= next[idx]! && next[idx]! < end) {
+          const end = Math.min(m.e, sp.limit);
+          while (waveT >= next[idx]! && next[idx]! < end) {
             emit(m, shotCount[idx]!, m.x * W, m.y * H, px, py, rng, bullets);
             shotCount[idx]!++;
             next[idx]! += Math.max(0.05, m.i);
@@ -239,8 +337,19 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         b.vy = Math.sin(na) * speed;
         b.homeLeft -= dt;
       }
+      if (b.accel !== 0) {
+        const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        if (speed < b.maxSpeed) {
+          const g = Math.min(1 + b.accel * dt, b.maxSpeed / speed);
+          b.vx *= g; b.vy *= g;
+        }
+      }
       b.x += b.vx * dt;
       b.y += b.vy * dt;
+      if (b.bounces > 0) {
+        if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
+        else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
+      }
       if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
       const dx = b.x - px, dy = b.y - py;
       if (dx * dx + dy * dy < HIT_R2) {
@@ -254,7 +363,14 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     }
     if (died) break;
     bullets.length = w;
-    if (t >= limitSec) outcome = isBoss && !isDamage ? "timeUp" : "cleared";
+    if (waveT >= sp.limit) {
+      if (wi + 1 < specs.length) {
+        // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ
+        if (sp.boss && !sp.damage) outcome = "timeUp"; else advanceWave(dt);
+      } else {
+        outcome = sp.boss && !sp.damage ? "timeUp" : "cleared";
+      }
+    }
   }
 
   const h = new Fnv();
@@ -266,7 +382,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       for (const word of [u32[0]!, u32[1]!]) for (let s = 0; s < 32; s += 8) h.addByte((word >>> s) & 0xff);
     }
   }
-  return { outcome, tick, hp, damage, lifeLeft, bulletCount: bullets.length, bulletHash: h.value };
+  return { outcome, tick, hp, damage, lifeLeft, wave: wi, defeats, bulletCount: bullets.length, bulletHash: h.value };
 }
 
 /** アプリが送ってくる操作記録(Base64 → [先頭1バイト: 0=そのまま/1=圧縮] → (回数, dx, dy) の繰り返し)を、1ステップずつの [dx, dy, ...] に戻す */

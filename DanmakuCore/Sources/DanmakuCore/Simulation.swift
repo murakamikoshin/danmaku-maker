@@ -15,6 +15,11 @@ public struct Bullet: Equatable, Sendable {
     /// 追尾弾の曲がる速さ(ラジアン/秒。0 なら追尾しない)と、追尾の残り時間(秒)
     public var turn: Double = 0
     public var homeLeft: Double = 0
+    /// 加速弾: 1秒あたりに速さが増える割合(0 なら加速しない)と、速さの上限(px/秒)
+    public var accel: Double = 0
+    public var maxSpeed: Double = 0
+    /// 反射弾: 左右の壁で、あと何回はね返るか
+    public var bounces: Int = 0
 }
 
 /// 1ステップ分の自機移動量。単位は 0.25 論理px（リプレイに入れるため整数にしてある）
@@ -64,6 +69,68 @@ public enum Emit {
                 let a = b + (Double(j) - Double(n - 1) / 2) * 0.35
                 if out.count < DanmakuConfig.maxBullets {
                     out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, turn: turn, homeLeft: DanmakuConfig.homingSeconds))
+                }
+            }
+        case .flower, .star, .heart:
+            // 輪の形の弾幕: 角度ごとに速さを変えて、花・星・ハートの輪郭をつくる(r は、1回ごとの回転)
+            let rot = Double(k) * m.r * deg
+            for j in 0..<n {
+                let th = Double(j) * 2 * Double.pi / Double(n) + rot
+                let rel = th - rot     // 形は、回転とは別に決める(回転させると、形ごと回る)
+                let f: Double
+                switch m.t {
+                case .flower: f = 0.4 + 0.6 * abs(cos(2.5 * rel))
+                case .star:
+                    let u = (rel * 5 / (2 * Double.pi)).truncatingRemainder(dividingBy: 1)
+                    let ph = u < 0 ? u + 1 : u
+                    f = 0.45 + 0.55 * abs(ph - 0.5) * 2
+                default:
+                    let q = -rel
+                    let sq = abs(cos(q)).squareRoot()
+                    let rr = (2 - 2 * sin(q) + sin(q) * sq / (sin(q) + 1.4)) / 4
+                    f = 0.15 + 0.85 * max(0, min(1, rr))
+                }
+                let a = th
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k))
+                }
+            }
+        case .beam:
+            // 自機に向けて、速さをずらした弾を一直線に出す(c 個)。r は、狙いのずれ(度)
+            let b = atan2(py - cy, px - cx) + m.r * deg * 0.2
+            for j in 0..<n {
+                let f = 1 + Double(j) * 0.18
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(b) * sp * f, vy: sin(b) * sp * f, color: m.k))
+                }
+            }
+        case .cross:
+            // 上下左右の4方向。1方向あたり c/4 個(最低1個)が、速さをずらして列になる。r は、1回ごとの回転
+            let per = max(1, n / 4)
+            let rot = Double(k) * m.r * deg
+            for arm in 0..<4 {
+                let a = Double(arm) * Double.pi / 2 + rot
+                for j in 0..<per {
+                    let f = 1 + Double(j) * 0.25
+                    if out.count < DanmakuConfig.maxBullets {
+                        out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k))
+                    }
+                }
+            }
+        case .accel:
+            let b = atan2(py - cy, px - cx)
+            for j in 0..<n {
+                let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp * 0.3, vy: sin(a) * sp * 0.3, color: m.k, accel: 0.9, maxSpeed: sp * 2))
+                }
+            }
+        case .bounce:
+            let b = atan2(py - cy, px - cx)
+            for j in 0..<n {
+                let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, bounces: 2))
                 }
             }
         case .sideL, .sideR:
@@ -123,11 +190,20 @@ public struct Simulation {
     public private(set) var lifeLeft: Int
     /// 被弾の直後に残りを数える表示用(秒)。画面のひらめきに使う
     public private(set) var hitFlash = 0.0
+    /// ボスを倒した回数と、直近の撃破の場所・演出(画面の演出に使う。計算には関わらない)
+    public private(set) var defeats = 0
+    public private(set) var lastDefeatPosition = Point(x: 0, y: 0)
+    public private(set) var lastDefeatEffect = DefeatEffect.standard
 
     private var cooldown = 0.0
     private var rng: Mulberry32
     private var next: [Double]
     private var shotCount: [Int]
+    /// 場面の一覧と、いまの場面。連戦以外は、ステージ全体が「場面1つ」
+    private let specs: [WaveSpec]
+    public private(set) var waveIndex = 0
+    /// いまの場面が始まった時刻(t)。最初の場面は 0(ステージの開始)。連戦の途中では、切り替えの時間のあとになる
+    private var waveStart = 0.0
 
     /// ライフ制で1つ失ったあとの無敵の長さ(秒)
     static let lifeShieldSeconds = 2.0
@@ -144,16 +220,49 @@ public struct Simulation {
         lifeMode = stage.effectiveLifeMode
         lifeMax = stage.effectiveLifeCount
         lifeLeft = stage.effectiveLifeCount
-        hp = stage.bossHp ?? 0
+        let specs = stage.waveSpecs
+        self.specs = specs
+        hp = specs[0].hp
         rng = Mulberry32(seed: seed)
-        next = stage.emitters.map(\.s)
-        shotCount = Array(repeating: 0, count: stage.emitters.count)
+        next = specs[0].emitters.map(\.s)
+        shotCount = Array(repeating: 0, count: specs[0].emitters.count)
     }
 
-    /// ボスが出る(ボス戦とダメージ勝負)
-    public var isBoss: Bool { stage.mode != .survive }
+    private var spec: WaveSpec { specs[waveIndex] }
+    /// 場面の数
+    public var waveCount: Int { specs.count }
+    /// いまの場面の中の経過時間(秒)。切り替えの間と、READY の間は負
+    public var waveT: Double { t - waveStart }
+    /// 場面の切り替えの間か(2場面目以降の、開始前)
+    public var isIntermission: Bool { waveIndex > 0 && waveT < 0 }
+    /// いまの場面の開始前に、警告の演出を出すか
+    public var warningNow: Bool { spec.warning }
+    /// いまの場面の制限時間(秒)
+    public var waveLimit: Double { spec.limit }
+    /// いまの場面の、ボスの最大 HP
+    public var waveBossHp: Int { spec.hp }
+    public var currentEmitters: [Emitter] { spec.emitters }
+
+    /// 次の場面へ。画面の弾と自機の弾を消し、切り替えの間(自機は動ける)のあと、新しい場面が始まる
+    private mutating func advanceWave() {
+        waveIndex += 1
+        waveStart = t + Wave.intermissionSeconds
+        bullets.removeAll(keepingCapacity: true)
+        shots.removeAll(keepingCapacity: true)
+        next = spec.emitters.map(\.s)
+        shotCount = Array(repeating: 0, count: spec.emitters.count)
+        hp = spec.hp
+        phase = 1
+        banner = 0
+        flash = 0
+        cooldown = 0
+        shieldUntilTick = max(shieldUntilTick, tick + Int((Wave.intermissionSeconds / DanmakuConfig.step).rounded()))
+    }
+
+    /// いまの場面に、ボスが出る(ボス戦・ダメージ勝負・連戦のボスの場面)
+    public var isBoss: Bool { spec.boss }
     /// ダメージ勝負(ボスの HP は無限。与えたダメージの合計を数える)
-    public var isDamageRace: Bool { stage.mode == .damage }
+    public var isDamageRace: Bool { spec.damage }
 
     /// 復活直後で、被弾しない状態か
     public var isShielded: Bool { tick < shieldUntilTick }
@@ -169,18 +278,18 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
-        let mv = Simulation.bossMoves[stage.bossMove ?? 0]
-        return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, t) * mv.w)),
+        let mv = Simulation.bossMoves[min(max(spec.move, 0), 2)]
+        return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, waveT) * mv.w)),
                      y: DanmakuConfig.height * 0.18)
     }
 
     private func phaseOf() -> Int {
         if isDamageRace {
             // ダメージ勝負は、HP ではなく時間の3分の1ずつで段階が進む
-            let f = max(0, t) / Double(stage.durationSec)
+            let f = max(0, waveT) / spec.limit
             return f < 1.0 / 3 ? 1 : f < 2.0 / 3 ? 2 : 3
         }
-        let r = Double(hp) / Double(stage.bossHp ?? 1)
+        let r = Double(hp) / Double(max(1, spec.hp))
         return r > 2.0 / 3 ? 1 : r > 1.0 / 3 ? 2 : 3
     }
 
@@ -206,7 +315,7 @@ public struct Simulation {
             }
             if banner > 0 { banner -= dt }
             cooldown -= dt
-            if t >= 0 && cooldown <= 0 {
+            if waveT >= 0 && cooldown <= 0 {
                 cooldown = shotType.interval
                 for spec in shotType.volley {
                     shots.append(PlayerShot(x: player.x + spec.dx, y: player.y - 10, vx: spec.vx, damage: spec.damage))
@@ -227,14 +336,20 @@ public struct Simulation {
             }
             shots.removeSubrange(w...)
             if flash > 0 { flash -= dt }
-            if !isDamageRace && hp <= 0 { outcome = .cleared; return }
+            if !isDamageRace && hp <= 0 {
+                defeats += 1
+                lastDefeatPosition = bp
+                lastDefeatEffect = spec.defeat
+                if waveIndex + 1 < specs.count { advanceWave() } else { outcome = .cleared }
+                return
+            }
         }
 
-        if t >= 0 {
-            for (idx, m) in stage.emitters.enumerated() {
+        if waveT >= 0 {
+            for (idx, m) in spec.emitters.enumerated() {
                 if isBoss {
-                    if !(m.ph == 0 || m.ph == phase) || banner > 0 { next[idx] = t; continue }
-                    while t >= next[idx] {
+                    if !(m.ph == 0 || m.ph == phase) || banner > 0 { next[idx] = waveT; continue }
+                    while waveT >= next[idx] {
                         // ボス戦でも、好きな場所から出せる(p == 1)。雨は、これまでどおり位置を使わない
                         let fx = m.firesFromPoint ? m.x * W : bp.x
                         let fy = m.firesFromPoint ? m.y * H : bp.y
@@ -244,8 +359,8 @@ public struct Simulation {
                         next[idx] += max(0.05, m.i)
                     }
                 } else {
-                    let end = min(m.e, Double(stage.durationSec))
-                    while t >= next[idx] && next[idx] < end {
+                    let end = min(m.e, spec.limit)
+                    while waveT >= next[idx] && next[idx] < end {
                         Emit.emit(m, shot: shotCount[idx], cx: m.x * W, cy: m.y * H,
                                   px: player.x, py: player.y, rng: &rng, into: &bullets)
                         shotCount[idx] += 1
@@ -272,8 +387,20 @@ public struct Simulation {
                 b.vy = sin(na) * speed
                 b.homeLeft -= dt
             }
+            if b.accel != 0 {
+                let speed = (b.vx * b.vx + b.vy * b.vy).squareRoot()
+                if speed < b.maxSpeed {
+                    // 上限を超えないように、増やす割合を頭打ちにする
+                    let g = min(1 + b.accel * dt, b.maxSpeed / speed)
+                    b.vx *= g; b.vy *= g
+                }
+            }
             b.x += b.vx * dt
             b.y += b.vy * dt
+            if b.bounces > 0 {
+                if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
+                else if b.x > W { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1 }
+            }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
             if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared {
@@ -291,7 +418,14 @@ public struct Simulation {
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
-        if t >= Double(stage.timeLimitSec) { outcome = (isBoss && !isDamageRace) ? .timeUp : .cleared }
+        if waveT >= spec.limit {
+            if waveIndex + 1 < specs.count {
+                // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ
+                if spec.boss && !spec.damage { outcome = .timeUp } else { advanceWave() }
+            } else {
+                outcome = (isBoss && !isDamageRace) ? .timeUp : .cleared
+            }
+        }
     }
 }
 

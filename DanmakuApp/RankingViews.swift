@@ -119,7 +119,7 @@ struct RankingSection: View {
 
     var body: some View {
         GamePanel(title: "ranking.title", tint: Color(Palette.gold)) {
-            Text(mode == .boss ? "ranking.sub.boss" : "ranking.sub.damage").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text(RankingService.byTime(mode) ? "ranking.sub.boss" : "ranking.sub.damage").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             if loading {
                 HStack { Spacer(); ProgressView().tint(Color(Palette.gold)); Spacer() }.padding(.vertical, 10)
             } else if failed {

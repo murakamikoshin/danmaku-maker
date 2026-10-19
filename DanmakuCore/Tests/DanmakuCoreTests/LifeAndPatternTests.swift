@@ -388,12 +388,12 @@ final class HomingTests: XCTestCase {
     }
 
     func testHomingProductAndOwnership() {
-        XCTAssertEqual(Product.homing.id, "com.koshin.danmakumaker.homing")
-        XCTAssertEqual(Product(id: "com.koshin.danmakumaker.homing"), .homing)
-        XCTAssertEqual(Product.homing.yen, 300)
-        XCTAssertFalse(Ownership().hasHoming)
-        XCTAssertTrue(Ownership(productIDs: [Product.homing.id]).hasHoming)
-        XCTAssertFalse(Ownership(productIDs: [Product.homing.id]).canBuy(.homing))
+        XCTAssertEqual(Product.pattern(.homing).id, "com.koshin.danmakumaker.homing")
+        XCTAssertEqual(Product(id: "com.koshin.danmakumaker.homing"), .pattern(.homing))
+        XCTAssertEqual(Product.pattern(.homing).yen, 300)
+        XCTAssertFalse(Ownership().has(.homing))
+        XCTAssertTrue(Ownership(productIDs: [Product.pattern(.homing).id]).has(.homing))
+        XCTAssertFalse(Ownership(productIDs: [Product.pattern(.homing).id]).canBuy(.pattern(.homing)))
     }
 }
 
@@ -439,5 +439,372 @@ final class FirePointTests: XCTestCase {
         XCTAssertEqual(s.emitters.first?.p, 0)
         let weird = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring, p: 7)]).sanitized()
         XCTAssertEqual(weird.emitters.first?.p, 0)
+    }
+}
+
+
+final class BGMTests: XCTestCase {
+    private func stage(_ mode: Mode, bgm: Int?) -> Stage {
+        Stage(name: "m", mode: mode, durationSec: mode == .survive ? 20 : 60, bossHp: mode == .boss ? 400 : nil, bossMove: mode == .survive ? nil : 0,
+              emitters: [Emitter(t: .ring)], bgm: bgm)
+    }
+
+    func testDefaultsByMode() {
+        XCTAssertEqual(stage(.survive, bgm: nil).effectiveBGM, 0)
+        XCTAssertEqual(stage(.boss, bgm: nil).effectiveBGM, 1)
+        XCTAssertEqual(stage(.damage, bgm: nil).effectiveBGM, 1)
+    }
+
+    func testChosenBGMIsUsedAndOutOfRangeFallsBack() {
+        XCTAssertEqual(stage(.survive, bgm: 3).effectiveBGM, 3)
+        XCTAssertEqual(stage(.boss, bgm: 4).effectiveBGM, 4)
+        XCTAssertEqual(stage(.survive, bgm: 9).effectiveBGM, 0)
+        XCTAssertEqual(stage(.boss, bgm: -1).effectiveBGM, 1)
+    }
+
+    func testSanitizeDropsStandardAndInvalid() {
+        XCTAssertNil(stage(.survive, bgm: 0).sanitized().bgm)
+        XCTAssertNil(stage(.boss, bgm: 1).sanitized().bgm)
+        XCTAssertNil(stage(.survive, bgm: 99).sanitized().bgm)
+        XCTAssertEqual(stage(.survive, bgm: 1).sanitized().bgm, 1)
+        XCTAssertEqual(stage(.boss, bgm: 0).sanitized().bgm, 0)
+        XCTAssertEqual(stage(.boss, bgm: 4).sanitized().bgm, 4)
+    }
+
+    func testBGMDoesNotChangeTheSeedOrBehaviour() {
+        XCTAssertEqual(stage(.boss, bgm: 3).seed, stage(.boss, bgm: nil).seed)
+        XCTAssertEqual(Simulation.run(stage: stage(.survive, bgm: 2), moves: []), Simulation.run(stage: stage(.survive, bgm: nil), moves: []))
+    }
+
+    func testJSONOnlyIncludesBGMWhenChosen() throws {
+        XCTAssertFalse(String(data: try JSONEncoder().encode(stage(.survive, bgm: nil)), encoding: .utf8)!.contains("bgm"))
+        let back = try JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(stage(.survive, bgm: 2)))
+        XCTAssertEqual(back.bgm, 2)
+    }
+}
+
+
+final class PaidPatternTests: XCTestCase {
+    private func fire(_ p: DanmakuCore.Pattern, c: Int = 12, r: Double = 10, k: Int = 0) -> [Bullet] {
+        var rng = Mulberry32(seed: 99)
+        var out: [Bullet] = []
+        Emit.emit(Emitter(t: p, x: 0.5, y: 0.1, s: 0, e: 10, i: 1, c: c, v: 2, r: r, k: k), shot: k, cx: 180, cy: 54, px: 180, py: 459, rng: &rng, into: &out)
+        return out
+    }
+    private func speeds(_ b: [Bullet]) -> [Double] { b.map { ($0.vx * $0.vx + $0.vy * $0.vy).squareRoot() } }
+
+    func testPaidListAndFreePatterns() {
+        XCTAssertEqual(Set(DanmakuCore.Pattern.paid), [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce])
+        for p in [DanmakuCore.Pattern.ring, .spiral, .aim, .rain, .sweep, .sideL, .sideR, .corner] { XCTAssertFalse(p.isPaid) }
+        XCTAssertEqual(DanmakuCore.Pattern.flower.index, 9)
+        XCTAssertEqual(DanmakuCore.Pattern.bounce.index, 15)
+    }
+
+    func testShapePatternsVarySpeedByAngle() {
+        for p in [DanmakuCore.Pattern.flower, .star, .heart] {
+            let sp = speeds(fire(p, c: 36))
+            XCTAssertEqual(sp.count, 36)
+            XCTAssertGreaterThan(sp.max()! / sp.min()!, 1.8, "\(p) の輪郭に、はっきり凹凸がある")
+            XCTAssertLessThanOrEqual(sp.max()!, 120.0001)
+        }
+    }
+
+    func testFlowerHasFivePetals() {
+        let sp = speeds(fire(.flower, c: 36, r: 0))
+        var peaks = 0
+        for i in 0..<36 where sp[i] > sp[(i + 35) % 36] && sp[i] >= sp[(i + 1) % 36] && sp[i] > 100 { peaks += 1 }
+        XCTAssertEqual(peaks, 5)
+    }
+
+    func testBeamIsALineOfIncreasingSpeedTowardThePlayer() {
+        let b = fire(.beam, c: 6, r: 0)
+        XCTAssertEqual(b.count, 6)
+        let s = speeds(b)
+        for i in 1..<s.count { XCTAssertGreaterThan(s[i], s[i - 1]) }
+        for x in b { XCTAssertEqual(x.vx, 0, accuracy: 1e-6); XCTAssertGreaterThan(x.vy, 0) }   // 自機は真下
+    }
+
+    func testCrossFiresFourArms() {
+        let b = fire(.cross, c: 8, r: 0)
+        XCTAssertEqual(b.count, 8)          // 4方向 × 2個
+        let dirs = Set(b.map { "\(Int(($0.vx).sign == .minus ? -1 : ($0.vx.magnitude > 1e-6 ? 1 : 0)))\(Int(($0.vy).sign == .minus ? -1 : ($0.vy.magnitude > 1e-6 ? 1 : 0)))" })
+        XCTAssertEqual(dirs.count, 4)
+        XCTAssertEqual(fire(.cross, c: 3).count, 4, "最低でも各方向に1個")
+    }
+
+    func testAccelBulletsStartSlowAndSpeedUpToACap() {
+        var rng = Mulberry32(seed: 1)
+        var out: [Bullet] = []
+        Emit.emit(Emitter(t: .accel, c: 1, v: 2, r: 0), shot: 0, cx: 180, cy: 54, px: 180, py: 459, rng: &rng, into: &out)
+        XCTAssertEqual(out.count, 1)
+        XCTAssertEqual(speeds(out)[0], 120 * 0.3, accuracy: 1e-9)
+        XCTAssertGreaterThan(out[0].accel, 0)
+        // 動かない自機で、時間とともに弾が速くなる(当たるまで)
+        let st = Stage(name: "a", mode: .survive, durationSec: 30, emitters: [Emitter(t: .accel, x: 0.5, y: 0.0, s: 0, e: 30, i: 5, c: 1, v: 2, r: 0)])
+        var sim = Simulation(stage: st)
+        var seen: [Double] = []
+        for _ in 0..<(120 * 6) where sim.outcome == .playing {
+            sim.step(Move(dx: 0, dy: 0))
+            if let b = sim.bullets.first { seen.append((b.vx * b.vx + b.vy * b.vy).squareRoot()) }
+        }
+        XCTAssertGreaterThan(seen.last!, seen.first! * 1.5)
+        XCTAssertLessThanOrEqual(seen.max()!, 240.0001)
+    }
+
+    func testBounceBulletsReflectOffWallsTwice() {
+        var b = Bullet(x: 10, y: 100, vx: -300, vy: 0, color: 0, bounces: 2)
+        // 同じ計算を、シミュレーションの外から確かめる代わりに、実際のステージで確認する
+        let st = Stage(name: "b", mode: .survive, durationSec: 30, emitters: [Emitter(t: .bounce, x: 0.05, y: 0.1, s: 0, e: 30, i: 9, c: 1, v: 4, r: 0)])
+        var sim = Simulation(stage: st)
+        sim.step(Move(dx: -127, dy: 0))        // 自機を左端へ(弾が左へ向かうように)
+        b.bounces = 2
+        var minX = 1000.0, maxX = -1000.0
+        for _ in 0..<(120 * 8) where sim.outcome == .playing {
+            sim.step(Move(dx: 0, dy: 0))
+            for x in sim.bullets { minX = min(minX, x.x); maxX = max(maxX, x.x) }
+        }
+        XCTAssertGreaterThanOrEqual(minX, -0.001, "反射する弾は、左の壁の外へ出ない")
+    }
+
+    func testPatternPackOwnershipAndProducts() {
+        XCTAssertEqual(Product.patternPack.id, "com.koshin.danmakumaker.patternpack")
+        XCTAssertEqual(Product(id: "com.koshin.danmakumaker.patternpack"), .patternPack)
+        XCTAssertEqual(Product.patternPack.yen, 600)
+        XCTAssertLessThan(Product.patternPack.yen, Pattern.paid.map { Product.pattern($0).yen }.reduce(0, +))
+        let pack = Ownership(productIDs: [Product.patternPack.id])
+        for p in DanmakuCore.Pattern.paid { XCTAssertTrue(pack.has(p)); XCTAssertFalse(pack.canBuy(.pattern(p))) }
+        XCTAssertFalse(pack.canBuy(.patternPack))
+        let one = Ownership(productIDs: [Product.pattern(.flower).id])
+        XCTAssertTrue(one.has(.flower)); XCTAssertFalse(one.has(.star))
+        XCTAssertTrue(one.canBuy(.patternPack))
+        XCTAssertTrue(Ownership().has(.ring))
+        for p in DanmakuCore.Pattern.paid { XCTAssertEqual(Product(id: Product.pattern(p).id), .pattern(p)) }
+    }
+
+    func testAllNewPatternsAreDeterministicAndSurviveSanitize() {
+        for p in DanmakuCore.Pattern.paid {
+            XCTAssertEqual(fire(p), fire(p))
+            let st = Stage(name: "n", mode: .survive, durationSec: 20, emitters: [Emitter(t: p, x: 0.5, y: 0.2, s: 0, e: 20, i: 0.4, c: 8, v: 2, r: 20)])
+            XCTAssertEqual(st.sanitized().emitters.first?.t, p)
+            XCTAssertEqual(Simulation.run(stage: st, moves: []), Simulation.run(stage: st, moves: []))
+        }
+    }
+}
+
+
+final class StageLookTests: XCTestCase {
+    private func stage(_ b: Theme? = nil, _ bg: Theme? = nil, _ sh: Theme? = nil) -> Stage {
+        Stage(name: "l", mode: .survive, durationSec: 20, emitters: [Emitter(t: .ring)], themeBullets: b, themeBackground: bg, themeShip: sh)
+    }
+
+    func testDefaultLookIsClassicAndNotStored() throws {
+        let s = stage()
+        XCTAssertEqual([s.lookBullets, s.lookBackground, s.lookShip], [.classic, .classic, .classic])
+        let text = String(data: try JSONEncoder().encode(s), encoding: .utf8)!
+        XCTAssertFalse(text.contains("theme"))
+        let c = stage(.classic, .classic, .classic).sanitized()
+        XCTAssertNil(c.themeBullets); XCTAssertNil(c.themeBackground); XCTAssertNil(c.themeShip)
+    }
+
+    func testChosenLookIsKeptAndRoundTrips() throws {
+        let s = stage(.sakura, .ocean, .aurora).sanitized()
+        XCTAssertEqual([s.lookBullets, s.lookBackground, s.lookShip], [.sakura, .ocean, .aurora])
+        let back = try JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(s))
+        XCTAssertEqual(back.themeBullets, .sakura)
+        XCTAssertEqual(back.themeBackground, .ocean)
+        XCTAssertEqual(back.themeShip, .aurora)
+        // 一部だけ選んだ場合
+        let p = stage(nil, .ocean, nil).sanitized()
+        XCTAssertNil(p.themeBullets); XCTAssertEqual(p.themeBackground, .ocean); XCTAssertNil(p.themeShip)
+    }
+
+    func testUnknownThemeFromANewerVersionReadsAsClassic() throws {
+        let json = #"{"name":"x","mode":"survive","durationSec":20,"emitters":[{"t":"ring","x":0.5,"y":0.2,"s":0,"e":20,"i":1,"c":16,"v":2,"r":6,"k":0}],"themeBullets":"galaxy","themeShip":"sakura"}"#.data(using: .utf8)!
+        let s = try JSONDecoder().decode(Stage.self, from: json)
+        XCTAssertNil(s.themeBullets)
+        XCTAssertEqual(s.themeShip, .sakura)
+    }
+
+    func testLookDoesNotChangeSeedOrBehaviour() {
+        XCTAssertEqual(stage(.sakura, .ocean, .aurora).seed, stage().seed)
+        XCTAssertEqual(Simulation.run(stage: stage(.sakura), moves: []), Simulation.run(stage: stage(), moves: []))
+    }
+}
+
+
+final class MarkerOptionTests: XCTestCase {
+    func testMarkersShownByDefaultAndHideIsStoredOnlyWhenOn() throws {
+        let std = Stage(name: "m", mode: .survive, durationSec: 20, emitters: [Emitter(t: .ring)])
+        XCTAssertTrue(std.showsMarkers)
+        XCTAssertFalse(String(data: try JSONEncoder().encode(std), encoding: .utf8)!.contains("hideMarkers"))
+        let hidden = Stage(name: "m", mode: .survive, durationSec: 20, emitters: [Emitter(t: .ring)], hideMarkers: true).sanitized()
+        XCTAssertFalse(hidden.showsMarkers)
+        let back = try JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(hidden))
+        XCTAssertEqual(back.hideMarkers, true)
+        // false は保存しない(標準に揃える)。ボス戦では意味がないので落とす
+        XCTAssertNil(Stage(name: "m", mode: .survive, durationSec: 20, emitters: [Emitter(t: .ring)], hideMarkers: false).sanitized().hideMarkers)
+        XCTAssertNil(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring)], hideMarkers: true).sanitized().hideMarkers)
+    }
+
+    func testMarkerOptionDoesNotChangeBehaviour() {
+        let a = Stage(name: "m", mode: .survive, durationSec: 20, emitters: [Emitter(t: .aim, x: 0.5, y: 0.3, s: 1, e: 20, i: 0.5, c: 3, v: 2, r: 20)])
+        var b = a; b.hideMarkers = true
+        XCTAssertEqual(a.seed, b.seed)
+        XCTAssertEqual(Simulation.run(stage: a, moves: []), Simulation.run(stage: b, moves: []))
+    }
+}
+
+final class WaveSequenceTests: XCTestCase {
+    private func em(_ t: DanmakuCore.Pattern = .ring, c: Int = 4, i: Double = 1.0, v: Double = 1.0) -> Emitter {
+        Emitter(t: t, x: 0.5, y: 0.2, s: 0, e: 120, i: i, c: c, v: v, r: 0)
+    }
+
+    private func sequence(_ waves: [Wave], life: Int? = nil) -> Stage {
+        Stage(name: "seq", mode: .sequence, durationSec: 0, emitters: [],
+              lifeMode: life == nil ? nil : .lives, lifeCount: life, waves: waves).sanitized()
+    }
+
+    private func run(_ st: Stage, moves: (Int) -> Move = { _ in .zero }, limit: Int = 120 * 700) -> Simulation {
+        var sim = Simulation(stage: st)
+        while sim.outcome == .playing && sim.tick < limit { sim.step(moves(sim.tick)) }
+        return sim
+    }
+
+    func testSanitizeComputesTotalAndClampsWaves() {
+        let st = sequence([Wave(kind: .boss, durationSec: 77, bossHp: 9999, bossMove: 7, emitters: [em()]),
+                           Wave(kind: .survive, durationSec: 33, emitters: [em()])])
+        XCTAssertEqual(st.mode, .sequence)
+        XCTAssertEqual(st.waves?.count, 2)
+        XCTAssertEqual(st.waves![0].durationSec, 60)      // 選べない長さは、標準(ボス=60秒)に
+        XCTAssertEqual(st.waves![0].bossHp, 1000)
+        XCTAssertEqual(st.waves![0].bossMove, 2)
+        XCTAssertEqual(st.waves![1].durationSec, 20)      // 生き残り=20秒
+        XCTAssertNil(st.waves![1].bossHp)
+        XCTAssertEqual(st.durationSec, 60 + 20 + Wave.intermissionBudget)
+        XCTAssertNil(st.bossHp); XCTAssertTrue(st.emitters.isEmpty)
+        let many = sequence((0..<9).map { _ in Wave(kind: .survive, durationSec: 10, emitters: [em()]) })
+        XCTAssertEqual(many.waves?.count, Wave.maxWaves)
+    }
+
+    func testSeedDependsOnWaveContentAndOrder() {
+        let a = Wave(kind: .survive, durationSec: 10, emitters: [em(.ring)])
+        let b = Wave(kind: .boss, durationSec: 30, bossHp: 200, bossMove: 0, emitters: [em(.aim)])
+        XCTAssertNotEqual(sequence([a, b]).seed, sequence([b, a]).seed)
+        XCTAssertNotEqual(sequence([a, b]).seed, sequence([a]).seed)
+        XCTAssertEqual(sequence([a, b]).seed, sequence([a, b]).seed)
+    }
+
+    func testSurviveThenBossThenClear() {
+        // 雑魚だけ(10秒) → ボス(HP100)。動かなくても、弾が当たらない遅い弾幕
+        let st = sequence([Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .sideL, x: 0.5, y: 0.1, s: 0, e: 10, i: 2, c: 1, v: 1, r: 0)]),
+                           Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .sideR, x: 0.5, y: 0.1, s: 0, e: 60, i: 2, c: 1, v: 1, r: 0)])], life: 5)
+        var sim = Simulation(stage: st)
+        var seenWaves: [Int] = [0]
+        var intermissionSeen = false
+        while sim.outcome == .playing && sim.tick < 120 * 120 {
+            sim.step(.zero)
+            if sim.waveIndex != seenWaves.last { seenWaves.append(sim.waveIndex) }
+            if sim.isIntermission { intermissionSeen = true }
+        }
+        XCTAssertEqual(sim.outcome, .cleared)
+        XCTAssertEqual(seenWaves, [0, 1])
+        XCTAssertTrue(intermissionSeen)
+        XCTAssertEqual(sim.waveCount, 2)
+        XCTAssertEqual(sim.defeats, 1)
+        XCTAssertGreaterThan(sim.t, 10 + Wave.intermissionSeconds)
+    }
+
+    func testBossTimeUpMidSequenceFails() {
+        // 倒せない大きな HP を、短い時間で: 時間切れで失敗(次の場面には進まない)
+        let st = sequence([Wave(kind: .boss, durationSec: 30, bossHp: 1000, bossMove: 2, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 1, v: 1, r: 0)]),
+                           Wave(kind: .survive, durationSec: 10, emitters: [em()])], life: 5)
+        var sim = Simulation(stage: st)
+        // 画面の端に張りつく(ボスに弾が当たりにくい)
+        while sim.outcome == .playing && sim.tick < 120 * 100 { sim.step(Move(dx: -127, dy: 0)) }
+        XCTAssertTrue(sim.outcome == .timeUp || sim.outcome == .cleared)
+        if sim.outcome == .timeUp { XCTAssertEqual(sim.waveIndex, 0) }
+    }
+
+    func testLifeCarriesAcrossWavesAndBulletsAreClearedBetweenWaves() {
+        let st = sequence([Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .aim, x: 0.5, y: 0.5, s: 0, e: 10, i: 0.3, c: 1, v: 3, r: 0)]),
+                           Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .aim, x: 0.5, y: 0.5, s: 0, e: 10, i: 0.3, c: 1, v: 3, r: 0)])], life: 5)
+        var sim = Simulation(stage: st)
+        var lifeAtSwitch: Int?
+        var bulletsAtSwitch: Int?
+        var lastWave = 0
+        while sim.outcome == .playing && sim.tick < 120 * 60 {
+            sim.step(.zero)
+            if sim.waveIndex != lastWave { lastWave = sim.waveIndex; lifeAtSwitch = sim.lifeLeft; bulletsAtSwitch = sim.bullets.count }
+        }
+        if let l = lifeAtSwitch { XCTAssertLessThan(l, 5, "場面の前半で、ライフが減っている"); XCTAssertEqual(bulletsAtSwitch, 0) }
+        XCTAssertLessThanOrEqual(sim.lifeLeft, lifeAtSwitch ?? 5)
+    }
+
+    func testSequenceIsDeterministicAndLimitCoversAllWaves() {
+        let st = sequence([Wave(kind: .survive, durationSec: 10, emitters: [em(.spiral, c: 3, i: 0.2, v: 2)]),
+                           Wave(kind: .boss, durationSec: 30, bossHp: 200, bossMove: 1, emitters: [em(.aim, c: 5, i: 0.8, v: 2)])], life: 3)
+        let moves: (Int) -> Move = { Move(dx: Int8(($0 / 70) % 2 == 0 ? 6 : -6), dy: 0) }
+        let a = run(st, moves: moves), b = run(st, moves: moves)
+        XCTAssertEqual(a.result, b.result)
+        XCTAssertEqual(a.waveIndex, b.waveIndex)
+        XCTAssertEqual(Simulation.run(stage: st, moves: (0..<3000).map(moves)), Simulation.run(stage: st, moves: (0..<3000).map(moves)))
+    }
+
+    func testSingleWaveModesBehaveAsBefore() {
+        // 連戦ではないステージは、場面1つとして動く(場面の切り替えはない)
+        let s = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [em()])
+        var sim = Simulation(stage: s)
+        while sim.outcome == .playing && sim.tick < 120 * 70 { sim.step(.zero) }
+        XCTAssertEqual(sim.waveCount, 1); XCTAssertEqual(sim.waveIndex, 0); XCTAssertEqual(sim.outcome, .cleared)
+        XCTAssertEqual(sim.defeats, 1)
+        XCTAssertFalse(sim.isIntermission)
+    }
+
+    func testJSONRoundTripAndOldStagesHaveNoWaves() throws {
+        let st = sequence([Wave(kind: .boss, durationSec: 30, bossHp: 200, bossMove: 1, emitters: [em()], warning: true, defeat: 3)])
+        let back = try JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(st))
+        XCTAssertEqual(back, st)
+        XCTAssertEqual(back.waves?.first?.warning, true)
+        XCTAssertEqual(back.waves?.first?.defeat, 3)
+        let plain = Stage(name: "p", mode: .survive, durationSec: 20, emitters: [em()])
+        XCTAssertFalse(String(data: try JSONEncoder().encode(plain), encoding: .utf8)!.contains("waves"))
+    }
+}
+
+final class EffectOptionTests: XCTestCase {
+    func testWarningAndDefeatOptionsOnlyForBossesAndStoredWhenNonStandard() throws {
+        let boss = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring)],
+                         bossWarning: true, bossDefeat: 2).sanitized()
+        XCTAssertEqual(boss.bossWarning, true); XCTAssertEqual(boss.bossDefeatEffect, .fireworks)
+        let std = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring)],
+                        bossWarning: false, bossDefeat: 1).sanitized()
+        XCTAssertNil(std.bossWarning); XCTAssertNil(std.bossDefeat); XCTAssertEqual(std.bossDefeatEffect, .explosion)
+        let none = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring)], bossDefeat: 0).sanitized()
+        XCTAssertEqual(none.bossDefeatEffect, .none)
+        let survive = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [Emitter(t: .ring)], bossWarning: true, bossDefeat: 3).sanitized()
+        XCTAssertNil(survive.bossWarning); XCTAssertNil(survive.bossDefeat)
+        let bad = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 0, emitters: [Emitter(t: .ring)], bossDefeat: 99).sanitized()
+        XCTAssertNil(bad.bossDefeat)
+        let damage = Stage(name: "d", mode: .damage, durationSec: 60, bossMove: 0, emitters: [Emitter(t: .ring)], bossWarning: true, bossDefeat: 2).sanitized()
+        XCTAssertEqual(damage.bossWarning, true); XCTAssertNil(damage.bossDefeat, "ダメージ勝負には、撃破がない")
+    }
+
+    func testEffectsDoNotChangeSeedOrBehaviour() {
+        let a = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 1, emitters: [Emitter(t: .aim, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.8, c: 3, v: 2, r: 20)])
+        var b = a; b.bossWarning = true; b.bossDefeat = 3
+        XCTAssertEqual(a.seed, b.seed)
+        XCTAssertEqual(Simulation.run(stage: a, moves: []), Simulation.run(stage: b, moves: []))
+    }
+
+    func testDefeatEventCarriesPositionAndEffect() {
+        var s = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .sideL, x: 0.5, y: 0.1, s: 0, e: 60, i: 2, c: 1, v: 1, r: 0)], bossDefeat: 3)
+        s = s.sanitized()
+        var sim = Simulation(stage: s)
+        while sim.outcome == .playing && sim.tick < 120 * 70 { sim.step(.zero) }
+        XCTAssertEqual(sim.outcome, .cleared)
+        XCTAssertEqual(sim.defeats, 1)
+        XCTAssertEqual(sim.lastDefeatEffect, .hearts)
+        XCTAssertEqual(sim.lastDefeatPosition.x, 180, accuracy: 1)
+        XCTAssertEqual(sim.lastDefeatPosition.y, DanmakuConfig.height * 0.18, accuracy: 1)
     }
 }

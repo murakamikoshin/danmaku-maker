@@ -2,10 +2,12 @@ import SwiftUI
 import DanmakuCore
 
 struct EmitterCard: View {
-    @EnvironmentObject private var cosmetics: CosmeticsStore
     let index: Int
     @Binding var emitter: Emitter
     let isBoss: Bool
+    let look: PreviewLook
+    /// 「くわしく」のとき、発射位置・時間・段階・間隔・角度など、細かい設定も出す
+    var advanced = true
     let duration: Int
     let canDelete: Bool
     let onDelete: () -> Void
@@ -32,7 +34,7 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.delete.\(index)")
                 }
             }
-            EmitterPreview(emitter: emitter, isBoss: isBoss)
+            EmitterPreview(emitter: emitter, isBoss: isBoss, look: look)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("editor.pattern").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
@@ -41,35 +43,43 @@ struct EmitterCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("editor.color.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                ColorSwatches(selection: $emitter.k, index: index)
+                ColorSwatches(selection: $emitter.k, index: index, theme: look.bullets)
             }
 
-            if isBoss {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("editor.origin.boss")), (1, L("editor.origin.point"))],
-                             selection: $emitter.p, idPrefix: "emitter.origin.\(index)", minimum: 110)
+            if advanced {
+                if isBoss {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        ChipGrid(items: [(0, L("editor.origin.boss")), (1, L("editor.origin.point"))],
+                                 selection: $emitter.p, idPrefix: "emitter.origin.\(index)", minimum: 110)
+                    }
+                    if emitter.firesFromPoint && !positionless {
+                        SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
+                        SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("editor.phase").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        ChipGrid(items: [(0, L("phase.all")), (1, L("phase.1")), (2, L("phase.2")), (3, L("phase.3"))],
+                                 selection: $emitter.ph, idPrefix: "emitter.phase.\(index)", minimum: 64)
+                    }
+                } else {
+                    SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
+                    SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
+                    SliderRow(label: "editor.start", value: $emitter.s, range: 0...Double(duration), step: 0.5) { String(format: "%g%@", $0, L("unit.s")) }
+                    SliderRow(label: "editor.end", value: Binding(get: { min(emitter.e, Double(duration)) }, set: { emitter.e = $0 }),
+                              range: 0...Double(duration), step: 0.5) { $0 >= Double(duration) ? L("editor.until.end") : String(format: "%g%@", $0, L("unit.s")) }
                 }
-                if emitter.firesFromPoint && !positionless {
-                    SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
-                    SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("editor.phase").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("phase.all")), (1, L("phase.1")), (2, L("phase.2")), (3, L("phase.3"))],
-                             selection: $emitter.ph, idPrefix: "emitter.phase.\(index)", minimum: 64)
-                }
-            } else {
-                SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
-                SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
-                SliderRow(label: "editor.start", value: $emitter.s, range: 0...Double(duration), step: 0.5) { String(format: "%g%@", $0, L("unit.s")) }
-                SliderRow(label: "editor.end", value: Binding(get: { min(emitter.e, Double(duration)) }, set: { emitter.e = $0 }),
-                          range: 0...Double(duration), step: 0.5) { $0 >= Double(duration) ? L("editor.until.end") : String(format: "%g%@", $0, L("unit.s")) }
+            } else if !isBoss && !positionless {
+                // かんたん: 生き残りの発射台は、位置だけ選べる(時間は、最初から最後まで)
+                SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
+                SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
             }
             SliderRow(label: "editor.interval", value: $emitter.i, range: 0.05...2, step: 0.05) { String(format: "%.2fs", $0) }
             SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
             SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
-            SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain) { "\(Int($0))°" }
+            if advanced {
+                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart) { "\(Int($0))°" }
+            }
         }
         .padding(14)
         .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
@@ -80,7 +90,7 @@ struct EmitterCard: View {
 
     private var bulletBadge: some View {
         ZStack {
-            Circle().fill(Color(Skin.of(cosmetics.effective.bullets).bulletColors[min(max(emitter.k, 0), 4)]))
+            Circle().fill(Color(Skin.of(look.bullets).bulletColors[min(max(emitter.k, 0), 4)]))
             Circle().fill(Color.white).frame(width: 9, height: 9)
         }
         .frame(width: 22, height: 22)
@@ -94,6 +104,10 @@ struct EmitterCard: View {
         case .sweep: return "angle.swing"
         case .sideL, .sideR: return "angle.jitter"
         case .homing: return "angle.turn"
+        case .flower, .star, .cross: return "angle.rotate"
+        case .heart: return "angle.none"
+        case .beam: return "angle.aimshift"
+        case .accel, .bounce: return "angle.spread"
         }
     }
 }
@@ -102,8 +116,8 @@ struct EmitterCard: View {
 private struct ColorSwatches: View {
     @Binding var selection: Int
     let index: Int
-    @EnvironmentObject private var cosmetics: CosmeticsStore
-    private var colors: [UIColor] { Skin.of(cosmetics.effective.bullets).bulletColors }
+    let theme: Theme
+    private var colors: [UIColor] { Skin.of(theme).bulletColors }
 
     var body: some View {
         HStack(spacing: 14) {

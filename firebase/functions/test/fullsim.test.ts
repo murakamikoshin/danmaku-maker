@@ -8,13 +8,14 @@ interface Fixture {
   shot: string;
   replay: string;
   steps: number;
-  expect: { outcome: string; tick: number; hp: number; damage: number; lifeLeft: number; bulletCount: number; bulletHash: number };
+  expect: { outcome: string; tick: number; hp: number; damage: number; lifeLeft: number; wave: number; defeats: number; bulletCount: number; bulletHash: number };
 }
 const fixtures: Fixture[] = JSON.parse(readFileSync(new URL("./fixtures/sim_fixtures.json", import.meta.url), "utf8"));
 
 describe("サーバーのゲーム計算は、アプリ(Swift)の計算と同じ結果になる", () => {
   it("正解データが十分にある", () => {
-    expect(fixtures.length).toBeGreaterThan(150);
+    expect(fixtures.length).toBeGreaterThan(380);
+    expect(fixtures.filter((f) => f.name.startsWith("seq-")).length).toBeGreaterThan(30);
     expect(fixtures.filter((f) => f.expect.outcome === "cleared").length).toBeGreaterThan(10);
     expect(fixtures.filter((f) => f.expect.outcome === "hit").length).toBeGreaterThan(10);
   });
@@ -34,8 +35,8 @@ describe("サーバーのゲーム計算は、アプリ(Swift)の計算と同じ
       expect(isShotType(f.shot)).toBe(true);
       const d = decodeReplay(f.replay, 40_000)!;
       const r = simulate(f.stage, d.moves, d.steps, f.shot as "standard");
-      expect({ outcome: r.outcome, tick: r.tick, hp: r.hp, damage: r.damage, lifeLeft: r.lifeLeft, bulletCount: r.bulletCount })
-        .toEqual({ outcome: f.expect.outcome, tick: f.expect.tick, hp: f.expect.hp, damage: f.expect.damage, lifeLeft: f.expect.lifeLeft, bulletCount: f.expect.bulletCount });
+      expect({ outcome: r.outcome, tick: r.tick, hp: r.hp, damage: r.damage, lifeLeft: r.lifeLeft, wave: r.wave, defeats: r.defeats, bulletCount: r.bulletCount })
+        .toEqual({ outcome: f.expect.outcome, tick: f.expect.tick, hp: f.expect.hp, damage: f.expect.damage, lifeLeft: f.expect.lifeLeft, wave: f.expect.wave, defeats: f.expect.defeats, bulletCount: f.expect.bulletCount });
       // 被弾で終わったときは、弾の並びが途中経過のままになる(勝敗には関係しない)ので、ハッシュは最後まで進んだものだけ比べる
       if (f.expect.outcome !== "hit") { checked += 1; if (r.bulletHash !== f.expect.bulletHash) hashMismatch.push(f.name); }
     });

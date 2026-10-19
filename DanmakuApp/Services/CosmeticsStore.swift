@@ -19,6 +19,8 @@ final class CosmeticsStore: ObservableObject {
         loadout = defaults.data(forKey: Self.loadoutKey).flatMap { try? JSONDecoder().decode(Loadout.self, from: $0) } ?? Loadout()
         // 起動直後や電波がないときも使えるよう、前回の購入内容を覚えておく
         ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [])
+        showStageLook = defaults.object(forKey: "cosmetics.showStageLook") as? Bool ?? true
+        effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
         #if DEBUG
         // 画面確認用: 起動引数 -unlock-all で全部持っている状態にする（製品ビルドには入らない）
         let args = ProcessInfo.processInfo.arguments
@@ -32,51 +34,40 @@ final class CosmeticsStore: ObservableObject {
     /// 画像を差し替えたときに画面を更新するための番号
     @Published private(set) var customImageRevision = 0
 
-    /// 持っていないものを標準に戻した、実際に遊ぶときの組み合わせ(画像が登録されていない枠も標準に戻す)
-    var effective: Loadout {
-        var l = loadout.effective(ownership)
-        if !CustomImageStore.exists(.boss) { l.customBoss = false }
-        if !CustomImageStore.exists(.bullet) { l.customBullet = false }
-        if !CustomImageStore.exists(.ship) { l.customShip = false }
-        return l
-    }
-
-    func isCustomEnabled(_ slot: CustomSlot) -> Bool {
-        switch slot {
-        case .boss: return loadout.customBoss
-        case .bullet: return loadout.customBullet
-        case .ship: return loadout.customShip
-        }
-    }
-
-    func setCustomEnabled(_ slot: CustomSlot, _ on: Bool) {
-        guard ownership.hasCustomImages else { return }
-        switch slot {
-        case .boss: loadout.customBoss = on
-        case .bullet: loadout.customBullet = on
-        case .ship: loadout.customShip = on
-        }
-    }
-
-    /// 選んだ画像を保存して、そのまま使う設定にする
+    /// 選んだ画像を保存する(使うかどうかは、ステージごとに、作る人が決める)
     @discardableResult
     func setCustomImage(_ image: UIImage, for slot: CustomSlot) -> Bool {
         guard ownership.hasCustomImages, CustomImageStore.save(image, for: slot) else { return false }
-        setCustomEnabled(slot, true)
         customImageRevision += 1
         return true
     }
 
     func removeCustomImage(_ slot: CustomSlot) {
         CustomImageStore.remove(slot)
-        setCustomEnabled(slot, false)
         customImageRevision += 1
     }
 
-    /// 投稿前のテストプレイは、誰でもクリアできる標準の撃ち方に固定する
-    func forPlay(isTest: Bool) -> Loadout {
-        var l = effective
-        if isTest { l.shot = .standard }
+    /// 警告と撃破の演出(赤い点滅・爆発など)を出すか。点滅が苦手な人のために、遊ぶ人がオフにできる
+    @Published var effectsOn: Bool { didSet { defaults.set(effectsOn, forKey: "cosmetics.effectsOn") } }
+
+    /// ステージの見た目を表示するか(見づらいときに、標準に戻せる)。遊ぶ人の設定
+    @Published var showStageLook: Bool { didSet { defaults.set(showStageLook, forKey: "cosmetics.showStageLook") } }
+
+    /// 遊ぶときの組み合わせ。見た目(弾・背景・自機)は、ステージを作った人が決めたもの(設定でオフなら標準)。
+    /// 撃ち方は、遊ぶ人の選択(投稿前のテストプレイは、標準の撃ち方に固定)。じぶんの画像は、自分のステージを遊ぶときだけ
+    func forPlay(stage: Stage, isTest: Bool, customs: CustomImageChoice = .none) -> Loadout {
+        var l = Loadout()
+        if showStageLook {
+            l.bullets = stage.lookBullets
+            l.background = stage.lookBackground
+            l.ship = stage.lookShip
+        }
+        l.shot = isTest || !ownership.has(loadout.shot) ? .standard : loadout.shot
+        if ownership.hasCustomImages {
+            l.customBoss = customs.boss && CustomImageStore.exists(.boss)
+            l.customBullet = customs.bullet && CustomImageStore.exists(.bullet)
+            l.customShip = customs.ship && CustomImageStore.exists(.ship)
+        }
         return l
     }
 
@@ -88,11 +79,6 @@ final class CosmeticsStore: ObservableObject {
         guard next != ownership else { return }
         ownership = next
         defaults.set(next.owned.map(\.id).sorted(), forKey: Self.ownedKey)
-    }
-
-    func equip(_ theme: Theme, for part: ThemePart) {
-        guard ownership.has(part, of: theme) else { return }
-        loadout.set(theme, for: part)
     }
 
     func equip(_ shot: ShotType) {

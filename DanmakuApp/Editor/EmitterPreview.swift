@@ -39,20 +39,21 @@ final class PreviewEngine {
 struct EmitterPreview: View {
     let emitter: Emitter
     let isBoss: Bool
+    let look: PreviewLook
     @State private var engine = PreviewEngine()
     @EnvironmentObject private var cosmetics: CosmeticsStore
 
     var body: some View {
-        // いま装備している見た目(弾の色と形・背景・自機・自分の画像)を、そのまま使う
+        // 作者が選んだ見た目(弾の色と形・背景・自機)と、じぶんの画像を、そのまま使う
         let _ = cosmetics.customImageRevision
-        let look = cosmetics.effective
-        let bulletTheme = look.bullets
-        let skin = Skin.of(bulletTheme)
+        let skin = Skin.of(look.bullets)
         let bg = Skin.of(look.background)
-        let bulletImages = SpriteFactory.bulletImages(bulletTheme)
-        let customBullet = look.customBullet ? CustomImageStore.load(.bullet) : nil
-        let shipImage = (look.customShip ? CustomImageStore.load(.ship) : nil) ?? SpriteFactory.shipImage(look.ship)
-        let bossImage = look.customBoss ? CustomImageStore.load(.boss) : nil
+        let bulletImages = SpriteFactory.bulletImages(look.bullets)
+        let own = cosmetics.ownership.hasCustomImages
+        let customBullet = (own && look.customs.bullet) ? CustomImageStore.load(.bullet) : nil
+        let customShip = (own && look.customs.ship) ? CustomImageStore.load(.ship) : nil
+        let shipImage = customShip ?? SpriteFactory.shipImage(look.ship)
+        let bossImage = (own && look.customs.boss) ? CustomImageStore.load(.boss) : nil
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
                 engine.advance(to: timeline.date, emitter: emitter, boss: isBoss)
@@ -63,10 +64,10 @@ struct EmitterPreview: View {
                 // 自機(当たる場所の白い点つき)
                 let sw: CGFloat = 20, sh: CGFloat = 24
                 let pt = engine.player
-                let shipRect = CGRect(x: pt.x - sw / 2, y: pt.y - sh / 2, width: look.customShip ? 24 : sw, height: look.customShip ? 24 : sh)
-                    .offsetBy(dx: look.customShip ? -2 : 0, dy: look.customShip ? 0 : 0)
+                let custom = customShip != nil
+                let shipRect = CGRect(x: pt.x - (custom ? 12 : sw / 2), y: pt.y - (custom ? 12 : sh / 2), width: custom ? 24 : sw, height: custom ? 24 : sh)
                 ctx.draw(Image(uiImage: shipImage), in: shipRect)
-                if look.customShip { ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white)) }
+                if custom { ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white)) }
                 // 弾
                 for b in engine.bullets {
                     let rect = CGRect(x: b.x - 6, y: b.y - 6, width: 12, height: 12)

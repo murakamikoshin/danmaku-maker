@@ -57,6 +57,7 @@ struct SettingsView: View {
     @EnvironmentObject private var blocks: BlockStore
     @EnvironmentObject private var purchases: PurchaseService
     @ObservedObject private var audio = AudioManager.shared
+    @EnvironmentObject private var cosmetics: CosmeticsStore
     @ObservedObject private var handles = HandleStore.shared
     @State private var showStore = false
     @State private var showDelete = false
@@ -70,6 +71,13 @@ struct SettingsView: View {
                     GamePanel(title: "settings.audio", tint: Color(UIColor(hex: 0x5CE1E6))) {
                         toggleRow("settings.bgm", "music.note", $audio.bgmOn)
                         toggleRow("settings.se", "speaker.wave.2.fill", $audio.seOn)
+                    }
+
+                    GamePanel(title: "settings.display", tint: Color(Palette.bullets[3])) {
+                        toggleRow("settings.stagelook", "paintpalette.fill", $cosmetics.showStageLook)
+                        Text("settings.stagelook.note").font(.caption).foregroundStyle(.secondary)
+                        toggleRow("settings.effects", "sparkles", $cosmetics.effectsOn)
+                        Text("settings.effects.note").font(.caption).foregroundStyle(.secondary)
                     }
 
                     GamePanel(title: "settings.store", tint: Color(Palette.pink)) {

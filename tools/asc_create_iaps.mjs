@@ -29,6 +29,21 @@ for (const t of themes) {
       ja: [`${t.ja}セット`, `${t.ja}の弾・背景・自機の3点セットです。`], en: [`${t.en} Set`, 'Bullets, background and ship in one set.'] },
   );
 }
+const patterns = [
+  ['homing', 'Homing', '追尾', '自機を追いかけて曲がる弾幕です。', 'Bullets that curve toward your ship.', 300],
+  ['pattern.flower', 'Flower', '花', '花の形に広がる弾幕です。', 'A flower-shaped bullet pattern.', 100],
+  ['pattern.star', 'Star', '星', '星の形に広がる弾幕です。', 'A star-shaped bullet pattern.', 100],
+  ['pattern.heart', 'Heart', 'ハート', 'ハートの形に広がる弾幕です。', 'A heart-shaped bullet pattern.', 100],
+  ['pattern.beam', 'Beam', '光線', '一直線に伸びる光線の弾幕です。', 'A straight beam of bullets.', 100],
+  ['pattern.cross', 'Cross', '十字', '上下左右に伸びる弾幕です。', 'Bullets stretching in four directions.', 100],
+  ['pattern.accel', 'Accelerate', '加速', 'どんどん速くなる弾幕です。', 'Bullets that keep speeding up.', 100],
+  ['pattern.bounce', 'Bounce', '反射', '壁ではね返る弾幕です。', 'Bullets that bounce off the walls.', 100],
+];
+const patternNotes = 'This is a one-time (non-consumable) purchase. To test: open the Shop tab (bottom of the screen), scroll to "Bullet patterns" and buy this item. It then becomes available in the stage editor (the lock on the pattern tile disappears). Anyone can play stages that use it. Use "Restore Purchases" at the bottom of the Shop screen to restore it. No account is required.';
+for (const [id, en, ja, jaDesc, enDesc, yen] of patterns) {
+  products.push({ id, yen, ref: `${en} Pattern`, ja: [`${ja}の弾幕`, jaDesc], en: [`${en} Pattern`, enDesc], notes: patternNotes });
+}
+products.push({ id: 'patternpack', yen: 600, ref: 'Pattern Pack', ja: ['弾幕パック(全部入り)', '買える弾幕8種類が、すべて使えるようになります。'], en: ['All Patterns Pack', 'Unlocks all 8 paid bullet patterns.'], notes: patternNotes });
 products.push(
   { id: 'customimages', yen: 500, ref: 'Custom Images', ja: ['じぶんの画像', 'ボス・弾・自機を、自分で選んだ画像に変えます。'], en: ['Your Own Images', 'Use your own pictures for the boss, bullets and ship.'],
     notes: 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy "Your own images" near the top of the list. After purchase, tap "Choose" next to Boss, Bullets or Your ship and pick any photo. Images are only stored on the device and are never uploaded. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.' },

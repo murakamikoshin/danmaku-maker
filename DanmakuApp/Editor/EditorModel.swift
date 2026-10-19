@@ -13,6 +13,13 @@ extension Emitter {
         case .sideL, .sideR: return Emitter(t: t, e: end, i: 0.5, c: 2, v: 2.5, r: 10)
         case .corner: return Emitter(t: t, e: end, i: 1.2, c: 3, v: 2.5, r: 30)
         case .homing: return Emitter(t: t, e: end, i: 1.6, c: 2, v: 1.6, r: 45)
+        case .flower: return Emitter(t: t, e: end, i: 0.9, c: 30, v: 2, r: 6)
+        case .star: return Emitter(t: t, e: end, i: 0.9, c: 30, v: 2, r: 6)
+        case .heart: return Emitter(t: t, e: end, i: 1.0, c: 36, v: 2, r: 0)
+        case .beam: return Emitter(t: t, e: end, i: 0.9, c: 8, v: 2, r: 0)
+        case .cross: return Emitter(t: t, e: end, i: 0.4, c: 8, v: 1.8, r: 8)
+        case .accel: return Emitter(t: t, e: end, i: 0.8, c: 5, v: 2.2, r: 50)
+        case .bounce: return Emitter(t: t, e: end, i: 0.7, c: 4, v: 2.4, r: 40)
         }
     }
 
@@ -20,6 +27,47 @@ extension Emitter {
     mutating func changePattern(to p: Pattern) {
         let d = Emitter.make(p, end: e)
         t = p; i = d.i; c = d.c; v = d.v; r = d.r
+    }
+}
+
+/// 連戦の1つの場面(編集中の形)
+struct DraftWave: Codable, Equatable, Identifiable {
+    var id = UUID()
+    var kind: WaveKind
+    var duration: Int
+    var bossHp = 400
+    var bossMove = 1
+    var warning = true
+    var defeat = DefeatEffect.standard.rawValue
+    var emitters: [Emitter]
+
+    init(kind: WaveKind) {
+        self.kind = kind
+        duration = kind == .boss ? 60 : 20
+        warning = kind == .boss
+        emitters = [Emitter.make(kind == .boss ? .ring : .spiral, end: Double(kind == .boss ? 60 : 20))]
+    }
+
+    var wave: Wave {
+        Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
+             emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil)
+    }
+
+    var durations: [Int] { kind == .boss ? Wave.bossDurations : Wave.surviveDurations }
+
+    mutating func setKind(_ k: WaveKind) {
+        guard k != kind else { return }
+        kind = k
+        if !durations.contains(duration) { duration = k == .boss ? 60 : 20 }
+        warning = k == .boss
+        for i in emitters.indices where k == .survive { emitters[i].ph = 0; emitters[i].p = 0 }
+    }
+
+    /// 時間を変えたとき、「最後まで」の発射台は新しい終わりに追従する
+    mutating func setDuration(_ n: Int) {
+        let old = Double(duration)
+        for i in emitters.indices where emitters[i].e >= old { emitters[i].e = Double(n) }
+        duration = n
     }
 }
 
@@ -33,13 +81,30 @@ struct Draft: Codable, Equatable {
     /// 自機の耐久。標準はライフ1(1回当たったら終わり)
     var lifeMode: LifeMode = .lives
     var lifeCount = 1
+    /// 選んだ BGM の番号(nil はモードごとの標準)
+    var bgm: Int?
+    /// ステージの見た目(作者が決める。遊ぶ全員に、そう見える)
+    var themeBullets: Theme = .classic
+    var themeBackground: Theme = .classic
+    var themeShip: Theme = .classic
+    /// 発射位置の予告(点線)を出さない(生き残りだけ)
+    var hideMarkers = false
+    /// じぶんの画像を使うか(この端末で遊ぶときだけ。投稿すると外れる)
+    var customBoss = false
+    var customBullet = false
+    var customShip = false
     var emitters: [Emitter] = [Emitter.make(.spiral, end: 20)]
+    /// 連戦の場面(モードが連戦のとき)
+    var waves: [DraftWave] = [DraftWave(kind: .survive), DraftWave(kind: .boss)]
+    /// ボス戦・ダメージ勝負の、開始前の警告と、撃破の演出(DefeatEffect の番号)
+    var bossWarning = false
+    var bossDefeat = DefeatEffect.standard.rawValue
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, emitters }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -49,54 +114,88 @@ struct Draft: Codable, Equatable {
         bossMove = try c.decodeIfPresent(Int.self, forKey: .bossMove) ?? 1
         lifeMode = try c.decodeIfPresent(LifeMode.self, forKey: .lifeMode) ?? .lives
         lifeCount = try c.decodeIfPresent(Int.self, forKey: .lifeCount) ?? 1
+        bgm = try c.decodeIfPresent(Int.self, forKey: .bgm)
+        themeBullets = (try? c.decodeIfPresent(Theme.self, forKey: .themeBullets)) ?? .classic
+        themeBackground = (try? c.decodeIfPresent(Theme.self, forKey: .themeBackground)) ?? .classic
+        themeShip = (try? c.decodeIfPresent(Theme.self, forKey: .themeShip)) ?? .classic
+        hideMarkers = try c.decodeIfPresent(Bool.self, forKey: .hideMarkers) ?? false
+        customBoss = try c.decodeIfPresent(Bool.self, forKey: .customBoss) ?? false
+        customBullet = try c.decodeIfPresent(Bool.self, forKey: .customBullet) ?? false
+        customShip = try c.decodeIfPresent(Bool.self, forKey: .customShip) ?? false
+        waves = try c.decodeIfPresent([DraftWave].self, forKey: .waves) ?? [DraftWave(kind: .survive), DraftWave(kind: .boss)]
+        bossWarning = try c.decodeIfPresent(Bool.self, forKey: .bossWarning) ?? false
+        bossDefeat = try c.decodeIfPresent(Int.self, forKey: .bossDefeat) ?? DefeatEffect.standard.rawValue
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.spiral, end: 20)]
     }
+
+    /// 遊べる・投稿できるステージのデータ(丸めた内容)。じぶんの画像の設定は、含まれない
+    var stage: Stage {
+        let isSeq = mode == .sequence
+        return Stage(name: name, mode: mode, durationSec: isSeq ? 0 : duration,
+              bossHp: mode == .boss ? bossHp : nil,
+              bossMove: (mode == .boss || mode == .damage) ? bossMove : nil,
+              emitters: isSeq ? [] : emitters,
+              lifeMode: lifeMode, lifeCount: lifeCount, bgm: bgm,
+              themeBullets: themeBullets, themeBackground: themeBackground, themeShip: themeShip,
+              hideMarkers: hideMarkers ? true : nil,
+              waves: isSeq ? waves.map(\.wave) : nil,
+              bossWarning: bossWarning ? true : nil,
+              bossDefeat: mode == .boss ? bossDefeat : nil).sanitized()
+    }
+
+    /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)
+    var customImages: CustomImageChoice { CustomImageChoice(boss: customBoss, bullet: customBullet, ship: customShip) }
+}
+
+/// じぶんの画像を、どこに使うか
+struct CustomImageChoice: Equatable {
+    var boss = false
+    var bullet = false
+    var ship = false
+    static let none = CustomImageChoice()
 }
 
 @MainActor
 final class EditorModel: ObservableObject {
-    static let draftKey = "editor.draft.v1"
     static let maxName = 20
     static let maxAuthor = 12
 
     @Published var draft: Draft
-    /// テストプレイでクリアしたときのステージとリプレイ。内容が変わると一致しなくなり、確認は自動でリセットされる
-    @Published private(set) var verifiedStage: Stage?
-    @Published private(set) var clearReplay: Replay?
+    private var entry: SavedStage
+    private let store: LocalStageStore
 
-    private let defaults: UserDefaults
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        if let data = defaults.data(forKey: EditorModel.draftKey),
-           let d = try? JSONDecoder().decode(Draft.self, from: data) {
-            draft = d
-        } else {
-            draft = Draft()
-        }
+    init(entry: SavedStage, store: LocalStageStore = .shared) {
+        self.entry = entry
+        self.store = store
+        draft = entry.draft
     }
 
-    var stage: Stage {
-        Stage(name: draft.name, mode: draft.mode, durationSec: draft.duration,
-              bossHp: draft.mode == .boss ? draft.bossHp : nil,
-              bossMove: draft.mode != .survive ? draft.bossMove : nil,
-              emitters: draft.emitters,
-              lifeMode: draft.lifeMode, lifeCount: draft.lifeCount).sanitized()
-    }
+    var entryID: UUID { entry.id }
+    var stage: Stage { draft.stage }
 
-    var isVerified: Bool { verifiedStage != nil && verifiedStage == stage }
-    var durations: [Int] { Stage.durations[draft.mode]! }
+    /// テストプレイでクリアした内容と、いまの内容が同じか(変えると、自動で外れる)
+    var isVerified: Bool { entry.verifiedStage != nil && entry.verifiedStage == stage }
+    var clearReplay: Replay? { entry.verifiedReplay.flatMap { Replay(encoded: $0) } }
+    /// いまの内容を、すでに投稿したか
+    var isPublished: Bool { entry.publishedStage != nil && entry.publishedStage == stage && entry.publishedID != nil }
+    var publishedID: String? { isPublished ? entry.publishedID : nil }
+
+    var durations: [Int] { Stage.durations[draft.mode] ?? [] }
     var canAdd: Bool { draft.emitters.count < DanmakuConfig.maxEmitters }
 
+    /// 自動保存(内容が変わるたびに、マイステージへ書く)
     func save() {
-        if let data = try? JSONEncoder().encode(draft) { defaults.set(data, forKey: EditorModel.draftKey) }
+        entry.draft = draft
+        store.update(entry)
     }
 
     func setMode(_ m: Mode) {
         guard m != draft.mode else { return }
         draft.mode = m
+        if m == .sequence { return }   // 連戦の長さは、場面の合計
         // 選べない長さになったら、標準(生き残りは20秒、ボス戦とダメージ勝負は60秒)にする
         if !durations.contains(draft.duration) { setDuration(m == .survive ? 20 : 60) }
+        if m != .survive && m != .sequence { draft.hideMarkers = false }   // 予告を出さない設定は、生き残りと連戦(の雑魚の場面)だけ
     }
 
     /// 耐久の方式を変えたとき、数はその方式の標準(ライフ3 / HP10)にする。ライフ1の標準に戻したいときは数を1にする
@@ -106,16 +205,48 @@ final class EditorModel: ObservableObject {
         draft.lifeCount = m == .lives ? 3 : 10
     }
 
-    /// 時間を変えたとき、「最後まで」の発射台は新しい終わりに追従する
+    /// 時間を変えたとき、「最後まで」の発射台は新しい終わりに追従する(時間無制限=0 のときは、長い時間の終わりにしておく)
     func setDuration(_ n: Int) {
-        let old = Double(draft.duration)
-        for i in draft.emitters.indices where draft.emitters[i].e >= old { draft.emitters[i].e = Double(n) }
+        let old = Double(draft.duration == 0 ? Stage.unlimitedCapSec : draft.duration)
+        let new = Double(n == 0 ? Stage.unlimitedCapSec : n)
+        for i in draft.emitters.indices where draft.emitters[i].e >= old || draft.emitters[i].e >= 180 { draft.emitters[i].e = min(new, 180) }
         draft.duration = n
+    }
+
+    // MARK: 連戦の場面
+
+    var canAddWave: Bool { draft.waves.count < Wave.maxWaves }
+
+    func addWave(_ kind: WaveKind) {
+        guard canAddWave else { return }
+        draft.waves.append(DraftWave(kind: kind))
+    }
+
+    func removeWave(_ id: UUID) {
+        guard draft.waves.count > 1 else { return }
+        draft.waves.removeAll { $0.id == id }
+    }
+
+    func moveWave(_ id: UUID, by delta: Int) {
+        guard let i = draft.waves.firstIndex(where: { $0.id == id }) else { return }
+        let j = i + delta
+        guard draft.waves.indices.contains(j) else { return }
+        draft.waves.swapAt(i, j)
+    }
+
+    func addEmitter(toWave id: UUID) {
+        guard let i = draft.waves.firstIndex(where: { $0.id == id }), draft.waves[i].emitters.count < DanmakuConfig.maxEmitters else { return }
+        draft.waves[i].emitters.append(Emitter.make(.ring, end: Double(draft.waves[i].duration)))
+    }
+
+    func removeEmitter(_ index: Int, fromWave id: UUID) {
+        guard let i = draft.waves.firstIndex(where: { $0.id == id }), draft.waves[i].emitters.count > 1, draft.waves[i].emitters.indices.contains(index) else { return }
+        draft.waves[i].emitters.remove(at: index)
     }
 
     func addEmitter() {
         guard canAdd else { return }
-        draft.emitters.append(Emitter.make(.ring, end: Double(draft.duration)))
+        draft.emitters.append(Emitter.make(.ring, end: Double(min(draft.duration == 0 ? 180 : draft.duration, 180))))
     }
 
     func removeEmitter(at index: Int) {
@@ -128,17 +259,19 @@ final class EditorModel: ObservableObject {
         !draft.name.trimmingCharacters(in: .whitespaces).isEmpty && !draft.authorName.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
-    /// 投稿が済んだら、下書きと確認状態を空にして次のステージを作れるようにする
-    func published() {
-        let author = draft.authorName
-        draft = Draft()
-        draft.authorName = author
-        verifiedStage = nil
-        clearReplay = nil
+    /// 投稿が済んだら、投稿した内容と ID を残す(ステージは、マイステージに残る)
+    func published(id: String) {
+        entry.publishedStage = stage
+        entry.publishedID = id
+        entry.draft = draft
+        store.update(entry)
     }
 
     func markVerified(stage: Stage, replay: Replay) {
-        verifiedStage = stage
-        clearReplay = replay
+        entry.verifiedStage = stage
+        entry.verifiedReplay = replay.encoded()
+        entry.draft = draft
+        store.update(entry)
+        objectWillChange.send()
     }
 }

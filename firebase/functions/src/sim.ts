@@ -33,6 +33,19 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
     case "rain":
       for (let j = 0; j < n; j++) { const x = rng() * W; add(x, -8, Math.PI / 2 + (rng() - 0.5) * 0.3); }
       break;
+    case "flower": case "star": case "heart": {
+      for (let j = 0; j < n; j++) add(cx, cy, (j * 2 * Math.PI) / n);
+      break;
+    }
+    case "beam": case "accel": case "bounce": {
+      const b = Math.atan2(py - cy, px - cx);
+      for (let j = 0; j < n; j++) add(cx, cy, b + (n > 1 && m.t !== "beam" ? (j / (n - 1) - 0.5) * m.r * deg : 0));
+      break;
+    }
+    case "cross": {
+      for (let arm = 0; arm < 4; arm++) add(cx, cy, (arm * Math.PI) / 2);
+      break;
+    }
     case "homing": {
       const b = Math.atan2(py - cy, px - cx);
       for (let j = 0; j < n; j++) add(cx, cy, b + (j - (n - 1) / 2) * 0.35);
@@ -63,7 +76,10 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
 }
 
 /** 撃ち始めの数秒後の弾の位置を返す */
-export function snapshot(stage: Stage): { bullets: Dot[]; at: number } {
+export function snapshot(stage0: Stage): { bullets: Dot[]; at: number } {
+  // 連戦は、最初の場面で描く
+  const first0 = stage0.mode === "sequence" ? stage0.waves?.[0] : undefined;
+  const stage = first0 ? { ...stage0, mode: (first0.kind === "boss" ? "boss" : "survive") as Stage["mode"], emitters: first0.emitters, durationSec: first0.durationSec } : stage0;
   const boss = stage.mode !== "survive";
   const starts = stage.emitters.filter((m) => boss || m.t !== "rain").map((m) => (boss ? 0 : m.s));
   const first = starts.length ? Math.min(...starts) : 0;

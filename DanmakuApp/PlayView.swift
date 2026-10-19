@@ -51,7 +51,7 @@ final class PlayModel: ObservableObject {
         self.loadout = loadout
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
-        scene = GameScene(stage: stage, loadout: loadout)
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn)
         wire()
     }
 
@@ -69,7 +69,7 @@ final class PlayModel: ObservableObject {
         scene.onFinish = { [weak self] sim, moves in
             guard let self else { return }
             let r = PlayResult(outcome: sim.outcome, time: max(0, sim.t), ticks: sim.tick, hp: sim.hp,
-                               duration: sim.stage.durationSec, isBoss: sim.isBoss, isDamage: sim.isDamageRace,
+                               duration: sim.stage.durationSec, isBoss: sim.stage.hasRanking, isDamage: sim.stage.mode == .damage,
                                damage: sim.damageDealt, shot: sim.shotType, revived: self.revivedThisRun)
             if sim.outcome == .hit { AudioManager.shared.se(.hit) }
             if sim.outcome == .hit, self.canRevive() {
@@ -111,7 +111,7 @@ final class PlayModel: ObservableObject {
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
         damage = 0
-        scene = GameScene(stage: stage, loadout: loadout)
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn)
         generation += 1
         wire()
     }
@@ -130,7 +130,7 @@ struct PlayView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @State private var showStore = false
 
-    init(stage: Stage, title: String, isTest: Bool = false, share: ShareContext? = nil, ranking: RankingContext? = nil,
+    init(stage: Stage, title: String, isTest: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
          onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
         self.isTest = isTest
@@ -138,7 +138,7 @@ struct PlayView: View {
         self.ranking = ranking
         self.onStart = onStart
         self.onExit = onExit
-        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(isTest: isTest))
+        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest, customs: customs))
         m.onResult = onResult
         _model = StateObject(wrappedValue: m)
     }
@@ -175,7 +175,7 @@ struct PlayView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             if !startedOnce { startedOnce = true; onStart?() }
-            AudioManager.shared.play(model.stage.mode == .survive ? .stage : .boss)
+            AudioManager.shared.play(.forNumber(model.stage.effectiveBGM))
             model.canRevive = { !isTest && (purchases.isPremium || (ads.isReady && model.adReviveAvailable)) }
         }
         .sheet(isPresented: $showStore) { StoreView() }
@@ -185,7 +185,7 @@ struct PlayView: View {
             AudioManager.shared.se(outcome == .cleared ? .clear : .fail)
             if !isTest { ads.countPlay() }
         }
-        .onChange(of: model.generation) { _ in AudioManager.shared.play(model.stage.mode == .survive ? .stage : .boss) }
+        .onChange(of: model.generation) { _ in AudioManager.shared.play(.forNumber(model.stage.effectiveBGM)) }
         .onDisappear { AudioManager.shared.play(.menu) }
     }
 

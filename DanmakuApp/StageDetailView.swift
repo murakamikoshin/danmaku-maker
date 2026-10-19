@@ -16,7 +16,7 @@ struct StageDetailView: View {
 
     private var context: ShareContext { ShareContext(id: remote.id, name: remote.name, clearRatePercent: remote.clearRatePercent) }
     private var rankingContext: RankingContext? {
-        remote.stage.mode == .survive ? nil : RankingContext(stageID: remote.id, stage: remote.stage)
+        remote.stage.hasRanking ? RankingContext(stageID: remote.id, stage: remote.stage) : nil
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct StageDetailView: View {
                         .accessibilityIdentifier("detail.play")
                     actions
                     if let message { Text(message).font(.footnote).foregroundStyle(.secondary) }
-                    if remote.stage.mode != .survive { RankingSection(stageID: remote.id, mode: remote.stage.mode) }
+                    if remote.stage.hasRanking { RankingSection(stageID: remote.id, mode: remote.stage.mode) }
                     CommentsSection(stageID: remote.id, authorUid: remote.authorUid)
                     HStack {
                         smallDanger("detail.report", "exclamationmark.bubble") { requireMember { confirmReport = true } }

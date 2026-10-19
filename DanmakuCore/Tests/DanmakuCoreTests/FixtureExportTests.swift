@@ -18,6 +18,8 @@ final class FixtureExportTests: XCTestCase {
         var hp: Int
         var damage: Int
         var lifeLeft: Int
+        var wave: Int
+        var defeats: Int
         var bulletCount: Int
         var bulletHash: UInt32
     }
@@ -67,12 +69,13 @@ final class FixtureExportTests: XCTestCase {
 
     func testExportFixtures() throws {
         guard let path = ProcessInfo.processInfo.environment["EXPORT_SIM_FIXTURES"] else { throw XCTSkip("書き出し先が未指定") }
-        let all: [DanmakuCore.Pattern] = [.ring, .spiral, .aim, .rain, .sweep, .sideL, .sideR, .corner, .homing]
+        let all: [DanmakuCore.Pattern] = DanmakuCore.Pattern.allCases
         var stages: [(String, Stage)] = []
         for (i, p) in all.enumerated() {
-            stages.append(("survive-\(p.rawValue)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([p, all[(i + 3) % 8]], boss: false)).sanitized()))
+            stages.append(("survive-\(p.rawValue)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([p, all[(i + 3) % all.count]], boss: false)).sanitized()))
         }
         stages.append(("survive-all", Stage(name: "s", mode: .survive, durationSec: 30, emitters: Array(emitters(all, boss: false).prefix(8))).sanitized()))
+        stages.append(("survive-all2", Stage(name: "s", mode: .survive, durationSec: 30, emitters: Array(emitters(Array(all.suffix(8)), boss: false))).sanitized()))
         stages.append(("survive-homing", Stage(name: "s", mode: .survive, durationSec: 20, emitters: [Emitter(t: .homing, x: 0.5, y: 0.1, s: 0, e: 20, i: 0.9, c: 3, v: 2, r: 60, k: 2)]).sanitized()))
         stages.append(("survive-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.aim, .spiral], boss: false), lifeMode: .lives, lifeCount: 3).sanitized()))
         stages.append(("survive-hp8", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.rain, .ring], boss: false), lifeMode: .hp, lifeCount: 8).sanitized()))
@@ -85,6 +88,24 @@ final class FixtureExportTests: XCTestCase {
             Emitter(t: .spiral, x: 0.15, y: 0.45, s: 0, e: 30, i: 0.2, c: 3, v: 2, r: 11, k: 1, ph: 0, p: 1),
             Emitter(t: .aim, x: 0.85, y: 0.3, s: 0, e: 30, i: 0.7, c: 5, v: 2.5, r: 40, k: 3, ph: 0, p: 1),
             Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 1.0, c: 12, v: 1.5, r: 6, k: 0, ph: 0, p: 0)]).sanitized()))
+        let seqEm: [Emitter] = [
+            Emitter(t: .spiral, x: 0.5, y: 0.15, s: 0, e: 20, i: 0.25, c: 3, v: 1.8, r: 11, k: 1),
+            Emitter(t: .aim, x: 0.3, y: 0.3, s: 2, e: 20, i: 0.9, c: 3, v: 2, r: 30, k: 3)]
+        let bossEm: [Emitter] = [
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.0, c: 12, v: 1.5, r: 6, k: 0, ph: 0, p: 0),
+            Emitter(t: .homing, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.6, c: 2, v: 1.6, r: 45, k: 2, ph: 2, p: 0),
+            Emitter(t: .flower, x: 0.2, y: 0.4, s: 0, e: 60, i: 0.9, c: 24, v: 1.8, r: 6, k: 4, ph: 3, p: 1)]
+        stages.append(("seq-2waves", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .lives, lifeCount: 5, waves: [
+            Wave(kind: .survive, durationSec: 10, emitters: seqEm),
+            Wave(kind: .boss, durationSec: 60, bossHp: 150, bossMove: 1, emitters: bossEm)]).sanitized()))
+        stages.append(("seq-4waves", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 15, waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 0, emitters: bossEm),
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 2, emitters: bossEm, warning: true, defeat: 3),
+            Wave(kind: .survive, durationSec: 10, emitters: seqEm),
+            Wave(kind: .boss, durationSec: 60, bossHp: 250, bossMove: 1, emitters: bossEm)]).sanitized()))
+        stages.append(("seq-survive-only", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .sideL, x: 0.5, y: 0.1, s: 0, e: 10, i: 2, c: 1, v: 1, r: 0)]),
+            Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .sideR, x: 0.5, y: 0.1, s: 0, e: 10, i: 2, c: 1, v: 1, r: 0)])]).sanitized()))
         stages.append(("boss-unlimited-lives", Stage(name: "b", mode: .boss, durationSec: 0, bossHp: 400, bossMove: 0, emitters: emitters([.aim, .corner], boss: true), lifeMode: .lives, lifeCount: 5).sanitized()))
         stages.append(("damage-easy", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 1, emitters: emitters([.ring], boss: true)).sanitized()))
         stages.append(("damage-moving", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 2, emitters: emitters([.aim, .rain, .corner], boss: true), lifeMode: .hp, lifeCount: 12).sanitized()))
@@ -108,7 +129,7 @@ final class FixtureExportTests: XCTestCase {
                     cases.append(Case(name: "\(name)/\(shot.rawValue)/m\(style)", stage: st, shot: shot.rawValue,
                                       replay: Replay(moves: trimmed).encoded(), steps: used,
                                       expect: Expect(outcome: outcome, tick: sim.tick, hp: sim.hp, damage: sim.damageDealt,
-                                                     lifeLeft: sim.lifeLeft, bulletCount: r.bulletCount, bulletHash: r.bulletHash)))
+                                                     lifeLeft: sim.lifeLeft, wave: sim.waveIndex, defeats: sim.defeats, bulletCount: r.bulletCount, bulletHash: r.bulletHash)))
                 }
             }
         }

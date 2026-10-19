@@ -209,4 +209,26 @@ def fail(b):
         b.tone(i * 0.16, 0.3, hz(n), 0.4, "pulse", duty=0.5, decay=0.2, sus=0.4, rel=0.1)
         b.tone(i * 0.16, 0.3, hz(n - 12), 0.25, "tri", rel=0.1)
 se("se_fail", 1.0, fail)
+def warning(b):
+    # 警告のサイレン: 高い音と低い音を交互に、4回(うなる低音つき)
+    for i in range(4):
+        b.tone(i * 0.45, 0.42, 880 if i % 2 == 0 else 620, 0.5, "saw", a=0.01, rel=0.05, decay=0.5, sus=0.7, slide=-0.25)
+        b.tone(i * 0.45, 0.42, 110, 0.35, "pulse", duty=0.5, a=0.01, rel=0.05)
+    b.noise(0, 0.1, 0.3, hp=0.3, decay=0.04)
+se("se_warning", 1.85, warning)
+
+def boom(b):
+    # 爆発: 低い衝撃 + ざらざらしたノイズが長く尾を引く + 落ちていく音
+    b.kick(0, 0.9)
+    b.noise(0, 0.9, 0.9, hp=0.1, decay=0.28)
+    b.tone(0, 0.7, 180, 0.6, "saw", a=0.005, rel=0.2, decay=0.25, sus=0.05, slide=-1.6)
+    b.tone(0.02, 0.5, 90, 0.5, "tri", a=0.005, rel=0.15, decay=0.2, sus=0.05, slide=-1.2)
+se("se_boom", 1.1, boom)
+
+def sparkle(b):
+    # 花火・星くず・ハート: 高い音がきらきら降りてくる
+    for i, n in enumerate([96, 91, 88, 84, 91, 96, 100]):
+        b.tone(0.05 * i, 0.25, hz(n), 0.25, "sine", a=0.003, rel=0.1, decay=0.08, sus=0.1)
+    b.noise(0, 0.15, 0.25, hp=0.9, decay=0.05)
+se("se_sparkle", 0.9, sparkle)
 print("done")

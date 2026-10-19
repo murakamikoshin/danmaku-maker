@@ -6,7 +6,7 @@ struct PublishFlowView: View {
     let stage: Stage
     let authorName: String
     let replay: Replay
-    let onPublished: () -> Void
+    let onPublished: (String) -> Void
 
     @EnvironmentObject private var auth: AuthService
     @Environment(\.dismiss) private var dismiss
@@ -104,7 +104,7 @@ struct PublishFlowView: View {
             let id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay)
             phase = .done(id)
             AudioManager.shared.se(.get)
-            onPublished()
+            onPublished(id)
         } catch {
             self.error = error.localizedDescription
             phase = .start

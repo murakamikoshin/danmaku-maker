@@ -9,24 +9,28 @@ struct HomeView: View {
     @State private var tab: Tab = .samples
     @State private var playing: SampleStage?
     @State private var detail: RemoteStage?
-    @State private var editing = false
+    @StateObject private var saved = LocalStageStore.shared
+    @State private var editingEntry: SavedStage?
+    @State private var playingMine: SavedStage?
+    @State private var deletingEntry: SavedStage?
+    @State private var publishingEntry: SavedStage?
     @State private var query = ""
     @State private var searchError = false
     #if DEBUG
     @State private var showStoreDebug = false
     #endif
 
-    enum Tab: Hashable { case samples, world }
+    enum Tab: Hashable { case samples, mine, world }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(logo: "app.title") {
-                Color.clear.frame(width: 38, height: 38)
-            } trailing: {
-                Button { gameTap(); editing = true } label: {
+            HStack(spacing: 10) {
+                LogoTitle(text: "app.title", size: 27)
+                Spacer(minLength: 8)
+                Button { gameTap(); newStage() } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "plus").font(.system(size: 13, weight: .heavy))
-                        Text("home.create").font(.system(size: 14, weight: .heavy, design: .rounded))
+                        Text("home.create").font(.system(size: 14, weight: .heavy, design: .rounded)).lineLimit(1)
                     }
                     .foregroundStyle(.white)
                     .padding(.vertical, 9).padding(.horizontal, 14)
@@ -37,12 +41,17 @@ struct HomeView: View {
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityIdentifier("home.create")
             }
+            .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 6)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
-                    GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
-                    if tab == .samples { samples } else { worldList }
+                    GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
+                    switch tab {
+                    case .samples: samples
+                    case .mine: mine
+                    case .world: worldList
+                    }
                 }
                 .padding(.horizontal, 16).padding(.bottom, 24).padding(.top, 4)
             }
@@ -53,7 +62,23 @@ struct HomeView: View {
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: s.title) { playing = nil }
         }
-        .fullScreenCover(isPresented: $editing) { EditorView { editing = false } }
+        .fullScreenCover(item: $editingEntry) { entry in EditorView(entry: entry) { editingEntry = nil } }
+        .fullScreenCover(item: $playingMine) { entry in
+            PlayView(stage: entry.stage, title: entry.displayName, customs: entry.draft.customImages) { playingMine = nil }
+        }
+        .sheet(item: $publishingEntry) { entry in
+            if let r = entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) {
+                PublishFlowView(stage: entry.stage, authorName: entry.draft.authorName, replay: r) { id in
+                    var e = saved.stage(id: entry.id) ?? entry
+                    e.publishedStage = e.stage; e.publishedID = id
+                    saved.update(e)
+                }
+            }
+        }
+        .confirmationDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }), titleVisibility: .visible) {
+            Button("mystage.delete", role: .destructive) { if let e = deletingEntry { saved.delete(id: e.id) } }
+            Button("common.cancel", role: .cancel) {}
+        } message: { Text("mystage.delete.message") }
         .sheet(item: $detail) { StageDetailView(remote: $0) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
@@ -67,6 +92,32 @@ struct HomeView: View {
             guard let id else { return }
             deepLink.stageID = nil
             Task { await open(id: id) }
+        }
+    }
+
+    /// 新しいステージを作って、すぐに編集画面を開く(作った時点で、マイステージに保存される)
+    private func newStage() {
+        guard let s = saved.create() else { return }
+        tab = .mine
+        editingEntry = s
+    }
+
+    /// マイステージ: 作ったステージを、投稿しなくても保存して、いつでも遊べる・直せる
+    private var mine: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("home.mine").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+            Text("home.mine.note").font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary).padding(.horizontal, 4)
+            if saved.stages.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "square.and.pencil").font(.system(size: 34)).foregroundStyle(Color(Palette.pink))
+                    Text("home.mine.empty").font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    GameActionButton(title: "home.create", systemImage: "plus", fill: GameStyle.accent) { newStage() }
+                }
+                .padding(.vertical, 24).frame(maxWidth: .infinity)
+            } else {
+                ForEach(saved.stages) { e in MyStageRow(entry: e, onPlay: { playingMine = e }, onEdit: { editingEntry = e },
+                                                         onPublish: { publishingEntry = e }, onDelete: { deletingEntry = e }) }
+            }
         }
     }
 
@@ -111,7 +162,7 @@ struct HomeView: View {
         func openRequested() {
             if let i = args.firstIndex(of: "-open-stage"), args.indices.contains(i + 1), playing == nil,
                let s = SampleStages.all.first(where: { $0.id == args[i + 1] }) { playing = s }
-            if args.contains("-open-editor"), !editing { editing = true }
+            if args.contains("-open-editor"), editingEntry == nil, let first = saved.stages.first ?? saved.create() { editingEntry = first }
             if args.contains("-open-store"), !showStoreDebug { showStoreDebug = true }
         }
         // 画面の準備前だと表示が無視されることがあるので、数回に分けて試す
@@ -140,11 +191,12 @@ struct ModeBadge: View {
         switch mode {
         case .boss: return Color(Palette.pink)
         case .damage: return Color(Palette.gold)
+        case .sequence: return Color(Palette.bullets[3])
         case .survive: return Color(UIColor(hex: 0x5CE1E6))
         }
     }
     var body: some View {
-        Text(mode == .boss ? "badge.boss" : mode == .damage ? "badge.damage" : "badge.survive")
+        Text(mode == .boss ? "badge.boss" : mode == .damage ? "badge.damage" : mode == .sequence ? "badge.sequence" : "badge.survive")
             .font(.system(size: 10, weight: .heavy, design: .rounded))
             .foregroundStyle(tint)
             .padding(.horizontal, 8).padding(.vertical, 2)
@@ -159,6 +211,7 @@ func detailText(_ st: Stage) -> String {
     case .boss: text = st.durationSec == 0 ? String(format: L("detail.boss.unlimited"), st.bossHp ?? 0) : String(format: L("detail.boss"), st.bossHp ?? 0, st.durationSec)
     case .damage: text = String(format: L("detail.damage"), st.durationSec)
     case .survive: text = String(format: L("detail.survive"), st.durationSec)
+    case .sequence: text = String(format: L("detail.sequence"), st.waves?.count ?? 1, st.durationSec)
     }
     // 標準(ライフ1)以外のときだけ、耐久を添える
     if st.effectiveLifeMode == .hp { text += " · " + String(format: L("detail.life.hp"), st.effectiveLifeCount) }
@@ -208,5 +261,62 @@ struct RemoteRow: View {
                 Text("world.clearrate").font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+
+/// マイステージの1行。タップで遊ぶ。編集・投稿・削除のボタンつき
+struct MyStageRow: View {
+    let entry: SavedStage
+    let onPlay: () -> Void
+    let onEdit: () -> Void
+    let onPublish: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Button { gameTap(); onPlay() } label: {
+                StageCardShell(mode: entry.stage.mode) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(entry.displayName).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                        HStack(spacing: 6) {
+                            ModeBadge(mode: entry.stage.mode)
+                            Text(detailText(entry.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                        HStack(spacing: 6) {
+                            if entry.isPublished { tag("mystage.posted", Color(Palette.gold)) }
+                            else if entry.isVerified { tag("mystage.cleared", Color(Palette.bullets[4])) }
+                            else { tag("mystage.notcleared", Color.white.opacity(0.5)) }
+                            Text(entry.updatedAt, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                }
+            }
+            .buttonStyle(BounceButtonStyle())
+            HStack(spacing: 8) {
+                action("mystage.edit", "pencil", Color(UIColor(hex: 0x5CE1E6)), onEdit)
+                action(entry.isPublished ? "mystage.posted" : "mystage.publish", "paperplane.fill", Color(Palette.pink), onPublish)
+                    .opacity(entry.isVerified && !entry.isPublished && !entry.draft.name.isEmpty && !entry.draft.authorName.isEmpty ? 1 : 0.4)
+                    .disabled(!(entry.isVerified && !entry.isPublished && !entry.draft.name.isEmpty && !entry.draft.authorName.isEmpty))
+                action("mystage.delete", "trash", Color(Palette.pink).opacity(0.8), onDelete)
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func tag(_ key: LocalizedStringKey, _ color: Color) -> some View {
+        Text(key).font(.system(size: 10, weight: .heavy, design: .rounded)).foregroundStyle(color)
+            .padding(.horizontal, 7).padding(.vertical, 1).overlay(Capsule().stroke(color.opacity(0.7), lineWidth: 1))
+    }
+
+    private func action(_ key: LocalizedStringKey, _ symbol: String, _ color: Color, _ run: @escaping () -> Void) -> some View {
+        Button { gameTap(); run() } label: {
+            Label(key, systemImage: symbol).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(color)
+                .frame(maxWidth: .infinity).padding(.vertical, 8)
+                .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(BounceButtonStyle())
     }
 }

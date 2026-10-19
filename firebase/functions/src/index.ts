@@ -220,7 +220,8 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
   const result = simulate(stage, played.moves, played.steps, "standard");
   if (result.outcome !== "cleared") return { accepted: false, reason: "not-cleared" };
 
-  const boss = stage.mode === "boss";
+  // ボス戦と連戦は「クリアまでの時間」(短いほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)
+  const boss = stage.mode === "boss" || stage.mode === "sequence";
   const value = boss ? result.tick : result.damage;
   const better = (x: number, y: number) => (boss ? x < y : x > y);
   const scoreRef = db.doc(`stages/${id}/scores/${uid}`);

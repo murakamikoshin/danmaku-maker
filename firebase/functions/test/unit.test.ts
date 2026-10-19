@@ -216,3 +216,112 @@ describe("validatePublish: 出す場所(p)", () => {
     expect(validatePublish(good({ emitters: [em({ t: "homing" })] })).ok).toBe(true);
   });
 });
+
+
+describe("validatePublish: BGM", () => {
+  it("選んだ曲を保存し、モードごとの標準と同じ指定は保存しない", () => {
+    const r = validatePublish(good({ bgm: 3 }));
+    expect(r.ok && r.stage.bgm).toBe(3);
+    const std = validatePublish(good({ bgm: 0 }));
+    expect(std.ok && "bgm" in std.stage).toBe(false);
+    const boss = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, bgm: 1 }));
+    expect(boss.ok && "bgm" in boss.stage).toBe(false);
+    const boss0 = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, bgm: 0 }));
+    expect(boss0.ok && boss0.stage.bgm).toBe(0);
+    expect(validatePublish(good()).ok && "bgm" in (validatePublish(good()) as { stage: object }).stage).toBe(false);
+  });
+  it.each([[5], [-1], [1.5], ["a"]])("範囲外 %s は拒否", (b) => {
+    expect(validatePublish(good({ bgm: b }))).toEqual({ ok: false, error: "bgm" });
+  });
+});
+
+
+describe("validatePublish: 見た目と発射位置の予告", () => {
+  it("ステージの見た目を保存し、標準(classic)は保存しない", () => {
+    const r = validatePublish(good({ themeBullets: "sakura", themeBackground: "ocean", themeShip: "classic" }));
+    expect(r.ok && r.stage.themeBullets).toBe("sakura");
+    expect(r.ok && r.stage.themeBackground).toBe("ocean");
+    expect(r.ok && "themeShip" in r.stage).toBe(false);
+    expect(validatePublish(good({ themeBullets: "galaxy" }))).toEqual({ ok: false, error: "theme" });
+    expect(validatePublish(good({ themeShip: 3 }))).toEqual({ ok: false, error: "theme" });
+  });
+  it("予告を出さない設定は、生き残りだけで、trueだけ保存する", () => {
+    const r = validatePublish(good({ hideMarkers: true }));
+    expect(r.ok && r.stage.hideMarkers).toBe(true);
+    const f = validatePublish(good({ hideMarkers: false }));
+    expect(f.ok && "hideMarkers" in f.stage).toBe(false);
+    expect(validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, hideMarkers: true }))).toEqual({ ok: false, error: "markers" });
+    expect(validatePublish(good({ hideMarkers: "yes" }))).toEqual({ ok: false, error: "markers" });
+  });
+  it("OGP 画像が、ステージの見た目の色で描かれる", () => {
+    const r = validatePublish(good({ themeBullets: "sakura", themeBackground: "aurora" }));
+    if (!r.ok) throw new Error("invalid");
+    const svg = ogpSvg(r.stage, "ABCDE");
+    expect(svg).toContain("#07120f");
+    expect(svg).not.toContain("#0a0818\" stroke");
+  });
+});
+
+
+describe("validatePublish: 連戦(場面)", () => {
+  const waveSurvive = (o: object = {}) => ({ kind: "survive", durationSec: 20, emitters: [em({ e: 20 })], ...o });
+  const waveBoss = (o: object = {}) => ({ kind: "boss", durationSec: 60, bossHp: 400, bossMove: 1, emitters: [em()], ...o });
+  const seq = (waves: unknown[], over: object = {}) => ({
+    name: "連戦", authorName: "K", mode: "sequence", durationSec: 0, emitters: [], waves, clearReplay: "AQIDBAUGBwg=", ...over,
+  });
+  const total = (n: number, d: number) => d + 2 * (n - 1);
+
+  it("正しい連戦(雑魚 → 中ボス → 大ボス)を通し、合計の時間が一致している", () => {
+    const waves = [waveSurvive(), waveBoss({ durationSec: 30, bossHp: 200 }), waveBoss({ durationSec: 90, bossHp: 800, warning: true, defeat: 3 })];
+    const r = validatePublish(seq(waves, { durationSec: total(3, 20 + 30 + 90) }));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.stage.waves).toHaveLength(3);
+      expect(r.stage.waves![2]!.warning).toBe(true);
+      expect(r.stage.waves![2]!.defeat).toBe(3);
+      expect(r.stage.emitters).toEqual([]);
+    }
+  });
+  it("合計の時間が合わない・場面が0または7つ・不正な種類は拒否", () => {
+    expect(validatePublish(seq([waveSurvive()], { durationSec: 21 }))).toEqual({ ok: false, error: "duration" });
+    expect(validatePublish(seq([]))).toEqual({ ok: false, error: "wave-count" });
+    expect(validatePublish(seq(Array.from({ length: 7 }, () => waveSurvive()), { durationSec: 140 + 12 }))).toEqual({ ok: false, error: "wave-count" });
+    expect(validatePublish(seq([{ ...waveSurvive(), kind: "x" }], { durationSec: 20 }))).toEqual({ ok: false, error: "wave-kind" });
+  });
+  it("場面ごとの範囲を検証する(時間・HP・生き残りにHP、警告は、ボスだけ)", () => {
+    expect(validatePublish(seq([waveSurvive({ durationSec: 25 })], { durationSec: 25 }))).toEqual({ ok: false, error: "wave-duration" });
+    expect(validatePublish(seq([waveBoss({ durationSec: 0 })], { durationSec: 0 }))).toEqual({ ok: false, error: "wave-duration" });
+    expect(validatePublish(seq([waveBoss({ bossHp: 425 })], { durationSec: 60 }))).toEqual({ ok: false, error: "wave-boss-hp" });
+    expect(validatePublish(seq([waveSurvive({ bossHp: 400 })], { durationSec: 20 }))).toEqual({ ok: false, error: "wave-boss-hp" });
+    expect(validatePublish(seq([waveSurvive({ warning: true })], { durationSec: 20 }))).toEqual({ ok: false, error: "wave-warning" });
+    expect(validatePublish(seq([waveSurvive({ defeat: 2 })], { durationSec: 20 }))).toEqual({ ok: false, error: "wave-defeat" });
+    expect(validatePublish(seq([waveBoss({ defeat: 9 })], { durationSec: 60 }))).toEqual({ ok: false, error: "wave-defeat" });
+  });
+  it("爆発(標準)の指定は保存しない。生き残りの場面では、好きな場所からの発射は使えない", () => {
+    const r = validatePublish(seq([waveBoss({ defeat: 1 })], { durationSec: 60 }));
+    expect(r.ok && "defeat" in r.stage.waves![0]!).toBe(false);
+    expect(validatePublish(seq([waveSurvive({ emitters: [em({ p: 1 })] })], { durationSec: 20 }))).toEqual({ ok: false, error: "emitter-point" });
+    expect(validatePublish(seq([waveBoss({ emitters: [em({ p: 1 })] })], { durationSec: 60 })).ok).toBe(true);
+  });
+  it("連戦以外に waves をつけたら拒否。連戦の外側の発射台は空であること", () => {
+    expect(validatePublish(good({ waves: [waveSurvive()] }))).toEqual({ ok: false, error: "waves" });
+    expect(validatePublish(seq([waveSurvive()], { durationSec: 20, emitters: [em()] }))).toEqual({ ok: false, error: "emitter-count" });
+  });
+  it("ボス戦・ダメージ勝負の警告と、ボス戦の撃破の演出", () => {
+    const b = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, bossWarning: true, bossDefeat: 4 }));
+    expect(b.ok && b.stage.bossWarning).toBe(true);
+    expect(b.ok && b.stage.bossDefeat).toBe(4);
+    const std = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 1, bossDefeat: 1 }));
+    expect(std.ok && "bossDefeat" in std.stage).toBe(false);
+    expect(validatePublish(good({ bossWarning: true }))).toEqual({ ok: false, error: "warning" });
+    expect(validatePublish(good({ mode: "damage", durationSec: 60, bossMove: 0, bossDefeat: 2 }))).toEqual({ ok: false, error: "defeat" });
+  });
+  it("連戦のOGP画像と共有ページが作れる", () => {
+    const r = validatePublish(seq([waveSurvive(), waveBoss()], { durationSec: total(2, 80) }));
+    if (!r.ok) throw new Error("invalid");
+    expect(ogpSvg(r.stage, "ABCDE")).toContain("WAVES");
+    const html = renderSharePage({ id: "ABCDE", stage: { ...r.stage, plays: 0, clears: 0, likes: 0 } as never, lang: "ja", origin: "https://x.example", appStoreUrl: "https://a.example" });
+    expect(html.status).toBe(200);
+    expect(html.html).toContain("連戦 2場面");
+  });
+});
