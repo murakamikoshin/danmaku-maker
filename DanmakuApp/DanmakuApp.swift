@@ -38,6 +38,7 @@ struct DanmakuApp: App {
                     if !purchases.isPremium && !Self.adsDisabledForScreenshots { await ads.start() }
                     await ResultsQueue.shared.flush()
                 }
+                .onChange(of: auth.uid) { uid in Task { await CosmeticsStore.shared.refreshPosts(uid: uid) } }
                 .onOpenURL { deepLink.handle($0) }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL) }
                 .onChange(of: scenePhase) { phase in

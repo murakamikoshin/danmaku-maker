@@ -2,7 +2,7 @@ import SpriteKit
 import DanmakuCore
 
 /// テーマごとの見た目。当たり判定や計算には一切関わらない
-enum BulletShape { case circle, petal, bubble, diamond }
+enum BulletShape { case circle, petal, bubble, diamond, star }
 enum ShipShape { case arrow, wings, manta, star }
 
 struct Skin {
@@ -30,6 +30,18 @@ struct Skin {
             return Skin(bulletColors: [0x7CF29C, 0xB28DFF, 0x5CE1E6, 0xE8FF7A, 0xFF8AE2].map { UIColor(hex: $0) }, bulletShape: .diamond,
                         background: UIColor(hex: 0x07120F), star: UIColor(hex: 0x2E5C46),
                         shipColor: UIColor(hex: 0xB28DFF), shipShape: .star)
+        case .gold:
+            return Skin(bulletColors: [0xFFD54A, 0xFFB300, 0xFFF0A0, 0xFF8F00, 0xFFE082].map { UIColor(hex: $0) }, bulletShape: .star,
+                        background: UIColor(hex: 0x1A1405), star: UIColor(hex: 0x6B5420),
+                        shipColor: UIColor(hex: 0xFFD54A), shipShape: .wings)
+        case .neon:
+            return Skin(bulletColors: [0xFF2E93, 0x00F0FF, 0xB6FF00, 0xFF9E00, 0x9D4DFF].map { UIColor(hex: $0) }, bulletShape: .diamond,
+                        background: UIColor(hex: 0x06001A), star: UIColor(hex: 0x3A1F6B),
+                        shipColor: UIColor(hex: 0x00F0FF), shipShape: .arrow)
+        case .rainbow:
+            return Skin(bulletColors: [0xFF5C5C, 0xFFB347, 0xFFF06A, 0x6CE08A, 0x6AA8FF].map { UIColor(hex: $0) }, bulletShape: .petal,
+                        background: UIColor(hex: 0x0B0B1E), star: UIColor(hex: 0x35356B),
+                        shipColor: UIColor(hex: 0xFFFFFF), shipShape: .manta)
         }
     }
 }

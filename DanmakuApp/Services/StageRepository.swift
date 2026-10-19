@@ -52,6 +52,13 @@ struct StageRepository {
         return Self.parse(snap)
     }
 
+    /// その人が公開中のステージの数(サーバーに保存されているもの)。投稿数で解放される見た目の判定に使う
+    func publishedCount(uid: String) async -> Int? {
+        let q = Firestore.firestore().collection("stages").whereField("authorUid", isEqualTo: uid).whereField("status", isEqualTo: "published")
+        let snap = try? await q.count.getAggregation(source: .server)
+        return snap?.count.intValue
+    }
+
     func isLiked(id: String, uid: String) async -> Bool {
         (try? await Firestore.firestore().document("stages/\(id)/likes/\(uid)").getDocument().exists) ?? false
     }

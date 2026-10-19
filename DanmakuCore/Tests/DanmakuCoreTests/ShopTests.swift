@@ -48,6 +48,24 @@ final class ShopTests: XCTestCase {
         XCTAssertGreaterThan((xs.max() ?? 0) - (xs.min() ?? 0), 8)
     }
 
+    func testRewardThemesUnlockByPostCountAndCannotBeBought() {
+        XCTAssertEqual(Theme.reward.map(\.unlockPosts), [1, 3, 10])
+        XCTAssertFalse(Theme.paid.contains(.gold))
+        XCTAssertNil(Product(id: "com.koshin.danmakumaker.gold.set"))
+        XCTAssertNil(Product(id: "com.koshin.danmakumaker.rainbow.bullets"))
+        var o = Ownership()
+        for t in Theme.reward { for p in ThemePart.allCases { XCTAssertFalse(o.has(p, of: t)) } }
+        o.posts = 1
+        XCTAssertTrue(o.hasUnlocked(.gold)); XCTAssertFalse(o.hasUnlocked(.neon))
+        for p in ThemePart.allCases { XCTAssertTrue(o.has(p, of: .gold)) }
+        o.posts = 3
+        XCTAssertTrue(o.hasUnlocked(.neon)); XCTAssertFalse(o.hasUnlocked(.rainbow))
+        o.posts = 10
+        XCTAssertTrue(o.hasUnlocked(.rainbow))
+        XCTAssertFalse(Ownership(owned: Set(Product.all)).hasUnlocked(.gold), "買っても、投稿数で解放されるものは解放されない")
+        XCTAssertEqual(Product.all.count, 27)
+    }
+
     func testProductIDRoundTrip() {
         XCTAssertEqual(Product.all.count, 27)
         XCTAssertEqual(Set(Product.all.map(\.id)).count, 27)

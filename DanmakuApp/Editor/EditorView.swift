@@ -287,6 +287,7 @@ private struct LookPanel: View {
     @ObservedObject var model: EditorModel
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    @State private var rewardHint: Theme?
 
     var body: some View {
         GamePanel(title: "editor.look", tint: Color(Palette.pink)) {
@@ -298,6 +299,10 @@ private struct LookPanel: View {
                         HStack(spacing: 8) { ForEach(Theme.allCases, id: \.self) { tile(part, $0) } }.padding(.vertical, 2)
                     }
                 }
+            }
+            if let t = rewardHint, let need = t.unlockPosts, !cosmetics.ownership.hasUnlocked(t) {
+                Text(String(format: L("editor.look.rewardhint"), max(0, need - cosmetics.ownership.posts)))
+                    .font(.caption.bold()).foregroundStyle(Color(Palette.gold))
             }
             if Theme.paid.contains(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
                 Button { gameTap(); showShop = true } label: { Chip(title: L("editor.look.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
@@ -328,7 +333,9 @@ private struct LookPanel: View {
         let skin = Skin.of(t)
         return Button {
             gameTap()
-            if owned { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { set(part, t) } } else { showShop = true }
+            if owned { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { set(part, t) } }
+            else if t.unlockPosts != nil { rewardHint = t }
+            else { showShop = true }
         } label: {
             VStack(spacing: 6) {
                 ZStack {

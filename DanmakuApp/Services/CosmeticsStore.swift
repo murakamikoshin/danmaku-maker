@@ -13,18 +13,24 @@ final class CosmeticsStore: ObservableObject {
     private let defaults: UserDefaults
     private static let loadoutKey = "cosmetics.loadout"
     private static let ownedKey = "cosmetics.owned"
+    private static let postedKey = "cosmetics.posted"
+
+    /// 投稿したステージの数(サーバーの記録から数えた、いちばん多い値)。投稿数で解放される見た目に使う
+    @Published private(set) var postedCount: Int
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         loadout = defaults.data(forKey: Self.loadoutKey).flatMap { try? JSONDecoder().decode(Loadout.self, from: $0) } ?? Loadout()
         // 起動直後や電波がないときも使えるよう、前回の購入内容を覚えておく
-        ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [])
+        let posted = defaults.integer(forKey: Self.postedKey)
+        postedCount = posted
+        ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [], posts: posted)
         showStageLook = defaults.object(forKey: "cosmetics.showStageLook") as? Bool ?? true
         effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
         #if DEBUG
         // 画面確認用: 起動引数 -unlock-all で全部持っている状態にする（製品ビルドには入らない）
         let args = ProcessInfo.processInfo.arguments
-        if args.contains("-unlock-all") { ownership = Ownership(owned: Set(Product.all)) }
+        if args.contains("-unlock-all") { ownership = Ownership(owned: Set(Product.all), posts: 99) }
         func value(_ flag: String) -> String? { args.firstIndex(of: flag).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil } }
         if let v = value("-equip-shot").flatMap(ShotType.init(rawValue:)) { loadout.shot = v }
         if let t = value("-equip-theme").flatMap(Theme.init(rawValue:)) { for p in ThemePart.allCases { loadout.set(t, for: p) } }
@@ -75,10 +81,28 @@ final class CosmeticsStore: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-unlock-all") { return }
         #endif
-        let next = Ownership(productIDs: productIDs)
+        let next = Ownership(productIDs: productIDs, posts: postedCount)
         guard next != ownership else { return }
         ownership = next
         defaults.set(next.owned.map(\.id).sorted(), forKey: Self.ownedKey)
+    }
+
+    /// サーバーに保存されている投稿数を読み直す(ステージを消して減っても、解放した見た目は残す)
+    func refreshPosts(uid: String?) async {
+        guard let uid, let n = await StageRepository().publishedCount(uid: uid) else { return }
+        setPostedCount(n)
+    }
+
+    func setPostedCount(_ n: Int) {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-unlock-all") { return }
+        #endif
+        guard n > postedCount else { return }
+        postedCount = n
+        defaults.set(n, forKey: Self.postedKey)
+        var next = ownership
+        next.posts = n
+        ownership = next
     }
 
     func equip(_ shot: ShotType) {

@@ -39,6 +39,7 @@ struct ShopView: View {
                     CustomImagesCard().id("customimages")
                     ShotSection().id("shots")
                     PatternShop().id("patterns")
+                    RewardShop()
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
                     ThemeCard(theme: .classic)
 
@@ -231,6 +232,44 @@ private struct ShotTile: View {
 }
 
 // MARK: テーマ(弾・背景・自機)
+
+/// ステージを投稿した数で、無料で解放される見た目
+private struct RewardShop: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        ShopCard(title: "shop.reward.title", footer: "shop.reward.footer") {
+            CardBody {
+                Text(String(format: L("shop.reward.count"), cosmetics.ownership.posts))
+                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                    .frame(maxWidth: .infinity, alignment: .leading).padding(14)
+                ForEach(Theme.reward, id: \.self) { t in
+                    CardDivider()
+                    HStack(spacing: 12) {
+                        HStack(spacing: 2) {
+                            ForEach(0..<3, id: \.self) { Image(uiImage: SpriteFactory.bulletImages(t)[$0]).resizable().frame(width: 16, height: 16) }
+                            Image(uiImage: SpriteFactory.shipImage(t)).resizable().frame(width: 18, height: 21).padding(.leading, 4)
+                        }
+                        .frame(width: 100, alignment: .leading)
+                        Text(LocalizedStringKey(t.nameKey)).font(.body.weight(.semibold))
+                        Spacer()
+                        if cosmetics.ownership.hasUnlocked(t) {
+                            Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                        } else {
+                            let need = (t.unlockPosts ?? 0)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Label(String(format: L("shop.reward.need"), max(0, need - cosmetics.ownership.posts)), systemImage: "lock.fill")
+                                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                                Text(String(format: L("shop.reward.condition"), need)).font(.caption2).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding(14)
+                }
+            }
+        }
+    }
+}
 
 private struct ThemeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore

@@ -242,6 +242,9 @@ describe("validatePublish: 見た目と発射位置の予告", () => {
     expect(r.ok && r.stage.themeBullets).toBe("sakura");
     expect(r.ok && r.stage.themeBackground).toBe("ocean");
     expect(r.ok && "themeShip" in r.stage).toBe(false);
+    const rw = validatePublish(good({ themeBullets: "gold", themeBackground: "neon", themeShip: "rainbow" }));
+    expect(rw.ok && rw.stage.themeBullets).toBe("gold");
+    expect(rw.ok && rw.stage.themeShip).toBe("rainbow");
     expect(validatePublish(good({ themeBullets: "galaxy" }))).toEqual({ ok: false, error: "theme" });
     expect(validatePublish(good({ themeShip: 3 }))).toEqual({ ok: false, error: "theme" });
   });

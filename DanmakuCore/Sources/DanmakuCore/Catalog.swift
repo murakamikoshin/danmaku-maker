@@ -1,9 +1,23 @@
 /// 見た目のテーマ。classic は最初から使える
 public enum Theme: String, CaseIterable, Codable, Sendable {
     case classic, sakura, ocean, aurora
+    /// ステージを投稿した数で解放される、無料のテーマ(買うことはできない)
+    case gold, neon, rainbow
 
-    /// 有料のテーマ（classic 以外）
-    public static var paid: [Theme] { allCases.filter { $0 != .classic } }
+    /// 有料のテーマ（買って手に入れる）
+    public static var paid: [Theme] { [.sakura, .ocean, .aurora] }
+    /// 投稿数で解放されるテーマ
+    public static var reward: [Theme] { [.gold, .neon, .rainbow] }
+
+    /// 解放に必要な、投稿したステージの数(投稿で解放されるテーマだけ)
+    public var unlockPosts: Int? {
+        switch self {
+        case .gold: return 1
+        case .neon: return 3
+        case .rainbow: return 10
+        default: return nil
+        }
+    }
 }
 
 /// テーマの中で、別々に買える部品
@@ -49,7 +63,7 @@ public enum Product: Hashable, Sendable {
         if rest.count == 2, rest[0] == "shot", let s = ShotType(rawValue: rest[1]), s != .standard {
             self = .shot(s); return
         }
-        guard rest.count == 2, let t = Theme(rawValue: rest[0]), t != .classic else { return nil }
+        guard rest.count == 2, let t = Theme(rawValue: rest[0]), Theme.paid.contains(t) else { return nil }
         if rest[1] == "set" { self = .set(t); return }
         if let p = ThemePart(rawValue: rest[1]) { self = .part(t, p); return }
         return nil
@@ -85,16 +99,27 @@ public enum Product: Hashable, Sendable {
 /// 購入済みの商品から、何が使えるかを決める
 public struct Ownership: Equatable, Sendable {
     public private(set) var owned: Set<Product>
+    /// 投稿したステージの数(投稿で解放されるテーマの判定に使う。サーバーの記録で数える)
+    public var posts: Int
 
-    public init(owned: Set<Product> = []) { self.owned = owned }
+    public init(owned: Set<Product> = [], posts: Int = 0) { self.owned = owned; self.posts = posts }
 
     /// RevenueCat などから得た、購入済みの商品 ID の一覧から作る
-    public init(productIDs: some Sequence<String>) {
+    public init(productIDs: some Sequence<String>, posts: Int = 0) {
         owned = Set(productIDs.compactMap(Product.init(id:)))
+        self.posts = posts
+    }
+
+    /// 投稿数で解放されるテーマを、もう使えるか
+    public func hasUnlocked(_ theme: Theme) -> Bool {
+        guard let need = theme.unlockPosts else { return false }
+        return posts >= need
     }
 
     public func has(_ part: ThemePart, of theme: Theme) -> Bool {
-        theme == .classic || owned.contains(.part(theme, part)) || owned.contains(.set(theme))
+        if theme == .classic { return true }
+        if theme.unlockPosts != nil { return hasUnlocked(theme) }
+        return owned.contains(.part(theme, part)) || owned.contains(.set(theme))
     }
 
     public func has(_ shot: ShotType) -> Bool {

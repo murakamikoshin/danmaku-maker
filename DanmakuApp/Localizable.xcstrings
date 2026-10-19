@@ -6528,6 +6528,150 @@
           }
         }
       }
+    },
+    "theme.gold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gold"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金色"
+          }
+        }
+      }
+    },
+    "theme.neon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neon"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ネオン"
+          }
+        }
+      }
+    },
+    "theme.rainbow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rainbow"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "虹"
+          }
+        }
+      }
+    },
+    "shop.reward.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocked by posting"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿で解放"
+          }
+        }
+      }
+    },
+    "shop.reward.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post stages to unlock new looks for free. Posts are counted from the server's records."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージを投稿すると、新しい見た目が無料で解放されます。投稿数はサーバーの記録で数えます。"
+          }
+        }
+      }
+    },
+    "shop.reward.count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stages posted: %d"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿したステージ: %d個"
+          }
+        }
+      }
+    },
+    "shop.reward.need": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d more"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%d個"
+          }
+        }
+      }
+    },
+    "shop.reward.condition": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocks at %d posts"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d個投稿で解放"
+          }
+        }
+      }
+    },
+    "editor.look.rewardhint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post %d more to unlock"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%d個投稿すると解放されます"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

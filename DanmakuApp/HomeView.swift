@@ -72,6 +72,7 @@ struct HomeView: View {
                     var e = saved.stage(id: entry.id) ?? entry
                     e.publishedStage = e.stage; e.publishedID = id
                     saved.update(e)
+                    Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid) }
                 }
             }
         }

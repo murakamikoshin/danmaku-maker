@@ -50,6 +50,14 @@ enum SpriteFactory {
                     c.move(to: CGPoint(x: 6, y: 0)); c.addLine(to: CGPoint(x: 12, y: 6))
                     c.addLine(to: CGPoint(x: 6, y: 12)); c.addLine(to: CGPoint(x: 0, y: 6))
                     c.closePath(); c.fillPath()
+                case .star:
+                    for i in 0..<10 {
+                        let a = Double(i) * Double.pi / 5 - Double.pi / 2
+                        let r = i % 2 == 0 ? 6.0 : 2.8
+                        let q = CGPoint(x: 6 + cos(a) * r, y: 6 + sin(a) * r)
+                        i == 0 ? c.move(to: q) : c.addLine(to: q)
+                    }
+                    c.closePath(); c.fillPath()
                 }
                 if skin.bulletShape != .bubble {
                     c.setFillColor(UIColor.white.cgColor)
