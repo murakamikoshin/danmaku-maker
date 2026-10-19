@@ -78,3 +78,21 @@ Secrets に `ASC_KEY_ID` `ASC_ISSUER_ID` `ASC_KEY_P8_BASE64` `GOOGLE_SERVICE_INF
 - **ストア画像**: 日英とも 1290×2796（6.9 インチ）の5枚を入力済みです。必須の 6.1 インチ枠には自動で縮小されて入ります。画像の元データは `docs/store_screenshots/`。
 - **広告の本番 ID**: Release ビルドは本番の AdMob ID を使います。新しいアプリは AdMob 側の審査が済むまで広告が出ない（または少ない）ことがあります。TestFlight では広告が出なくても異常ではありません。
 - **AdMob SDK**: この Mac（Xcode 15.2）でビルドできる最新の 11.2.0 を使っています。Xcode Cloud で Xcode 26 が使えるので、提出後に最新版（13.x）への更新を検討してください（Swift の API 名が変わるため、コードの書き換えが必要です）。
+
+---
+
+## 追加: 見た目パック・撃ち方の課金商品(2026-10-19)
+
+広告削除(¥600)に加えて、買い切りの商品を14個追加した。すべて「非消耗型」。
+
+| 種類 | 商品ID | 価格 |
+|---|---|---|
+| 弾の色と形 / 背景 / 自機(桜・深海・オーロラ × 3) | `com.koshin.danmakumaker.<theme>.<bullets/background/ship>` | ¥100 |
+| テーマのセット(3点) | `com.koshin.danmakumaker.<theme>.set` | ¥200 |
+| 撃ち方(ワイド・ヘビー) | `com.koshin.danmakumaker.shot.<spread/heavy>` | ¥300 |
+
+- 価格は App Store Connect の日本の価格表(¥100 刻み)に合わせた。¥120 や ¥250 は選べない。
+- 撃ち方は1秒あたりの威力が同じ(約22)。投稿前のテストプレイは、必ず標準の撃ち方で行う。
+- アプリ側の購入判定は RevenueCat の `allPurchasedProductIdentifiers` を使う。RevenueCat 側でエンタイトルメントを作る必要はない(広告削除の `no_ads` だけは作る)。
+- 審査に出すとき、バージョンページの「アプリ内購入」で、広告削除と14商品のすべてを選ぶ。
+- 商品登録の自動化スクリプト: `tools/asc_create_iaps.mjs`

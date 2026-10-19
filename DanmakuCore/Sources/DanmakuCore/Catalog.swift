@@ -43,8 +43,8 @@ public enum Product: Hashable, Sendable {
     /// 購入前に画面に出す目安の価格（円）。実際の表示は App Store の価格を使う
     public var yen: Int {
         switch self {
-        case .part: return 120
-        case .set: return 250
+        case .part: return 100
+        case .set: return 200
         case .shot: return 300
         }
     }

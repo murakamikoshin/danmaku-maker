@@ -20,7 +20,11 @@ final class CosmeticsStore: ObservableObject {
         ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [])
         #if DEBUG
         // 画面確認用: 起動引数 -unlock-all で全部持っている状態にする（製品ビルドには入らない）
-        if ProcessInfo.processInfo.arguments.contains("-unlock-all") { ownership = Ownership(owned: Set(Product.all)) }
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-unlock-all") { ownership = Ownership(owned: Set(Product.all)) }
+        func value(_ flag: String) -> String? { args.firstIndex(of: flag).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil } }
+        if let v = value("-equip-shot").flatMap(ShotType.init(rawValue:)) { loadout.shot = v }
+        if let t = value("-equip-theme").flatMap(Theme.init(rawValue:)) { for p in ThemePart.allCases { loadout.set(t, for: p) } }
         #endif
     }
 
