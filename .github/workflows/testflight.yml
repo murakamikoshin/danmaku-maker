@@ -1,5 +1,5 @@
 # Xcode Cloud の代わりに、GitHub Actions（Xcode 26 の macOS ランナー）でビルドして TestFlight へ送る。
-# 手動実行（Actions タブ → TestFlight → Run workflow）。【未検証】Xcode Cloud を使うなら不要。
+# 手動実行（Actions タブ → TestFlight → Run workflow）。【macos-26 / Xcode 26.6 は GitHub の公式一覧で確認済み。ワークフロー自体は未実行】Xcode Cloud を使うなら不要。
 # 必要な Secrets: ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_P8_BASE64（App Store Connect API キー）、GOOGLE_SERVICE_INFO_PLIST_BASE64
 name: TestFlight
 on: workflow_dispatch
@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.app 2>/dev/null || ls /Applications | grep Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          xcodebuild -version
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Restore Firebase config
