@@ -29,7 +29,8 @@ struct SavedStage: Identifiable, Codable, Equatable {
     var publishedID: String?
 
     var stage: Stage { draft.stage }
-    var isVerified: Bool { verifiedStage != nil && verifiedStage == stage }
+    /// クリア確認は、遊びの中身(弾・敵・時間など)が同じかで判断する。名前を付け直しただけでは外れない
+    var isVerified: Bool { verifiedStage.map { $0.samePlay(as: stage) } ?? false }
     var isPublished: Bool { publishedStage != nil && publishedStage == stage && publishedID != nil }
     var displayName: String { draft.name.trimmingCharacters(in: .whitespaces).isEmpty ? L("mystage.unnamed") : draft.name }
 }
@@ -106,5 +107,15 @@ final class LocalStageStore: ObservableObject {
         if draft == Draft() { return }   // 手つかずの下書きは、引き継がない
         stages = [SavedStage(draft: draft)]
         persist()
+    }
+}
+
+
+extension Stage {
+    /// 名前以外が同じか(名前は、遊びの結果に関わらない)
+    func samePlay(as other: Stage) -> Bool {
+        var a = self
+        a.name = other.name
+        return a == other
     }
 }

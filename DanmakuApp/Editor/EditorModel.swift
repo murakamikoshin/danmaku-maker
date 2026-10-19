@@ -200,7 +200,7 @@ final class EditorModel: ObservableObject {
     var stage: Stage { draft.stage }
 
     /// テストプレイでクリアした内容と、いまの内容が同じか(変えると、自動で外れる)
-    var isVerified: Bool { entry.verifiedStage != nil && entry.verifiedStage == stage }
+    var isVerified: Bool { entry.verifiedStage.map { $0.samePlay(as: stage) } ?? false }
     var clearReplay: Replay? { entry.verifiedReplay.flatMap { Replay(encoded: $0) } }
     /// いまの内容を、すでに投稿したか
     var isPublished: Bool { entry.publishedStage != nil && entry.publishedStage == stage && entry.publishedID != nil }

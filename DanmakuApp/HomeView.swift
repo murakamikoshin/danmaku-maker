@@ -64,7 +64,17 @@ struct HomeView: View {
         }
         .fullScreenCover(item: $editingEntry) { entry in EditorView(entry: entry) { editingEntry = nil } }
         .fullScreenCover(item: $playingMine) { entry in
-            PlayView(stage: entry.stage, title: entry.displayName, customs: entry.draft.customImages) { playingMine = nil }
+            // マイステージから遊んでクリアしても、テストプレイと同じ「クリア確認済み」にする(復活を使ったクリアは、サーバーで検証できないので除く)
+            PlayView(stage: entry.stage, title: entry.displayName, customs: entry.draft.customImages,
+                     onResult: { result, moves in
+                         guard result.outcome == .cleared, !result.revived else { return }
+                         var e = saved.stage(id: entry.id) ?? entry
+                         guard e.stage == entry.stage else { return }
+                         e.verifiedStage = entry.stage
+                         e.verifiedReplay = Replay(moves: moves).encoded()
+                         saved.update(e)
+                     },
+                     onExit: { playingMine = nil })
         }
         .sheet(item: $publishingEntry) { entry in
             if let r = entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) {
