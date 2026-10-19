@@ -10,7 +10,7 @@ for (const [id, en] of themes) {
   items.push([`${id}.bullets`, `${en} Bullets`], [`${id}.background`, `${en} Background`], [`${id}.ship`, `${en} Ship`], [`${id}.set`, `${en} Set`]);
 }
 items.push(['shot.spread', 'Wide Shot'], ['shot.heavy', 'Heavy Shot'], ['customimages', 'Custom Images']);
-for (const [id, name] of [['homing', 'Homing Pattern'], ['pattern.flower', 'Flower Pattern'], ['pattern.star', 'Star Pattern'], ['pattern.heart', 'Heart Pattern'], ['pattern.beam', 'Beam Pattern'], ['pattern.cross', 'Cross Pattern'], ['pattern.accel', 'Accelerate Pattern'], ['pattern.bounce', 'Bounce Pattern'], ['patternpack', 'Pattern Pack']]) items.push([id, name]);
+for (const [id, name] of [['homing', 'Homing Pattern'], ['pattern.flower', 'Flower Pattern'], ['pattern.star', 'Star Pattern'], ['pattern.heart', 'Heart Pattern'], ['pattern.beam', 'Beam Pattern'], ['pattern.cross', 'Cross Pattern'], ['pattern.accel', 'Accelerate Pattern'], ['pattern.bounce', 'Bounce Pattern'], ['pattern.stopgo', 'Stop and Go Pattern'], ['pattern.split', 'Split Pattern'], ['pattern.timed', 'Delayed Pattern'], ['patternpack', 'Pattern Pack']]) items.push([id, name]);
 const only = process.argv[2];
 
 const b = await chromium.connectOverCDP('http://localhost:9222');

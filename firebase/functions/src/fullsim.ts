@@ -14,6 +14,9 @@ const HIT_R2 = 30.25;
 const MOVE_UNIT = 0.25;
 const LIFE_SHIELD_SECONDS = 2.0;
 const HOMING_SECONDS = 2.5;
+const STOPGO_MOVE = 0.55, STOPGO_HOLD = 0.6, STOPGO_BOOST = 1.3;
+const SPLIT_AFTER = 0.7, SPLIT_COUNT = 6, SPLIT_SPEED = 0.7;
+const TIMED_HOLD = 1.1;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 
 export type ShotType = "standard" | "spread" | "heavy";
@@ -95,7 +98,7 @@ function hashEmitters(h: Fnv, list: Emitter[]) {
   }
 }
 
-interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number }
+interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
 function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[]) {
@@ -103,7 +106,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
   const n = Math.max(1, m.c);
   const deg = Math.PI / 180;
   const add = (x: number, y: number, a: number) => {
-    if (out.length < MAX_BULLETS) out.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+    if (out.length < MAX_BULLETS) out.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
   };
   switch (m.t) {
     case "ring": case "spiral":
@@ -122,7 +125,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       const turn = Math.max(25, Math.abs(m.r) * 2) * deg;
       for (let j = 0; j < n; j++) {
         const a = b + (j - (n - 1) / 2) * 0.35;
-        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn, homeLeft: HOMING_SECONDS, accel: 0, maxSpeed: 0, bounces: 0 });
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn, homeLeft: HOMING_SECONDS, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
       }
       break;
     }
@@ -143,7 +146,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
           const rr = (2 - 2 * Math.sin(q) + (Math.sin(q) * sq) / (Math.sin(q) + 1.4)) / 4;
           f = 0.15 + 0.85 * Math.max(0, Math.min(1, rr));
         }
-        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(th) * sp * f, vy: Math.sin(th) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(th) * sp * f, vy: Math.sin(th) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
       }
       break;
     }
@@ -151,7 +154,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       const b = Math.atan2(py - cy, px - cx) + m.r * deg * 0.2;
       for (let j = 0; j < n; j++) {
         const f = 1 + j * 0.18;
-        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(b) * sp * f, vy: Math.sin(b) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(b) * sp * f, vy: Math.sin(b) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
       }
       break;
     }
@@ -162,7 +165,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
         const a = (arm * Math.PI) / 2 + rot;
         for (let j = 0; j < per; j++) {
           const f = 1 + j * 0.25;
-          if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * f, vy: Math.sin(a) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0 });
+          if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * f, vy: Math.sin(a) * sp * f, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
         }
       }
       break;
@@ -172,8 +175,23 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       for (let j = 0; j < n; j++) {
         const a = b + (n > 1 ? (j / (n - 1) - 0.5) * m.r * deg : 0);
         if (out.length >= MAX_BULLETS) continue;
-        if (m.t === "accel") out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * 0.3, vy: Math.sin(a) * sp * 0.3, color: m.k, turn: 0, homeLeft: 0, accel: 0.9, maxSpeed: sp * 2, bounces: 0 });
-        else out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 2 });
+        if (m.t === "accel") out.push({ x: cx, y: cy, vx: Math.cos(a) * sp * 0.3, vy: Math.sin(a) * sp * 0.3, color: m.k, turn: 0, homeLeft: 0, accel: 0.9, maxSpeed: sp * 2, bounces: 0, script: 0, age: 0 });
+        else out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 2, script: 0, age: 0 });
+      }
+      break;
+    }
+    case "stopgo": case "split": {
+      const b = Math.atan2(py - cy, px - cx);
+      for (let j = 0; j < n; j++) {
+        const a = b + (n > 1 ? (j / (n - 1) - 0.5) * m.r * deg : 0);
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: m.t === "stopgo" ? 1 : 2, age: 0 });
+      }
+      break;
+    }
+    case "timed": {
+      for (let j = 0; j < n; j++) {
+        const a = (j * 2 * Math.PI) / n + k * m.r * deg;
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 3, age: 0 });
       }
       break;
     }
@@ -322,8 +340,32 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
 
     let w = 0;
     let died = false;
+    const born: Bullet[] = [];
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
+      let frozen = false;
+      if (b.script !== 0) {
+        b.age += dt;
+        if (b.script === 1) {
+          if (b.age >= STOPGO_MOVE + STOPGO_HOLD) {
+            const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * STOPGO_BOOST;
+            const a = Math.atan2(py - b.y, px - b.x);
+            b.vx = Math.cos(a) * speed; b.vy = Math.sin(a) * speed;
+            b.script = 0;
+          } else if (b.age >= STOPGO_MOVE) frozen = true;
+        } else if (b.script === 2) {
+          if (b.age >= SPLIT_AFTER) {
+            const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * SPLIT_SPEED;
+            const base = Math.atan2(b.vy, b.vx);
+            for (let j = 0; j < SPLIT_COUNT; j++) {
+              if (w + born.length + (bullets.length - i - 1) >= MAX_BULLETS) break;
+              const a = base + (j * 2 * Math.PI) / SPLIT_COUNT;
+              born.push({ x: b.x, y: b.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, color: b.color, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
+            }
+            continue;
+          }
+        } else if (b.age >= TIMED_HOLD) b.script = 0; else frozen = true;
+      }
       if (b.homeLeft > 0) {
         const want = Math.atan2(py - b.y, px - b.x);
         const cur = Math.atan2(b.vy, b.vx);
@@ -344,8 +386,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
           b.vx *= g; b.vy *= g;
         }
       }
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
+      if (!frozen) { b.x += b.vx * dt; b.y += b.vy * dt; }
       if (b.bounces > 0) {
         if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
         else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
@@ -363,6 +404,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     }
     if (died) break;
     bullets.length = w;
+    for (const nb of born) bullets.push(nb);
     if (waveT >= sp.limit) {
       if (wi + 1 < specs.length) {
         // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ

@@ -494,10 +494,60 @@ final class PaidPatternTests: XCTestCase {
     private func speeds(_ b: [Bullet]) -> [Double] { b.map { ($0.vx * $0.vx + $0.vy * $0.vy).squareRoot() } }
 
     func testPaidListAndFreePatterns() {
-        XCTAssertEqual(Set(DanmakuCore.Pattern.paid), [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce])
+        XCTAssertEqual(Set(DanmakuCore.Pattern.paid), [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce, .stopgo, .split, .timed])
         for p in [DanmakuCore.Pattern.ring, .spiral, .aim, .rain, .sweep, .sideL, .sideR, .corner] { XCTAssertFalse(p.isPaid) }
         XCTAssertEqual(DanmakuCore.Pattern.flower.index, 9)
         XCTAssertEqual(DanmakuCore.Pattern.bounce.index, 15)
+    }
+
+    private func sim(_ p: DanmakuCore.Pattern, c: Int = 3) -> Simulation {
+        // 弾を1回だけ出すステージ(ボスは動かさず、自機は真下で動かない)
+        Simulation(stage: Stage(name: "t", mode: .survive, durationSec: 20, emitters: [Emitter(t: p, x: 0.5, y: 0.1, s: 0, e: 20, i: 5, c: c, v: 2, r: 0, k: 0)]).sanitized())
+    }
+
+    /// 開始のカウントダウンが終わって、最初の弾が出るまで進める
+    private func untilFirstBullet(_ s: inout Simulation) {
+        var n = 0
+        while s.bullets.isEmpty && n < 120 * 10 { s.step(.zero); n += 1 }
+    }
+
+    func testStopGoStopsThenDashesAtPlayer() {
+        var s = sim(.stopgo, c: 1)
+        untilFirstBullet(&s)
+        var maxStill = 0, still = 0
+        var lastY = -1.0
+        for _ in 0..<Int(120 * 1.2) {
+            s.step(.zero)
+            if let b = s.bullets.first {
+                if abs(b.y - lastY) < 1e-9 { still += 1; maxStill = max(maxStill, still) } else { still = 0 }
+                lastY = b.y
+            }
+        }
+        XCTAssertGreaterThan(maxStill, 60, "止まっている間がある")
+        for _ in 0..<60 { s.step(.zero) }
+        let b = try! XCTUnwrap(s.bullets.first)
+        XCTAssertEqual(b.script, 0)
+        XCTAssertGreaterThan(b.vy, 0, "自機(下)に向かう")
+    }
+
+    func testSplitBurstsIntoSix() {
+        var s = sim(.split, c: 1)
+        untilFirstBullet(&s)
+        var maxCount = 0
+        for _ in 0..<120 { s.step(.zero); maxCount = max(maxCount, s.bullets.count) }
+        XCTAssertEqual(maxCount, DanmakuConfig.splitCount)
+    }
+
+    func testTimedRingWaitsThenMovesTogether() {
+        var s = sim(.timed, c: 8)
+        untilFirstBullet(&s)
+        for _ in 0..<60 { s.step(.zero) }
+        let y0 = s.bullets.map(\.y)
+        XCTAssertEqual(s.bullets.count, 8)
+        for _ in 0..<30 { s.step(.zero) }
+        XCTAssertEqual(s.bullets.map(\.y), y0, "止まっている間は動かない")
+        for _ in 0..<80 { s.step(.zero) }
+        XCTAssertNotEqual(s.bullets.map(\.y), y0, "あとで動き出す")
     }
 
     func testShapePatternsVarySpeedByAngle() {

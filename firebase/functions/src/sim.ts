@@ -37,9 +37,13 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       for (let j = 0; j < n; j++) add(cx, cy, (j * 2 * Math.PI) / n);
       break;
     }
-    case "beam": case "accel": case "bounce": {
+    case "beam": case "accel": case "bounce": case "stopgo": case "split": {
       const b = Math.atan2(py - cy, px - cx);
       for (let j = 0; j < n; j++) add(cx, cy, b + (n > 1 && m.t !== "beam" ? (j / (n - 1) - 0.5) * m.r * deg : 0));
+      break;
+    }
+    case "timed": {
+      for (let j = 0; j < n; j++) add(cx, cy, (j * 2 * Math.PI) / n + k * m.r * deg);
       break;
     }
     case "cross": {

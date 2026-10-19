@@ -20,6 +20,9 @@ extension Emitter {
         case .cross: return Emitter(t: t, e: end, i: 0.4, c: 8, v: 1.8, r: 8)
         case .accel: return Emitter(t: t, e: end, i: 0.8, c: 5, v: 2.2, r: 50)
         case .bounce: return Emitter(t: t, e: end, i: 0.7, c: 4, v: 2.4, r: 40)
+        case .stopgo: return Emitter(t: t, e: end, i: 1.0, c: 5, v: 2.4, r: 60)
+        case .split: return Emitter(t: t, e: end, i: 1.1, c: 3, v: 2.4, r: 50)
+        case .timed: return Emitter(t: t, e: end, i: 1.6, c: 16, v: 2.0, r: 8)
         }
     }
 

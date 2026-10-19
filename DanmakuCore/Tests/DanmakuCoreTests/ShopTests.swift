@@ -49,8 +49,8 @@ final class ShopTests: XCTestCase {
     }
 
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 24)
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 24)
+        XCTAssertEqual(Product.all.count, 27)
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 27)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))

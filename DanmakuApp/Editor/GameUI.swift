@@ -332,6 +332,7 @@ struct PatternTiles: View {
         .sideL: "pattern.sideL", .sideR: "pattern.sideR", .corner: "pattern.corner", .homing: "pattern.homing",
         .flower: "pattern.flower", .star: "pattern.star", .heart: "pattern.heart", .beam: "pattern.beam",
         .cross: "pattern.cross", .accel: "pattern.accel", .bounce: "pattern.bounce",
+        .stopgo: "pattern.stopgo", .split: "pattern.split", .timed: "pattern.timed",
     ]
 
     var body: some View {
@@ -439,6 +440,23 @@ struct PatternIcon: View {
                 dot(c.x, 5, 3.4)
                 let pts: [(Double, Double)] = [(c.x + 1, 11), (c.x - 8, 18), (c.x - 15, 24), (c.x - 8, 30), (c.x + 1, 36)]
                 for q in pts { dot(q.0, q.1, 2) }
+            case .stopgo:
+                dot(c.x, 5, 3.4)
+                dot(c.x, 17, 2.2); dot(c.x, 24, 2.2)
+                dot(c.x + 9, 31, 2.2); dot(c.x - 9, 31, 2.2)
+            case .split:
+                dot(c.x, 5, 3.4)
+                dot(c.x, 15, 2.6)
+                for k in 0..<6 {
+                    let a = Double(k) * .pi / 3 + .pi / 6
+                    dot(c.x + cos(a) * 11, 28 + sin(a) * 9, 1.8)
+                }
+            case .timed:
+                for k in 0..<10 {
+                    let a = Double(k) * .pi / 5
+                    dot(c.x + cos(a) * 14, c.y + sin(a) * 14, 2.2)
+                }
+                dot(c.x, c.y, 3)
             case .homing:
                 // 弧を描いて、下の自機へ曲がっていく弾
                 dot(c.x, 5, 3.4)

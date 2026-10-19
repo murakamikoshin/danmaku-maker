@@ -107,7 +107,8 @@ struct EmitterCard: View {
         case .flower, .star, .cross: return "angle.rotate"
         case .heart: return "angle.none"
         case .beam: return "angle.aimshift"
-        case .accel, .bounce: return "angle.spread"
+        case .accel, .bounce, .stopgo, .split: return "angle.spread"
+        case .timed: return "angle.rotate"
         }
     }
 }

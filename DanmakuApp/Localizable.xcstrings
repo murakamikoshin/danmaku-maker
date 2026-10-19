@@ -6432,6 +6432,102 @@
           }
         }
       }
+    },
+    "pattern.stopgo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop & Go"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ストップ&ゴー"
+          }
+        }
+      }
+    },
+    "pattern.split": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分裂"
+          }
+        }
+      }
+    },
+    "pattern.timed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delayed"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時差"
+          }
+        }
+      }
+    },
+    "shop.pattern.stopgo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets that stop dead, then dash at you."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "進んでぴたっと止まり、少しして自機めがけて飛び出す弾。"
+          }
+        }
+      }
+    },
+    "shop.pattern.split": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets that burst into small ones."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少し進むと、小さな弾にはじけて散る弾。"
+          }
+        }
+      }
+    },
+    "shop.pattern.timed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A frozen ring that all moves at once."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輪になって止まり、合図でいっせいに動き出す弾。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

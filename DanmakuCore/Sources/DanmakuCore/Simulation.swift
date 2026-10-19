@@ -20,6 +20,19 @@ public struct Bullet: Equatable, Sendable {
     public var maxSpeed: Double = 0
     /// 反射弾: 左右の壁で、あと何回はね返るか
     public var bounces: Int = 0
+    /// 時間で動きが変わる弾: 1=停止弾 2=分裂弾 3=時差弾(0 なら、ふつうの弾)と、出てからの経過秒
+    public var script: Int = 0
+    public var age: Double = 0
+
+    /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)
+    public func fragments() -> [Bullet] {
+        let speed = (vx * vx + vy * vy).squareRoot() * DanmakuConfig.splitSpeed
+        let base = atan2(vy, vx)
+        return (0..<DanmakuConfig.splitCount).map { j in
+            let a = base + Double(j) * 2 * Double.pi / Double(DanmakuConfig.splitCount)
+            return Bullet(x: x, y: y, vx: cos(a) * speed, vy: sin(a) * speed, color: color)
+        }
+    }
 }
 
 /// 1ステップ分の自機移動量。単位は 0.25 論理px（リプレイに入れるため整数にしてある）
@@ -131,6 +144,21 @@ public enum Emit {
                 let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
                 if out.count < DanmakuConfig.maxBullets {
                     out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, bounces: 2))
+                }
+            }
+        case .stopgo, .split:
+            let b = atan2(py - cy, px - cx)
+            for j in 0..<n {
+                let a = b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * m.r * deg : 0)
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, script: m.t == .stopgo ? 1 : 2))
+                }
+            }
+        case .timed:
+            for j in 0..<n {
+                let a = Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: cos(a) * sp, vy: sin(a) * sp, color: m.k, script: 3))
                 }
             }
         case .sideL, .sideR:
@@ -371,8 +399,31 @@ public struct Simulation {
         }
 
         var w = 0
+        var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
+            var frozen = false
+            if b.script != 0 {
+                b.age += dt
+                switch b.script {
+                case 1:
+                    if b.age >= DanmakuConfig.stopGoMove + DanmakuConfig.stopGoHold {
+                        // 止まっていた弾が、自機に向かって、少し速く飛び出す
+                        let speed = (b.vx * b.vx + b.vy * b.vy).squareRoot() * DanmakuConfig.stopGoBoost
+                        let a = atan2(player.y - b.y, player.x - b.x)
+                        b.vx = cos(a) * speed; b.vy = sin(a) * speed
+                        b.script = 0
+                    } else if b.age >= DanmakuConfig.stopGoMove { frozen = true }
+                case 2:
+                    if b.age >= DanmakuConfig.splitAfter {
+                        let room = max(0, DanmakuConfig.maxBullets - (w + born.count + (bullets.count - i - 1)))
+                        born.append(contentsOf: b.fragments().prefix(room))
+                        continue
+                    }
+                default:
+                    if b.age >= DanmakuConfig.timedHold { b.script = 0 } else { frozen = true }
+                }
+            }
             if b.homeLeft > 0 {
                 // 追尾: 速さはそのまま、向きだけを、1ステップあたり turn*dt まで自機のほうへ回す
                 let want = atan2(player.y - b.y, player.x - b.x)
@@ -395,8 +446,7 @@ public struct Simulation {
                     b.vx *= g; b.vy *= g
                 }
             }
-            b.x += b.vx * dt
-            b.y += b.vy * dt
+            if !frozen { b.x += b.vx * dt; b.y += b.vy * dt }
             if b.bounces > 0 {
                 if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
                 else if b.x > W { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1 }
@@ -418,6 +468,7 @@ public struct Simulation {
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
+        bullets.append(contentsOf: born)
         if waveT >= spec.limit {
             if waveIndex + 1 < specs.count {
                 // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ

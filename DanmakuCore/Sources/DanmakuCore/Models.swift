@@ -12,6 +12,16 @@ public enum DanmakuConfig {
     public static let maxEmitters = 8
     /// 追尾弾が曲がり続ける時間(秒)
     public static let homingSeconds = 2.5
+    /// 停止弾: 進む秒数 / 止まっている秒数 / 飛び出すときの速さの倍率
+    public static let stopGoMove = 0.55
+    public static let stopGoHold = 0.6
+    public static let stopGoBoost = 1.3
+    /// 分裂弾: はじけるまでの秒数 / 散る弾の数 / 散る弾の速さの倍率
+    public static let splitAfter = 0.7
+    public static let splitCount = 6
+    public static let splitSpeed = 0.7
+    /// 時差弾: 止まっている秒数
+    public static let timedHold = 1.1
     /// 判定距離の2乗（5.5 未満で被弾）
     public static let hitRadiusSquared = 30.25
 }
@@ -42,12 +52,18 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case accel
     /// 反射弾: 左右の壁で2回はね返る(自機狙いの扇)
     case bounce
+    /// 停止弾: 前に進んでぴたっと止まり、少しして自機に向かって飛び出す
+    case stopgo
+    /// 分裂弾: 少し進むと、小さな弾にはじけて散る
+    case split
+    /// 時差弾: 輪になったまま止まっていて、合図でいっせいに動き出す
+    case timed
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
     /// 買わないと、ステージ作りで選べないパターン(遊ぶのは誰でもできる)
     public var isPaid: Bool { Pattern.paid.contains(self) }
-    public static let paid: [Pattern] = [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce]
+    public static let paid: [Pattern] = [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce, .stopgo, .split, .timed]
 }
 
 public enum Mode: String, Codable, Sendable {

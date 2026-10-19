@@ -470,6 +470,7 @@ private struct PatternTile: View {
     private static let keys: [Pattern: String] = [
         .homing: "pattern.homing", .flower: "pattern.flower", .star: "pattern.star", .heart: "pattern.heart",
         .beam: "pattern.beam", .cross: "pattern.cross", .accel: "pattern.accel", .bounce: "pattern.bounce",
+        .stopgo: "pattern.stopgo", .split: "pattern.split", .timed: "pattern.timed",
     ]
 
     var body: some View {
@@ -553,8 +554,28 @@ final class PatternDemoEngine {
             next += max(0.05, m.i)
         }
         var w = 0
+        var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
+            var frozen = false
+            if b.script != 0 {
+                b.age += dt
+                switch b.script {
+                case 1:
+                    if b.age >= DanmakuConfig.stopGoMove + DanmakuConfig.stopGoHold {
+                        let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot() * DanmakuConfig.stopGoBoost
+                        let a = atan2(player.y - b.y, player.x - b.x)
+                        b.vx = cos(a) * sp; b.vy = sin(a) * sp; b.script = 0
+                    } else if b.age >= DanmakuConfig.stopGoMove { frozen = true }
+                case 2:
+                    if b.age >= DanmakuConfig.splitAfter {
+                        born.append(contentsOf: b.fragments())
+                        continue
+                    }
+                default:
+                    if b.age >= DanmakuConfig.timedHold { b.script = 0 } else { frozen = true }
+                }
+            }
             if b.homeLeft > 0 {
                 let want = atan2(player.y - b.y, player.x - b.x), cur = atan2(b.vy, b.vx)
                 var d = want - cur
@@ -568,7 +589,7 @@ final class PatternDemoEngine {
                 let sp = (b.vx * b.vx + b.vy * b.vy).squareRoot()
                 if sp < b.maxSpeed { let g = min(1 + b.accel * dt, b.maxSpeed / sp); b.vx *= g; b.vy *= g }
             }
-            b.x += b.vx * dt; b.y += b.vy * dt
+            if !frozen { b.x += b.vx * dt; b.y += b.vy * dt }
             if b.bounces > 0 {
                 if b.x < 0 { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1 }
                 else if b.x > 360 { b.x = 720 - b.x; b.vx = -b.vx; b.bounces -= 1 }
@@ -577,5 +598,6 @@ final class PatternDemoEngine {
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
+        bullets.append(contentsOf: born)
     }
 }
