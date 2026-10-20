@@ -7136,6 +7136,118 @@
           }
         }
       }
+    },
+    "mystage.delete.world": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete from the world (keep on this device)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "世界から削除(端末には残る)"
+          }
+        }
+      }
+    },
+    "mystage.delete.local": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete from this device (stays online)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端末から削除(世界には残る)"
+          }
+        }
+      }
+    },
+    "mystage.delete.world.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This stage is published. Deleting it from the world also removes its rankings, comments and likes, and can't be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージは投稿済みです。世界から消すと、ランキング・コメント・いいねも一緒に消えて、元に戻せません。"
+          }
+        }
+      }
+    },
+    "mystage.delete.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete. Check your connection and try again."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除できませんでした。通信を確認して、もう一度お試しください。"
+          }
+        }
+      }
+    },
+    "detail.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this stage from the world"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージを世界から削除"
+          }
+        }
+      }
+    },
+    "detail.delete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this stage from the world?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージを世界から削除しますか？"
+          }
+        }
+      }
+    },
+    "detail.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is your stage. Its rankings, comments and likes are removed too, and this can't be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あなたが投稿したステージです。ランキング・コメント・いいねも一緒に消えて、元に戻せません。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

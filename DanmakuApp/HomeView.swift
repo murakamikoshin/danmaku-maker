@@ -13,6 +13,7 @@ struct HomeView: View {
     @State private var editingEntry: SavedStage?
     @State private var playingMine: SavedStage?
     @State private var deletingEntry: SavedStage?
+    @State private var worldDeleteFailed = false
     @State private var publishingEntry: SavedStage?
     @State private var query = ""
     @State private var searchError = false
@@ -87,9 +88,16 @@ struct HomeView: View {
             }
         }
         .confirmationDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }), titleVisibility: .visible) {
-            Button("mystage.delete", role: .destructive) { if let e = deletingEntry { saved.delete(id: e.id) } }
+            if let e = deletingEntry, e.publishedID != nil {
+                // 投稿済み: 世界から消すか、端末のコピーだけ消すかを選ぶ
+                Button("mystage.delete.world", role: .destructive) { Task { await deleteFromWorld(e) } }
+                Button("mystage.delete.local", role: .destructive) { saved.delete(id: e.id) }
+            } else {
+                Button("mystage.delete", role: .destructive) { if let e = deletingEntry { saved.delete(id: e.id) } }
+            }
             Button("common.cancel", role: .cancel) {}
-        } message: { Text("mystage.delete.message") }
+        } message: { Text(deletingEntry?.publishedID != nil ? "mystage.delete.world.message" : "mystage.delete.message") }
+        .alert("mystage.delete.failed", isPresented: $worldDeleteFailed) { Button("OK", role: .cancel) {} }
         .sheet(item: $detail) { StageDetailView(remote: $0) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
@@ -104,6 +112,15 @@ struct HomeView: View {
             deepLink.stageID = nil
             Task { await open(id: id) }
         }
+    }
+
+    /// 世界から消す(端末のコピーは残し、投稿済みの印だけ外す)
+    private func deleteFromWorld(_ e: SavedStage) async {
+        guard let id = e.publishedID else { return }
+        guard await StageRepository().deleteStage(id: id) else { worldDeleteFailed = true; return }
+        var v = saved.stage(id: e.id) ?? e
+        v.publishedStage = nil; v.publishedID = nil
+        saved.update(v)
     }
 
     /// 新しいステージを作って、すぐに編集画面を開く(作った時点で、マイステージに保存される)

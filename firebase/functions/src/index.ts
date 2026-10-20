@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore, type DocumentReference } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { logger, setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
@@ -337,19 +337,35 @@ export const ogImage = onRequest({ memory: "512MiB" }, async (req, res) => {
   res.status(200).set("Content-Type", "image/png").set("Cache-Control", "public, max-age=86400, s-maxage=86400").send(png);
 });
 
+/** ステージ1本分の記録(いいね・ランキング・コメントなどのサブコレクション、リプレイ、OGP画像)を、まとめて消す */
+async function eraseStage(stageRef: DocumentReference): Promise<void> {
+  const id = stageRef.id;
+  await db.recursiveDelete(stageRef);
+  await db.doc(`stageReplays/${id}`).delete();
+  const scoreReplays = await db.collection("scoreReplays").where("stageId", "==", id).get();
+  for (const r of scoreReplays.docs) await r.ref.delete();
+  await getStorage().bucket().file(`og/${id}.png`).delete({ ignoreNotFound: true });
+}
+
+/** 投稿したステージを世界から消す。作者本人だけができる(ステージの記録も、まとめて消える) */
+export const deleteStage = onCall({ timeoutSeconds: 120, memory: "512MiB" }, async (req) => {
+  const uid = requireAny(req);
+  const id = stageIdFrom(req.data);
+  const ref = db.doc(`stages/${id}`);
+  const stage = await ref.get();
+  if (!stage.exists) throw new HttpsError("not-found", "stage");
+  if (stage.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
+  await eraseStage(ref);
+  logger.info("stage-deleted", { stageId: id });
+  return { ok: true };
+});
+
 /** アカウント削除。投稿したステージ・リプレイ・OGP画像・いいね・ユーザー情報を消し、認証ユーザーも削除する */
 export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, async (req) => {
   const uid = requireAny(req);
-  const bucket = getStorage().bucket();
 
   const mine = await db.collection("stages").where("authorUid", "==", uid).get();
-  for (const s of mine.docs) {
-    await db.recursiveDelete(s.ref); // いいねのサブコレクションごと
-    await db.doc(`stageReplays/${s.id}`).delete();
-    const scoreReplays = await db.collection("scoreReplays").where("stageId", "==", s.id).get();
-    for (const r of scoreReplays.docs) await r.ref.delete();
-    await bucket.file(`og/${s.id}.png`).delete({ ignoreNotFound: true });
-  }
+  for (const s of mine.docs) await eraseStage(s.ref);
 
   // 自分のランキング記録(他の人のステージにあるもの)と、その操作記録
   const scores = await db.collectionGroup("scores").where("uid", "==", uid).get();

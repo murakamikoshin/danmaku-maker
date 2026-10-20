@@ -109,6 +109,26 @@ describe("submitResults / toggleLike / reportStage", () => {
   });
 });
 
+describe("deleteStage", () => {
+  it("作者は自分のステージを消せて、ランキング・いいね・リプレイも消える", async () => {
+    const { id } = (await publish()) as { id: string };
+    await call("toggleLike", { stageId: id });
+    expect(await call("deleteStage", { stageId: id })).toMatchObject({ ok: true });
+    expect((await db.doc(`stages/${id}`).get()).exists).toBe(false);
+    expect((await db.doc(`stageReplays/${id}`).get()).exists).toBe(false);
+    expect((await db.collection(`stages/${id}/likes`).get()).size).toBe(0);
+  });
+  it("作者以外は消せない・存在しないステージはエラー・未ログインは消せない", async () => {
+    const { id } = (await publish()) as { id: string };
+    await signUp();
+    expect(await callErr("deleteStage", { stageId: id })).toMatch(/not-author/);
+    expect((await db.doc(`stages/${id}`).get()).exists).toBe(true);
+    expect(await callErr("deleteStage", { stageId: "ZZZZZ" })).toMatch(/^stage/);
+    await signOut(auth);
+    expect(await callErr("deleteStage", { stageId: id })).toMatch(/auth-required/);
+  });
+});
+
 describe("deleteAccount", () => {
   it("投稿・リプレイ・OGP画像・ユーザー情報・いいねを消し、認証ユーザーも消える", async () => {
     const { id } = (await publish()) as { id: string };

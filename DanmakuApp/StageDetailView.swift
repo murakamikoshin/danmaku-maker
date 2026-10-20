@@ -12,6 +12,8 @@ struct StageDetailView: View {
     @State private var needSignIn = false
     @State private var confirmReport = false
     @State private var confirmBlock = false
+    @State private var confirmDelete = false
+    @State private var deleteFailed = false
     @State private var message: String?
 
     private var context: ShareContext { ShareContext(id: remote.id, name: remote.name, clearRatePercent: remote.clearRatePercent) }
@@ -34,6 +36,10 @@ struct StageDetailView: View {
                     if let message { Text(message).font(.footnote).foregroundStyle(.secondary) }
                     if remote.stage.hasRanking { RankingSection(stageID: remote.id, mode: remote.stage.mode) }
                     CommentsSection(stageID: remote.id, authorUid: remote.authorUid)
+                    if auth.uid == remote.authorUid {
+                        smallDanger("detail.delete", "trash") { confirmDelete = true }
+                            .accessibilityIdentifier("detail.delete")
+                    }
                     HStack {
                         smallDanger("detail.report", "exclamationmark.bubble") { requireMember { confirmReport = true } }
                         Spacer()
@@ -51,6 +57,13 @@ struct StageDetailView: View {
             Button("report.reason.other") { Task { await report("other") } }
             Button("common.cancel", role: .cancel) {}
         }
+        .confirmationDialog("detail.delete.title", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("detail.delete", role: .destructive) {
+                Task { if await StageRepository().deleteStage(id: remote.id) { dismiss() } else { deleteFailed = true } }
+            }
+            Button("common.cancel", role: .cancel) {}
+        } message: { Text("detail.delete.message") }
+        .alert("mystage.delete.failed", isPresented: $deleteFailed) { Button("OK", role: .cancel) {} }
         .confirmationDialog("detail.block.title", isPresented: $confirmBlock, titleVisibility: .visible) {
             Button("detail.block", role: .destructive) { blocks.block(uid: remote.authorUid, name: remote.authorName); dismiss() }
             Button("common.cancel", role: .cancel) {}

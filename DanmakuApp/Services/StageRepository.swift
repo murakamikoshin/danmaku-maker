@@ -1,5 +1,6 @@
 import DanmakuCore
 import FirebaseFirestore
+import FirebaseFunctions
 import Foundation
 
 struct RemoteStage: Identifiable, Hashable {
@@ -57,6 +58,14 @@ struct StageRepository {
         let q = Firestore.firestore().collection("stages").whereField("authorUid", isEqualTo: uid).whereField("status", isEqualTo: "published")
         let snap = try? await q.count.getAggregation(source: .server)
         return snap?.count.intValue
+    }
+
+    /// 自分が投稿したステージを、世界から消す(ランキング・コメント・いいねも一緒に消える)。成功したら true
+    func deleteStage(id: String) async -> Bool {
+        do {
+            _ = try await Backend.functions.httpsCallable("deleteStage").call(["stageId": id])
+            return true
+        } catch { return false }
     }
 
     func isLiked(id: String, uid: String) async -> Bool {
