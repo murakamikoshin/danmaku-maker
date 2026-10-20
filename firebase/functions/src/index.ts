@@ -54,7 +54,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
-  // 作者のクリア記録を再生して、本当にクリアできるステージか確かめる(テストプレイは標準の撃ち方)
+  // 作者のクリア記録を再生して、本当にクリアできるステージか確かめる(テストプレイも、ステージで決めた撃ち方)
   const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
   const played = decodeReplay(v.clearReplay, maxSteps);
   if (!played) throw new HttpsError("invalid-argument", "replay");

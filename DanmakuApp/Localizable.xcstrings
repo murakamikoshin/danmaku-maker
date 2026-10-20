@@ -4326,13 +4326,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only runs with the standard shot can be ranked."
+            "value": "Every run is ranked, using the shot the creator chose for the stage."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ランキングに記録できるのは、標準の撃ち方で遊んだときだけです。"
+            "value": "ランキングには、そのステージで作者が決めた撃ち方で遊んだ記録が載ります。"
           }
         }
       }
@@ -4342,13 +4342,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fastest clear time first (standard shot only)"
+            "value": "Fastest clear time first"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "クリアまでの時間が短い順(標準の撃ち方だけ)"
+            "value": "クリアまでの時間が短い順"
           }
         }
       }
@@ -4358,13 +4358,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Most damage first (standard shot only)"
+            "value": "Most damage first"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "与えたダメージが多い順(標準の撃ち方だけ)"
+            "value": "与えたダメージが多い順"
           }
         }
       }
@@ -5772,7 +5772,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "買った打ち方は、ステージ作りで選べます。打ち方はステージごとに作る人が決めて、遊ぶ人は全員同じになります。"
+            "value": "買った撃ち方は、ステージ作りで選べます。撃ち方はステージごとに作る人が決めて、遊ぶ人は全員同じになります。"
           }
         }
       }
@@ -6684,7 +6684,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "打ち方"
+            "value": "撃ち方"
           }
         }
       }
@@ -6700,7 +6700,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このステージを遊ぶ全員が、この打ち方になります(テストプレイも同じ)。買った打ち方だけ選べます。"
+            "value": "このステージを遊ぶ全員が、この撃ち方になります(テストプレイも同じ)。買った撃ち方だけ選べます。"
           }
         }
       }

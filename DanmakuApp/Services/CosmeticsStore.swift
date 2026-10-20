@@ -60,7 +60,7 @@ final class CosmeticsStore: ObservableObject {
     @Published var showStageLook: Bool { didSet { defaults.set(showStageLook, forKey: "cosmetics.showStageLook") } }
 
     /// 遊ぶときの組み合わせ。見た目(弾・背景・自機)は、ステージを作った人が決めたもの(設定でオフなら標準)。
-    /// 撃ち方は、遊ぶ人の選択(投稿前のテストプレイは、標準の撃ち方に固定)。じぶんの画像は、自分のステージを遊ぶときだけ
+    /// 撃ち方は、ステージで決まっている(作った人が選ぶ)。じぶんの画像は、自分のステージを遊ぶときだけ
     func forPlay(stage: Stage, isTest: Bool, customs: CustomImageChoice = .none) -> Loadout {
         var l = Loadout()
         if showStageLook {

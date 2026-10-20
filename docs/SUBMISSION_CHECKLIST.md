@@ -92,7 +92,7 @@ Secrets に `ASC_KEY_ID` `ASC_ISSUER_ID` `ASC_KEY_P8_BASE64` `GOOGLE_SERVICE_INF
 | 撃ち方(ワイド・ヘビー) | `com.koshin.danmakumaker.shot.<spread/heavy>` | ¥300 |
 
 - 価格は App Store Connect の日本の価格表(¥100 刻み)に合わせた。¥120 や ¥250 は選べない。
-- 撃ち方は1秒あたりの威力が同じ(約22)。投稿前のテストプレイは、必ず標準の撃ち方で行う。
+- 撃ち方は1秒あたりの威力が同じ(約22)。撃ち方はステージごとに作る人が決める(遊ぶ人は選べない)。テストプレイも、ランキングも、そのステージの撃ち方で行う。
 - アプリ側の購入判定は RevenueCat の `allPurchasedProductIdentifiers` を使う。RevenueCat 側でエンタイトルメントを作る必要はない(広告削除の `no_ads` だけは作る)。
 - 審査に出すとき、バージョンページの「アプリ内購入」で、広告削除と14商品のすべてを選ぶ。
 - 商品登録の自動化スクリプト: `tools/asc_create_iaps.mjs`
