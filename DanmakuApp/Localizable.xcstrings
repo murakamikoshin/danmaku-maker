@@ -5201,6 +5201,22 @@
         }
       }
     },
+    "share.recommend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try this bullet-hell stage: “%@”. Can you clear it? #DanmakuMaker %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「%@」の弾幕に挑戦！クリアできる？ #弾幕メーカー %@"
+          }
+        }
+      }
+    },
     "share.boss": {
       "localizations": {
         "en": {
@@ -7021,6 +7037,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "おばけ"
+          }
+        }
+      }
+    },
+    "editor.namePrompt.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name your stage"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージ名と作者名を入れてね"
+          }
+        }
+      }
+    },
+    "editor.namePrompt.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These show up in the world list. You can change the stage name later."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "世界のステージ一覧に表示されます。ステージ名はあとから変えられます。"
+          }
+        }
+      }
+    },
+    "editor.namePrompt.go": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue to post"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿へ進む"
           }
         }
       }

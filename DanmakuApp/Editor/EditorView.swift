@@ -5,6 +5,8 @@ struct EditorView: View {
     @StateObject private var model: EditorModel
     @State private var testRun: TestRun?
     @State private var publishing = false
+    @State private var naming = false
+    @State private var proceedToPublish = false
     @State private var confirmRevert = false
     @State private var collapsedCards: Set<Int> = []
 
@@ -100,13 +102,14 @@ struct EditorView: View {
                         }
                         .accessibilityIdentifier("editor.test")
                         GameActionButton(title: model.isPublished ? "editor.posted" : "editor.post", systemImage: "paperplane.fill", fill: GameStyle.accent,
-                                         enabled: model.isVerified && model.canPublish && !model.isPublished) { publishing = true }
+                                         enabled: model.isVerified && !model.isPublished) {
+                            // 名前が空なら、先に入力画面を挟む
+                            if model.canPublish { publishing = true } else { naming = true }
+                        }
                         .accessibilityIdentifier("editor.post")
                     }
                     // 投稿ボタンが押せない理由を、はっきり出す
-                    if !model.isPublished, model.isVerified, !model.canPublish {
-                        Text("editor.hint.name").font(.caption.bold()).foregroundStyle(Color(Palette.gold)).frame(maxWidth: .infinity, alignment: .leading)
-                    } else if !model.isPublished, !model.isVerified {
+                    if !model.isPublished, !model.isVerified {
                         Text("editor.hint.clear").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
@@ -127,6 +130,11 @@ struct EditorView: View {
                          if result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves)) }
                      },
                      onExit: { testRun = nil })
+        }
+        .sheet(isPresented: $naming, onDismiss: {
+            if proceedToPublish { proceedToPublish = false; publishing = true }
+        }) {
+            NamePromptSheet(draft: $model.draft, canPublish: model.canPublish) { proceedToPublish = true; naming = false }
         }
         .sheet(isPresented: $publishing) {
             if let replay = model.clearReplay {
@@ -159,6 +167,28 @@ struct PreviewLook: Equatable {
         bullets = draft.themeBullets; background = draft.themeBackground; ship = draft.themeShip
         customs = draft.customImages
         bossSize = draft.bossSize; bossLook = draft.bossLook; mooks = draft.mooks; mookLook = draft.mookLook
+    }
+}
+
+/// 投稿ボタンを押したとき、ステージ名か作者名が空なら出す入力画面
+private struct NamePromptSheet: View {
+    @Binding var draft: Draft
+    let canPublish: Bool
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("editor.namePrompt.title").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text("editor.namePrompt.note").font(.caption.bold()).foregroundStyle(.secondary)
+            NameFields(draft: $draft)
+            GameActionButton(title: "editor.namePrompt.go", systemImage: "paperplane.fill", fill: GameStyle.accent, enabled: canPublish, action: onContinue)
+                .accessibilityIdentifier("editor.namePrompt.go")
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .background(Color(Palette.background).ignoresSafeArea())
+        .preferredColorScheme(.dark)
+        .presentationDetents([.medium])
     }
 }
 

@@ -120,6 +120,13 @@ struct StageDetailView: View {
         .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
     }
 
+    /// 自分のステージなら「作った」、他人のステージなら「挑戦！」の文言
+    private var stageShareText: String {
+        auth.uid == remote.authorUid
+            ? ShareText.author(name: remote.name, id: remote.id)
+            : ShareText.recommend(name: remote.name, id: remote.id)
+    }
+
     private var actions: some View {
         HStack(spacing: 8) {
             Button { gameTap(); Task { await like() } } label: {
@@ -131,8 +138,8 @@ struct StageDetailView: View {
                     .overlay(Capsule().stroke(liked ? Color(Palette.pink) : Color.white.opacity(0.15)))
             }
             .buttonStyle(BounceButtonStyle()).disabled(busy)
-            ShareLink(item: ShareText.author(name: remote.name, id: remote.id)) { shareChip("detail.share", "square.and.arrow.up") }
-            if let url = ShareText.xIntentURL(ShareText.author(name: remote.name, id: remote.id)) {
+            ShareLink(item: stageShareText) { shareChip("detail.share", "square.and.arrow.up") }
+            if let url = ShareText.xIntentURL(stageShareText) {
                 Link(destination: url) { shareChip("detail.share.x", "xmark") }
             }
             Spacer(minLength: 0)

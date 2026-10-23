@@ -14,6 +14,11 @@ enum ShareText {
         String(format: L("share.author"), name, AppConfig.shareURL(id).absoluteString)
     }
 
+    /// 自分以外のステージを人に勧めるとき（「作った」とは言わない）
+    static func recommend(name: String, id: String) -> String {
+        String(format: L("share.recommend"), name, AppConfig.shareURL(id).absoluteString)
+    }
+
     static func player(_ ctx: ShareContext, result: PlayResult) -> String {
         let url = ctx.url.absoluteString
         let time = String(format: "%.1f", result.time)
