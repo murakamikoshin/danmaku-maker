@@ -75,7 +75,10 @@ struct StageRepository {
     static func parse(_ doc: DocumentSnapshot) -> RemoteStage? {
         guard let d = doc.data(), ["published", "unlisted"].contains(d["status"] as? String) else { return nil }
         var json: [String: Any] = [:]
-        for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm"] {
+        // Stage の全項目(見た目・撃ち方・連戦の場面なども)。足りないと、世界のステージで作者の設定が反映されない
+        for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm",
+                    "themeBullets", "themeBackground", "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat",
+                    "bossSize", "mooks", "bossLook", "mookLook", "shot"] {
             if let v = d[key], !(v is NSNull) { json[key] = v }
         }
         json["formatVersion"] = 1
