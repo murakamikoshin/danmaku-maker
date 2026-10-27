@@ -24,6 +24,7 @@
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
 		4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE99B3637315E889FFCC33EC /* GameUI.swift */; };
 		4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
+		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
 		517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76AAB990CF55410F75C347D /* ShopView.swift */; };
 		534384A6D0A70B1F45E6D19C /* se_hit.caf in Resources */ = {isa = PBXBuildFile; fileRef = 38F20BF6D338DC8F043EABE3 /* se_hit.caf */; };
@@ -132,6 +133,7 @@
 		B4328935E6EBE2DE7478FB50 /* se_tap.caf */ = {isa = PBXFileReference; path = se_tap.caf; sourceTree = "<group>"; };
 		BA8479A886EF2B4CF44742DC /* SampleStages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStages.swift; sourceTree = "<group>"; };
 		C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorFlowUITests.swift; sourceTree = "<group>"; };
+		C215A3C95C2A8021A12A703D /* official_stages_i18n.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages_i18n.json; sourceTree = "<group>"; };
 		C2ACDBD9418D0E35835B749E /* bgm_boss.caf */ = {isa = PBXFileReference; path = bgm_boss.caf; sourceTree = "<group>"; };
 		C5224F9D0128CAA0F361E5A3 /* se_get.caf */ = {isa = PBXFileReference; path = se_get.caf; sourceTree = "<group>"; };
 		C68321CF2F6D3DCFF7456C66 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 		B505E4DEF2094902B59D9817 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C215A3C95C2A8021A12A703D /* official_stages_i18n.json */,
 				966ADA412BC3686AAAF4587D /* official_stages.json */,
 				9EB622873E11664021659A20 /* Audio */,
 			);
@@ -388,8 +391,16 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
+				es,
+				fr,
 				ja,
+				ko,
+				"pt-BR",
+				ru,
+				"zh-Hans",
+				"zh-Hant",
 			);
 			mainGroup = E259C44490F67C30B8FB0946;
 			minimizedProjectReferenceProxies = 1;
@@ -426,6 +437,7 @@
 				348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */,
 				19B9548383503BD2EE44B99A /* bgm_stage.caf in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
+				4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */,
 				CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */,
 				F651D5E0055CF2DD08697CAE /* se_clear.caf in Resources */,
 				69455ED16E1C066EC2FECE78 /* se_fail.caf in Resources */,
@@ -588,7 +600,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
 				PRODUCT_NAME = DanmakuMaker;
 				REVENUECAT_API_KEY = appl_EhUVgOXVczuSOnQUNULxohhhjMa;
@@ -657,7 +669,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
 				PRODUCT_NAME = DanmakuMaker;
 				REVENUECAT_API_KEY = appl_EhUVgOXVczuSOnQUNULxohhhjMa;

@@ -1,0 +1,1022 @@
+{
+ "o01": {
+  "de": {
+   "aim": "Schlüpfe zwischen langsamen Spiralarmen hindurch. Lerne die Steuerung.",
+   "name": "Erster Wirbel"
+  },
+  "es": {
+   "aim": "Cuélate entre los brazos de una espiral lenta. Aprende los controles.",
+   "name": "El primer vórtice"
+  },
+  "fr": {
+   "aim": "Faufilez-vous entre les bras d'une spirale lente. Apprenez les commandes.",
+   "name": "Premier vortex"
+  },
+  "ko": {
+   "aim": "느린 나선 사이를 빠져나가요. 조작에 익숙해지세요.",
+   "name": "첫 번째 소용돌이"
+  },
+  "pt-BR": {
+   "aim": "Passe entre os braços de uma espiral lenta. Aprenda os controles.",
+   "name": "Primeiro vórtice"
+  },
+  "ru": {
+   "aim": "Проскальзывайте между рукавами медленной спирали. Освойте управление.",
+   "name": "Первый вихрь"
+  },
+  "zh-Hans": {
+   "aim": "在缓慢的螺旋臂之间穿行。熟悉操作。",
+   "name": "最初的漩涡"
+  },
+  "zh-Hant": {
+   "aim": "在緩慢的螺旋臂之間穿行。熟悉操作。",
+   "name": "最初的漩渦"
+  }
+ },
+ "o02": {
+  "de": {
+   "aim": "Weiche dem Regen aus und achte dann auf die später dazukommenden Zielschüsse.",
+   "name": "Regenschauer"
+  },
+  "es": {
+   "aim": "Esquiva la lluvia y fíjate en los disparos dirigidos que se suman después.",
+   "name": "Chubasco pasajero"
+  },
+  "fr": {
+   "aim": "Esquivez la pluie, puis repérez les tirs ciblés qui s'ajoutent plus tard.",
+   "name": "Averse passagère"
+  },
+  "ko": {
+   "aim": "비를 피하다 보면 나중에 합류하는 조준탄이 보여요.",
+   "name": "지나가는 소나기"
+  },
+  "pt-BR": {
+   "aim": "Desvie da chuva e depois repare nos tiros mirados que entram mais tarde.",
+   "name": "Chuva passageira"
+  },
+  "ru": {
+   "aim": "Уворачивайтесь от дождя, а затем заметьте прицельные выстрелы, которые присоединятся позже.",
+   "name": "Проливной дождик"
+  },
+  "zh-Hans": {
+   "aim": "先躲雨,再留意之后加入的瞄准弹。",
+   "name": "骤雨掠过"
+  },
+  "zh-Hant": {
+   "aim": "先躲雨,再留意之後加入的瞄準彈。",
+   "name": "驟雨掠過"
+  }
+ },
+ "o03": {
+  "de": {
+   "aim": "Zielschüsse verfehlen dich, wenn du dich ständig ein wenig bewegst.",
+   "name": "Ich sehe dich"
+  },
+  "es": {
+   "aim": "Los disparos dirigidos fallan si te sigues moviendo un poco.",
+   "name": "Te veo"
+  },
+  "fr": {
+   "aim": "Les tirs ciblés vous ratent si vous continuez à bouger un peu.",
+   "name": "Je te vois"
+  },
+  "ko": {
+   "aim": "계속 조금씩 움직이면 조준탄은 빗나가요.",
+   "name": "보고 있어"
+  },
+  "pt-BR": {
+   "aim": "Os tiros mirados erram se você continuar se movendo um pouco.",
+   "name": "Estou te vendo"
+  },
+  "ru": {
+   "aim": "Прицельные выстрелы промахиваются, если вы немного двигаетесь.",
+   "name": "Я тебя вижу"
+  },
+  "zh-Hans": {
+   "aim": "只要稍微一直移动,瞄准弹就打不中你。",
+   "name": "我看见你了"
+  },
+  "zh-Hant": {
+   "aim": "只要稍微一直移動,瞄準彈就打不中你。",
+   "name": "我看見你了"
+  }
+ },
+ "o04": {
+  "de": {
+   "aim": "Finde die Lücken in einem hin und her schwingenden Fächer.",
+   "name": "Schwingender Fächer"
+  },
+  "es": {
+   "aim": "Encuentra los huecos en un abanico que oscila de lado a lado.",
+   "name": "Abanico oscilante"
+  },
+  "fr": {
+   "aim": "Trouvez les failles d'un éventail qui oscille de gauche à droite.",
+   "name": "Éventail oscillant"
+  },
+  "ko": {
+   "aim": "좌우로 흔들리는 부채 사이의 틈을 찾으세요.",
+   "name": "흔들리는 부채"
+  },
+  "pt-BR": {
+   "aim": "Encontre as brechas em um leque que balança de um lado para o outro.",
+   "name": "Leque oscilante"
+  },
+  "ru": {
+   "aim": "Найдите бреши в веере, качающемся из стороны в сторону.",
+   "name": "Качающийся веер"
+  },
+  "zh-Hans": {
+   "aim": "找出左右摇摆的扇形弹幕中的缝隙。",
+   "name": "摇摆的扇形"
+  },
+  "zh-Hant": {
+   "aim": "找出左右搖擺的扇形彈幕中的縫隙。",
+   "name": "搖擺的扇形"
+  }
+ },
+ "o05": {
+  "de": {
+   "aim": "Boss-Einführung. Weiche aus, während dein Autofeuer wirkt. Wenig HP.",
+   "name": "Kleiner Boss"
+  },
+  "es": {
+   "aim": "Presentación del jefe. Esquiva mientras tu disparo automático actúa. HP bajo.",
+   "name": "Pequeño jefe"
+  },
+  "fr": {
+   "aim": "Introduction au boss. Esquivez pendant que votre tir automatique agit. PV faibles.",
+   "name": "Petit boss"
+  },
+  "ko": {
+   "aim": "보스 입문. 자동 발사를 하며 피하세요. HP가 낮아요.",
+   "name": "꼬마 보스"
+  },
+  "pt-BR": {
+   "aim": "Introdução do chefe. Desvie enquanto seu disparo automático age. HP baixo.",
+   "name": "Chefinho"
+  },
+  "ru": {
+   "aim": "Знакомство с боссом. Уворачивайтесь, пока работает автоогонь. Мало HP.",
+   "name": "Малый босс"
+  },
+  "zh-Hans": {
+   "aim": "BOSS入门。自动射击的同时躲避。HP很低。",
+   "name": "小BOSS"
+  },
+  "zh-Hant": {
+   "aim": "BOSS入門。自動射擊的同時躲避。HP很低。",
+   "name": "小BOSS"
+  }
+ },
+ "o06": {
+  "de": {
+   "aim": "Passiere die Lücken langsam wachsender Ringe.",
+   "name": "Ringe"
+  },
+  "es": {
+   "aim": "Pasa por los huecos de anillos que se expanden despacio.",
+   "name": "Anillos"
+  },
+  "fr": {
+   "aim": "Passez par les trouées d'anneaux qui s'étendent lentement.",
+   "name": "Anneaux"
+  },
+  "ko": {
+   "aim": "천천히 퍼지는 링의 틈을 통과하세요.",
+   "name": "링"
+  },
+  "pt-BR": {
+   "aim": "Passe pelas brechas de anéis que se expandem devagar.",
+   "name": "Anéis"
+  },
+  "ru": {
+   "aim": "Проходите через бреши медленно расширяющихся колец.",
+   "name": "Кольца"
+  },
+  "zh-Hans": {
+   "aim": "穿过缓慢扩张的圆环缝隙。",
+   "name": "圆环"
+  },
+  "zh-Hant": {
+   "aim": "穿過緩慢擴張的圓環縫隙。",
+   "name": "圓環"
+  }
+ },
+ "o07": {
+  "de": {
+   "aim": "Meistere den Regen, während eine Spirale beginnt.",
+   "name": "Regen & Spirale"
+  },
+  "es": {
+   "aim": "Encárgate de la lluvia mientras arranca una espiral.",
+   "name": "Lluvia y espiral"
+  },
+  "fr": {
+   "aim": "Gérez la pluie pendant qu'une spirale démarre.",
+   "name": "Pluie et spirale"
+  },
+  "ko": {
+   "aim": "나선이 시작되는 동안 비를 처리하세요.",
+   "name": "비와 나선"
+  },
+  "pt-BR": {
+   "aim": "Lide com a chuva enquanto uma espiral começa.",
+   "name": "Chuva e espiral"
+  },
+  "ru": {
+   "aim": "Справляйтесь с дождём, пока начинается спираль.",
+   "name": "Дождь и спираль"
+  },
+  "zh-Hans": {
+   "aim": "在螺旋开始的同时应对弹雨。",
+   "name": "雨与螺旋"
+  },
+  "zh-Hant": {
+   "aim": "在螺旋開始的同時應對彈雨。",
+   "name": "雨與螺旋"
+  }
+ },
+ "o08": {
+  "de": {
+   "aim": "Zwei gegenläufige Spiralen. Weiche in der Mitte durch oder außen herum.",
+   "name": "Doppelwirbel"
+  },
+  "es": {
+   "aim": "Dos espirales que giran en sentidos opuestos. Cruza por el medio o rodéalas.",
+   "name": "Doble vórtice"
+  },
+  "fr": {
+   "aim": "Deux spirales en sens inverse. Passez au milieu ou contournez.",
+   "name": "Double vortex"
+  },
+  "ko": {
+   "aim": "서로 반대로 도는 두 나선. 가운데를 누비거나 돌아가세요.",
+   "name": "이중 소용돌이"
+  },
+  "pt-BR": {
+   "aim": "Duas espirais girando em sentidos opostos. Passe pelo meio ou contorne.",
+   "name": "Vórtice duplo"
+  },
+  "ru": {
+   "aim": "Две спирали, вращающиеся в разные стороны. Пройдите посередине или обойдите.",
+   "name": "Двойной вихрь"
+  },
+  "zh-Hans": {
+   "aim": "两个反向旋转的螺旋。从中间穿过,或绕开。",
+   "name": "双重漩涡"
+  },
+  "zh-Hant": {
+   "aim": "兩個反向旋轉的螺旋。從中間穿過,或繞開。",
+   "name": "雙重漩渦"
+  }
+ },
+ "o09": {
+  "de": {
+   "aim": "Dichter Regen plus Zielschüsse.",
+   "name": "Wolkenbruch"
+  },
+  "es": {
+   "aim": "Lluvia densa con disparos dirigidos.",
+   "name": "Aguacero"
+  },
+  "fr": {
+   "aim": "Pluie dense et tirs ciblés.",
+   "name": "Déluge"
+  },
+  "ko": {
+   "aim": "빽빽한 비와 조준탄.",
+   "name": "폭우"
+  },
+  "pt-BR": {
+   "aim": "Chuva densa mais tiros mirados.",
+   "name": "Temporal"
+  },
+  "ru": {
+   "aim": "Густой дождь плюс прицельные выстрелы.",
+   "name": "Ливень"
+  },
+  "zh-Hans": {
+   "aim": "密集弹雨加瞄准弹。",
+   "name": "倾盆大雨"
+  },
+  "zh-Hant": {
+   "aim": "密集彈雨加瞄準彈。",
+   "name": "傾盆大雨"
+  }
+ },
+ "o10": {
+  "de": {
+   "aim": "Zwei Fächer schwingen gleichzeitig nach links und rechts.",
+   "name": "Elektrische Fächer"
+  },
+  "es": {
+   "aim": "Dos abanicos oscilando a la vez, a izquierda y derecha.",
+   "name": "Ventiladores eléctricos"
+  },
+  "fr": {
+   "aim": "Deux éventails qui oscillent en même temps, à gauche et à droite.",
+   "name": "Ventilateurs électriques"
+  },
+  "ko": {
+   "aim": "좌우 두 부채가 동시에 흔들려요.",
+   "name": "선풍기"
+  },
+  "pt-BR": {
+   "aim": "Dois leques balançando ao mesmo tempo, à esquerda e à direita.",
+   "name": "Ventiladores elétricos"
+  },
+  "ru": {
+   "aim": "Два веера качаются одновременно влево и вправо.",
+   "name": "Электровентиляторы"
+  },
+  "zh-Hans": {
+   "aim": "左右两个扇形同时摇摆。",
+   "name": "电风扇"
+  },
+  "zh-Hant": {
+   "aim": "左右兩個扇形同時搖擺。",
+   "name": "電風扇"
+  }
+ },
+ "o11": {
+  "de": {
+   "aim": "Ein schwingender Boss, dessen Angriff sich in jeder Phase ändert.",
+   "name": "Schwingender Boss"
+  },
+  "es": {
+   "aim": "Un jefe oscilante cuyo ataque cambia en cada fase.",
+   "name": "Jefe oscilante"
+  },
+  "fr": {
+   "aim": "Un boss oscillant dont l'attaque change à chaque phase.",
+   "name": "Boss oscillant"
+  },
+  "ko": {
+   "aim": "흔들리는 보스. 페이즈마다 공격이 바뀌어요.",
+   "name": "흔들리는 보스"
+  },
+  "pt-BR": {
+   "aim": "Um chefe oscilante cujo ataque muda a cada fase.",
+   "name": "Chefe oscilante"
+  },
+  "ru": {
+   "aim": "Качающийся босс, атака которого меняется в каждой фазе.",
+   "name": "Качающийся босс"
+  },
+  "zh-Hans": {
+   "aim": "会摇摆的BOSS,每个阶段攻击都会变化。",
+   "name": "摇摆的BOSS"
+  },
+  "zh-Hant": {
+   "aim": "會搖擺的BOSS,每個階段攻擊都會變化。",
+   "name": "搖擺的BOSS"
+  }
+ },
+ "o12": {
+  "de": {
+   "aim": "Lies den Rhythmus gestaffelter Ring-Feuerwerke.",
+   "name": "Feuerwerk"
+  },
+  "es": {
+   "aim": "Descifra el ritmo de fuegos artificiales en anillos escalonados.",
+   "name": "Fuegos artificiales"
+  },
+  "fr": {
+   "aim": "Lisez le rythme de feux d'artifice en anneaux décalés.",
+   "name": "Feux d'artifice"
+  },
+  "ko": {
+   "aim": "시차를 둔 링 불꽃놀이의 리듬을 읽으세요.",
+   "name": "불꽃놀이"
+  },
+  "pt-BR": {
+   "aim": "Leia o ritmo de fogos de artifício em anéis escalonados.",
+   "name": "Fogos de artifício"
+  },
+  "ru": {
+   "aim": "Уловите ритм ступенчатых фейерверков из колец.",
+   "name": "Фейерверк"
+  },
+  "zh-Hans": {
+   "aim": "读懂错开节奏的圆环烟花。",
+   "name": "烟花"
+  },
+  "zh-Hant": {
+   "aim": "讀懂錯開節奏的圓環煙花。",
+   "name": "煙花"
+  }
+ },
+ "o13": {
+  "de": {
+   "aim": "Zielschüsse aus drei Richtungen.",
+   "name": "Kreuzfeuer"
+  },
+  "es": {
+   "aim": "Disparos dirigidos desde tres direcciones.",
+   "name": "Fuego cruzado"
+  },
+  "fr": {
+   "aim": "Tirs ciblés venant de trois directions.",
+   "name": "Tir croisé"
+  },
+  "ko": {
+   "aim": "세 방향에서 날아오는 조준탄.",
+   "name": "십자 포화"
+  },
+  "pt-BR": {
+   "aim": "Tiros mirados vindos de três direções.",
+   "name": "Fogo cruzado"
+  },
+  "ru": {
+   "aim": "Прицельные выстрелы с трёх сторон.",
+   "name": "Перекрёстный огонь"
+  },
+  "zh-Hans": {
+   "aim": "来自三个方向的瞄准弹。",
+   "name": "交叉火力"
+  },
+  "zh-Hant": {
+   "aim": "來自三個方向的瞄準彈。",
+   "name": "交叉火力"
+  }
+ },
+ "o14": {
+  "de": {
+   "aim": "Eine feine Spirale kombiniert mit einem großen gegenläufigen Ring.",
+   "name": "Karussell"
+  },
+  "es": {
+   "aim": "Una espiral fina combinada con un gran anillo que gira al revés.",
+   "name": "Carrusel"
+  },
+  "fr": {
+   "aim": "Une spirale fine combinée à un grand anneau en sens inverse.",
+   "name": "Manège"
+  },
+  "ko": {
+   "aim": "촘촘한 나선과 반대로 도는 큰 링의 조합.",
+   "name": "회전목마"
+  },
+  "pt-BR": {
+   "aim": "Uma espiral fina combinada com um grande anel girando ao contrário.",
+   "name": "Carrossel"
+  },
+  "ru": {
+   "aim": "Тонкая спираль в сочетании с большим кольцом, вращающимся навстречу.",
+   "name": "Карусель"
+  },
+  "zh-Hans": {
+   "aim": "细密螺旋与反向旋转的大圆环组合。",
+   "name": "旋转木马"
+  },
+  "zh-Hant": {
+   "aim": "細密螺旋與反向旋轉的大圓環組合。",
+   "name": "旋轉木馬"
+  }
+ },
+ "o15": {
+  "de": {
+   "aim": "Immer neue Angriffe kommen hinzu. Passe dich ruhig an.",
+   "name": "Gestaffelter Angriff"
+  },
+  "es": {
+   "aim": "Se suman ataques nuevos sin parar. Adáptate con calma.",
+   "name": "Ataque escalonado"
+  },
+  "fr": {
+   "aim": "De nouvelles attaques s'ajoutent sans cesse. Adaptez-vous calmement.",
+   "name": "Attaque décalée"
+  },
+  "ko": {
+   "aim": "새로운 공격이 계속 합류해요. 침착하게 적응하세요.",
+   "name": "시차 공격"
+  },
+  "pt-BR": {
+   "aim": "Novos ataques não param de entrar. Adapte-se com calma.",
+   "name": "Ataque escalonado"
+  },
+  "ru": {
+   "aim": "Новые атаки продолжают присоединяться. Приспосабливайтесь спокойно.",
+   "name": "Ступенчатая атака"
+  },
+  "zh-Hans": {
+   "aim": "新的攻击不断加入。冷静应对。",
+   "name": "错落攻击"
+  },
+  "zh-Hant": {
+   "aim": "新的攻擊不斷加入。冷靜應對。",
+   "name": "錯落攻擊"
+  }
+ },
+ "o16": {
+  "de": {
+   "aim": "Ein richtiger Bosskampf in drei Phasen.",
+   "name": "Dreiphasen-Boss"
+  },
+  "es": {
+   "aim": "Un combate de jefe de tres fases de verdad.",
+   "name": "Jefe de tres fases"
+  },
+  "fr": {
+   "aim": "Un vrai combat de boss en trois phases.",
+   "name": "Boss en trois phases"
+  },
+  "ko": {
+   "aim": "정통 3단계 보스전.",
+   "name": "3단계 보스"
+  },
+  "pt-BR": {
+   "aim": "Uma luta de chefe de três fases de verdade.",
+   "name": "Chefe de três fases"
+  },
+  "ru": {
+   "aim": "Настоящий бой с боссом в три фазы.",
+   "name": "Босс из трёх фаз"
+  },
+  "zh-Hans": {
+   "aim": "正统的三阶段BOSS战。",
+   "name": "三阶段BOSS"
+  },
+  "zh-Hant": {
+   "aim": "正統的三階段BOSS戰。",
+   "name": "三階段BOSS"
+  }
+ },
+ "o17": {
+  "de": {
+   "aim": "Ein breiter Schwenkfächer plus eine Regenwand. Bleib in Bewegung.",
+   "name": "Vorhang"
+  },
+  "es": {
+   "aim": "Un amplio abanico barredor más un muro de lluvia. No pares de moverte.",
+   "name": "Cortina"
+  },
+  "fr": {
+   "aim": "Un large éventail balayant plus un mur de pluie. Bougez sans cesse.",
+   "name": "Rideau"
+  },
+  "ko": {
+   "aim": "넓게 쓸어내는 부채와 비의 벽. 계속 움직이세요.",
+   "name": "커튼"
+  },
+  "pt-BR": {
+   "aim": "Um leque varredor largo mais uma parede de chuva. Não pare de se mover.",
+   "name": "Cortina"
+  },
+  "ru": {
+   "aim": "Широкий веер-развёртка и стена дождя. Не стойте на месте.",
+   "name": "Занавес"
+  },
+  "zh-Hans": {
+   "aim": "宽幅扫射扇形加上弹雨之墙。不要停下。",
+   "name": "帷幕"
+  },
+  "zh-Hant": {
+   "aim": "寬幅掃射扇形加上彈雨之牆。不要停下。",
+   "name": "帷幕"
+  }
+ },
+ "o18": {
+  "de": {
+   "aim": "Finde 60 Sekunden lang den Weg durch ein Labyrinth aus drei Spiralen.",
+   "name": "Wirbel-Labyrinth"
+  },
+  "es": {
+   "aim": "Avanza 60 segundos por un laberinto de tres espirales.",
+   "name": "Laberinto de vórtices"
+  },
+  "fr": {
+   "aim": "Traversez un labyrinthe de trois spirales pendant 60 secondes.",
+   "name": "Labyrinthe de vortex"
+  },
+  "ko": {
+   "aim": "60초 동안 세 나선의 미로를 헤쳐 나가세요.",
+   "name": "소용돌이 미로"
+  },
+  "pt-BR": {
+   "aim": "Atravesse por 60 segundos um labirinto de três espirais.",
+   "name": "Labirinto de vórtices"
+  },
+  "ru": {
+   "aim": "Пройдите 60 секунд по лабиринту из трёх спиралей.",
+   "name": "Лабиринт вихрей"
+  },
+  "zh-Hans": {
+   "aim": "在三条螺旋的迷宫中穿行60秒。",
+   "name": "漩涡迷宫"
+  },
+  "zh-Hant": {
+   "aim": "在三條螺旋的迷宮中穿行60秒。",
+   "name": "漩渦迷宮"
+  }
+ },
+ "o19": {
+  "de": {
+   "aim": "Schnelleres, dichteres Feuerwerk, dann kommt spät ein Fächer dazu.",
+   "name": "Höllisches Feuerwerk"
+  },
+  "es": {
+   "aim": "Fuegos artificiales más rápidos y densos, y al final se suma un abanico.",
+   "name": "Fuegos artificiales infernales"
+  },
+  "fr": {
+   "aim": "Des feux d'artifice plus rapides et plus denses, puis un éventail s'ajoute.",
+   "name": "Feux d'artifice infernaux"
+  },
+  "ko": {
+   "aim": "더 빠르고 빽빽한 불꽃놀이, 그리고 뒤늦게 부채가 합류해요.",
+   "name": "지옥의 불꽃놀이"
+  },
+  "pt-BR": {
+   "aim": "Fogos mais rápidos e densos, e depois um leque se junta.",
+   "name": "Fogos de artifício infernais"
+  },
+  "ru": {
+   "aim": "Более быстрый и густой фейерверк, затем поздно присоединяется веер.",
+   "name": "Адский фейерверк"
+  },
+  "zh-Hans": {
+   "aim": "更快更密的烟花,之后扇形弹幕加入。",
+   "name": "地狱烟花"
+  },
+  "zh-Hant": {
+   "aim": "更快更密的煙花,之後扇形彈幕加入。",
+   "name": "地獄煙花"
+  }
+ },
+ "o20": {
+  "de": {
+   "aim": "Erkenne die Lücken in einer Wand aus drei Ringen.",
+   "name": "Kugelwand"
+  },
+  "es": {
+   "aim": "Encuentra los huecos en un muro formado por tres anillos.",
+   "name": "Muro de balas"
+  },
+  "fr": {
+   "aim": "Repérez les failles d'un mur formé par trois anneaux.",
+   "name": "Mur de projectiles"
+  },
+  "ko": {
+   "aim": "링 세 개가 만든 벽의 틈을 찾으세요.",
+   "name": "탄막의 벽"
+  },
+  "pt-BR": {
+   "aim": "Encontre as brechas em uma parede feita de três anéis.",
+   "name": "Parede de balas"
+  },
+  "ru": {
+   "aim": "Найдите бреши в стене из трёх колец.",
+   "name": "Стена пуль"
+  },
+  "zh-Hans": {
+   "aim": "找出三个圆环形成的墙上的缝隙。",
+   "name": "弹幕之墙"
+  },
+  "zh-Hant": {
+   "aim": "找出三個圓環形成的牆上的縫隙。",
+   "name": "彈幕之牆"
+  }
+ },
+ "o21": {
+  "de": {
+   "aim": "Ein sich schnell bewegender Boss. Triff ihn und überlebe jede Phase.",
+   "name": "Flinker Boss"
+  },
+  "es": {
+   "aim": "Un jefe de movimiento rápido. Acierta tus disparos y sobrevive a cada fase.",
+   "name": "Jefe veloz"
+  },
+  "fr": {
+   "aim": "Un boss qui se déplace vite. Placez vos tirs et survivez à chaque phase.",
+   "name": "Boss véloce"
+  },
+  "ko": {
+   "aim": "빠르게 움직이는 보스. 공격을 적중시키고 모든 페이즈를 버티세요.",
+   "name": "재빠른 보스"
+  },
+  "pt-BR": {
+   "aim": "Um chefe de movimento rápido. Acerte seus tiros e sobreviva a todas as fases.",
+   "name": "Chefe veloz"
+  },
+  "ru": {
+   "aim": "Быстро движущийся босс. Попадайте и переживите каждую фазу.",
+   "name": "Быстрый босс"
+  },
+  "zh-Hans": {
+   "aim": "高速移动的BOSS。命中攻击并熬过每个阶段。",
+   "name": "高速BOSS"
+  },
+  "zh-Hant": {
+   "aim": "高速移動的BOSS。命中攻擊並熬過每個階段。",
+   "name": "高速BOSS"
+  }
+ },
+ "o22": {
+  "de": {
+   "aim": "Regen, Zielschüsse und eine Spirale auf einmal.",
+   "name": "Sturm"
+  },
+  "es": {
+   "aim": "Lluvia, disparos dirigidos y una espiral a la vez.",
+   "name": "Tormenta"
+  },
+  "fr": {
+   "aim": "Pluie, tirs ciblés et spirale en même temps.",
+   "name": "Tempête"
+  },
+  "ko": {
+   "aim": "비, 조준탄, 나선이 한꺼번에.",
+   "name": "폭풍"
+  },
+  "pt-BR": {
+   "aim": "Chuva, tiros mirados e uma espiral ao mesmo tempo.",
+   "name": "Tempestade"
+  },
+  "ru": {
+   "aim": "Дождь, прицельные выстрелы и спираль одновременно.",
+   "name": "Буря"
+  },
+  "zh-Hans": {
+   "aim": "弹雨、瞄准弹和螺旋同时出现。",
+   "name": "风暴"
+  },
+  "zh-Hant": {
+   "aim": "彈雨、瞄準彈和螺旋同時出現。",
+   "name": "風暴"
+  }
+ },
+ "o23": {
+  "de": {
+   "aim": "Langsame, aber bildschirmfüllende Ringe.",
+   "name": "Sternenhimmel"
+  },
+  "es": {
+   "aim": "Anillos lentos pero que llenan la pantalla.",
+   "name": "Cielo estrellado"
+  },
+  "fr": {
+   "aim": "Des anneaux lents mais qui remplissent l'écran.",
+   "name": "Ciel étoilé"
+  },
+  "ko": {
+   "aim": "느리지만 화면을 가득 채우는 링.",
+   "name": "별이 빛나는 하늘"
+  },
+  "pt-BR": {
+   "aim": "Anéis lentos, mas que enchem a tela.",
+   "name": "Céu estrelado"
+  },
+  "ru": {
+   "aim": "Медленные, но заполняющие весь экран кольца.",
+   "name": "Звёздное небо"
+  },
+  "zh-Hans": {
+   "aim": "缓慢但铺满画面的圆环。",
+   "name": "星空"
+  },
+  "zh-Hant": {
+   "aim": "緩慢但鋪滿畫面的圓環。",
+   "name": "星空"
+  }
+ },
+ "o24": {
+  "de": {
+   "aim": "HP 600. Überlebe ein langes Dauerfeuer und kratze ihn dabei herunter.",
+   "name": "Dauerfeuer-Boss"
+  },
+  "es": {
+   "aim": "HP 600. Sobrevive a una larga lluvia de balas mientras lo vas desgastando.",
+   "name": "Jefe de lluvia de balas"
+  },
+  "fr": {
+   "aim": "PV 600. Survivez à un long barrage tout en l'entamant.",
+   "name": "Boss pilonnage"
+  },
+  "ko": {
+   "aim": "HP 600. 긴 탄막을 버티며 조금씩 깎으세요.",
+   "name": "탄막 폭격 보스"
+  },
+  "pt-BR": {
+   "aim": "HP 600. Sobreviva a uma longa rajada enquanto o desgasta.",
+   "name": "Chefe das rajadas"
+  },
+  "ru": {
+   "aim": "HP 600. Переживите долгий шквал, понемногу сбивая его HP.",
+   "name": "Босс-шквал"
+  },
+  "zh-Hans": {
+   "aim": "HP 600。在长时间弹幕中一点点削减它。",
+   "name": "弹幕猛攻BOSS"
+  },
+  "zh-Hant": {
+   "aim": "HP 600。在長時間彈幕中一點點削減它。",
+   "name": "彈幕猛攻BOSS"
+  }
+ },
+ "o25": {
+  "de": {
+   "aim": "Ein langer Ausdauerlauf durch drei sich steigernde Wellen.",
+   "name": "90-Sekunden-Prüfung"
+  },
+  "es": {
+   "aim": "Una larga prueba de resistencia a través de tres oleadas crecientes.",
+   "name": "Prueba de 90 segundos"
+  },
+  "fr": {
+   "aim": "Une longue épreuve d'endurance en trois vagues de plus en plus dures.",
+   "name": "Épreuve de 90 secondes"
+  },
+  "ko": {
+   "aim": "점점 거세지는 세 번의 파도를 지나는 긴 지구력 도전.",
+   "name": "90초 시련"
+  },
+  "pt-BR": {
+   "aim": "Uma longa prova de resistência por três ondas crescentes.",
+   "name": "Desafio de 90 segundos"
+  },
+  "ru": {
+   "aim": "Долгий забег на выносливость через три нарастающие волны.",
+   "name": "Испытание на 90 секунд"
+  },
+  "zh-Hans": {
+   "aim": "在三波逐渐升级的攻势中进行长时间耐力赛。",
+   "name": "90秒试炼"
+  },
+  "zh-Hant": {
+   "aim": "在三波逐漸升級的攻勢中進行長時間耐力賽。",
+   "name": "90秒試煉"
+  }
+ },
+ "o26": {
+  "de": {
+   "aim": "Überlebe 90 Sekunden in einem Käfig aus gegenläufigen Ringen und Spiralen.",
+   "name": "Vogelkäfig"
+  },
+  "es": {
+   "aim": "Sobrevive 90 segundos en una jaula de anillos y espirales que giran en sentidos opuestos.",
+   "name": "Jaula de pájaros"
+  },
+  "fr": {
+   "aim": "Survivez 90 secondes dans une cage d'anneaux et de spirales en sens inverse.",
+   "name": "Cage à oiseaux"
+  },
+  "ko": {
+   "aim": "반대로 도는 링과 나선의 새장에서 90초 생존.",
+   "name": "새장"
+  },
+  "pt-BR": {
+   "aim": "Sobreviva 90 segundos em uma gaiola de anéis e espirais girando em sentidos opostos.",
+   "name": "Gaiola"
+  },
+  "ru": {
+   "aim": "Продержитесь 90 секунд в клетке из встречных колец и спиралей.",
+   "name": "Птичья клетка"
+  },
+  "zh-Hans": {
+   "aim": "在反向旋转的圆环与螺旋组成的牢笼中生存90秒。",
+   "name": "鸟笼"
+  },
+  "zh-Hant": {
+   "aim": "在反向旋轉的圓環與螺旋組成的牢籠中生存90秒。",
+   "name": "鳥籠"
+  }
+ },
+ "o27": {
+  "de": {
+   "aim": "HP 800, 180 Sekunden. Der Endboss, der alles einsetzt.",
+   "name": "Boss des Finalkapitels"
+  },
+  "es": {
+   "aim": "HP 800, 180 segundos. El jefe final que lo usa todo.",
+   "name": "Jefe del capítulo final"
+  },
+  "fr": {
+   "aim": "PV 800, 180 secondes. Le boss final qui utilise tout.",
+   "name": "Boss du dernier chapitre"
+  },
+  "ko": {
+   "aim": "HP 800, 180초. 모든 것을 쏟아붓는 최종 보스.",
+   "name": "최종장 보스"
+  },
+  "pt-BR": {
+   "aim": "HP 800, 180 segundos. O chefe final que usa tudo.",
+   "name": "Chefe do capítulo final"
+  },
+  "ru": {
+   "aim": "HP 800, 180 секунд. Финальный босс, использующий всё.",
+   "name": "Босс финальной главы"
+  },
+  "zh-Hans": {
+   "aim": "HP 800,180秒。集大成的最终BOSS。",
+   "name": "终章BOSS"
+  },
+  "zh-Hant": {
+   "aim": "HP 800,180秒。集大成的最終BOSS。",
+   "name": "終章BOSS"
+  }
+ },
+ "o28": {
+  "de": {
+   "aim": "Zwei Minuten, in denen alle Muster übereinanderliegen.",
+   "name": "120-Sekunden-Albtraum"
+  },
+  "es": {
+   "aim": "Dos minutos con todos los patrones apilados.",
+   "name": "Pesadilla de 120 segundos"
+  },
+  "fr": {
+   "aim": "Deux minutes de tous les motifs empilés.",
+   "name": "Cauchemar de 120 secondes"
+  },
+  "ko": {
+   "aim": "모든 패턴이 쌓인 2분간의 악몽.",
+   "name": "120초의 악몽"
+  },
+  "pt-BR": {
+   "aim": "Dois minutos com todos os padrões empilhados.",
+   "name": "Pesadelo de 120 segundos"
+  },
+  "ru": {
+   "aim": "Две минуты, в которые наложены все узоры сразу.",
+   "name": "Кошмар на 120 секунд"
+  },
+  "zh-Hans": {
+   "aim": "两分钟内所有弹幕叠加在一起。",
+   "name": "120秒噩梦"
+  },
+  "zh-Hant": {
+   "aim": "兩分鐘內所有彈幕疊加在一起。",
+   "name": "120秒噩夢"
+  }
+ },
+ "o29": {
+  "de": {
+   "aim": "Wahnsinnige Dichte. Prüft deine Augen und die Präzision deiner Finger.",
+   "name": "Danmaku-Hölle"
+  },
+  "es": {
+   "aim": "Densidad demencial. Pone a prueba tu vista y la precisión de tus dedos.",
+   "name": "Infierno de balas"
+  },
+  "fr": {
+   "aim": "Une densité démente. Teste votre vue et la précision de vos doigts.",
+   "name": "Enfer de projectiles"
+  },
+  "ko": {
+   "aim": "미친 밀도. 시력과 손가락 정밀도를 시험해요.",
+   "name": "탄막 지옥"
+  },
+  "pt-BR": {
+   "aim": "Densidade insana. Testa seus olhos e a precisão dos seus dedos.",
+   "name": "Inferno de balas"
+  },
+  "ru": {
+   "aim": "Безумная плотность. Проверка зрения и точности пальцев.",
+   "name": "Ад данмаку"
+  },
+  "zh-Hans": {
+   "aim": "疯狂的密度。考验你的眼力和手指精度。",
+   "name": "弹幕地狱"
+  },
+  "zh-Hant": {
+   "aim": "瘋狂的密度。考驗你的眼力和手指精度。",
+   "name": "彈幕地獄"
+  }
+ },
+ "o30": {
+  "de": {
+   "aim": "Die ultimative Prüfung. Schaffst du sie, bist du ein Meister.",
+   "name": "Göttliche Sphäre"
+  },
+  "es": {
+   "aim": "La prueba definitiva. Supérala y serás un maestro.",
+   "name": "Reino divino"
+  },
+  "fr": {
+   "aim": "L'épreuve ultime. Réussissez-la et vous serez un maître.",
+   "name": "Royaume divin"
+  },
+  "ko": {
+   "aim": "궁극의 시험. 클리어하면 당신은 달인이에요.",
+   "name": "신의 영역"
+  },
+  "pt-BR": {
+   "aim": "O teste definitivo. Vença e você será um mestre.",
+   "name": "Reino divino"
+  },
+  "ru": {
+   "aim": "Высшее испытание. Пройдёте — станете мастером.",
+   "name": "Божественная обитель"
+  },
+  "zh-Hans": {
+   "aim": "终极考验。通关你就是高手。",
+   "name": "神之领域"
+  },
+  "zh-Hant": {
+   "aim": "終極考驗。通關你就是高手。",
+   "name": "神之領域"
+  }
+ }
+}
