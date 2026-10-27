@@ -26,7 +26,11 @@ struct EditorView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: "editor.title") {
-                RoundIconButton(systemImage: "xmark", label: "editor.close") { onClose() }
+                RoundIconButton(systemImage: "xmark", label: "editor.close") {
+                    // 試聴した BGM は、エディタを閉じるまで流し続ける(スクロールで項目が画面外に出ても切り替えない)
+                    AudioManager.shared.play(.menu)
+                    onClose()
+                }
                     .accessibilityIdentifier("editor.close")
             } trailing: {
                 Button { confirmRevert = true } label: {
@@ -124,7 +128,10 @@ struct EditorView: View {
             Button("editor.revert.do", role: .destructive) { model.revert() }
             Button("common.cancel", role: .cancel) {}
         } message: { Text("editor.revert.message") }
-        .fullScreenCover(item: $testRun) { run in
+        .fullScreenCover(item: $testRun, onDismiss: {
+            // テストプレイから戻ったら、試聴していた BGM を流し直す
+            if let i = model.previewingBGM { AudioManager.shared.preview(.forNumber(i)) }
+        }) { run in
             PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name), isTest: true, customs: run.customs,
                      onResult: { result, moves in
                          if result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves)) }
@@ -420,6 +427,7 @@ private struct BGMPanel: View {
                     Button {
                         gameTap()
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { model.draft.bgm = i }
+                        model.previewingBGM = i
                         AudioManager.shared.preview(.forNumber(i))
                     } label: {
                         HStack(spacing: 12) {
@@ -446,7 +454,6 @@ private struct BGMPanel: View {
             }
             Text("editor.bgm.note").font(.caption).foregroundStyle(.secondary)
         }
-        .onDisappear { AudioManager.shared.play(.menu) }
     }
 }
 

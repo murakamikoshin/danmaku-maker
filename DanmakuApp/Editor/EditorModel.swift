@@ -185,6 +185,8 @@ final class EditorModel: ObservableObject {
     static let maxAuthor = 12
 
     @Published var draft: Draft
+    /// エディタで試聴中の BGM の番号(テストプレイから戻ったとき、続きを流すため。画面の更新には使わない)
+    var previewingBGM: Int?
     /// 「元に戻す」の戻り先。画面を開いたとき、またはクリア・投稿したときの内容
     private var baseline: Draft
     private var entry: SavedStage
