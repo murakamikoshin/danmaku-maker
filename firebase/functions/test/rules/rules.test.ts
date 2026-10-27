@@ -20,6 +20,8 @@ beforeEach(async () => {
     const db = ctx.firestore();
     await setDoc(doc(db, "stages/AAAAA"), { status: "published", authorUid: "author", name: "公開", likes: 0 });
     await setDoc(doc(db, "stages/BBBBB"), { status: "hidden", authorUid: "author", name: "非公開" });
+    await setDoc(doc(db, "stages/CCCCC"), { status: "unlisted", authorUid: "author", name: "限定" });
+    await setDoc(doc(db, "stages/CCCCC/scores/u1"), { uid: "u1", a: 1, n: 2, num: 1234, value: 500, mode: "boss", createdAt: new Date() });
     await setDoc(doc(db, "stages/AAAAA/likes/u1"), { createdAt: new Date() });
     await setDoc(doc(db, "users/u1"), { displayName: "A", blockedUids: [], postCount: 3, createdAt: new Date() });
     await setDoc(doc(db, "reports/x"), { stageId: "AAAAA" });
@@ -50,6 +52,12 @@ describe("stages", () => {
   it("非公開ステージは他人には読めず、作者本人は読める", async () => {
     await assertFails(getDoc(doc(anon("u9"), "stages/BBBBB")));
     await assertSucceeds(getDoc(doc(member("author"), "stages/BBBBB")));
+  });
+  it("URLを知っている人だけのステージは、IDを指定すれば誰でも読めるが、一覧には出ない", async () => {
+    await assertSucceeds(getDoc(doc(anon("u9"), "stages/CCCCC")));
+    await assertSucceeds(getDocs(query(collection(anon("u9"), "stages"), where("status", "==", "published"), limit(20))));
+    await assertFails(getDocs(query(collection(anon("u9"), "stages"), where("status", "==", "unlisted"), limit(20))));
+    await assertSucceeds(getDoc(doc(anon("u9"), "stages/CCCCC/scores/u1")));
   });
   it("クライアントからの書き込み・更新・削除はすべて拒否", async () => {
     const db = member("author");

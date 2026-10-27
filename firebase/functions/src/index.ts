@@ -19,6 +19,9 @@ const HIDE_REPORT_THRESHOLD = 5;
 const POST_INTERVAL_MS = 10_000;
 const TREND_HALF_LIFE_MS = 2 * 24 * 3600 * 1000;
 
+/** 遊べるステージか(公開中、または「URLを知っている人だけ」)。非表示にされたものは遊べない */
+const isOpen = (status: unknown) => status === "published" || status === "unlisted";
+
 /** Sign in with Apple などでログイン済み（匿名ではない）ユーザーの uid を返す */
 function requireMember(req: CallableRequest): string {
   if (!req.auth) throw new HttpsError("unauthenticated", "sign-in-required");
@@ -54,11 +57,15 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
-  // 作者のクリア記録を再生して、本当にクリアできるステージか確かめる(テストプレイも、ステージで決めた撃ち方)
-  const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
-  const played = decodeReplay(v.clearReplay, maxSteps);
-  if (!played) throw new HttpsError("invalid-argument", "replay");
-  if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
+  // 「URLを知っている人だけ」の投稿(unlisted)はクリア記録が要らず、一覧には載らない。そうでなければ、作者のクリア記録を再生して
+  // 本当にクリアできるステージか確かめる(テストプレイも、ステージで決めた撃ち方)
+  const unlisted = (req.data as { unlisted?: unknown }).unlisted === true;
+  if (!unlisted) {
+    const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
+    const played = v.clearReplay ? decodeReplay(v.clearReplay, maxSteps) : null;
+    if (!played) throw new HttpsError("invalid-argument", "replay");
+    if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
+  }
   const langRaw = (req.data as { lang?: unknown }).lang;
   const lang = typeof langRaw === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(langRaw) ? langRaw : "und";
 
@@ -74,7 +81,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     const candidate = newShortId();
     try {
       await db.doc(`stages/${candidate}`).create({
-        authorUid: uid, ...v.stage, ogImagePath: "", status: "published",
+        authorUid: uid, ...v.stage, ogImagePath: "", status: unlisted ? "unlisted" : "published",
         plays: 0, clears: 0, likes: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
@@ -87,7 +94,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   }
   if (!id) throw new HttpsError("internal", "id-exhausted");
 
-  await db.doc(`stageReplays/${id}`).set({ authorUid: uid, clearReplay: v.clearReplay, createdAt: FieldValue.serverTimestamp() });
+  if (v.clearReplay) await db.doc(`stageReplays/${id}`).set({ authorUid: uid, clearReplay: v.clearReplay, createdAt: FieldValue.serverTimestamp() });
   await userRef.set({
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
     createdAt: user.exists ? user.get("createdAt") : FieldValue.serverTimestamp(),
@@ -120,7 +127,7 @@ export const submitResults = onCall(async (req) => {
     await db.runTransaction(async (tx) => {
       const ref = db.doc(`stages/${id}`);
       const snap = await tx.get(ref);
-      if (!snap.exists || snap.get("status") !== "published") return;
+      if (!snap.exists || !isOpen(snap.get("status"))) return;
       const now = Date.now();
       const plays = (snap.get("plays") as number) + add.plays;
       const clears = Math.min(plays, (snap.get("clears") as number) + add.clears);
@@ -138,7 +145,7 @@ export const toggleLike = onCall(async (req) => {
   return db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), likeRef = db.doc(`stages/${id}/likes/${uid}`);
     const [stage, like] = await Promise.all([tx.get(ref), tx.get(likeRef)]);
-    if (!stage.exists || stage.get("status") !== "published") throw new HttpsError("not-found", "stage");
+    if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
     const now = Date.now();
     const trending = decay(stage.get("trending") ?? 0, stage.get("trendUpdatedAt") ?? now, now);
     const liked = !like.exists;
@@ -162,7 +169,7 @@ export const reportStage = onCall(async (req) => {
     if (!stage.exists) throw new HttpsError("not-found", "stage");
     if (rep.exists) return { already: true, hidden: stage.get("status") === "hidden" };
     const reports = (stage.get("reports") as number) + 1;
-    const hide = reports >= HIDE_REPORT_THRESHOLD && stage.get("status") === "published";
+    const hide = reports >= HIDE_REPORT_THRESHOLD && isOpen(stage.get("status"));
     tx.set(repRef, { stageId: id, reporterUid: uid, reason, createdAt: FieldValue.serverTimestamp() });
     tx.update(ref, { reports, ...(hide ? { status: "hidden" } : {}) });
     if (hide) {
@@ -211,7 +218,7 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
   });
 
   const stageSnap = await db.doc(`stages/${id}`).get();
-  if (!stageSnap.exists || stageSnap.get("status") !== "published") throw new HttpsError("not-found", "stage");
+  if (!stageSnap.exists || !isOpen(stageSnap.get("status"))) throw new HttpsError("not-found", "stage");
   const stage = stageSnap.data() as Stage;
   if (stage.mode === "survive") throw new HttpsError("failed-precondition", "no-ranking");
 
@@ -252,7 +259,7 @@ export const postComment = onCall(async (req) => {
     throw new HttpsError("invalid-argument", "handle");
   }
   const stage = await db.doc(`stages/${id}`).get();
-  if (!stage.exists || stage.get("status") !== "published") throw new HttpsError("not-found", "stage");
+  if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
 
   const metaRef = db.doc(`commentMeta/${uid}`);
   await db.runTransaction(async (tx) => {
@@ -313,7 +320,7 @@ export const sharePage = onRequest(async (req, res) => {
   let stage = null;
   if (isValidShortId(id)) {
     const snap = await db.doc(`stages/${id}`).get();
-    if (snap.exists && snap.get("status") === "published") stage = snap.data() as never;
+    if (snap.exists && isOpen(snap.get("status"))) stage = snap.data() as never;
   }
   const page = renderSharePage({ id, stage, lang, origin, appStoreUrl: APP_STORE_URL });
   res.status(page.status).set("Content-Type", "text/html; charset=utf-8").set("Vary", "Accept-Language")
@@ -330,7 +337,7 @@ export const ogImage = onRequest({ memory: "512MiB" }, async (req, res) => {
     png = (await file.download())[0];
   } else {
     const snap = await db.doc(`stages/${id}`).get();
-    if (!snap.exists || snap.get("status") !== "published") { res.status(404).send("not found"); return; }
+    if (!snap.exists || !isOpen(snap.get("status"))) { res.status(404).send("not found"); return; }
     await saveOgp(id, snap.data() as Stage);
     png = (await file.download())[0];
   }

@@ -73,7 +73,7 @@ struct StageRepository {
     }
 
     static func parse(_ doc: DocumentSnapshot) -> RemoteStage? {
-        guard let d = doc.data(), d["status"] as? String == "published" else { return nil }
+        guard let d = doc.data(), ["published", "unlisted"].contains(d["status"] as? String) else { return nil }
         var json: [String: Any] = [:]
         for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm"] {
             if let v = d[key], !(v is NSNull) { json[key] = v }

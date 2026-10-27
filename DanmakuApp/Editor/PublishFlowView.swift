@@ -5,7 +5,8 @@ import SwiftUI
 struct PublishFlowView: View {
     let stage: Stage
     let authorName: String
-    let replay: Replay
+    /// nil のときは「URLを知っている人だけ」の投稿(まだクリアしていないステージ)
+    let replay: Replay?
     let onPublished: (String) -> Void
 
     @EnvironmentObject private var auth: AuthService
@@ -69,7 +70,10 @@ struct PublishFlowView: View {
                     }
                     Spacer(minLength: 0)
                 }
-                GameActionButton(title: "publish.submit", systemImage: "paperplane.fill", fill: GameStyle.accent) { Task { await publish() } }
+                if replay == nil {
+                    Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                }
+                GameActionButton(title: replay == nil ? "publish.submit.unlisted" : "publish.submit", systemImage: "paperplane.fill", fill: GameStyle.accent) { Task { await publish() } }
                     .accessibilityIdentifier("publish.submit")
             }
         }

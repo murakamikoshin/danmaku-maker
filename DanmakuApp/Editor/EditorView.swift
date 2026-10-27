@@ -101,8 +101,8 @@ struct EditorView: View {
                             testRun = TestRun(stage: model.stage, customs: model.draft.customImages)
                         }
                         .accessibilityIdentifier("editor.test")
-                        GameActionButton(title: model.isPublished ? "editor.posted" : "editor.post", systemImage: "paperplane.fill", fill: GameStyle.accent,
-                                         enabled: model.isVerified && !model.isPublished) {
+                        GameActionButton(title: model.isPublished ? "editor.posted" : (model.isVerified ? "editor.post" : "editor.post.unlisted"), systemImage: "paperplane.fill", fill: GameStyle.accent,
+                                         enabled: !model.isPublished) {
                             // 名前が空なら、先に入力画面を挟む
                             if model.canPublish { publishing = true } else { naming = true }
                         }
@@ -110,7 +110,7 @@ struct EditorView: View {
                     }
                     // 投稿ボタンが押せない理由を、はっきり出す
                     if !model.isPublished, !model.isVerified {
-                        Text("editor.hint.clear").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
+                        Text("editor.hint.unlisted").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(16).padding(.bottom, 80)
@@ -137,9 +137,7 @@ struct EditorView: View {
             NamePromptSheet(draft: $model.draft, canPublish: model.canPublish) { proceedToPublish = true; naming = false }
         }
         .sheet(isPresented: $publishing) {
-            if let replay = model.clearReplay {
-                PublishFlowView(stage: model.stage, authorName: model.draft.authorName, replay: replay) { id in model.published(id: id) }
-            }
+            PublishFlowView(stage: model.stage, authorName: model.draft.authorName, replay: model.isVerified ? model.clearReplay : nil) { id in model.published(id: id) }
         }
     }
 }

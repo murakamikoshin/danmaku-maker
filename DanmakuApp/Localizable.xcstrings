@@ -7312,6 +7312,86 @@
           }
         }
       }
+    },
+    "editor.post.unlisted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share by link"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URLで友達に送る"
+          }
+        }
+      }
+    },
+    "editor.hint.unlisted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A stage you haven't cleared yet can be shared by link only: it stays out of the public list and only friends with the link can play. Clear it to publish it to everyone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだクリアしていないステージは、一覧には出さず、URLを知っている友達だけが遊べる形で送れます。クリアすると、みんなに公開できます。"
+          }
+        }
+      }
+    },
+    "mystage.publish.unlisted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share link"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URLで送る"
+          }
+        }
+      }
+    },
+    "publish.submit.unlisted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create link"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URLを作る"
+          }
+        }
+      }
+    },
+    "publish.unlisted.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It won't appear in the public list. Only people with the link can play."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一覧には載りません。URLを知っている人だけが遊べます。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

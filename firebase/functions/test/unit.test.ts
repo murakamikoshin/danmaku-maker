@@ -41,6 +41,14 @@ describe("validatePublish", () => {
     const r = validatePublish(good(patch));
     expect(r).toEqual({ ok: false, error });
   });
+  it("URLを知っている人だけの投稿(unlisted)は、クリア記録がなくても通る", () => {
+    const r = validatePublish(good({ clearReplay: undefined, unlisted: true }));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.clearReplay).toBeNull();
+  });
+  it("unlisted でなければ、クリア記録なしは拒否のまま", () => {
+    expect(validatePublish(good({ clearReplay: undefined, unlisted: false }))).toEqual({ ok: false, error: "replay" });
+  });
   it("ボス: HP は 100〜1000 の 50 刻み", () => {
     const boss = { mode: "boss", durationSec: 60, bossMove: 1 };
     expect(validatePublish(good({ ...boss, bossHp: 400 })).ok).toBe(true);

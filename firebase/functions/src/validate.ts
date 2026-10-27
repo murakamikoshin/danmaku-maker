@@ -96,7 +96,7 @@ export const MAX_AUTHOR = 12;
 export const MAX_EMITTERS = 8;
 export const MAX_REPLAY_CHARS = 120_000;
 
-export type Validated = { ok: true; stage: Stage; clearReplay: string } | { ok: false; error: string };
+export type Validated = { ok: true; stage: Stage; clearReplay: string | null } | { ok: false; error: string };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -289,8 +289,9 @@ export function validatePublish(input: unknown): Validated {
     shot = input.shot;
   }
 
-  const replay = input.clearReplay;
-  if (typeof replay !== "string" || replay.length < 8 || replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(replay)) {
+  // 「URLを知っている人だけ」の投稿(unlisted)は、クリア記録がなくてもよい。一覧には載らない
+  const replay = input.unlisted === true ? null : input.clearReplay;
+  if (replay !== null && (typeof replay !== "string" || replay.length < 8 || replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(replay))) {
     return { ok: false, error: "replay" };
   }
 

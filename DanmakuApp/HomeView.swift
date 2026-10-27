@@ -78,13 +78,12 @@ struct HomeView: View {
                      onExit: { playingMine = nil })
         }
         .sheet(item: $publishingEntry) { entry in
-            if let r = entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) {
-                PublishFlowView(stage: entry.stage, authorName: AuthorName.current.isEmpty ? entry.draft.authorName : AuthorName.current, replay: r) { id in
-                    var e = saved.stage(id: entry.id) ?? entry
-                    e.publishedStage = e.stage; e.publishedID = id
-                    saved.update(e)
-                    Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid) }
-                }
+            PublishFlowView(stage: entry.stage, authorName: AuthorName.current.isEmpty ? entry.draft.authorName : AuthorName.current,
+                            replay: entry.isVerified ? entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) : nil) { id in
+                var e = saved.stage(id: entry.id) ?? entry
+                e.publishedStage = e.stage; e.publishedID = id
+                saved.update(e)
+                Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid) }
             }
         }
         .confirmationDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }), titleVisibility: .visible) {
@@ -339,9 +338,9 @@ struct MyStageRow: View {
             .buttonStyle(BounceButtonStyle())
             HStack(spacing: 8) {
                 action("mystage.edit", "pencil", Color(UIColor(hex: 0x5CE1E6)), onEdit)
-                action(entry.isPublished ? "mystage.posted" : "mystage.publish", "paperplane.fill", Color(Palette.pink), onPublish)
-                    .opacity(entry.isVerified && !entry.isPublished ? 1 : 0.4)
-                    .disabled(!(entry.isVerified && !entry.isPublished))
+                action(entry.isPublished ? "mystage.posted" : (entry.isVerified ? "mystage.publish" : "mystage.publish.unlisted"), "paperplane.fill", Color(Palette.pink), onPublish)
+                    .opacity(entry.isPublished ? 0.4 : 1)
+                    .disabled(entry.isPublished)
                 action("mystage.delete", "trash", Color(Palette.pink).opacity(0.8), onDelete)
             }
             .padding(.horizontal, 4)
