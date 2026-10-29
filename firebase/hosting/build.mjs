@@ -127,4 +127,6 @@ const aasa = JSON.stringify({
 }, null, 2);
 write('.well-known/apple-app-site-association', aasa);
 write('apple-app-site-association', aasa);
+// AdMob のアプリ確認(広告配信の制限解除)用
+write('app-ads.txt', 'google.com, pub-3863314847163872, DIRECT, f08c47fec0942fa0\n');
 console.log('pages generated in', out);
