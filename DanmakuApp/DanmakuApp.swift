@@ -14,7 +14,7 @@ struct DanmakuApp: App {
     /// スクリーンショット撮影用: DEBUG ビルドで `-no-ads` を付けると、同意ダイアログと広告を出さない
     private static var adsDisabledForScreenshots: Bool {
         #if DEBUG
-        ProcessInfo.processInfo.arguments.contains("-no-ads")
+        ProcessInfo.processInfo.arguments.contains("-no-ads") || ProcessInfo.processInfo.arguments.contains("-force-banner")
         #else
         false
         #endif

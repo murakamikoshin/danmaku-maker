@@ -14,6 +14,19 @@ final class DailyRewardsTests: XCTestCase {
         XCTAssertNil(Reward(index: -1))
     }
 
+    func testNeighboursLookDifferent() {
+        // 続けてもらう報酬どうしは、種類も色も違う(ショップの「次の報酬」が似た見た目にならない)
+        let all = DailyRewards.all
+        for (a, b) in zip(all, all.dropFirst()) {
+            XCTAssertNotEqual(a.kind, b.kind)
+            let d = abs(a.colorIndex - b.colorIndex)
+            XCTAssertGreaterThanOrEqual(min(d, DailyRewards.colorCount - d), 5, "\(a.index)→\(b.index)")
+        }
+        // 先の8個は、見た目(色・かたち)がすべて違う
+        let first = all.prefix(8)
+        XCTAssertEqual(Set(first.map { "\($0.colorIndex)-\($0.style.rawValue)" }).count, 8)
+    }
+
     func testOneClaimPerDayInOrder() {
         var s = DailyRewardState()
         XCTAssertTrue(s.canClaim(today: 20000))

@@ -35,9 +35,10 @@ public struct Reward: Hashable, Codable, Sendable {
     public var kind: RewardKind { RewardKind.allCases[index % RewardKind.allCases.count] }
     /// 種類ごとの通し番号(0...72)
     public var variant: Int { index / RewardKind.allCases.count }
-    /// 色の番号(0..<DailyRewards.colorCount)
-    public var colorIndex: Int { variant % DailyRewards.colorCount }
-    public var style: RewardStyle { RewardStyle.allCases[(variant / DailyRewards.colorCount) % RewardStyle.allCases.count] }
+    /// 色の番号(0..<DailyRewards.colorCount)。7つずつ飛ばして割り当てて、続けてもらう報酬どうしで色が大きく変わるようにする
+    public var colorIndex: Int { (index * 7) % DailyRewards.colorCount }
+    /// かたち。5つごとに変わり、120番ごとのずれで、(種類・色・かたち)の組み合わせがすべて違うようにする
+    public var style: RewardStyle { RewardStyle.allCases[(variant + index / 120) % RewardStyle.allCases.count] }
     /// 色の色相(0...1)。色の番号を、色相環に等間隔で置く
     public var hue: Double { Double(colorIndex) / Double(DailyRewards.colorCount) }
     public var id: String { "reward.\(index)" }
