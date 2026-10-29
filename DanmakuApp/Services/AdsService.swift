@@ -10,6 +10,8 @@ import UserMessagingPlatform
 @MainActor
 final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate {
     @Published private(set) var isReady = false
+    /// SDK を開始できたか(同意が取れて、広告を要求してよい)。バナーを出してよいかの目安
+    @Published private(set) var canShowBanner = false
 
     private var rewarded: GADRewardedAd?
     private var interstitial: GADInterstitialAd?
@@ -29,6 +31,9 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     private var unitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_REWARDED_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/1712485313"
     }
+    var bannerUnitID: String {
+        Bundle.main.object(forInfoDictionaryKey: "ADMOB_BANNER_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/2435281174"
+    }
     private var interstitialUnitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_INTERSTITIAL_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/4411468910"
     }
@@ -43,6 +48,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
             GADMobileAds.sharedInstance().start { _ in c.resume() }
         }
+        canShowBanner = true
         await load()
         await loadInterstitial()
     }

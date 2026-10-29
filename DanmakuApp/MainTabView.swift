@@ -10,6 +10,8 @@ struct MainTabView: View {
         var id: String { ["play", "shop", "settings"][rawValue] }
     }
 
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
@@ -20,7 +22,17 @@ struct MainTabView: View {
             page(.shop) { ShopView() }
             page(.settings) { SettingsView() }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) { TabBar(selection: $tab) }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                // 広告削除の購入者・同意が取れていないとき・画面確認用の起動では、出さない
+                if !purchases.isPremium && ads.canShowBanner {
+                    let width = UIScreen.main.bounds.width
+                    BannerAdView(unitID: ads.bannerUnitID, width: width)
+                        .frame(width: width, height: BannerAdView.adSize(width: width).size.height)
+                }
+                TabBar(selection: $tab)
+            }
+        }
         .onChange(of: tab) { opened.insert($0) }
         .onAppear {
             AudioManager.shared.play(.menu)
