@@ -27,6 +27,14 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     private var onDismiss: ((Bool) -> Void)?
     private var earned = false
 
+    override init() {
+        super.init()
+        #if DEBUG
+        // 画面確認用: 同意ダイアログを待たずに、バナー(テスト広告)の場所を出す
+        if ProcessInfo.processInfo.arguments.contains("-force-banner") { canShowBanner = true }
+        #endif
+    }
+
     /// Info.plist 経由（ビルド設定 ADMOB_REWARDED_UNIT_ID）。開発中は Google のテスト広告 ID
     private var unitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_REWARDED_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/1712485313"

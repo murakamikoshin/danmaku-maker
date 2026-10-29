@@ -23,6 +23,15 @@ final class RewardStore: ObservableObject {
         state = defaults.data(forKey: Self.stateKey).flatMap { try? JSONDecoder().decode(DailyRewardState.self, from: $0) } ?? DailyRewardState()
         loadout = defaults.data(forKey: Self.loadoutKey).flatMap { try? JSONDecoder().decode(RewardLoadout.self, from: $0) } ?? RewardLoadout()
         today = DailyRewardState.day(of: Date())
+        #if DEBUG
+        // 画面確認用: -rewards-claimed N で、N個もらった状態にする(種類ごとに、最初の1つを使う)
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-rewards-claimed"), args.indices.contains(i + 1), let n = Int(args[i + 1]) {
+            state = DailyRewardState(claimed: n, lastDay: n > 0 ? today : nil)
+            loadout = RewardLoadout()
+            for k in RewardKind.allCases { loadout.select(state.owned(k).first, kind: k) }
+        }
+        #endif
     }
 
     var canClaim: Bool { state.canClaim(today: today) }
