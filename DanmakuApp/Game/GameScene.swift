@@ -39,6 +39,12 @@ final class GameScene: SKScene {
     private var barSeparators: [SKSpriteNode] = []
     /// 演出(警告・撃破)を出すか。遊ぶ人の設定でオフにできる
     private let effectsOn: Bool
+    /// 広告でもらった報酬の演出(自分の端末だけの見た目。計算には関わらない)
+    private let fx: RewardFX
+    private var fxFrame = 0
+    private var fxLastHP = 0
+    private var fxLastLife = 0
+    private var auraNode: SKNode?
     private var shownWave = -1
     private var shownDefeats = 0
     /// 最後のボスを倒したとき、爆発を見せてから結果を出すための待ち(秒)
@@ -47,8 +53,9 @@ final class GameScene: SKScene {
     private let warningOverlay = SKSpriteNode(color: UIColor(red: 1, green: 0.1, blue: 0.2, alpha: 1), size: CGSize(width: 360, height: 540))
     private let waveLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
 
-    init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true) {
+    init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none) {
         effectsOn = effects
+        fx = rewardFX
         sim = Simulation(stage: stage, shotType: loadout.shot)
         // 弾・背景・自機は別々のテーマを選べる
         var skin = Skin.of(loadout.bullets)
@@ -101,6 +108,7 @@ final class GameScene: SKScene {
         addChild(bossNode)
         shipNode.zPosition = 3
         addChild(shipNode)
+        if effectsOn, let r = fx.aura { buildAura(r) }
 
         let back = SKSpriteNode(color: Palette.barBack, size: CGSize(width: W, height: 5))
         back.anchorPoint = CGPoint(x: 0, y: 1); back.position = CGPoint(x: 0, y: H); back.zPosition = 5
@@ -268,6 +276,7 @@ final class GameScene: SKScene {
             s.node.position = pos(Double(s.node.position.x), (s.y + now * s.v).truncatingRemainder(dividingBy: Double(H)))
         }
         shipNode.position = pos(sim.player.x, sim.player.y)
+        if effectsOn { renderRewardFX() }
         shipNode.alpha = sim.isShielded ? (Int(now * 10) % 2 == 0 ? 0.35 : 1) : 1
 
         // 弾（スプライトを使い回す）
@@ -377,6 +386,7 @@ final class GameScene: SKScene {
     private func playDefeat(at p: Point, effect: DefeatEffect) {
         guard effect != .none else { return }
         let center = pos(p.x, p.y)
+        if let r = fx.burst { rewardBurst(r, at: center) }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         switch effect {
         case .none: return
@@ -441,7 +451,7 @@ final class GameScene: SKScene {
         n.run(.sequence([.fadeAlpha(to: peak, duration: duration * 0.2), .fadeOut(withDuration: duration * 0.8), .removeFromParent()]))
     }
 
-    private func ring(at p: CGPoint, color: UIColor, maxRadius: CGFloat, width: CGFloat, duration: Double) {
+    fileprivate func ring(at p: CGPoint, color: UIColor, maxRadius: CGFloat, width: CGFloat, duration: Double) {
         let n = SKShapeNode(circleOfRadius: 4)
         n.strokeColor = color
         n.fillColor = .clear
@@ -452,7 +462,7 @@ final class GameScene: SKScene {
         n.run(.sequence([.group([.scale(to: maxRadius / 4, duration: duration), .fadeOut(withDuration: duration)]), .removeFromParent()]))
     }
 
-    private func burst(at p: CGPoint, count: Int, colors: [UIColor], speed: ClosedRange<CGFloat>, size: ClosedRange<CGFloat>,
+    fileprivate func burst(at p: CGPoint, count: Int, colors: [UIColor], speed: ClosedRange<CGFloat>, size: ClosedRange<CGFloat>,
                        life: ClosedRange<Double>, gravity: CGFloat) {
         for i in 0..<count {
             let d = CGFloat.random(in: size)
@@ -464,5 +474,71 @@ final class GameScene: SKScene {
             let dx = CGFloat(cos(a)) * v * CGFloat(t), dy = CGFloat(sin(a)) * v * CGFloat(t) - gravity * CGFloat(t) * CGFloat(t)
             n.run(.sequence([.group([.moveBy(x: dx, y: dy, duration: t), .fadeOut(withDuration: t), .scale(to: 0.2, duration: t)]), .removeFromParent()]))
         }
+    }
+}
+
+// MARK: 報酬の演出(軌跡・被弾の光・オーラ・撃破)。見た目だけで、ゲームの計算には関わらない
+
+extension GameScene {
+    fileprivate func buildAura(_ r: Reward) {
+        let color = RewardArt.uiColor(r)
+        let node = SKNode()
+        node.zPosition = 2.5
+        let n = RewardArt.particleCount(r)
+        switch r.style {
+        case .ring:
+            let c = SKShapeNode(circleOfRadius: 16)
+            c.strokeColor = color; c.fillColor = .clear; c.lineWidth = 1.5; c.alpha = 0.8
+            node.addChild(c)
+            node.run(.repeatForever(.sequence([.scale(to: 1.25, duration: 0.7), .scale(to: 1.0, duration: 0.7)])))
+        case .dots, .star, .wave:
+            for i in 0..<n {
+                let a = CGFloat(i) / CGFloat(n) * 2 * .pi
+                let d = SKSpriteNode(color: i % 2 == 0 ? color : RewardArt.accent(r), size: CGSize(width: r.style == .star ? 4 : 3, height: r.style == .star ? 4 : 3))
+                if r.style == .star { d.zRotation = .pi / 4 }
+                d.position = CGPoint(x: cos(a) * 17, y: sin(a) * 17)
+                node.addChild(d)
+            }
+            node.run(.repeatForever(.rotate(byAngle: r.style == .wave ? -2 * .pi : 2 * .pi, duration: r.style == .wave ? 2.4 : 3.2)))
+        }
+        auraNode = node
+        addChild(node)
+    }
+
+    fileprivate func renderRewardFX() {
+        fxFrame += 1
+        auraNode?.position = shipNode.position
+        // 軌跡: 3フレームごとに、自機の後ろに小さな粒を残す
+        if let r = fx.trail, fxFrame % 3 == 0 {
+            let color = RewardArt.uiColor(r)
+            let size: CGFloat = r.style == .star ? 5 : 4
+            let n = SKSpriteNode(color: fxFrame % 6 == 0 ? color : RewardArt.accent(r), size: CGSize(width: size, height: size))
+            if r.style == .star { n.zRotation = .pi / 4 }
+            let wobble: CGFloat = r.style == .wave ? CGFloat(sin(Double(fxFrame) * 0.4)) * 6 : 0
+            n.position = CGPoint(x: shipNode.position.x + wobble, y: shipNode.position.y - 10)
+            n.zPosition = 2.8
+            addChild(n)
+            if r.style == .ring {
+                n.removeFromParent()
+                ring(at: CGPoint(x: shipNode.position.x, y: shipNode.position.y - 8), color: color, maxRadius: 14, width: 1.2, duration: 0.35)
+            } else {
+                n.run(.sequence([.group([.moveBy(x: 0, y: -18, duration: 0.4), .fadeOut(withDuration: 0.4), .scale(to: 0.2, duration: 0.4)]), .removeFromParent()]))
+            }
+        }
+        // 被弾の光: ライフかHPが減ったときに、自機の位置に散らす
+        let hp = sim.hp, life = sim.lifeLeft
+        if (hp < fxLastHP || life < fxLastLife), let r = fx.hitSpark {
+            let colors = [RewardArt.uiColor(r), RewardArt.accent(r), .white]
+            burst(at: shipNode.position, count: RewardArt.particleCount(r) * 3, colors: colors, speed: 50...160, size: 2...5, life: 0.4...0.8, gravity: 0)
+            if r.style == .ring { ring(at: shipNode.position, color: RewardArt.uiColor(r), maxRadius: 60, width: 3, duration: 0.45) }
+        }
+        fxLastHP = hp
+        fxLastLife = life
+    }
+
+    fileprivate func rewardBurst(_ r: Reward, at center: CGPoint) {
+        let colors = [RewardArt.uiColor(r), RewardArt.accent(r), .white]
+        burst(at: center, count: RewardArt.particleCount(r) * 6, colors: colors, speed: 60...220, size: 3...7, life: 0.7...1.3, gravity: r.style == .star ? 60 : 0)
+        ring(at: center, color: RewardArt.uiColor(r), maxRadius: 130, width: 4, duration: 0.6)
     }
 }

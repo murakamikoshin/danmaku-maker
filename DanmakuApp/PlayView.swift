@@ -51,7 +51,7 @@ final class PlayModel: ObservableObject {
         self.loadout = loadout
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
-        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn)
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.current())
         wire()
     }
 
@@ -111,7 +111,7 @@ final class PlayModel: ObservableObject {
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
         damage = 0
-        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn)
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.current())
         generation += 1
         wire()
     }
@@ -294,6 +294,7 @@ struct ResultView: View {
     let retry: () -> Void
     let back: () -> Void
 
+    @EnvironmentObject private var rewardStore: RewardStore
     private var win: Bool { result.outcome == .cleared }
     private var timeText: String { String(format: "%.1f", result.time) }
 
@@ -322,6 +323,14 @@ struct ResultView: View {
             Color(Palette.background).opacity(0.78)
             ScrollView {
                 VStack(spacing: 14) {
+                    // 広告でもらった称号(自分の画面だけ)
+                    if !isTest, let badge = rewardStore.selected(.badge) {
+                        HStack(spacing: 8) {
+                            RewardSwatch(reward: badge, size: 34)
+                            Text(RewardArt.name(badge)).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(RewardArt.color(badge))
+                        }
+                        .accessibilityIdentifier("result.badge")
+                    }
                     Text(headline)
                         .accessibilityIdentifier("result.headline")
                         .font(.system(size: 38, weight: .heavy, design: .rounded))

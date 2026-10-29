@@ -36,6 +36,7 @@ struct ShopView: View {
                         .accessibilityIdentifier("shop.removeads")
                     }
 
+                    DailyRewardCard().id("daily")
                     CustomImagesCard().id("customimages")
                     ShotSection().id("shots")
                     PatternShop().id("patterns")
