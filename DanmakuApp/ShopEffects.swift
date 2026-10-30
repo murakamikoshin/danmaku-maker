@@ -37,9 +37,18 @@ struct GameBossShape: Shape {
 
 private func fract(_ x: Double) -> Double { x - floor(x) }
 
-/// そのテーマの背景・弾・自機で、ゲームと同じ渦巻きの弾幕が流れ続ける見本
+/// そのテーマの背景・弾・自機で、ゲームと同じ計算の渦巻きの弾幕が流れ続ける見本。
+/// 大きさは実際のゲームと同じ比率(縦横同じ倍率)で、実際の画面(幅 360)の一部を中央に見せる
 struct BulletBurstView: View {
     let theme: Theme
+    @State private var engine = PatternDemoEngine(source: Point(x: 180, y: 120), player: Point(x: 180, y: 290), sweepPlayer: false)
+
+    /// 5色の発射台が、同じ位置から回しながら撃つ渦巻き(Emitter の spiral)
+    private static let emitters: [Emitter] = (0..<5).map { e in
+        var m = Emitter.make(.spiral, end: 60)
+        m.k = e; m.a = e * 72; m.c = 2; m.i = 0.09; m.v = 2; m.r = 15
+        return m
+    }
 
     var body: some View {
         let skin = Skin.of(theme)
@@ -48,10 +57,13 @@ struct BulletBurstView: View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate
-                let s = min(size.width, size.height * 1.7) / 240
-                let c = CGPoint(x: size.width * 0.5, y: size.height * 0.42)
+                engine.advance(to: timeline.date, emitters: Self.emitters, key: 0)
+                // 見せる範囲の高さ(論理px)を枠に合わせる。幅 360 の画面を、枠の中央に置く
+                let s = size.height / CGFloat(PatternDemoEngine.fieldHeight)
+                let ox = (size.width - 360 * s) / 2
                 // 背景
                 let full = Path(CGRect(origin: .zero, size: size))
+                let c = CGPoint(x: size.width * 0.5, y: engine.source.y * s)
                 let glow = Gradient(colors: [Color(skin.star).opacity(0.95), Color(skin.background)])
                 ctx.fill(full, with: .radialGradient(glow, center: c, startRadius: 0, endRadius: max(size.width, size.height) * 0.75))
                 // またたく星
@@ -59,36 +71,23 @@ struct BulletBurstView: View {
                     let fx = fract(sin(Double(i) * 12.9898) * 43758.5453)
                     let fy = fract(sin(Double(i) * 78.233) * 12543.1)
                     let tw = 0.5 + 0.5 * sin(t * 2 + Double(i))
-                    let d = CGFloat(1.5 + 2 * fract(Double(i) * 0.37)) * s
+                    let d = CGFloat(1.5 + 2 * fract(Double(i) * 0.37)) * s * 2
                     let rect = CGRect(x: CGFloat(fx) * size.width, y: CGFloat(fy) * size.height, width: d, height: d)
                     ctx.fill(Path(ellipseIn: rect), with: .color(Color(skin.star).opacity(0.3 + 0.7 * tw)))
                 }
-                // 渦巻きの弾(5色の発射台が、同じ位置から回しながら撃つ)
-                let interval = 0.09, ageMax = 1.7, speed = 62.0
-                let k1 = Int(floor(t / interval))
-                let k0 = k1 - Int(ageMax / interval)
-                let bs = 12.0 * s * 1.1
-                for k in k0...k1 {
-                    let age = t - Double(k) * interval
-                    if age < 0 || age > ageMax { continue }
-                    let r = speed * age * s * 1.25
-                    for e in 0..<5 {
-                        for j in 0..<2 {
-                            let deg = Double(e) * 72 + Double(j) * 180 + Double(k) * 15
-                            let a = deg * Double.pi / 180
-                            let x = c.x + CGFloat(cos(a) * r)
-                            let y = c.y + CGFloat(sin(a) * r) * 0.9
-                            if x < -bs || x > size.width + bs || y < -bs || y > size.height + bs { continue }
-                            ctx.draw(Image(uiImage: images[e]), in: CGRect(x: x - bs / 2, y: y - bs / 2, width: bs, height: bs))
-                        }
-                    }
+                // 実際の画面の幅(360)の範囲。弾はこの外に出ると消える
+                ctx.stroke(Path(CGRect(x: ox, y: 0, width: 360 * s, height: size.height)), with: .color(.white.opacity(0.12)), lineWidth: 1)
+                // 弾(ゲームと同じ 12×12)
+                let bs = 12 * s
+                for b in engine.bullets {
+                    ctx.draw(Image(uiImage: images[b.color % images.count]), in: CGRect(x: ox + b.x * s - bs / 2, y: b.y * s - bs / 2, width: bs, height: bs))
                 }
-                // ボスと自機
-                let bossSide = 44 * s
-                let bossRect = CGRect(x: c.x - bossSide / 2, y: c.y - bossSide / 2, width: bossSide, height: bossSide)
+                // ボス(中サイズの 48)と自機(20×24)
+                let bossSide = EnemyArt.bossPoints(size: 1) * s
+                let bossRect = CGRect(x: ox + engine.source.x * s - bossSide / 2, y: engine.source.y * s - bossSide / 2, width: bossSide, height: bossSide)
                 ctx.fill(GameBossShape().path(in: bossRect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
-                let sw = 20 * s * 1.3, sh = 24 * s * 1.3
-                ctx.draw(Image(uiImage: ship), in: CGRect(x: size.width * 0.5 - sw / 2, y: size.height * 0.88 - sh / 2, width: sw, height: sh))
+                let p = engine.player
+                ctx.draw(Image(uiImage: ship), in: CGRect(x: ox + p.x * s - 10 * s, y: p.y * s - 12 * s, width: 20 * s, height: 24 * s))
             }
         }
     }

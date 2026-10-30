@@ -522,7 +522,7 @@ private struct PatternTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             PatternDemo(pattern: pattern)
-                .frame(height: 120)
+                .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                 .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             Text(LocalizedStringKey(Self.keys[pattern] ?? "")).font(.system(size: 18, weight: .heavy, design: .rounded))
@@ -550,65 +550,86 @@ private struct PatternDemo: View {
     @State private var engine = PatternDemoEngine()
 
     var body: some View {
+        let images = SpriteFactory.bulletImages(.classic)
+        let ship = SpriteFactory.shipImage(.classic)
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
             Canvas { ctx, size in
                 engine.advance(to: tl.date, pattern: pattern)
-                let sx = size.width / 360
-                let sy = size.height / 330
-                ctx.scaleBy(x: sx, y: sy)
+                // 縦横同じ倍率で描く(実際の画面の一部。幅 360 を枠いっぱいに使う)
+                let s = size.width / CGFloat(PatternDemoEngine.fieldWidth)
+                // 弾・自機・ボスは、ゲームと同じ大きさ(弾 12×12、自機 20×24、ボス = 中サイズの 48)
+                let bs = 12 * s
                 let c = engine.source
-                ctx.fill(GameBossShape().path(in: CGRect(x: c.x - 18, y: c.y - 18, width: 36, height: 36)), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
-                let ship = engine.player
-                ctx.fill(GameShipShape().path(in: CGRect(x: ship.x - 9, y: ship.y - 11, width: 18, height: 22)), with: .color(Color(UIColor(hex: 0x5CE1E6))))
+                let bossSide = EnemyArt.bossPoints(size: 1) * s
+                ctx.fill(GameBossShape().path(in: CGRect(x: c.x * s - bossSide / 2, y: c.y * s - bossSide / 2, width: bossSide, height: bossSide)),
+                         with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                let p = engine.player
+                ctx.draw(Image(uiImage: ship), in: CGRect(x: p.x * s - 10 * s, y: p.y * s - 12 * s, width: 20 * s, height: 24 * s))
                 for b in engine.bullets {
-                    let r: CGFloat = 8
-                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)), with: .color(Color(Palette.bullets[b.color % 5])))
-                    ctx.fill(Path(ellipseIn: CGRect(x: b.x - 3.5, y: b.y - 3.5, width: 7, height: 7)), with: .color(.white))
+                    ctx.draw(Image(uiImage: images[b.color % images.count]), in: CGRect(x: b.x * s - bs / 2, y: b.y * s - bs / 2, width: bs, height: bs))
                 }
             }
         }
     }
 }
 
+/// ショップの見本用に、ゲーム本体と同じ計算(Emit.emit と Bullet.advance)で弾を動かす。複数の発射台も扱える
 final class PatternDemoEngine {
-    private var sim: Simulation?
+    /// 見せる範囲(論理px)。実際の画面は 360×540 で、その上の 360×fieldHeight を縦横同じ倍率で見せる
+    static let fieldWidth = 360.0
+    static let fieldHeight = 330.0
+
     private var t = 0.0
-    private var next = 0.0
-    private var shot = 0
+    private var next: [Double] = []
+    private var shot: [Int] = []
     private var rng = Mulberry32(seed: 5)
     private var last: Date?
     private(set) var bullets: [Bullet] = []
-    private(set) var player = Point(x: 180, y: 290)
-    let source = Point(x: 180, y: 50)
-    private var emitter: Emitter?
-    private var emitterPattern: Pattern?
+    private(set) var player: Point
+    let source: Point
+    private var emitters: [Emitter] = []
+    private var key: AnyHashable?
+    private let sweepPlayer: Bool
+
+    /// source: 発射位置、player: 自機の位置、sweepPlayer: 自機を左右に動かす(狙う弾を見せるため)
+    init(source: Point = Point(x: 180, y: 50), player: Point = Point(x: 180, y: 290), sweepPlayer: Bool = true) {
+        self.source = source
+        self.player = player
+        self.sweepPlayer = sweepPlayer
+    }
 
     func advance(to now: Date, pattern: Pattern) {
-        if emitterPattern != pattern {
-            var m = Emitter.make(pattern, end: 60)
-            m.k = pattern == .heart ? 0 : (pattern == .flower ? 3 : pattern == .star ? 2 : 1)
-            emitter = m; emitterPattern = pattern; bullets = []; t = 0; next = 0; shot = 0
+        var m = Emitter.make(pattern, end: 60)
+        m.k = pattern == .heart ? 0 : (pattern == .flower ? 3 : pattern == .star ? 2 : 1)
+        advance(to: now, emitters: [m], key: pattern)
+    }
+
+    func advance(to now: Date, emitters list: [Emitter], key: AnyHashable) {
+        if self.key != key {
+            emitters = list; self.key = key; bullets = []; t = 0
+            next = Array(repeating: 0, count: list.count); shot = Array(repeating: 0, count: list.count)
         }
-        guard let m = emitter else { return }
         let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
         last = now
         t += dt
-        player = Point(x: 180 + sin(t * 0.8) * 100, y: 290)
-        while t >= next {
-            Emit.emit(m, shot: shot, cx: source.x, cy: source.y, px: player.x, py: player.y, rng: &rng, into: &bullets)
-            shot += 1
-            next += max(0.05, m.i)
+        if sweepPlayer { player = Point(x: 180 + sin(t * 0.8) * 100, y: player.y) }
+        for (n, m) in emitters.enumerated() {
+            while t >= next[n] {
+                Emit.emit(m, shot: shot[n], cx: source.x, cy: source.y, px: player.x, py: player.y, rng: &rng, into: &bullets)
+                shot[n] += 1
+                next[n] += max(0.05, m.i)
+            }
         }
         var w = 0
         var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
             // ゲーム本体と同じ動き(止まる・分裂・追尾・加速・反射)
-            if b.advance(dt: dt, width: 360, playerX: player.x, playerY: player.y) == .burst {
+            if b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y) == .burst {
                 born.append(contentsOf: b.fragments())
                 continue
             }
-            if b.x < -20 || b.x > 380 || b.y < -20 || b.y > 350 { continue }
+            if b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > Self.fieldHeight + 20 { continue }
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
