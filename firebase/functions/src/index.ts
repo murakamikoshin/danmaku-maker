@@ -104,7 +104,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   await userRef.set({
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
     ...quotaFields(unlisted ? quota : afterPost(quota, premium)),
-    createdAt: user.exists ? user.get("createdAt") : FieldValue.serverTimestamp(),
+    createdAt: user.get("createdAt") ?? FieldValue.serverTimestamp(),
     blockedUids: user.exists ? user.get("blockedUids") ?? [] : [],
   }, { merge: true });
 

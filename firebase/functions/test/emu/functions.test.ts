@@ -532,7 +532,7 @@ describe("ステージ名の検索", () => {
     await db.doc("stages/OLD01").set({ name: "古いステージ", status: "published", mode: "survive", likes: 0 });
     await db.doc("meta/nameKeysBackfill").delete();
     expect(await backfillNameKeys(db)).toBeGreaterThanOrEqual(1);
-    expect((await db.doc("stages/OLD01").get()).get("nameKeys")).toContain("ふる");
+    expect((await db.doc("stages/OLD01").get()).get("nameKeys")).toContain("古い");
     expect(await backfillNameKeys(db)).toBe(0);
   });
 });
