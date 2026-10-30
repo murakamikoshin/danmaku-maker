@@ -4,10 +4,12 @@ import { FieldValue, getFirestore, type DocumentReference } from "firebase-admin
 import { getStorage } from "firebase-admin/storage";
 import { logger, setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
+import { decay, refreshTrending } from "./trending.js";
 import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
 
 setGlobalOptions({ region: "asia-northeast1", maxInstances: 10 });
@@ -17,7 +19,6 @@ const db = getFirestore();
 const APP_STORE_URL = process.env.APP_STORE_URL ?? "https://apps.apple.com/app/id6824245206";
 const HIDE_REPORT_THRESHOLD = 5;
 const POST_INTERVAL_MS = 10_000;
-const TREND_HALF_LIFE_MS = 2 * 24 * 3600 * 1000;
 
 /** 遊べるステージか(公開中、または「URLを知っている人だけ」)。非表示にされたものは遊べない */
 const isOpen = (status: unknown) => status === "published" || status === "unlisted";
@@ -41,7 +42,6 @@ function stageIdFrom(data: unknown): string {
   return id;
 }
 
-const decay = (value: number, from: number, now: number) => value * 0.5 ** ((now - from) / TREND_HALF_LIFE_MS);
 
 async function saveOgp(id: string, stage: Stage): Promise<string> {
   const path = `og/${id}.png`;
@@ -442,4 +442,10 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   await getAuth().deleteUser(uid);
   logger.info("account-deleted", { stages: mine.size, likes: likes.size });
   return { ok: true, stages: mine.size };
+});
+
+/** 1時間ごとに、急上昇の点数を、いまの時刻まで減らして保存し直す(長く遊ばれていないステージが、古い点数で上位に残らないようにする) */
+export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 300, memory: "256MiB" }, async () => {
+  const n = await refreshTrending(db, Date.now());
+  logger.info("trending-refreshed", { stages: n });
 });

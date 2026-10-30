@@ -416,3 +416,26 @@ describe("コメント", () => {
     expect((await db.doc(`stages/${id}/comments/${c.id}`).get()).exists).toBe(false);
   });
 });
+
+describe("急上昇の点数の定期更新", () => {
+  it("長く更新されていないステージの点数を、時間に合わせて減らし、小さくなったら 0 にする", async () => {
+    const { refreshTrending } = await import("../../src/trending.js");
+    const now = Date.now();
+    const day = 24 * 3600 * 1000;
+    const mk = (id: string, trending: number, ago: number) =>
+      db.doc(`stages/${id}`).set({ status: "published", trending, trendUpdatedAt: now - ago, likes: 0, plays: 0, clears: 0 });
+    await mk("TRND1", 400, 4 * day);   // 半減期2日 × 2回 → 100
+    await mk("TRND2", 1, 20 * day);    // 0.5 未満になる → 0
+    await mk("TRND3", 50, 0);          // いま更新されたばかり → ほぼそのまま
+    const updated = await refreshTrending(db, now);
+    expect(updated).toBeGreaterThanOrEqual(3);
+    const t1 = (await db.doc("stages/TRND1").get()).data()!;
+    expect(t1.trending).toBeCloseTo(100, 5);
+    expect(t1.trendUpdatedAt).toBe(now);
+    expect((await db.doc("stages/TRND2").get()).get("trending")).toBe(0);
+    expect((await db.doc("stages/TRND3").get()).get("trending")).toBeCloseTo(50, 5);
+    // もう一度呼んでも、0 のものは対象にならず、点数は変わらない
+    await refreshTrending(db, now);
+    expect((await db.doc("stages/TRND1").get()).get("trending")).toBeCloseTo(100, 5);
+  });
+});
