@@ -348,6 +348,18 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ shot: "laser" }))).toEqual({ ok: false, error: "shot" });
   });
 
+  it("毎日のごほうびの演出は、種類ごとに1つまで受け付け、種類の順に並べる。称号・範囲外・重複は拒否", () => {
+    const a = validatePublish(good({ rewardFx: [13, 6] }));   // オーラ(13)・火花(6)
+    expect(a.ok && a.stage.rewardFx).toEqual([6, 13]);
+    const none = validatePublish(good({ rewardFx: [] }));
+    expect(none.ok && "rewardFx" in none.stage).toBe(false);
+    const plain = validatePublish(good({}));
+    expect(plain.ok && "rewardFx" in plain.stage).toBe(false);
+    for (const bad of [[4], [365], [-1], [1.5], ["1"], [5, 10], [0, 1, 2, 3, 8], "abc", 3]) {
+      expect(validatePublish(good({ rewardFx: bad }))).toEqual({ ok: false, error: "reward-fx" });
+    }
+  });
+
   it("ボスの大きさ(小・大)と見た目を受け付け、標準(中・見た目0)は入れない", () => {
     const a = validatePublish(boss({ bossSize: 0, bossLook: 3, mooks: 2, mookLook: 4 }));
     expect(a.ok && [a.stage.bossSize, a.stage.bossLook, a.stage.mooks, a.stage.mookLook]).toEqual([0, 3, 2, 4]);

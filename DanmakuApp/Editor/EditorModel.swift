@@ -111,6 +111,8 @@ struct Draft: Codable, Equatable {
     var bossDefeat = DefeatEffect.standard.rawValue
     /// 自機の撃ち方(ステージごと。遊ぶ全員が、この撃ち方になる)
     var shot = ShotType.standard
+    /// 毎日のごほうびの演出(Reward の番号。種類ごとに1つまで。遊ぶ全員に出る)
+    var rewardFx: [Int] = []
     /// ボスの大きさ・見た目、雑魚の姿の大きさ(nil は出さない)・見た目
     var bossSize = 1
     var bossLook = 0
@@ -121,7 +123,7 @@ struct Draft: Codable, Equatable {
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, bossSize, bossLook, mooks, mookLook }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -143,6 +145,7 @@ struct Draft: Codable, Equatable {
         bossWarning = try c.decodeIfPresent(Bool.self, forKey: .bossWarning) ?? false
         bossDefeat = try c.decodeIfPresent(Int.self, forKey: .bossDefeat) ?? DefeatEffect.standard.rawValue
         shot = (try? c.decodeIfPresent(ShotType.self, forKey: .shot)) ?? .standard
+        rewardFx = (try? c.decodeIfPresent([Int].self, forKey: .rewardFx)) ?? []
         bossSize = try c.decodeIfPresent(Int.self, forKey: .bossSize) ?? 1
         bossLook = try c.decodeIfPresent(Int.self, forKey: .bossLook) ?? 0
         mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
@@ -164,7 +167,7 @@ struct Draft: Codable, Equatable {
               bossWarning: bossWarning ? true : nil,
               bossDefeat: mode == .boss ? bossDefeat : nil,
               bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
-              shot: shot).sanitized()
+              shot: shot, rewardFx: rewardFx).sanitized()
     }
 
     /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)

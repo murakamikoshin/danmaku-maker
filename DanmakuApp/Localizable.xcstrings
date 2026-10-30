@@ -30854,61 +30854,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "1日1回、広告を見ると報酬が1つもらえます。演出は自分の画面だけに出て、ランキングや遊びには影響しません。"
+            "value": "1日1回、広告を見ると報酬が1つもらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Watch one ad a day to get one reward. Effects only appear on your own screen and never affect rankings or gameplay."
+            "value": "Watch one ad a day to get one reward. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天看一次广告可领取一个奖励。特效仅在你自己的画面中显示,不会影响排行榜和游戏性。"
+            "value": "每天看一次广告可领取一个奖励。特效会显示在你自己的画面中,也可以在制作关卡时加上,让所有游玩该关卡的人都能看到。不会影响排行榜和游戏性。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天看一次廣告可領取一個獎勵。特效僅在你自己的畫面中顯示,不會影響排行榜和遊戲性。"
+            "value": "每天看一次廣告可領取一個獎勵。特效會顯示在你自己的畫面中,也可以在製作關卡時加上,讓所有遊玩該關卡的人都能看到。不會影響排行榜和遊戲性。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "하루에 한 번 광고를 보면 보상을 하나 받아요. 연출은 내 화면에서만 보이며 랭킹이나 게임 플레이에는 영향을 주지 않아요."
+            "value": "하루에 한 번 광고를 보면 보상을 하나 받아요. 연출은 내 화면에 나타나며, 스테이지를 만들 때 붙이면 그 스테이지를 플레이하는 모두에게 보여 줄 수 있어요. 랭킹과 게임 플레이에는 영향이 없어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mira un anuncio al día para conseguir una recompensa. Los efectos solo se ven en tu pantalla y no afectan a las clasificaciones ni a la jugabilidad."
+            "value": "Mira un anuncio al día para conseguir una recompensa. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que lo vean todos los que lo jueguen. No afectan a las clasificaciones ni a la jugabilidad."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Regardez une pub par jour pour obtenir une récompense. Les effets ne s'affichent que sur votre écran et n'affectent ni les classements ni le jeu."
+            "value": "Regardez une pub par jour pour obtenir une récompense. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Aucun effet sur les classements ni sur le jeu."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sieh dir einmal täglich eine Werbung an, um eine Belohnung zu erhalten. Die Effekte erscheinen nur auf deinem Bildschirm und beeinflussen weder Ranglisten noch das Spielgeschehen."
+            "value": "Sieh dir täglich eine Werbung an, um eine Belohnung zu bekommen. Die Effekte erscheinen auf deinem Bildschirm und können einem selbst erstellten Level hinzugefügt werden, sodass alle, die es spielen, sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Veja um anúncio por dia para ganhar uma recompensa. Os efeitos aparecem só na sua tela e não afetam rankings nem a jogabilidade."
+            "value": "Assista a um anúncio por dia para ganhar uma recompensa. Os efeitos aparecem na sua tela e você pode adicioná-los a uma fase que criar para que todos que jogarem a vejam. Eles não afetam rankings nem a jogabilidade."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Смотрите одну рекламу в день и получайте награду. Эффекты видны только на вашем экране и не влияют на рейтинги и игровой процесс."
+            "value": "Смотрите по одной рекламе в день, чтобы получать награду. Эффекты видны на вашем экране, а ещё их можно добавить в созданный уровень, чтобы их видели все игроки. Они не влияют на рейтинги и игру."
           }
         }
       }
@@ -30918,61 +30918,321 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "広告削除を購入した方は、広告なしで毎日もらえます。演出は自分の画面だけに出て、ランキングや遊びには影響しません。"
+            "value": "広告削除を購入した方は、広告なしで毎日もらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "With Remove Ads, you can claim every day without watching an ad. Effects only appear on your own screen and never affect rankings or gameplay."
+            "value": "With Remove Ads, you can claim every day without watching an ad. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "购买去广告后,每天无需观看广告即可领取。特效仅在你自己的画面中显示,不会影响排行榜和游戏性。"
+            "value": "购买去广告后,每天无需观看广告即可领取。特效会显示在你自己的画面中,也可以在制作关卡时加上,让所有游玩该关卡的人都能看到。不会影响排行榜和游戏性。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "購買移除廣告後,每天無需觀看廣告即可領取。特效僅在你自己的畫面中顯示,不會影響排行榜和遊戲性。"
+            "value": "購買移除廣告後,每天無需觀看廣告即可領取。特效會顯示在你自己的畫面中,也可以在製作關卡時加上,讓所有遊玩該關卡的人都能看到。不會影響排行榜和遊戲性。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "광고 제거를 구매하면 광고 없이 매일 받을 수 있어요. 연출은 내 화면에서만 보이며 랭킹이나 게임 플레이에는 영향을 주지 않아요."
+            "value": "광고 제거를 구매하면 광고 없이 매일 받을 수 있어요. 연출은 내 화면에 나타나며, 스테이지를 만들 때 붙이면 그 스테이지를 플레이하는 모두에게 보여 줄 수 있어요. 랭킹과 게임 플레이에는 영향이 없어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Con Quitar anuncios, puedes reclamar cada día sin ver anuncios. Los efectos solo se ven en tu pantalla y no afectan a las clasificaciones ni a la jugabilidad."
+            "value": "Con Quitar anuncios puedes reclamar cada día sin ver anuncios. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que lo vean todos los que lo jueguen. No afectan a las clasificaciones ni a la jugabilidad."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avec Supprimer les pubs, récupérez chaque jour sans regarder de pub. Les effets ne s'affichent que sur votre écran et n'affectent ni les classements ni le jeu."
+            "value": "Avec Supprimer les pubs, vous pouvez récupérer chaque jour sans regarder de pub. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Aucun effet sur les classements ni sur le jeu."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mit „Werbung entfernen“ holst du dir jeden Tag die Belohnung ohne Werbung ab. Die Effekte erscheinen nur auf deinem Bildschirm und beeinflussen weder Ranglisten noch das Spielgeschehen."
+            "value": "Mit „Werbung entfernen“ kannst du täglich ohne Werbung abholen. Die Effekte erscheinen auf deinem Bildschirm und können einem selbst erstellten Level hinzugefügt werden, sodass alle, die es spielen, sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Com Remover anúncios, você resgata todo dia sem ver anúncios. Os efeitos aparecem só na sua tela e não afetam rankings nem a jogabilidade."
+            "value": "Com Remover anúncios, você resgata todo dia sem assistir a anúncios. Os efeitos aparecem na sua tela e você pode adicioná-los a uma fase que criar para que todos que jogarem a vejam. Eles não afetam rankings nem a jogabilidade."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "С отключением рекламы награду можно забирать каждый день без просмотра рекламы. Эффекты видны только на вашем экране и не влияют на рейтинги и игровой процесс."
+            "value": "С опцией «Убрать рекламу» можно получать награды каждый день без просмотра рекламы. Эффекты видны на вашем экране, а ещё их можно добавить в созданный уровень, чтобы их видели все игроки. Они не влияют на рейтинги и игру."
+          }
+        }
+      }
+    },
+    "editor.rewardfx": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belohnungseffekte"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reward effects"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efectos de recompensa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effets de récompense"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ごほうびの演出"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보상 연출"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efeitos de recompensa"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эффекты наград"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "奖励特效"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "獎勵特效"
+          }
+        }
+      }
+    },
+    "editor.rewardfx.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeige allen, die dieses Level spielen, die Spuren, Funken, Auren und Explosionen aus den täglichen Belohnungen. Sie beeinflussen weder das Spiel noch die Ranglisten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the trail, spark, aura and burst effects you earned from daily rewards to everyone who plays this stage. They never affect gameplay or rankings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra a todos los que jueguen este nivel las estelas, chispas, auras y explosiones que conseguiste con las recompensas diarias. No afectan a la jugabilidad ni a las clasificaciones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Montrez à tous ceux qui jouent ce niveau les traînées, étincelles, auras et explosions obtenues grâce aux récompenses quotidiennes. Aucun effet sur le jeu ni sur les classements."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日のごほうびでもらった軌跡・火花・オーラ・爆発を、このステージを遊ぶ全員に見せられます。遊びやランキングには影響しません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 보상으로 받은 궤적·불꽃·오라·폭발 연출을 이 스테이지를 플레이하는 모든 사람에게 보여 줄 수 있어요. 게임 플레이와 랭킹에는 영향이 없어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostre a todos que jogarem esta fase os rastros, faíscas, auras e explosões que você ganhou nas recompensas diárias. Eles não afetam a jogabilidade nem os rankings."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Покажите всем, кто играет на этом уровне, шлейфы, искры, ауры и взрывы, полученные за ежедневные награды. Они не влияют на игру и рейтинги."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "让所有游玩此关卡的人看到你通过每日奖励获得的轨迹、火花、光环和爆炸特效。不会影响游戏性和排行榜。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "讓所有遊玩此關卡的人看到你透過每日獎勵獲得的軌跡、火花、光環和爆炸特效。不會影響遊戲性和排行榜。"
+          }
+        }
+      }
+    },
+    "editor.rewardfx.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast noch keine Belohnungen. Sieh dir im Shop unter „Tägliche Belohnungen“ eine Werbung an, um täglich eine zu bekommen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have no rewards yet. Watch an ad in the shop's \"Daily rewards\" to get one each day."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no tienes recompensas. Mira un anuncio en \"Recompensas diarias\" de la tienda para conseguir una al día."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous n'avez pas encore de récompense. Regardez une pub dans « Récompenses quotidiennes » de la boutique pour en obtenir une par jour."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ報酬がありません。ショップの「毎日のごほうび」で、広告を見ると1日1つもらえます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 보상이 없어요. 상점의 \"매일 보상\"에서 광고를 보면 하루에 하나 받을 수 있어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você ainda não tem recompensas. Assista a um anúncio em \"Recompensas diárias\" na loja para ganhar uma por dia."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Наград пока нет. Посмотрите рекламу в разделе «Ежедневные награды» магазина, чтобы получать по одной в день."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你还没有奖励。在商店的“每日奖励”中观看广告,每天可领取一个。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你還沒有獎勵。在商店的「每日獎勵」中觀看廣告,每天可領取一個。"
+          }
+        }
+      }
+    },
+    "editor.rewardfx.shop": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tägliche Belohnungen holen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go get daily rewards"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir por las recompensas diarias"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aller chercher les récompenses quotidiennes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日のごほうびをもらいに行く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 보상 받으러 가기"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pegar as recompensas diárias"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За ежедневными наградами"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "去领取每日奖励"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "去領取每日獎勵"
           }
         }
       }

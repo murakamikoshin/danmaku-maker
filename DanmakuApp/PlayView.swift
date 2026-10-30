@@ -51,7 +51,7 @@ final class PlayModel: ObservableObject {
         self.loadout = loadout
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
-        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.current())
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.resolved(for: stage))
         wire()
     }
 
@@ -111,7 +111,7 @@ final class PlayModel: ObservableObject {
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
         damage = 0
-        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.current())
+        scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.resolved(for: stage))
         generation += 1
         wire()
     }

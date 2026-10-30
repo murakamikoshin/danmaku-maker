@@ -1,6 +1,6 @@
 import Foundation
 
-/// 広告を見て、1日1つもらえる報酬(365個)。自分の端末だけで効く演出と称号で、ステージのデータやランキングには影響しない
+/// 広告を見て、1日1つもらえる報酬(365個)。演出と称号で、遊びやランキングには影響しない。演出は、自分の画面に出すほか、ステージ作成で選ぶと(Stage.rewardFx)そのステージを遊ぶ全員に出せる
 public enum RewardKind: Int, CaseIterable, Codable, Sendable {
     /// 自機の軌跡
     case trail
@@ -42,6 +42,20 @@ public struct Reward: Hashable, Codable, Sendable {
     /// 色の色相(0...1)。色の番号を、色相環に等間隔で置く
     public var hue: Double { Double(colorIndex) / Double(DailyRewards.colorCount) }
     public var id: String { "reward.\(index)" }
+
+    /// ステージに付けられる演出の種類(称号は、ゲーム中の演出ではないので除く)
+    public static let stageKinds: [RewardKind] = [.trail, .hitSpark, .aura, .burst]
+
+    /// ステージに付ける演出の番号を整える。範囲外・称号・同じ種類の2つ目は捨て、種類の順に並べる。空なら nil。サーバーの検証と同じ規則
+    public static func sanitizedFx(_ indices: [Int]?) -> [Int]? {
+        var byKind: [Int: Int] = [:]
+        for i in indices ?? [] {
+            guard let r = Reward(index: i), stageKinds.contains(r.kind), byKind[r.kind.rawValue] == nil else { continue }
+            byKind[r.kind.rawValue] = i
+        }
+        let list = byKind.sorted { $0.key < $1.key }.map(\.value)
+        return list.isEmpty ? nil : list
+    }
 }
 
 public enum DailyRewards {

@@ -63,6 +63,7 @@ struct EditorView: View {
                         LifePanel(model: model)
                         BGMPanel(model: model)
                         LookPanel(model: model)
+                        RewardFxPanel(model: model)
                         if model.draft.mode != .sequence {
                             GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
@@ -457,6 +458,60 @@ private struct BGMPanel: View {
     }
 }
 
+
+/// 毎日のごほうびでもらった演出(軌跡・火花・オーラ・爆発)。ステージに付けると、遊ぶ全員にその演出が出る。もらったものだけ選べる
+private struct RewardFxPanel: View {
+    @ObservedObject var model: EditorModel
+    @EnvironmentObject private var rewards: RewardStore
+    @State private var showShop = false
+
+    var body: some View {
+        GamePanel(title: "editor.rewardfx", tint: Color(Palette.gold)) {
+            Text("editor.rewardfx.note").font(.caption).foregroundStyle(.secondary)
+            ForEach(Reward.stageKinds, id: \.self) { kind in
+                let owned = rewards.state.owned(kind)
+                if !owned.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(LocalizedStringKey(kind.nameKey)).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                Button { gameTap(); set(nil, kind: kind) } label: {
+                                    Image(systemName: "nosign").font(.title3).frame(width: 48, height: 48)
+                                        .background(Color.white.opacity(chosen(kind) == nil ? 0.25 : 0.1), in: RoundedRectangle(cornerRadius: 11))
+                                }
+                                .buttonStyle(.plain)
+                                ForEach(owned.reversed(), id: \.self) { r in
+                                    Button { gameTap(); set(r, kind: kind) } label: {
+                                        RewardSwatch(reward: r, size: 48)
+                                            .overlay(RoundedRectangle(cornerRadius: 11).stroke(.white, lineWidth: chosen(kind) == r ? 2.5 : 0))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            }
+            if rewards.state.claimed == 0 {
+                Text("editor.rewardfx.empty").font(.caption.bold()).foregroundStyle(Color(Palette.gold))
+            }
+            Button { gameTap(); showShop = true } label: { Chip(title: L("editor.rewardfx.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
+        }
+        .sheet(isPresented: $showShop) { ShopView() }
+    }
+
+    private func chosen(_ kind: RewardKind) -> Reward? {
+        model.draft.rewardFx.compactMap(Reward.init(index:)).first { $0.kind == kind }
+    }
+
+    /// 種類ごとに1つ。nil なら、その種類を外す
+    private func set(_ reward: Reward?, kind: RewardKind) {
+        var list = model.draft.rewardFx.filter { Reward(index: $0)?.kind != kind }
+        if let reward, rewards.state.has(reward) { list.append(reward.index) }
+        model.draft.rewardFx = list
+    }
+}
 
 /// ステージの見た目(弾の色と形・背景・自機)。作者が決めて、遊ぶ全員に、そう見える。買ったものだけ選べる
 private struct LookPanel: View {

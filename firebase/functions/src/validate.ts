@@ -74,7 +74,14 @@ export interface Stage {
   mookLook?: number;
   /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
   shot?: "spread" | "heavy";
+  /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
+  rewardFx?: number[];
 }
+
+/** 毎日のごほうび: 全部で365個、5種類(軌跡・火花・オーラ・爆発・称号)。ステージに付けられるのは称号を除く4種類 */
+const REWARD_TOTAL = 365;
+const REWARD_KIND_COUNT = 5;
+const REWARD_FX_KINDS = 4;
 
 /** 大きさ・見た目の共通の検査: 範囲外は不正。標準の値は保存しない(undefined を返す) */
 function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: true; v: number | undefined } | { ok: false } {
@@ -289,6 +296,19 @@ export function validatePublish(input: unknown): Validated {
     shot = input.shot;
   }
 
+  // 毎日のごほうびの演出(0〜364。5個ごとに 軌跡・火花・オーラ・爆発・称号 と種類が回る。称号と同じ種類の重複は不正)
+  let rewardFx: number[] | undefined;
+  if (input.rewardFx !== undefined && input.rewardFx !== null) {
+    if (!Array.isArray(input.rewardFx) || input.rewardFx.length > REWARD_FX_KINDS) return { ok: false, error: "reward-fx" };
+    const byKind = new Map<number, number>();
+    for (const raw of input.rewardFx) {
+      const r = int(raw, 0, REWARD_TOTAL - 1);
+      if (r === null || r % REWARD_KIND_COUNT >= REWARD_FX_KINDS || byKind.has(r % REWARD_KIND_COUNT)) return { ok: false, error: "reward-fx" };
+      byKind.set(r % REWARD_KIND_COUNT, r);
+    }
+    if (byKind.size > 0) rewardFx = [...byKind.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1]);
+  }
+
   // 「URLを知っている人だけ」の投稿(unlisted)は、クリア記録がなくてもよい。一覧には載らない
   const replay = input.unlisted === true ? null : input.clearReplay;
   if (replay !== null && (typeof replay !== "string" || replay.length < 8 || replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(replay))) {
@@ -301,7 +321,7 @@ export function validatePublish(input: unknown): Validated {
     stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
-      ...(shot ? { shot } : {}) },
+      ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}) },
   };
 }
 

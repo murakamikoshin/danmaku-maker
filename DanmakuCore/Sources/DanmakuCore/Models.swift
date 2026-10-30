@@ -319,6 +319,8 @@ public struct Stage: Codable, Equatable, Sendable {
     /// 自機の撃ち方(ステージごとに、作者が決める)。nil は標準。遊ぶ全員が、この撃ち方で遊ぶ
     public var shot: ShotType?
     public var shotType: ShotType { shot ?? .standard }
+    /// 作者が付けた、毎日のごほうびの演出(Reward の番号。種類ごとに1つまで)。遊ぶ全員に、この演出が出る。見た目だけで、計算やランキングには関わらない。nil は付けない
+    public var rewardFx: [Int]?
     public var bossDefeatEffect: DefeatEffect { bossDefeat.flatMap(DefeatEffect.init(rawValue:)) ?? .standard }
 
     /// 発射位置の予告(点線のひし形)を出さない。nil は、出す(これまでと同じ)。作者が決める
@@ -348,7 +350,7 @@ public struct Stage: Codable, Equatable, Sendable {
                 lifeMode: LifeMode? = nil, lifeCount: Int? = nil, bgm: Int? = nil,
                 themeBullets: Theme? = nil, themeBackground: Theme? = nil, themeShip: Theme? = nil,
                 hideMarkers: Bool? = nil, waves: [Wave]? = nil, bossWarning: Bool? = nil, bossDefeat: Int? = nil,
-                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil) {
+                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil, rewardFx: [Int]? = nil) {
         self.name = name; self.mode = mode; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove
         self.emitters = emitters; self.formatVersion = formatVersion
@@ -359,11 +361,12 @@ public struct Stage: Codable, Equatable, Sendable {
         self.bossWarning = bossWarning
         self.bossDefeat = bossDefeat
         self.bossSize = bossSize; self.mooks = mooks; self.bossLook = bossLook; self.mookLook = mookLook; self.shot = shot
+        self.rewardFx = rewardFx
     }
 
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
-        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot
+        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx
     }
 
     /// シミュレーションが使う場面の一覧。連戦以外は、これまでのステージ全体を「場面1つ」として扱う
@@ -428,6 +431,7 @@ public struct Stage: Codable, Equatable, Sendable {
         bossLook = try d.decodeIfPresent(Int.self, forKey: .bossLook)
         mookLook = try d.decodeIfPresent(Int.self, forKey: .mookLook)
         shot = (try? d.decodeIfPresent(ShotType.self, forKey: .shot)) ?? nil
+        rewardFx = (try? d.decodeIfPresent([Int].self, forKey: .rewardFx)) ?? nil
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -454,6 +458,7 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(bossLook, forKey: .bossLook)
         try c.encodeIfPresent(mookLook, forKey: .mookLook)
         try c.encodeIfPresent(shot, forKey: .shot)
+        try c.encodeIfPresent(rewardFx, forKey: .rewardFx)
     }
 
     public static let durations: [Mode: [Int]] = [
@@ -484,7 +489,7 @@ public struct Stage: Codable, Equatable, Sendable {
                          themeBackground: lookBackground == .classic ? nil : lookBackground,
                          themeShip: lookShip == .classic ? nil : lookShip,
                          hideMarkers: hideMarkers == true ? true : nil, waves: Array(ws), bossWarning: nil, bossDefeat: nil,
-                         bossSize: nil, mooks: nil, bossLook: nil, mookLook: nil, shot: shot == .standard ? nil : shot)
+                         bossSize: nil, mooks: nil, bossLook: nil, mookLook: nil, shot: shot == .standard ? nil : shot, rewardFx: Reward.sanitizedFx(rewardFx))
         }
         let allowed = Stage.durations[mode]!
         // 選択肢にない値は、標準の長さに丸める(生き残りは20秒、ボス戦とダメージ勝負は60秒)
@@ -523,6 +528,7 @@ public struct Stage: Codable, Equatable, Sendable {
                      mooks: Wave.sanitizedMooks(mooks),
                      bossLook: (mode == .boss || mode == .damage) ? Wave.sanitizedLook(bossLook) : nil,
                      mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
-                     shot: shot == .standard ? nil : shot)
+                     shot: shot == .standard ? nil : shot,
+                     rewardFx: Reward.sanitizedFx(rewardFx))
     }
 }

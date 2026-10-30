@@ -78,4 +78,31 @@ final class DailyRewardsTests: XCTestCase {
         let b = cal.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 0, minute: 1))!
         XCTAssertEqual(DailyRewardState.day(of: b, calendar: cal) - DailyRewardState.day(of: a, calendar: cal), 1)
     }
+
+    // MARK: ステージに付ける演出(Stage.rewardFx)
+
+    func testStageFxKeepsOnePerKindInKindOrder() {
+        // 0=軌跡 1=火花 2=オーラ 3=爆発 4=称号(5個ごとに種類が回る)
+        XCTAssertEqual(Reward.sanitizedFx([7, 5, 10]), [5, 7])           // 軌跡(5)・火花は無し・オーラ(7)、10は軌跡の2つ目で捨てる
+        XCTAssertEqual(Reward.sanitizedFx([8, 1, 2]), [1, 2, 8])         // 火花(1)・オーラ(2)・爆発(8)
+        XCTAssertNil(Reward.sanitizedFx([4, 9, 14]))                     // 称号だけなら付けない
+        XCTAssertNil(Reward.sanitizedFx([365, -1, 9999]))               // 範囲外は捨てる
+        XCTAssertNil(Reward.sanitizedFx([]))
+        XCTAssertNil(Reward.sanitizedFx(nil))
+    }
+
+    func testStageFxSurvivesSanitizeAndCoding() throws {
+        var st = Stage(name: "fx", mode: .survive, durationSec: 20, emitters: [em(.spiral)])
+        st.rewardFx = [13, 6, 4]   // オーラ(13)・火花(6)・称号(4)
+        let s = st.sanitized()
+        XCTAssertEqual(s.rewardFx, [6, 13])
+        let back = try JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(s))
+        XCTAssertEqual(back.rewardFx, [6, 13])
+        // 付けていないステージは、保存の形にも出ない
+        let plain = try JSONEncoder().encode(Stage(name: "p", mode: .survive, durationSec: 20, emitters: [em(.spiral)]).sanitized())
+        XCTAssertFalse(String(decoding: plain, as: UTF8.self).contains("rewardFx"))
+        // 知らない形(数字以外)は、付けないものとして読む
+        let bad = #"{"name":"x","mode":"survive","durationSec":20,"emitters":[],"rewardFx":"abc"}"#
+        XCTAssertNil(try JSONDecoder().decode(Stage.self, from: Data(bad.utf8)).rewardFx)
+    }
 }

@@ -109,4 +109,19 @@ struct RewardFX {
     @MainActor static func current(_ store: RewardStore = .shared) -> RewardFX {
         RewardFX(trail: store.selected(.trail), hitSpark: store.selected(.hitSpark), aura: store.selected(.aura), burst: store.selected(.burst))
     }
+
+    /// このステージで使う演出。作者がステージに付けた種類はそれを使い、付けていない種類は、遊ぶ人が選んでいるものを使う
+    @MainActor static func resolved(for stage: Stage, store: RewardStore = .shared) -> RewardFX {
+        var fx = current(store)
+        for r in (stage.rewardFx ?? []).compactMap(Reward.init(index:)) {
+            switch r.kind {
+            case .trail: fx.trail = r
+            case .hitSpark: fx.hitSpark = r
+            case .aura: fx.aura = r
+            case .burst: fx.burst = r
+            case .badge: break
+            }
+        }
+        return fx
+    }
 }
