@@ -12,9 +12,11 @@ struct RemoteStage: Identifiable, Hashable {
     let plays: Int
     let clears: Int
     let likes: Int
+    /// コメントの数(古いステージは項目がないので 0)
+    let comments: Int
 
     var clearRatePercent: Int? { plays > 0 ? Int((Double(clears) / Double(plays) * 100).rounded()) : nil }
-    static func == (a: RemoteStage, b: RemoteStage) -> Bool { a.id == b.id && a.likes == b.likes && a.plays == b.plays && a.clears == b.clears }
+    static func == (a: RemoteStage, b: RemoteStage) -> Bool { a.id == b.id && a.likes == b.likes && a.comments == b.comments && a.plays == b.plays && a.clears == b.clears }
     func hash(into h: inout Hasher) { h.combine(id) }
 }
 
@@ -86,6 +88,6 @@ struct StageRepository {
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
         return RemoteStage(id: doc.documentID, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
-                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"))
+                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"))
     }
 }

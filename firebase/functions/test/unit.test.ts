@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
-import { validateComment, validatePublish } from "../src/validate.js";
+import { validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
 import { pickLang, renderSharePage } from "../src/share.js";
@@ -382,5 +382,20 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(b.ok && "a" in b.stage.emitters[0]!).toBe(false);
     expect(validatePublish(good({ emitters: [em({ a: 200 })] }))).toEqual({ ok: false, error: "emitter-range" });
     expect(validatePublish(good({ emitters: [em({ t: "rain", a: 15 })] }))).toEqual({ ok: false, error: "emitter-range" });
+  });
+});
+
+describe("validateDisplayName(ランキング・コメントに出す投稿者名)", () => {
+  it("未指定・空は匿名(undefined)として受け付ける", () => {
+    for (const v of [undefined, null, "", "   "]) expect(validateDisplayName(v)).toEqual({ ok: true, name: undefined });
+  });
+  it("前後の空白を除き、1〜12文字を受け付ける", () => {
+    expect(validateDisplayName("  こうしん ")).toEqual({ ok: true, name: "こうしん" });
+    expect(validateDisplayName("あ".repeat(12))).toEqual({ ok: true, name: "あ".repeat(12) });
+  });
+  it("13文字以上・文字列以外・NGワードは拒否", () => {
+    expect(validateDisplayName("あ".repeat(13))).toEqual({ ok: false });
+    expect(validateDisplayName(123)).toEqual({ ok: false });
+    expect(validateDisplayName("しね")).toEqual({ ok: false });
   });
 });

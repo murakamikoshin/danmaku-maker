@@ -38,14 +38,38 @@ final class HandleStore: ObservableObject {
     }
 }
 
+/// ランキングとコメントに出す名前を、匿名(決まった言葉の名前)にするか、投稿者名にするか。端末に保存し、全ステージ共通
+@MainActor
+final class DisplayNameStore: ObservableObject {
+    static let shared = DisplayNameStore()
+    private let key = "display.useAuthorName"
+    static let maxLength = 12
+    @Published var useAuthorName: Bool { didSet { UserDefaults.standard.set(useAuthorName, forKey: key) } }
+
+    init() { useAuthorName = UserDefaults.standard.bool(forKey: key) }
+
+    /// サーバーに送る名前。投稿者名で出す設定で、名前が入っているときだけ。nil なら匿名で出る
+    var publicName: String? {
+        let n = AuthorName.current
+        return useAuthorName && !n.isEmpty ? n : nil
+    }
+
+    /// 画面に出す、いまの名前(番号なし)
+    func label(_ handle: PlayerHandle) -> String {
+        publicName ?? PlayerHandle.name(a: handle.a, n: handle.n, num: 0).replacingOccurrences(of: "#0000", with: "").trimmingCharacters(in: .whitespaces)
+    }
+}
+
 struct ScoreEntry: Identifiable, Equatable {
     var id: String { uid }
     let uid: String
     let a: Int
     let n: Int
     let num: Int
+    /// 投稿者名で記録したときの名前。nil なら匿名(a, n, num の名前)
+    var name: String? = nil
     let value: Int
-    var displayName: String { PlayerHandle.name(a: a, n: n, num: num) }
+    var displayName: String { name ?? PlayerHandle.name(a: a, n: n, num: num) }
 }
 
 struct SubmitOutcome {
@@ -56,7 +80,7 @@ struct SubmitOutcome {
     var reason: String?
 }
 
-enum RankingError: Error { case notCleared, tooFast, unavailable, other }
+enum RankingError: Error { case notCleared, tooFast, badName, unavailable, other }
 
 /// 世界ランキング。ボス戦は「クリアまでの時間(短いほど上)」、ダメージ勝負は「与えたダメージ(多いほど上)」
 enum RankingService {
@@ -73,7 +97,7 @@ enum RankingService {
             let d = doc.data()
             guard let uid = d["uid"] as? String, let value = (d["value"] as? NSNumber)?.intValue else { return nil }
             return ScoreEntry(uid: uid, a: (d["a"] as? NSNumber)?.intValue ?? 0, n: (d["n"] as? NSNumber)?.intValue ?? 0,
-                              num: (d["num"] as? NSNumber)?.intValue ?? 0, value: value)
+                              num: (d["num"] as? NSNumber)?.intValue ?? 0, name: (d["name"] as? String).flatMap { $0.isEmpty ? nil : $0 }, value: value)
         }
     }
 
@@ -84,12 +108,13 @@ enum RankingService {
     }
 
     /// 操作記録(リプレイ)を送る。サーバーが再生して、本当にクリアできているか確かめてから載せる
-    static func submit(stageID: String, moves: [Move], handle: PlayerHandle, shot: ShotType = .standard) async throws -> SubmitOutcome {
+    static func submit(stageID: String, moves: [Move], handle: PlayerHandle, name: String? = nil, shot: ShotType = .standard) async throws -> SubmitOutcome {
         guard Backend.isAvailable else { throw RankingError.unavailable }
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "stageId": stageID, "replay": Replay(moves: moves).encoded(), "shot": shot.rawValue,
             "handle": ["a": handle.a, "n": handle.n],
         ]
+        if let name { payload["name"] = name }
         do {
             let r = try await Backend.functions.httpsCallable("submitScore").call(payload)
             let d = r.data as? [String: Any] ?? [:]
@@ -100,6 +125,7 @@ enum RankingService {
             throw e
         } catch {
             if "\(error)".contains("too-fast") { throw RankingError.tooFast }
+            if "\(error)".contains("display-name") { throw RankingError.badName }
             throw RankingError.other
         }
     }

@@ -7,6 +7,7 @@ struct RankingSubmitPanel: View {
     let result: PlayResult
     let moves: [Move]
     @ObservedObject private var handles = HandleStore.shared
+    @ObservedObject private var names = DisplayNameStore.shared
     @State private var state: Phase = .idle
     @State private var editing = false
 
@@ -30,7 +31,7 @@ struct RankingSubmitPanel: View {
                 case .idle, .failed:
                     Button { gameTap(); editing = true } label: {
                         HStack(spacing: 6) {
-                            Text(PlayerHandle.name(a: handles.handle.a, n: handles.handle.n, num: 0).replacingOccurrences(of: "#0000", with: ""))
+                            Text(names.label(handles.handle))
                                 .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
                             Image(systemName: "pencil").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
@@ -62,10 +63,11 @@ struct RankingSubmitPanel: View {
     private func send() async {
         state = .sending
         do {
-            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, handle: handles.handle, shot: context.stage.shotType)
+            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, handle: handles.handle, name: names.publicName, shot: context.stage.shotType)
             state = .done(SubmitSummary(rank: o.rank, value: o.value, improved: o.improved))
         } catch RankingError.tooFast { state = .failed("ranking.error.tooFast") }
         catch RankingError.notCleared { state = .failed("ranking.error.notCleared") }
+        catch RankingError.badName { state = .failed("name.error.invalid") }
         catch { state = .failed("error.network") }
     }
 }
@@ -73,17 +75,41 @@ struct RankingSubmitPanel: View {
 /// ランキング名を選ぶ(形容詞と動物。番号は自動)
 struct HandleSheet: View {
     @ObservedObject private var handles = HandleStore.shared
+    @ObservedObject private var names = DisplayNameStore.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var authorName = AuthorName.current
 
     var body: some View {
         VStack(spacing: 14) {
             ScreenHeader(title: "handle.title") {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") { dismiss() }
             } trailing: { Color.clear.frame(width: 38, height: 38) }
-            Text(PlayerHandle.name(a: handles.handle.a, n: handles.handle.n, num: 1234))
+            Text(names.useAuthorName && !authorName.trimmingCharacters(in: .whitespaces).isEmpty
+                 ? authorName.trimmingCharacters(in: .whitespaces) : PlayerHandle.name(a: handles.handle.a, n: handles.handle.n, num: 1234))
                 .font(.system(size: 22, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    GamePanel(title: "handle.mode.title") {
+                        ChipGrid(items: [(false, L("handle.mode.anon")), (true, L("handle.mode.author"))],
+                                 selection: Binding(get: { names.useAuthorName }, set: { names.useAuthorName = $0 }), idPrefix: "handle.mode", minimum: 120)
+                        if names.useAuthorName {
+                            TextField("", text: $authorName, prompt: Text("handle.author.placeholder"))
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .padding(.vertical, 11).padding(.horizontal, 12)
+                                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                                .onChange(of: authorName) { v in
+                                    if v.count > DisplayNameStore.maxLength { authorName = String(v.prefix(DisplayNameStore.maxLength)) }
+                                    else { AuthorName.set(v); names.objectWillChange.send() }
+                                }
+                                .accessibilityIdentifier("handle.author")
+                            if authorName.trimmingCharacters(in: .whitespaces).isEmpty {
+                                Text("handle.author.empty").font(.caption.bold()).foregroundStyle(Color(Palette.gold))
+                            }
+                        }
+                        Text("handle.mode.note").font(.caption).foregroundStyle(.secondary)
+                    }
                     GamePanel(title: "handle.adj") {
                         ChipGrid(items: (0..<PlayerHandle.choices).map { ($0, L("handle.adj.\($0)")) },
                                  selection: Binding(get: { handles.handle.a }, set: { handles.handle.a = $0 }), idPrefix: "handle.adj", minimum: 96)

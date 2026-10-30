@@ -7,12 +7,14 @@ struct StageComment: Identifiable, Equatable {
     let a: Int
     let n: Int
     let num: Int
+    /// 投稿者名で書いたときの名前。nil なら匿名(a, n, num の名前)
+    var name: String? = nil
     let text: String
     let createdAt: Date?
-    var displayName: String { PlayerHandle.name(a: a, n: n, num: num) }
+    var displayName: String { name ?? PlayerHandle.name(a: a, n: n, num: num) }
 }
 
-enum CommentError: Error { case signIn, ngWord, link, tooLong, tooFast, other }
+enum CommentError: Error { case signIn, ngWord, link, tooLong, tooFast, badName, other }
 
 /// ステージへのコメント。書けるのは Apple でサインインした人だけ。通報・ブロック・削除ができる
 enum CommentService {
@@ -26,14 +28,15 @@ enum CommentService {
             let d = doc.data()
             guard let uid = d["uid"] as? String, let text = d["text"] as? String else { return nil }
             return StageComment(id: doc.documentID, uid: uid, a: (d["a"] as? NSNumber)?.intValue ?? 0, n: (d["n"] as? NSNumber)?.intValue ?? 0,
-                                num: (d["num"] as? NSNumber)?.intValue ?? 0, text: text, createdAt: (d["createdAt"] as? Timestamp)?.dateValue())
+                                num: (d["num"] as? NSNumber)?.intValue ?? 0, name: (d["name"] as? String).flatMap { $0.isEmpty ? nil : $0 }, text: text, createdAt: (d["createdAt"] as? Timestamp)?.dateValue())
         }
     }
 
-    static func post(stageID: String, text: String, handle: PlayerHandle) async throws {
+    static func post(stageID: String, text: String, handle: PlayerHandle, name: String? = nil) async throws {
         do {
-            _ = try await Backend.functions.httpsCallable("postComment").call(
-                ["stageId": stageID, "text": text, "handle": ["a": handle.a, "n": handle.n]] as [String: Any])
+            var payload: [String: Any] = ["stageId": stageID, "text": text, "handle": ["a": handle.a, "n": handle.n]]
+            if let name { payload["name"] = name }
+            _ = try await Backend.functions.httpsCallable("postComment").call(payload)
         } catch {
             let m = "\(error)"
             if m.contains("sign-in-required") { throw CommentError.signIn }
@@ -41,6 +44,7 @@ enum CommentService {
             if m.contains("comment-link") { throw CommentError.link }
             if m.contains("comment-length") { throw CommentError.tooLong }
             if m.contains("too-fast") { throw CommentError.tooFast }
+            if m.contains("display-name") { throw CommentError.badName }
             throw CommentError.other
         }
     }

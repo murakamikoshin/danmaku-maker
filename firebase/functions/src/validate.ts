@@ -325,6 +325,19 @@ export function validatePublish(input: unknown): Validated {
   };
 }
 
+/**
+ * ランキングとコメントに出す名前(投稿者名)の検査。未指定・空は「匿名で出す」ので undefined。
+ * 長さ(1〜12文字)とNGワードを検査する。不正なら ok: false
+ */
+export function validateDisplayName(raw: unknown): { ok: true; name: string | undefined } | { ok: false } {
+  if (raw === undefined || raw === null) return { ok: true, name: undefined };
+  if (typeof raw !== "string") return { ok: false };
+  const name = raw.replace(/\s+/g, " ").trim();
+  if (name === "") return { ok: true, name: undefined };
+  if (len(name) > MAX_AUTHOR || containsNgWord(name)) return { ok: false };
+  return { ok: true, name };
+}
+
 export const REPORT_REASONS = ["inappropriate_name", "impossible", "other"] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
 

@@ -293,6 +293,7 @@ struct RemoteRow: View {
                     Label("\(stage.plays)", systemImage: "gamecontroller")
                     Label("\(stage.clears)", systemImage: "flag.checkered")
                     Label("\(stage.likes)", systemImage: "heart")
+                    Label("\(stage.comments)", systemImage: "bubble.left")
                 }
                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             }

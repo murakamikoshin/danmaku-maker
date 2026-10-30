@@ -8,7 +8,7 @@ import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
-import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validatePublish, type Stage } from "./validate.js";
+import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
 
 setGlobalOptions({ region: "asia-northeast1", maxInstances: 10 });
 initializeApp();
@@ -82,7 +82,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     try {
       await db.doc(`stages/${candidate}`).create({
         authorUid: uid, ...v.stage, ogImagePath: "", status: unlisted ? "unlisted" : "published",
-        plays: 0, clears: 0, likes: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
+        plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
       id = candidate;
@@ -198,12 +198,15 @@ function handleNumber(uid: string): number {
 export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, async (req) => {
   const uid = requireAny(req);
   const id = stageIdFrom(req.data);
-  const d = req.data as { replay?: unknown; shot?: unknown; handle?: { a?: unknown; n?: unknown } };
+  const d = req.data as { replay?: unknown; shot?: unknown; handle?: { a?: unknown; n?: unknown }; name?: unknown };
   // 撃ち方はステージで決まっている。アプリから届く値は見ない(古い版は "standard" を送ってくる)
   const a = d.handle?.a, n = d.handle?.n;
   if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
     throw new HttpsError("invalid-argument", "handle");
   }
+  // 投稿者名で出す設定のときだけ届く。なければ匿名(a, n の言葉)で出す
+  const dn = validateDisplayName(d.name);
+  if (!dn.ok) throw new HttpsError("invalid-argument", "display-name");
   if (typeof d.replay !== "string" || d.replay.length < 8 || d.replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(d.replay)) {
     throw new HttpsError("invalid-argument", "replay");
   }
@@ -235,14 +238,25 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
   const { improved, best } = await db.runTransaction(async (tx) => {
     const cur = await tx.get(scoreRef);
     const old = cur.get("value") as number | undefined;
-    if (old !== undefined && !better(value, old)) return { improved: false, best: old };
-    tx.set(scoreRef, { uid, a, n, num: handleNumber(uid), value, mode: stage.mode, createdAt: FieldValue.serverTimestamp() });
+    // 記録が更新されなくても、表示名(匿名/投稿者名)の切り替えは反映する
+    const look = { a, n, num: handleNumber(uid), name: dn.name ?? FieldValue.delete() };
+    if (old !== undefined && !better(value, old)) {
+      tx.update(scoreRef, look);
+      return { improved: false, best: old };
+    }
+    tx.set(scoreRef, { uid, a, n, num: handleNumber(uid), ...(dn.name ? { name: dn.name } : {}), value, mode: stage.mode, createdAt: FieldValue.serverTimestamp() });
     tx.set(db.doc(`scoreReplays/${id}_${uid}`), { stageId: id, uid, value, replay: d.replay, createdAt: FieldValue.serverTimestamp() });
     return { improved: true, best: value };
   });
   const ahead = await db.collection(`stages/${id}/scores`).where("value", boss ? "<" : ">", best).count().get();
   return { accepted: true, improved, value: best, rank: ahead.data().count + 1 };
 });
+
+/** ステージのコメント数(一覧に出ている数)を delta 増減した値。古いステージは項目がないので 0 から数え、マイナスにはしない */
+function commentsAfter(stage: { get(field: string): unknown }, delta: number): number {
+  const cur = stage.get("comments");
+  return Math.max(0, (typeof cur === "number" ? cur : 0) + delta);
+}
 
 const COMMENT_INTERVAL_MS = 15_000;
 const COMMENT_HIDE_THRESHOLD = 3;
@@ -251,14 +265,17 @@ const COMMENT_HIDE_THRESHOLD = 3;
 export const postComment = onCall(async (req) => {
   const uid = requireMember(req);
   const id = stageIdFrom(req.data);
-  const d = req.data as { text?: unknown; handle?: { a?: unknown; n?: unknown } };
+  const d = req.data as { text?: unknown; handle?: { a?: unknown; n?: unknown }; name?: unknown };
   const v = validateComment(d.text);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
+  const dn = validateDisplayName(d.name);
+  if (!dn.ok) throw new HttpsError("invalid-argument", "display-name");
   const a = d.handle?.a, n = d.handle?.n;
   if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
     throw new HttpsError("invalid-argument", "handle");
   }
-  const stage = await db.doc(`stages/${id}`).get();
+  const stageRef = db.doc(`stages/${id}`);
+  const stage = await stageRef.get();
   if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
 
   const metaRef = db.doc(`commentMeta/${uid}`);
@@ -270,7 +287,12 @@ export const postComment = onCall(async (req) => {
   });
 
   const ref = db.collection(`stages/${id}/comments`).doc();
-  await ref.set({ uid, a, n, num: handleNumber(uid), text: v.text, status: "published", reports: 0, createdAt: FieldValue.serverTimestamp() });
+  await db.runTransaction(async (tx) => {
+    const st = await tx.get(stageRef);
+    if (!st.exists || !isOpen(st.get("status"))) throw new HttpsError("not-found", "stage");
+    tx.set(ref, { uid, a, n, num: handleNumber(uid), ...(dn.name ? { name: dn.name } : {}), text: v.text, status: "published", reports: 0, createdAt: FieldValue.serverTimestamp() });
+    tx.update(stageRef, { comments: commentsAfter(st, 1) });
+  });
   return { id: ref.id };
 });
 
@@ -283,7 +305,13 @@ export const deleteComment = onCall(async (req) => {
   const [stage, comment] = await Promise.all([db.doc(`stages/${id}`).get(), db.doc(`stages/${id}/comments/${cid}`).get()]);
   if (!stage.exists || !comment.exists) throw new HttpsError("not-found", "comment");
   if (comment.get("uid") !== uid && stage.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-allowed");
-  await comment.ref.delete();
+  await db.runTransaction(async (tx) => {
+    const [st, c] = await Promise.all([tx.get(stage.ref), tx.get(comment.ref)]);
+    if (!c.exists) return;
+    tx.delete(comment.ref);
+    // 一覧に出ているコメントの数だけを数える(非表示になったものは、そのとき減らしてある)
+    if (c.get("status") === "published" && st.exists) tx.update(stage.ref, { comments: commentsAfter(st, -1) });
+  });
   return { ok: true };
 });
 
@@ -296,8 +324,8 @@ export const reportComment = onCall(async (req) => {
   if (typeof cid !== "string" || !/^[A-Za-z0-9]{10,40}$/.test(cid)) throw new HttpsError("invalid-argument", "comment-id");
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
   return db.runTransaction(async (tx) => {
-    const ref = db.doc(`stages/${id}/comments/${cid}`), repRef = db.doc(`commentReports/${id}_${cid}_${uid}`);
-    const [comment, rep] = await Promise.all([tx.get(ref), tx.get(repRef)]);
+    const ref = db.doc(`stages/${id}/comments/${cid}`), repRef = db.doc(`commentReports/${id}_${cid}_${uid}`), stageRef = db.doc(`stages/${id}`);
+    const [comment, rep, st] = await Promise.all([tx.get(ref), tx.get(repRef), tx.get(stageRef)]);
     if (!comment.exists) throw new HttpsError("not-found", "comment");
     if (rep.exists) return { already: true, hidden: comment.get("status") === "hidden" };
     const reports = (comment.get("reports") as number) + 1;
@@ -305,6 +333,7 @@ export const reportComment = onCall(async (req) => {
     tx.set(repRef, { stageId: id, commentId: cid, reporterUid: uid, reason, createdAt: FieldValue.serverTimestamp() });
     tx.update(ref, { reports, ...(hide ? { status: "hidden" } : {}) });
     if (hide) {
+      if (st.exists) tx.update(stageRef, { comments: commentsAfter(st, -1) });
       tx.set(db.collection("admin_alerts").doc(), { type: "comment-auto-hidden", stageId: id, commentId: cid, reports, createdAt: FieldValue.serverTimestamp() });
       logger.error("comment-auto-hidden", { stageId: id, commentId: cid, reports });
     }
@@ -381,7 +410,15 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   for (const r of myReplays.docs) await r.ref.delete();
   await db.doc(`scoreMeta/${uid}`).delete();
   const myComments = await db.collectionGroup("comments").where("uid", "==", uid).get();
-  for (const c of myComments.docs) await c.ref.delete();
+  for (const c of myComments.docs) {
+    await db.runTransaction(async (tx) => {
+      const stageRef = c.ref.parent.parent!;
+      const [st, cur] = await Promise.all([tx.get(stageRef), tx.get(c.ref)]);
+      if (!cur.exists) return;
+      tx.delete(c.ref);
+      if (cur.get("status") === "published" && st.exists) tx.update(stageRef, { comments: commentsAfter(st, -1) });
+    });
+  }
   await db.doc(`commentMeta/${uid}`).delete();
   const myCommentReports = await db.collection("commentReports").where("reporterUid", "==", uid).get();
   for (const r of myCommentReports.docs) await r.ref.update({ reporterUid: "deleted" });

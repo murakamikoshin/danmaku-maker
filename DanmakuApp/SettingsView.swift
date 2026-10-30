@@ -59,6 +59,7 @@ struct SettingsView: View {
     @ObservedObject private var audio = AudioManager.shared
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @ObservedObject private var handles = HandleStore.shared
+    @ObservedObject private var names = DisplayNameStore.shared
     @State private var showStore = false
     @State private var showDelete = false
     @State private var showHandle = false
@@ -94,7 +95,7 @@ struct SettingsView: View {
                     GamePanel(title: "settings.ranking.name", tint: Color(Palette.gold)) {
                         Button { gameTap(); showHandle = true } label: {
                             HStack {
-                                Text(PlayerHandle.name(a: handles.handle.a, n: handles.handle.n, num: 0).replacingOccurrences(of: "#0000", with: "").trimmingCharacters(in: .whitespaces))
+                                Text(names.label(handles.handle))
                                     .font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
                                 Spacer()
                                 Image(systemName: "pencil").foregroundStyle(.secondary)

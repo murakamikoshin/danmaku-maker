@@ -7,6 +7,7 @@ struct CommentsSection: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
     @ObservedObject private var handles = HandleStore.shared
+    @ObservedObject private var names = DisplayNameStore.shared
     @State private var comments: [StageComment] = []
     @State private var loading = true
     @State private var failed = false
@@ -118,13 +119,14 @@ struct CommentsSection: View {
         guard auth.isMember else { needSignIn = true; return }
         sending = true; errorKey = nil
         do {
-            try await CommentService.post(stageID: stageID, text: t, handle: handles.handle)
+            try await CommentService.post(stageID: stageID, text: t, handle: handles.handle, name: names.publicName)
             text = ""
             await load()
         } catch CommentError.ngWord { errorKey = "comment.error.ng" }
         catch CommentError.link { errorKey = "comment.error.link" }
         catch CommentError.tooLong { errorKey = "comment.error.length" }
         catch CommentError.tooFast { errorKey = "comment.error.tooFast" }
+        catch CommentError.badName { errorKey = "name.error.invalid" }
         catch CommentError.signIn { needSignIn = true }
         catch { errorKey = "error.network" }
         sending = false

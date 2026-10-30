@@ -219,6 +219,24 @@ describe("submitScore(ランキング)", () => {
     expect(await call("submitScore", { stageId: id, replay: slow, shot: "standard", handle })).toMatchObject({ accepted: true, rank: 2 });
   });
 
+  it("投稿者名で記録でき、記録が更新されない提出でも、表示名の切り替えは反映される", async () => {
+    const { id } = await publishAs(bossStage);
+    await signOut(auth); await signInAnonymously(auth);
+    const uid = auth.currentUser!.uid;
+    const scoreRef = db.doc(`stages/${id}/scores/${uid}`);
+    await call("submitScore", { stageId: id, replay: STILL, shot: "standard", handle, name: "こうしん" });
+    expect((await scoreRef.get()).get("name")).toBe("こうしん");
+    await new Promise((r) => setTimeout(r, 3200));
+    // 同じ記録(更新なし)で匿名に戻すと、名前が外れる
+    const again = await call("submitScore", { stageId: id, replay: STILL, shot: "standard", handle: { a: 1, n: 2 } });
+    expect(again).toMatchObject({ accepted: true, improved: false });
+    const doc = (await scoreRef.get()).data()!;
+    expect(doc).not.toHaveProperty("name");
+    expect(doc).toMatchObject({ a: 1, n: 2 });
+    await new Promise((r) => setTimeout(r, 3200));
+    expect(await callErr("submitScore", { stageId: id, replay: STILL, shot: "standard", handle, name: "あ".repeat(13) })).toMatch(/display-name/);
+  });
+
   it("ダメージ勝負: 与えたダメージが載る(多いほど上)", async () => {
     const { id } = await publishAs(damageStage);
     await signOut(auth); await signInAnonymously(auth);
@@ -298,6 +316,35 @@ describe("コメント", () => {
     const doc = (await db.doc(`stages/${id}/comments/${r.id}`).get()).data()!;
     expect(doc).toMatchObject({ uid: auth.currentUser!.uid, a: 2, n: 7, text: "むずいけど 楽しい！", status: "published", reports: 0 });
     expect(doc.createdAt).toBeTruthy();
+  });
+
+  it("投稿者名で出す設定なら名前が保存され、不正な名前は拒否される。匿名のときは名前を保存しない", async () => {
+    const { id } = (await publish()) as { id: string };
+    await signUp();
+    const r = (await call("postComment", { stageId: id, text: "名前つき", handle, name: "  こうしん " })) as { id: string };
+    expect((await db.doc(`stages/${id}/comments/${r.id}`).get()).get("name")).toBe("こうしん");
+    expect(await callErr("postComment", { stageId: id, text: "OK", handle, name: "あ".repeat(13) })).toMatch(/display-name/);
+    expect(await callErr("postComment", { stageId: id, text: "OK", handle, name: "しね" })).toMatch(/display-name/);
+    await signUp();
+    const anon = (await call("postComment", { stageId: id, text: "匿名", handle, name: "" })) as { id: string };
+    expect((await db.doc(`stages/${id}/comments/${anon.id}`).get()).data()).not.toHaveProperty("name");
+  });
+
+  it("ステージのコメント数は、コメント・削除・自動非表示に合わせて増減する", async () => {
+    const { id } = (await publish()) as { id: string };
+    const count = async () => (await db.doc(`stages/${id}`).get()).get("comments");
+    expect(await count()).toBe(0);
+    await signUp();
+    const c1 = (await call("postComment", { stageId: id, text: "1つ目", handle })) as { id: string };
+    expect(await count()).toBe(1);
+    await signUp();
+    const c2 = (await call("postComment", { stageId: id, text: "2つ目", handle })) as { id: string };
+    expect(await count()).toBe(2);
+    await call("deleteComment", { stageId: id, commentId: c2.id });
+    expect(await count()).toBe(1);
+    for (let i = 0; i < 3; i++) { await signUp(); await call("reportComment", { stageId: id, commentId: c1.id, reason: "other" }); }
+    expect(await count()).toBe(0);                       // 3人の通報で非表示になった
+    expect((await db.doc(`stages/${id}/comments/${c1.id}`).get()).get("status")).toBe("hidden");
   });
 
   it("匿名ユーザーは書けない", async () => {

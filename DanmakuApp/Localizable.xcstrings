@@ -13126,61 +13126,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your ranking name is picked from preset words. The 4-digit number is assigned automatically."
+            "value": "For anonymous mode, pick a name from the preset words. The 4-digit number at the end is assigned automatically."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ランキングの名前は、決まった言葉から選びます。後ろの4桁の数字は、自動で決まります。"
+            "value": "匿名のときの名前は、決まった言葉から選びます。後ろの4桁の数字は、自動で決まります。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜昵称由预设词语组合而成。4位数字会自动分配。"
+            "value": "匿名时的名称从固定词语中选择。后面的4位数字会自动生成。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜暱稱由預設詞語組合而成。4位數字會自動分配。"
+            "value": "匿名時的名稱從固定詞語中選擇。後面的4位數字會自動產生。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "랭킹 이름은 미리 정해진 단어로 만들어져요. 4자리 숫자는 자동으로 붙어요."
+            "value": "익명일 때의 이름은 정해진 단어에서 골라요. 뒤의 4자리 숫자는 자동으로 정해져요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu nombre del ranking se elige entre palabras predefinidas. El número de 4 dígitos se asigna automáticamente."
+            "value": "En modo anónimo, elige un nombre entre palabras predefinidas. El número de 4 dígitos final se asigna automáticamente."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Votre nom de classement est choisi parmi des mots prédéfinis. Le nombre à 4 chiffres est attribué automatiquement."
+            "value": "En mode anonyme, choisissez un nom parmi des mots prédéfinis. Le nombre à 4 chiffres final est attribué automatiquement."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dein Ranglistenname wird aus vorgegebenen Wörtern gewählt. Die 4-stellige Zahl wird automatisch vergeben."
+            "value": "Im anonymen Modus wählst du einen Namen aus festen Wörtern. Die 4-stellige Zahl am Ende wird automatisch vergeben."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seu nome no ranking é escolhido entre palavras predefinidas. O número de 4 dígitos é atribuído automaticamente."
+            "value": "No modo anônimo, escolha um nome entre palavras predefinidas. O número de 4 dígitos no final é atribuído automaticamente."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Имя в рейтинге выбирается из готовых слов. Четырёхзначное число присваивается автоматически."
+            "value": "В анонимном режиме имя выбирается из готовых слов. 4-значное число в конце назначается автоматически."
           }
         }
       }
@@ -13254,61 +13254,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking name"
+            "value": "Name for comments & rankings"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ランキングの名前"
+            "value": "コメント・ランキングの名前"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜昵称"
+            "value": "评论与排行榜的名称"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜暱稱"
+            "value": "留言與排行榜的名稱"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "랭킹 이름"
+            "value": "댓글·랭킹 이름"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nombre del ranking"
+            "value": "Nombre en comentarios y clasificaciones"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nom de classement"
+            "value": "Nom pour commentaires et classements"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranglistenname"
+            "value": "Name für Kommentare & Ranglisten"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nome no ranking"
+            "value": "Nome em comentários e rankings"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Имя в рейтинге"
+            "value": "Имя в комментариях и рейтингах"
           }
         }
       }
@@ -19910,61 +19910,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking name"
+            "value": "Name for comments & rankings"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ランキングの名前"
+            "value": "コメント・ランキングの名前"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜昵称"
+            "value": "评论与排行榜的名称"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜暱稱"
+            "value": "留言與排行榜的名稱"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "랭킹 이름"
+            "value": "댓글·랭킹 이름"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nombre del ranking"
+            "value": "Nombre en comentarios y clasificaciones"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nom de classement"
+            "value": "Nom pour commentaires et classements"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranglistenname"
+            "value": "Name für Kommentare & Ranglisten"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nome no ranking"
+            "value": "Nome em comentários e rankings"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Имя в рейтинге"
+            "value": "Имя в комментариях и рейтингах"
           }
         }
       }
@@ -31233,6 +31233,461 @@
           "stringUnit": {
             "state": "translated",
             "value": "去領取每日獎勵"
+          }
+        }
+      }
+    },
+    "handle.mode.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示する名前"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name to show"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示的名称"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示的名稱"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시할 이름"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre que se muestra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom affiché"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angezeigter Name"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome exibido"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отображаемое имя"
+          }
+        }
+      }
+    },
+    "handle.mode.anon": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匿名(ことばの名前)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anonymous (word name)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匿名(词语名称)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匿名(詞語名稱)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "익명(단어 이름)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anónimo (nombre aleatorio)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anonyme (nom aléatoire)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anonym (Wortname)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anônimo (nome aleatório)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Анонимно (имя из слов)"
+          }
+        }
+      }
+    },
+    "handle.mode.author": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creator name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名称"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名稱"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투고자 이름"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de creador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom de créateur"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellername"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome de criador"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя автора"
+          }
+        }
+      }
+    },
+    "handle.author.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名(12文字まで)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creator name (up to 12 characters)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名称(最多12个字)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投稿者名稱(最多12個字)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투고자 이름(최대 12자)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de creador (hasta 12 caracteres)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom de créateur (12 caractères max.)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellername (bis zu 12 Zeichen)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome de criador (até 12 caracteres)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя автора (до 12 символов)"
+          }
+        }
+      }
+    },
+    "handle.author.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名前が空のあいだは、匿名で出ます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While the name is empty, you will appear anonymously."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称为空时,将以匿名显示。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名稱為空時,將以匿名顯示。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름이 비어 있는 동안은 익명으로 표시돼요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mientras el nombre esté vacío, aparecerás de forma anónima."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tant que le nom est vide, vous apparaissez de façon anonyme."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solange der Name leer ist, erscheinst du anonym."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enquanto o nome estiver vazio, você aparecerá como anônimo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока имя пустое, вы будете отображаться анонимно."
+          }
+        }
+      }
+    },
+    "handle.mode.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コメントとランキングに出る名前です。全ステージ共通です。ランキングは次に記録を送るときに切り替わります。すでに書いたコメントの名前は変わりません。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the name shown on comments and rankings, for all stages. Rankings switch the next time you submit a record. Comments you already wrote keep their old name."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这是评论和排行榜中显示的名称,所有关卡通用。排行榜会在你下次提交记录时切换。已发表的评论名称不会改变。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這是留言和排行榜中顯示的名稱,所有關卡通用。排行榜會在你下次提交紀錄時切換。已發表的留言名稱不會改變。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "댓글과 랭킹에 표시되는 이름이에요. 모든 스테이지에 공통으로 쓰여요. 랭킹은 다음에 기록을 보낼 때 바뀌어요. 이미 쓴 댓글의 이름은 바뀌지 않아요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es el nombre que se muestra en los comentarios y las clasificaciones, para todos los niveles. Las clasificaciones cambian la próxima vez que envíes un récord. Los comentarios ya escritos conservan su nombre."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C'est le nom affiché dans les commentaires et les classements, pour tous les niveaux. Les classements changent au prochain envoi d'un record. Les commentaires déjà écrits gardent leur ancien nom."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist der Name in Kommentaren und Ranglisten, für alle Level. Ranglisten wechseln beim nächsten Senden eines Rekords. Bereits geschriebene Kommentare behalten ihren Namen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "É o nome exibido em comentários e rankings, para todas as fases. Os rankings mudam na próxima vez que você enviar um recorde. Comentários já escritos mantêm o nome antigo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это имя показывается в комментариях и рейтингах для всех уровней. В рейтинге оно сменится при следующей отправке результата. У уже написанных комментариев имя не изменится."
+          }
+        }
+      }
+    },
+    "name.error.invalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この名前は使えません。別の名前にしてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This name can't be used. Please choose another."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此名称无法使用,请更换。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此名稱無法使用,請更換。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 이름은 사용할 수 없어요. 다른 이름으로 바꿔 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se puede usar este nombre. Elige otro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce nom ne peut pas être utilisé. Choisissez-en un autre."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Name kann nicht verwendet werden. Bitte wähle einen anderen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este nome não pode ser usado. Escolha outro."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это имя использовать нельзя. Выберите другое."
           }
         }
       }
