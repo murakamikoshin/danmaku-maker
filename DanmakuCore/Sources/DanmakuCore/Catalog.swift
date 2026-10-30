@@ -86,8 +86,8 @@ public enum Product: Hashable, Sendable {
         case .customImages: return 500
         case .pattern(let p): return p == .homing ? 300 : 100
         case .patternPack: return 600
-        case .patternMaker: return 980
-        case .lifetime: return 2980
+        case .patternMaker: return 1000
+        case .lifetime: return 3000
         }
     }
 

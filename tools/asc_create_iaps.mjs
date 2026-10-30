@@ -54,9 +54,16 @@ products.push(
   { id: 'shot.heavy', yen: 300, ref: 'Heavy Shot', ja: ['ヘビーショット', '太い1発でダメージ4倍の撃ち方です。'], en: ['Heavy Shot', 'One thick shot with 4x damage.'] },
 );
 
+const makerNotes = 'This is a one-time (non-consumable) purchase. To test: open the Shop tab (bottom of the screen), scroll to "Pattern Maker" and buy it. A "Create" button then appears: tap it, draw a line with your finger in the box (bullets follow the line at the speed you draw), tap Save, and the pattern becomes selectable in the stage editor. Anyone can play stages that use the patterns without buying. Use "Restore Purchases" at the bottom of the Shop screen to restore it. No account is required.';
+const lifetimeNotes = 'This is a one-time (non-consumable) purchase. To test: open the Shop tab (bottom of the screen); the "Lifetime Pack" card is at the top. After purchase, every paid item (looks, shots, patterns, custom images, Pattern Maker) is unlocked, ads are removed (no banner ads, free revives), and the daily limit on publishing stages no longer applies. Items added in the future are included. Use "Restore Purchases" at the bottom of the Shop screen to restore it. No account is required.';
+products.push(
+  { id: 'patternmaker', yen: 1000, ref: 'Pattern Maker', ja: ['弾幕作成モード', '指で線を描いて、自分だけの弾幕を作れます。'], en: ['Pattern Maker', 'Draw a line to make your own bullet pattern.'], notes: makerNotes },
+  { id: 'lifetime', yen: 3000, ref: 'Lifetime Pack', ja: ['永久買い切りパック', '全部の課金コンテンツと広告削除を、今後の追加分もずっと。'], en: ['Lifetime Pack', 'All paid items and Remove Ads, forever.'], notes: lifetimeNotes },
+);
+
 const NOTES = 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy this item. It becomes available to use right away. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.';
 
-const b = await chromium.connectOverCDP('http://localhost:9222');
+const b = await chromium.connectOverCDP('http://127.0.0.1:9222');
 const ctx = b.contexts()[0];
 const p = await ctx.newPage();
 const sleep = (ms) => p.waitForTimeout(ms);
@@ -88,7 +95,7 @@ async function openProduct(prod) {
     return;
   }
   await p.goto(LIST, { waitUntil: 'domcontentloaded' });
-  await waitFor('下書き', LIST);
+  await waitFor('参照名', LIST);
   await p.getByLabel('アプリ内購入の作成').click();
   await sleep(1500);
   await p.selectOption('#inAppPurchaseType', { label: '非消耗型' });
@@ -117,7 +124,7 @@ async function setPrice(yen) {
   await sleep(2000);
   await p.getByText('選択する', { exact: true }).click();
   await sleep(800);
-  const label = `￥${yen}.00`;
+  const label = `￥${yen.toLocaleString("en-US")}.00`;
   await p.getByPlaceholder('検索').fill(String(yen));
   await sleep(800);
   await p.getByText(label, { exact: true }).first().click();
