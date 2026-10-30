@@ -81,7 +81,7 @@ final class PurchaseService: NSObject, ObservableObject {
         case .part, .set: break   // 見た目は、ステージ作りで選ぶ(装備はない)
         case .shot(let s): cosmetics.equip(s)
         case .customImages: break   // 画像を選んだときに使う設定になる
-        case .pattern, .patternPack: break   // ステージ作りで、そのパターンが選べるようになる
+        case .pattern, .patternPack, .patternMaker, .lifetime: break   // ステージ作りで、そのパターンや作成モードが使えるようになる
         }
     }
 
@@ -99,7 +99,8 @@ final class PurchaseService: NSObject, ObservableObject {
 
     fileprivate func apply(_ info: CustomerInfo) {
         let ids = info.allPurchasedProductIdentifiers
-        isPremium = info.entitlements[Self.entitlementID]?.isActive == true || ids.contains(Self.removeAdsID)
+        // 永久買い切りパックは、広告削除も含む
+        isPremium = info.entitlements[Self.entitlementID]?.isActive == true || ids.contains(Self.removeAdsID) || ids.contains(Product.lifetime.id)
         cosmetics.updateOwnership(productIDs: ids)
     }
 }

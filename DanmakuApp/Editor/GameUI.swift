@@ -350,8 +350,52 @@ struct PatternTiles: View {
     ]
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            grid(DanmakuCore.Pattern.allCases.filter { !$0.isAd && $0 != .custom })
+            Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            grid(DanmakuCore.Pattern.ad)
+            customSection
+        }
+        .sheet(isPresented: $showShop) { ShopView() }
+    }
+
+    @ObservedObject private var library = PatternLibrary.shared
+    @Binding var emitter: Emitter
+
+    /// 弾幕作成モードで作った弾幕(選ぶと、描いた軌道がこの発射台に入る)
+    @ViewBuilder private var customSection: some View {
+        if cosmetics.ownership.hasPatternMaker || !library.items.isEmpty {
+            Text("editor.pattern.mysection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            if library.items.isEmpty {
+                Text("editor.pattern.mynone").font(.caption).foregroundStyle(.secondary)
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
+                ForEach(library.items) { item in
+                    let selected = emitter.t == .custom && emitter.path == item.path
+                    Button {
+                        gameTap()
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            emitter.t = .custom; emitter.path = item.path; emitter.c = item.copies; emitter.v = item.speed; emitter.r = 0
+                        }
+                    } label: {
+                        VStack(spacing: 3) {
+                            CustomPatternIcon(path: item.path).frame(width: 40, height: 40)
+                            Text(item.name).font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.7)).lineLimit(1).minimumScaleFactor(0.7)
+                        }
+                        .frame(maxWidth: .infinity).padding(.vertical, 6)
+                        .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                }
+            }
+        }
+    }
+
+    private func grid(_ patterns: [DanmakuCore.Pattern]) -> some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
-            ForEach(DanmakuCore.Pattern.allCases, id: \.self) { p in
+            ForEach(patterns, id: \.self) { p in
                 let selected = selection == p
                 let locked = !cosmetics.ownership.has(p) && selection != p
                 Button {
@@ -361,7 +405,7 @@ struct PatternTiles: View {
                 } label: {
                     VStack(spacing: 3) {
                         PatternIcon(pattern: p, selected: selected).frame(width: 40, height: 40)
-                        Text(LocalizedStringKey(keys[p] ?? "")).font(.system(size: 10, weight: .heavy, design: .rounded))
+                        Text(LocalizedStringKey(keys[p] ?? "pattern.\(p.rawValue)")).font(.system(size: 10, weight: .heavy, design: .rounded))
                             .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.7))
                             .lineLimit(1).minimumScaleFactor(0.7)
                     }
@@ -382,7 +426,6 @@ struct PatternTiles: View {
                 .accessibilityIdentifier("emitter.pattern.\(index).\(p.rawValue)")
             }
         }
-        .sheet(isPresented: $showShop) { ShopView() }
     }
 }
 
@@ -390,6 +433,34 @@ struct PatternTiles: View {
 struct PatternIcon: View {
     let pattern: DanmakuCore.Pattern
     let selected: Bool
+
+    /// 広告で解放するパターンの絵の点(0〜1の位置)。初期値で3回撃って、少し進めた弾の並び。パターンごとに最初に1回だけ計算する
+    private final class SampleCache: @unchecked Sendable {
+        let lock = NSLock()
+        var points: [DanmakuCore.Pattern: [CGPoint]] = [:]
+    }
+    private static let samples = SampleCache()
+
+    static func sample(_ p: DanmakuCore.Pattern) -> [CGPoint] {
+        samples.lock.lock(); defer { samples.lock.unlock() }
+        if let c = samples.points[p] { return c }
+        guard let d = p.recipeDefaults else { return [] }
+        let m = Emitter(t: p, x: 0.5, y: 0.15, s: 0, e: 20, i: d.i, c: d.c, v: d.v, r: d.r, k: 0)
+        var rng = Mulberry32(seed: 11)
+        var bullets: [Bullet] = []
+        let cx = DanmakuConfig.width * 0.5, cy = 50.0
+        for k in 0..<3 {
+            Emit.emit(m, shot: k, cx: cx, cy: cy, px: cx, py: 300, rng: &rng, into: &bullets)
+            // 1回ごとに少し進める(古い弾ほど遠くまで進む)
+            for i in 0..<bullets.count { for _ in 0..<6 { _ = bullets[i].advance(dt: 1.0 / 30, width: DanmakuConfig.width, playerX: cx, playerY: 300) } }
+        }
+        let pts = bullets.compactMap { b -> CGPoint? in
+            let x = b.x / DanmakuConfig.width, y = (b.y - 20) / 200
+            return (0...1).contains(x) && (0...1).contains(y) ? CGPoint(x: x, y: y) : nil
+        }
+        samples.points[p] = Array(pts.prefix(90))
+        return samples.points[p]!
+    }
 
     var body: some View {
         Canvas { ctx, size in
@@ -483,6 +554,9 @@ struct PatternIcon: View {
                 for (cx, cy, sx, sy) in [(3.0, 3.0, 1.0, 1.0), (w - 3, 3, -1.0, 1.0), (3, h - 3, 1.0, -1.0), (w - 3, h - 3, -1.0, -1.0)] {
                     for k in 0..<3 { dot(cx + sx * Double(k) * 7, cy + sy * Double(k) * 7, 2.2) }
                 }
+            default:
+                // 広告で解放するパターン: 実際に出る弾を少し進めた形を、小さく描く(ゲームと同じ計算)
+                for q in PatternIcon.sample(pattern) { dot(q.x * w, q.y * h, 1.5) }
             }
         }
     }

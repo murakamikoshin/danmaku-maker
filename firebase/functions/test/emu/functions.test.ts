@@ -5,6 +5,7 @@ import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/
 import { getFirestore as adminDb } from "firebase-admin/firestore";
 import { initializeApp as adminInit } from "firebase-admin/app";
 import { beforeAll, describe, expect, it } from "vitest";
+import { jstDay } from "../../src/quota.js";
 
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
 const app = initializeApp({ apiKey: "demo", projectId: "demo-danmaku" });
@@ -437,5 +438,122 @@ describe("急上昇の点数の定期更新", () => {
     // もう一度呼んでも、0 のものは対象にならず、点数は変わらない
     await refreshTrending(db, now);
     expect((await db.doc("stages/TRND1").get()).get("trending")).toBeCloseTo(100, 5);
+  });
+});
+
+describe("1日の公開数の上限", () => {
+  const setToday = (uid: string, used: number, extra = 0) =>
+    db.doc(`users/${uid}`).set({ postDay: jstDay(Date.now()), postsToday: used, extraPosts: extra, grantsToday: 0, displayName: "t", blockedUids: [], postCount: used }, { merge: true });
+
+  it("1日5本まで公開でき、6本目は拒否される。「URLを知っている人だけ」の投稿は数えない", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await setToday(uid, 5);
+    expect(await callErr("publishStage", stage)).toMatch(/daily-limit/);
+    const unlisted = await call("publishStage", { ...stage, unlisted: true, clearReplay: undefined });
+    expect(unlisted.id).toBeTruthy();
+    expect((await db.doc(`users/${uid}`).get()).get("postsToday")).toBe(5);
+  });
+
+  it("投稿すると今日の数が増える", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await call("publishStage", stage);
+    const u = (await db.doc(`users/${uid}`).get()).data()!;
+    expect(u).toMatchObject({ postDay: jstDay(Date.now()), postsToday: 1, extraPosts: 0 });
+  });
+
+  it("広告を見ると追加券がもらえて、1本ぶん投稿できる。使うと券が減る", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await setToday(uid, 5);
+    expect(await call("grantExtraPost", {})).toEqual({ extra: 1 });
+    await call("publishStage", stage);
+    expect((await db.doc(`users/${uid}`).get()).data()).toMatchObject({ postsToday: 6, extraPosts: 0 });
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    expect(await callErr("publishStage", stage)).toMatch(/daily-limit/);
+  });
+
+  it("購入者(自己申告)は上限なし。ただし、絶対上限(30本)がある", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await setToday(uid, 12);
+    expect((await call("publishStage", { ...stage, premium: true })).id).toBeTruthy();
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0), postsToday: 30 });
+    expect(await callErr("publishStage", { ...stage, premium: true })).toMatch(/daily-limit/);
+  });
+
+  it("追加券の連続取得は拒否される(間隔・持てる枚数)", async () => {
+    await signUp();
+    await call("grantExtraPost", {});
+    expect(await callErr("grantExtraPost", {})).toMatch(/too-fast/);
+  });
+
+  it("匿名ユーザーは追加券をもらえない", async () => {
+    await signOut(auth); await signInAnonymously(auth);
+    expect(await callErr("grantExtraPost", {})).toMatch(/sign-in-required/);
+  });
+
+  it("日付が変わると、今日の数は 0 から数え直す(追加券は持ち越す)", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await db.doc(`users/${uid}`).set({ postDay: jstDay(Date.now()) - 1, postsToday: 9, extraPosts: 2, grantsToday: 3, displayName: "t", blockedUids: [], postCount: 9 }, { merge: true });
+    await call("publishStage", stage);
+    expect((await db.doc(`users/${uid}`).get()).data()).toMatchObject({ postDay: jstDay(Date.now()), postsToday: 1, extraPosts: 2, grantsToday: 0 });
+  });
+});
+
+describe("ステージ名の検索", () => {
+  it("名前の部分一致で見つかり、ひらがな/カタカナ・全角/半角の違いは無視する。モードで絞れる", async () => {
+    const a = (await publish({ name: "ネオンの渦" })) as { id: string };
+    const b = (await publish({ name: "NEON ボス", mode: "boss", durationSec: 30, bossHp: 100, bossMove: 0 })) as { id: string };
+    const c = (await publish({ name: "しずかな雨" })) as { id: string };
+    await signOut(auth); await signInAnonymously(auth);
+    const ids = async (query: string, mode?: string) => ((await call("searchStages", { query, ...(mode ? { mode } : {}) })) as { stages: { id: string }[] }).stages.map((s) => s.id);
+    expect(await ids("ねおん")).toEqual(expect.arrayContaining([a.id]));
+    expect(await ids("ＮＥＯＮ")).toEqual(expect.arrayContaining([b.id]));
+    expect(await ids("渦")).toContain(a.id);
+    expect(await ids("渦")).not.toContain(c.id);
+    expect(await ids("neon", "boss")).toContain(b.id);
+    expect(await ids("neon", "boss")).not.toContain(a.id);
+    expect(await ids("存在しない名前")).toEqual([]);
+    const one = ((await call("searchStages", { query: "ネオンの渦" })) as { stages: { id: string; name: string; likes: number; emitters: unknown[] }[] }).stages.find((s) => s.id === a.id)!;
+    expect(one).toMatchObject({ name: "ネオンの渦", likes: 0 });
+    expect(one.emitters.length).toBeGreaterThan(0);
+  });
+  it("空の検索語・長すぎる語・不正なモードは拒否される", async () => {
+    await signOut(auth); await signInAnonymously(auth);
+    expect(await callErr("searchStages", { query: "  " })).toMatch(/query/);
+    expect(await callErr("searchStages", { query: "あ".repeat(21) })).toMatch(/query/);
+    expect(await callErr("searchStages", { query: "あ", mode: "xxx" })).toMatch(/mode/);
+  });
+  it("これまでのステージ(手がかりなし)に、手がかりを付ける。付け終わったら二度目は何もしない", async () => {
+    const { backfillNameKeys } = await import("../../src/search.js");
+    await db.doc("stages/OLD01").set({ name: "古いステージ", status: "published", mode: "survive", likes: 0 });
+    await db.doc("meta/nameKeysBackfill").delete();
+    expect(await backfillNameKeys(db)).toBeGreaterThanOrEqual(1);
+    expect((await db.doc("stages/OLD01").get()).get("nameKeys")).toContain("ふる");
+    expect(await backfillNameKeys(db)).toBe(0);
+  });
+});
+
+describe("myStages(自分の投稿と実績)", () => {
+  it("自分が投稿したステージだけが新しい順に並び、ハート・遊ばれた数などの合計が出る", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    const first = (await call("publishStage", { ...stage, name: "ひとつめ" })) as { id: string };
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    const second = (await call("publishStage", { ...stage, name: "ふたつめ" })) as { id: string };
+    await db.doc(`stages/${first.id}`).update({ likes: 3, plays: 10, clears: 4, comments: 2 });
+    await db.doc(`stages/${second.id}`).update({ likes: 1, plays: 5, clears: 1, comments: 0 });
+    // 他の人のステージは入らない
+    await db.doc("stages/OTHER1").set({ authorUid: "someone", status: "published", name: "他人", likes: 99, plays: 99, clears: 99, comments: 99 });
+    const r = (await call("myStages", {})) as { totals: Record<string, number>; stages: { id: string; name: string }[] };
+    expect(r.totals).toEqual({ stages: 2, likes: 4, plays: 15, clears: 5, comments: 2 });
+    expect(r.stages.map((s) => s.id)).toEqual([second.id, first.id]);
+  });
+  it("匿名ユーザーは使えない", async () => {
+    await signOut(auth); await signInAnonymously(auth);
+    expect(await callErr("myStages", {})).toMatch(/sign-in-required/);
   });
 });

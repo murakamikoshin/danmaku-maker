@@ -36,10 +36,13 @@ struct ShopView: View {
                         .accessibilityIdentifier("shop.removeads")
                     }
 
+                    LifetimeCard().id("lifetime")
                     DailyRewardCard().id("daily")
+                    AdPatternCard().id("adpatterns")
                     CustomImagesCard().id("customimages")
                     ShotSection().id("shots")
                     PatternShop().id("patterns")
+                    MakerCard().id("maker")
                     RewardShop()
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
                     ThemeCard(theme: .classic)
@@ -476,6 +479,226 @@ private struct CustomSlotRow: View {
 
 // MARK: 弾幕(ステージ作りで使える新しい弾のパターン)
 
+/// 永久買い切りパック: いまある課金コンテンツ・広告削除・これから増える課金コンテンツが、全部使える
+private struct LifetimeCard: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    private let items = ["lifetime.item.1", "lifetime.item.2", "lifetime.item.3", "lifetime.item.4"]
+
+    var body: some View {
+        ShopCard(title: "lifetime.title", footer: "lifetime.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("lifetime.tagline").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    ForEach(items, id: \.self) { k in
+                        Label(LocalizedStringKey(k), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color(Palette.text))
+                    }
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.canBuy(.lifetime) { PriceButton(product: .lifetime) }
+                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+                    }
+                }
+                .padding(14)
+                .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.22), Color(Palette.gold).opacity(0.12)], startPoint: .leading, endPoint: .trailing))
+            }
+        }
+        .accessibilityIdentifier("shop.lifetime")
+    }
+}
+
+/// 弾幕作成モード(有料)の販売カード。どう作るかを、動く見本で見せる(線を描く → 弾がその線の上を進む)
+private struct MakerCard: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showMaker = false
+
+    var body: some View {
+        ShopCard(title: "maker.title", footer: "maker.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("maker.tagline").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    MakerDemo()
+                        .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
+                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Text("maker.how").font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.hasPatternMaker {
+                            Button { gameTap(); showMaker = true } label: {
+                                Label("maker.open", systemImage: "pencil.and.scribble").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                    .padding(.vertical, 8).padding(.horizontal, 14)
+                                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("maker.open")
+                        } else {
+                            PriceButton(product: .patternMaker)
+                        }
+                    }
+                }
+                .padding(14)
+            }
+        }
+        .fullScreenCover(isPresented: $showMaker) { PatternMakerView() }
+    }
+}
+
+/// 販売画面の見本: 指で線を描く → 弾がその線の上を、描いた速さで進む(ゲームと同じ計算)
+private struct MakerDemo: View {
+    /// 見本の線: 左右に揺れながら下へ進む(0.1秒ごとの点)
+    static let path: [Double] = PathData.sanitized((0..<40).flatMap { i -> [Double] in [60 * sin(Double(i) * 0.35), Double(i) * 6.5] }) ?? []
+    static let drawSeconds = 4.0, cycle = 9.0
+    @State private var engine = PatternDemoEngine(source: Point(x: 180, y: 40), player: Point(x: 180, y: 290), sweepPlayer: false)
+
+    var body: some View {
+        let images = SpriteFactory.bulletImages(.classic)
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+            Canvas { ctx, size in
+                let s = size.width / CGFloat(PatternDemoEngine.fieldWidth)
+                let now = tl.date.timeIntervalSinceReferenceDate
+                let t = now.truncatingRemainder(dividingBy: Self.cycle)
+                let origin = CGPoint(x: 180, y: 40)
+                let n = Self.path.count / 2
+                let drawing = t < Self.drawSeconds
+                let shown = drawing ? max(2, Int(Double(n) * t / Self.drawSeconds)) : n
+                func pt(_ i: Int) -> CGPoint { CGPoint(x: (origin.x + Self.path[2 * i]) * s, y: (origin.y + Self.path[2 * i + 1]) * s) }
+                var line = Path()
+                line.move(to: pt(0))
+                for i in 1..<shown { line.addLine(to: pt(i)) }
+                ctx.stroke(line, with: .color(Color(Palette.gold).opacity(drawing ? 0.9 : 0.35)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: drawing ? [] : [4, 4]))
+                // 発射位置
+                let bossSide = 38 * s
+                ctx.fill(GameBossShape().path(in: CGRect(x: origin.x * s - bossSide / 2, y: origin.y * s - bossSide / 2, width: bossSide, height: bossSide)),
+                         with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                if drawing {
+                    // 線を描いている指
+                    let f = pt(shown - 1)
+                    ctx.fill(Path(ellipseIn: CGRect(x: f.x - 9, y: f.y - 9, width: 18, height: 18)), with: .color(.white.opacity(0.85)))
+                } else {
+                    var m = Emitter(t: .custom, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.9, c: 5, v: 2, r: 0, k: 1, path: Self.path)
+                    m.a = 0
+                    engine.advance(to: tl.date, emitters: [m], key: Int(floor(now / Self.cycle)))
+                    let bs = 12 * s
+                    for b in engine.bullets { ctx.draw(Image(uiImage: images[b.color % images.count]), in: CGRect(x: b.x * s - bs / 2, y: b.y * s - bs / 2, width: bs, height: bs)) }
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                Text(tl.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: Self.cycle) < Self.drawSeconds ? "maker.demo.step1" : "maker.demo.step2")
+                    .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .padding(.vertical, 3).padding(.horizontal, 8).background(Color.black.opacity(0.5), in: Capsule()).padding(8)
+            }
+        }
+    }
+}
+
+/// 広告を見て1日1つ解放する30パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
+private struct AdPatternCard: View {
+    @EnvironmentObject private var adPatterns: AdPatternStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var busy = false
+
+    private var all: Bool { cosmetics.ownership.hasLifetime }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("shop.adpattern.title").font(.system(size: 22, weight: .heavy, design: .rounded))
+                Spacer()
+                Text(String(format: L("shop.adpattern.progress"), all ? Pattern.ad.count : adPatterns.state.claimed, Pattern.ad.count))
+                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+            }
+            .padding(.horizontal, 4)
+
+            VStack(alignment: .leading, spacing: 14) {
+                if let next = adPatterns.state.next, !all {
+                    HStack(spacing: 14) {
+                        PatternDemo(pattern: next)
+                            .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
+                            .frame(width: 150)
+                            .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("shop.adpattern.next").font(.caption.bold()).foregroundStyle(.secondary)
+                            Text(LocalizedStringKey("pattern.\(next.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
+                            claimButton
+                        }
+                        Spacer(minLength: 0)
+                    }
+                } else {
+                    Label(all ? "shop.adpattern.lifetime" : "shop.adpattern.complete", systemImage: "crown.fill")
+                        .font(.headline).foregroundStyle(Color(Palette.gold))
+                }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(Pattern.ad, id: \.self) { p in
+                            let open = cosmetics.ownership.has(p)
+                            VStack(spacing: 4) {
+                                PatternDemo(pattern: p)
+                                    .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
+                                    .frame(width: 92)
+                                    .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 10))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .opacity(open ? 1 : 0.4)
+                                    .overlay { if !open { Image(systemName: "lock.fill").foregroundStyle(Color(Palette.gold)) } }
+                                Text(LocalizedStringKey("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundStyle(open ? Color(Palette.text) : .secondary).lineLimit(1).minimumScaleFactor(0.7)
+                            }
+                            .frame(width: 92)
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08)))
+
+            Text(purchases.isPremium ? "shop.adpattern.footer.premium" : "shop.adpattern.footer")
+                .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
+        }
+        .onAppear { adPatterns.refreshDay() }
+        .onChange(of: scenePhase) { if $0 == .active { adPatterns.refreshDay() } }
+        .accessibilityIdentifier("adpatterns.card")
+    }
+
+    @ViewBuilder private var claimButton: some View {
+        if !adPatterns.canClaim {
+            Label("shop.adpattern.claimed", systemImage: "checkmark.circle.fill")
+                .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+        } else {
+            let ready = purchases.isPremium || ads.isReady
+            Button { Task { await claim() } } label: {
+                Label(purchases.isPremium ? "shop.adpattern.claim.free" : "shop.adpattern.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
+                    .font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .padding(.vertical, 8).padding(.horizontal, 14)
+                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(!ready || busy)
+            .opacity(ready && !busy ? 1 : 0.5)
+            .accessibilityIdentifier("adpatterns.claim")
+            if !ready { Text("daily.loading").font(.caption2).foregroundStyle(.secondary) }
+        }
+    }
+
+    private func claim() async {
+        busy = true
+        defer { busy = false }
+        if purchases.isPremium {
+            adPatterns.claim()
+        } else if await ads.showRewarded() {
+            adPatterns.claim()
+        }
+        if adPatterns.justUnlocked != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
+        }
+    }
+}
+
 private struct PatternShop: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
 
@@ -586,7 +809,7 @@ final class PatternDemoEngine {
     private var last: Date?
     private(set) var bullets: [Bullet] = []
     private(set) var player: Point
-    let source: Point
+    var source: Point
     private var emitters: [Emitter] = []
     private var key: AnyHashable?
     private let sweepPlayer: Bool

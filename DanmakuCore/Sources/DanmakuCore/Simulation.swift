@@ -23,6 +23,8 @@ public struct Bullet: Equatable, Sendable {
     /// 時間で動きが変わる弾: 1=停止弾 2=分裂弾 3=時差弾(0 なら、ふつうの弾)と、出てからの経過秒
     public var script: Int = 0
     public var age: Double = 0
+    /// 弾幕作成モードで描いた軌道に沿って進む弾(nil なら、ふつうの弾)
+    public var follow: PathFollow?
 
     /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)
     public func fragments() -> [Bullet] {
@@ -42,6 +44,14 @@ extension Bullet {
     /// 1ステップ分の弾の動き(時間で変わる動き・追尾・加速・移動・壁での反射)。ゲーム本体、ショップの見本、
     /// エディタのプレビューが、同じ計算を使う。画面の外に出たか、自機に当たったかは、呼ぶ側で調べる
     public mutating func advance(dt: Double, width W: Double, playerX: Double, playerY: Double) -> BulletMotion {
+        if let f = follow {
+            // 描いた軌道の上を、時間に沿って進む(速さや向きの変化は、軌道そのもので決まる)
+            age += dt
+            let p = PathData.position(f.ref.points, at: age * f.scale)
+            x = f.ox + f.cosR * p.x - f.sinR * p.y
+            y = f.oy + f.sinR * p.x + f.cosR * p.y
+            return .alive
+        }
         var frozen = false
         if script != 0 {
             age += dt
@@ -243,6 +253,20 @@ public enum Emit {
             for j in 0..<n {
                 add(cx, cy, b + (n > 1 ? (Double(j) / Double(n - 1) - 0.5) * 0.5 : 0))
             }
+        case .custom:
+            // 弾幕作成モードで描いた軌道を、n 個、均等に回して出す。r は 1回ごとの回転、v は進む速さの倍率(2 で描いたとおり)
+            guard let pts = PathData.sanitized(m.path) else { break }
+            let ref = PathRef(pts)
+            for j in 0..<n {
+                let a = Double(j) * 2 * Double.pi / Double(n) + Double(k) * m.r * deg + off
+                if out.count < DanmakuConfig.maxBullets {
+                    out.append(Bullet(x: cx, y: cy, vx: 0, vy: 0, color: m.k,
+                                      follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
+                }
+            }
+        default:
+            // 広告で解放するパターン: 弾の出し方の表に従う
+            if let r = m.t.recipe { emitRecipe(r, m, shot: k, cx: cx, cy: cy, px: px, py: py, off: off, sp: sp, n: n, rng: &rng, into: &out) }
         }
     }
 }

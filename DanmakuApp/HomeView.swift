@@ -9,6 +9,9 @@ struct HomeView: View {
     @State private var tab: Tab = .samples
     @State private var playing: SampleStage?
     @State private var detail: RemoteStage?
+    /// 自分が世界に投稿したステージと、実績の合計(マイステージの下に出す)
+    @State private var posted = MyStageSummary()
+    @State private var postedLoaded = false
     @StateObject private var saved = LocalStageStore.shared
     @State private var editingEntry: SavedStage?
     @State private var playingMine: SavedStage?
@@ -50,7 +53,7 @@ struct HomeView: View {
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
                     switch tab {
                     case .samples: samples
-                    case .mine: mine
+                    case .mine: mine; postedSection
                     case .world: worldList
                     }
                 }
@@ -105,7 +108,9 @@ struct HomeView: View {
         .onAppear { applyLaunchArguments() }
         #endif
         .task(id: tab) { if tab == .world && world.stages.isEmpty { await world.reload() } }
+        .task(id: "\(tab == .mine)-\(auth.isMember)") { if tab == .mine { await loadPosted() } }
         .onChange(of: world.sort) { _ in Task { await world.reload() } }
+        .onChange(of: world.mode) { _ in Task { await world.reload() } }
         .onChange(of: deepLink.stageID) { id in
             guard let id else { return }
             deepLink.stageID = nil
@@ -148,6 +153,43 @@ struct HomeView: View {
         }
     }
 
+    private func loadPosted() async {
+        guard auth.isMember, Backend.isAvailable else { posted = MyStageSummary(); postedLoaded = false; return }
+        if let s = try? await StageRepository().mine() { posted = s; postedLoaded = true }
+    }
+
+    /// 自分が世界に投稿したステージ: もらったハート・遊ばれた数などの合計と、すぐ開ける一覧
+    @ViewBuilder private var postedSection: some View {
+        if auth.isMember && postedLoaded && !posted.list.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("mystats.title").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+                HStack(spacing: 0) {
+                    statCell("heart.fill", posted.likes, "mystats.likes", Color(Palette.pink))
+                    statCell("gamecontroller.fill", posted.plays, "mystats.plays", Color(UIColor(hex: 0x5CE1E6)))
+                    statCell("flag.checkered", posted.clears, "mystats.clears", Color(Palette.gold))
+                    statCell("bubble.left.fill", posted.comments, "mystats.comments", Color(Palette.bullets[4]))
+                }
+                .padding(.vertical, 12)
+                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
+                Text(String(format: L("mystats.list"), posted.stages)).font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.horizontal, 4)
+                ForEach(posted.list) { s in
+                    Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
+                        .buttonStyle(BounceButtonStyle())
+                }
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private func statCell(_ icon: String, _ value: Int, _ label: LocalizedStringKey, _ tint: Color) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon).foregroundStyle(tint)
+            Text("\(value)").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text(label).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private var samples: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("home.samples").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
@@ -159,7 +201,21 @@ struct HomeView: View {
     }
 
     @ViewBuilder private var worldList: some View {
+        if world.searching {
+            HStack {
+                Label(String(format: L("world.search.result"), world.query), systemImage: "magnifyingglass")
+                    .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                Spacer()
+                Button { gameTap(); query = ""; world.query = ""; Task { await world.reload() } } label: { Chip(title: L("world.search.clear"), selected: false) }
+                    .buttonStyle(BounceButtonStyle())
+            }
+        }
         ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
+            .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
+        // クリア条件(モード)で絞り込む
+        ChipGrid(items: [(Mode?.none, L("world.filter.all")), (.survive, L("editor.mode.survive")), (.boss, L("editor.mode.boss")),
+                         (.damage, L("editor.mode.damage")), (.sequence, L("editor.mode.sequence"))],
+                 selection: $world.mode, idPrefix: "home.mode", minimum: 84)
         VStack(spacing: 10) {
             if !Backend.isAvailable {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
@@ -177,7 +233,7 @@ struct HomeView: View {
                 }
             }
             if world.stages.isEmpty && !world.isLoading && !world.failed && Backend.isAvailable {
-                Text("world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
+                Text(world.searching ? "world.search.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
     }
@@ -211,10 +267,19 @@ struct HomeView: View {
     }
     #endif
 
+    /// 上の検索欄: 5文字のステージIDならそのステージを開き、そうでなければ(見つからなければ)ステージ名で探す
     private func search() async {
-        let id = query.trimmingCharacters(in: .whitespaces).uppercased()
-        guard id.count == 5 else { searchError = true; return }
-        await open(id: id)
+        let raw = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return }
+        let id = raw.uppercased()
+        if id.range(of: "^[2-9A-HJKMNP-Z]{5}$", options: .regularExpression) != nil,
+           let s = try? await StageRepository().find(id: id), !blocks.isBlocked(s.authorUid) {
+            detail = s
+            return
+        }
+        tab = .world
+        world.query = raw
+        await world.reload()
     }
 
     private func open(id: String) async {

@@ -10,7 +10,11 @@ struct PublishFlowView: View {
     let onPublished: (String) -> Void
 
     @EnvironmentObject private var auth: AuthService
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
     @Environment(\.dismiss) private var dismiss
+    @State private var quota: PostQuota?
+    @State private var granting = false
     @AppStorage("terms.accepted.v1") private var termsAccepted = false
     @State private var phase: Phase = .start
     @State private var error: String?
@@ -41,6 +45,7 @@ struct PublishFlowView: View {
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
+        .task(id: auth.isMember) { await refreshQuota() }
         .preferredColorScheme(.dark)
     }
 
@@ -73,10 +78,45 @@ struct PublishFlowView: View {
                 if replay == nil {
                     Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
-                GameActionButton(title: replay == nil ? "publish.submit.unlisted" : "publish.submit", systemImage: "paperplane.fill", fill: GameStyle.accent) { Task { await publish() } }
-                    .accessibilityIdentifier("publish.submit")
+                quotaView
+                if limitReached {
+                    GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.gold) { Task { await watchForExtra() } }
+                        .disabled(!ads.isReady || granting).opacity(ads.isReady && !granting ? 1 : 0.5)
+                        .accessibilityIdentifier("publish.quota.watch")
+                } else {
+                    GameActionButton(title: replay == nil ? "publish.submit.unlisted" : "publish.submit", systemImage: "paperplane.fill", fill: GameStyle.accent) { Task { await publish() } }
+                        .accessibilityIdentifier("publish.submit")
+                }
             }
         }
+    }
+
+    /// 今日あと何本公開できるか(「URLを知っている人だけ」の投稿は数えないので、出さない)
+    private var remaining: Int? { quota?.remaining(premium: purchases.isPremium) }
+    private var limitReached: Bool { replay != nil && remaining == 0 }
+
+    @ViewBuilder private var quotaView: some View {
+        if replay != nil, quota != nil {
+            if purchases.isPremium {
+                Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
+            } else if let r = remaining {
+                Text(r > 0 ? String(format: L("publish.quota.left"), r) : String(format: L("publish.quota.none"), PostQuota.free))
+                    .font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(r > 0 ? Color.secondary : Color(Palette.gold)).multilineTextAlignment(.center)
+            }
+        }
+    }
+
+    private func refreshQuota() async {
+        guard let uid = auth.uid else { return }
+        quota = await PostQuotaService.fetch(uid: uid)
+    }
+
+    private func watchForExtra() async {
+        granting = true
+        defer { granting = false }
+        guard await ads.showRewarded(), await PostQuotaService.grantExtra() else { error = L("error.publish.generic"); return }
+        error = nil
+        await refreshQuota()
     }
 
     private func done(_ id: String) -> some View {
@@ -105,7 +145,7 @@ struct PublishFlowView: View {
         error = nil
         phase = .publishing
         do {
-            let id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay)
+            let id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium)
             phase = .done(id)
             AudioManager.shared.se(.get)
             onPublished(id)

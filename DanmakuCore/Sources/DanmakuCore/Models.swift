@@ -62,6 +62,10 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case split
     /// 時差弾: 輪になったまま止まっていて、合図でいっせいに動き出す
     case timed
+    // ここから下は、広告を見て解放する30パターン(弾の出し方は AdPatterns.swift。並びは変えない)
+    case twinRing, tripleRing, pinwheel, ripple, whirl, slither, curtain, swayFan, drizzle, comet, shotgun, sniper, twinAim, zigzagAim, accelRing, homingRing, bounceRing, freezeRing, shatterRing, pulseRing, freezeCurtain, splitCurtain, wavyRing, petalFan, waveSpiral, tide, ladder, helix, rapidFan, lightRain
+    // ここから下は、弾幕作成モード(有料)で自分で描いたパターン。弾の動きは Emitter.path(描いた軌道)に入っている
+    case custom
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -195,7 +199,8 @@ public struct Wave: Codable, Equatable, Sendable {
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Int(clamp(Double(m.ph), 0, 3)) : 0,
                     p: isBoss && m.p == 1 ? 1 : 0,
-                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0)
+                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
+                    path: m.t == .custom ? PathData.sanitized(m.path) : nil)
         }
         return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
@@ -229,11 +234,14 @@ public struct Emitter: Codable, Equatable, Sendable {
     public var p: Int
     /// パターン全体の向きを、時計回りに回す角度(度)。0 は、これまでと同じ(データに入れない)。輪・自機狙い・形・十字などに効く
     public var a: Int
+    /// 弾幕作成モードで描いた軌道(t == .custom のときだけ)。発射位置を原点にした (x, y) を、PathData.step 秒ごとに並べたもの [x0, y0, x1, y1, ...]
+    public var path: [Double]?
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
         self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
+        self.path = path
     }
 
     /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
@@ -242,7 +250,7 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -253,6 +261,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         try c.encode(k, forKey: .k); try c.encode(ph, forKey: .ph)
         if p != 0 { try c.encode(p, forKey: .p) }
         if a != 0 { try c.encode(a, forKey: .a) }
+        if let path { try c.encode(path, forKey: .path) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -270,6 +279,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         ph = try d.decodeIfPresent(Int.self, forKey: .ph) ?? 0
         p = try d.decodeIfPresent(Int.self, forKey: .p) ?? 0
         a = try d.decodeIfPresent(Int.self, forKey: .a) ?? 0
+        path = (try? d.decodeIfPresent([Double].self, forKey: .path)) ?? nil
     }
 }
 
@@ -506,7 +516,8 @@ public struct Stage: Codable, Equatable, Sendable {
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: Int(clamp(Double(m.ph), 0, 3)),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
-                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0)
+                    a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
+                    path: m.t == .custom ? PathData.sanitized(m.path) : nil)
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount

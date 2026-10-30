@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
 import { validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
+import { afterGrant, afterPost, checkPost, FREE_DAILY_POSTS, HARD_DAILY_POSTS, jstDay, MAX_EXTRA_TICKETS, readQuota } from "../src/quota.js";
+import { pathPosition, validatePath } from "../src/custompath.js";
+import { nameKeys, normalizeName, queryGram } from "../src/search.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
 import { pickLang, renderSharePage } from "../src/share.js";
@@ -397,5 +400,104 @@ describe("validateDisplayName(ランキング・コメントに出す投稿者�
     expect(validateDisplayName("あ".repeat(13))).toEqual({ ok: false });
     expect(validateDisplayName(123)).toEqual({ ok: false });
     expect(validateDisplayName("しね")).toEqual({ ok: false });
+  });
+});
+
+describe("quota(1日の公開数の上限)", () => {
+  const user = (o: Record<string, unknown>) => ({ get: (k: string) => o[k] });
+  const NOW = Date.UTC(2026, 9, 30, 3, 0, 0);   // 日本時間 12:00
+  it("日本時間の0時で日付が変わる", () => {
+    expect(jstDay(Date.UTC(2026, 9, 30, 14, 59, 59))).toBe(jstDay(Date.UTC(2026, 9, 30, 0, 0, 0)));
+    expect(jstDay(Date.UTC(2026, 9, 30, 15, 0, 0))).toBe(jstDay(Date.UTC(2026, 9, 30, 0, 0, 0)) + 1);
+  });
+  it("無料は5本まで。追加券ぶんだけ増え、使うと減る", () => {
+    let q = readQuota(user({}), NOW);
+    for (let i = 0; i < FREE_DAILY_POSTS; i++) { expect(checkPost(q, false)).toBe("ok"); q = afterPost(q, false); }
+    expect(checkPost(q, false)).toBe("daily-limit");
+    q = afterGrant(q)!;
+    expect(checkPost(q, false)).toBe("ok");
+    q = afterPost(q, false);
+    expect(q.extra).toBe(0);
+    expect(checkPost(q, false)).toBe("daily-limit");
+  });
+  it("購入者は券を使わず、絶対上限まで投稿できる", () => {
+    let q = readQuota(user({ postDay: jstDay(NOW), postsToday: 8, extraPosts: 3 }), NOW);
+    expect(checkPost(q, true)).toBe("ok");
+    q = afterPost(q, true);
+    expect(q.extra).toBe(3);
+    expect(checkPost({ ...q, used: HARD_DAILY_POSTS }, true)).toBe("daily-limit");
+  });
+  it("日付が変わると今日の数は0、追加券は持ち越す。持てる枚数と今日の取得数に上限がある", () => {
+    const q = readQuota(user({ postDay: jstDay(NOW) - 1, postsToday: 7, extraPosts: 2, grantsToday: 20 }), NOW);
+    expect(q).toMatchObject({ used: 0, extra: 2, grants: 0 });
+    expect(afterGrant({ ...q, extra: MAX_EXTRA_TICKETS })).toBeNull();
+    expect(afterGrant({ ...q, grants: 25 })).toBeNull();
+    expect(readQuota(user({ extraPosts: 999 }), NOW).extra).toBe(MAX_EXTRA_TICKETS);
+    expect(readQuota(user({ postDay: "x", postsToday: "y" }), NOW)).toMatchObject({ used: 0, extra: 0 });
+  });
+});
+
+describe("custompath(描いた軌道)", () => {
+  it("2〜60点、偶数個の数、範囲内だけ受け付け、0.1刻みに丸める", () => {
+    expect(validatePath([0, 0, 10.04, -5.05])).toEqual([0, 0, 10, -5.1]);
+    expect(validatePath([0, 0])).toBeNull();                       // 1点だけ
+    expect(validatePath([0, 0, 1])).toBeNull();                    // 奇数個
+    expect(validatePath(Array(122).fill(1))).toBeNull();           // 61点
+    expect(validatePath(Array(120).fill(1))).not.toBeNull();       // 60点
+    expect(validatePath([0, 0, 601, 0])).toBeNull();
+    expect(validatePath([0, 0, NaN, 0])).toBeNull();
+    expect(validatePath([0, 0, "1", 0])).toBeNull();
+    expect(validatePath("abc")).toBeNull();
+    expect(Object.is(validatePath([0, 0, -0.04, 0])![2], 0)).toBe(true);   // -0 にならない
+  });
+  it("時間に沿って線の上を進み、最後の点を過ぎたら最後の速さで進み続ける", () => {
+    const p = [0, 0, 10, 0, 10, 20];   // 0.1秒ごとに右へ10、そのあと下へ20
+    expect(pathPosition(p, 0)).toEqual({ x: 0, y: 0 });
+    expect(pathPosition(p, 0.05)).toEqual({ x: 5, y: 0 });
+    expect(pathPosition(p, 0.1)).toEqual({ x: 10, y: 0 });
+    const mid = pathPosition(p, 0.15);
+    expect(mid.x).toBeCloseTo(10, 9);
+    expect(mid.y).toBeCloseTo(10, 9);
+    const late = pathPosition(p, 0.3);                       // 下へ 200px/秒 のまま
+    expect(late.x).toBeCloseTo(10, 9);
+    expect(late.y).toBeCloseTo(20 + 200 * 0.1, 9);
+  });
+});
+
+describe("search(ステージ名の検索)", () => {
+  it("全角/半角・大文字小文字・カタカナ/ひらがな・空白の違いを無くす", () => {
+    expect(normalizeName("ＮＥＯＮ ネオン")).toBe("neonねおん");
+    expect(normalizeName("ボス戦")).toBe("ぼす戦");
+    expect(normalizeName("Ｒａｉｎ　Ｒａｉｎ")).toBe("rainrain");
+  });
+  it("名前から、1文字と2文字の手がかりを作る(重複なし)", () => {
+    expect(nameKeys("あいあ").sort()).toEqual(["あ", "あい", "い", "いあ"].sort());
+    expect(nameKeys("").length).toBe(0);
+    expect(nameKeys("あ".repeat(100)).length).toBeLessThanOrEqual(80);
+  });
+  it("検索語の手がかりは、2文字以上なら先頭の2文字、1文字ならその文字。長すぎる・空は使えない", () => {
+    expect(queryGram("ネオンの渦")).toEqual({ norm: "ねおんの渦", gram: "ねお" });
+    expect(queryGram("渦")).toEqual({ norm: "渦", gram: "渦" });
+    expect(queryGram("  ")).toBeNull();
+    expect(queryGram("あ".repeat(21))).toBeNull();
+    // 手がかりは、その名前に保存される手がかりに必ず含まれる(部分一致で見つかる)
+    expect(nameKeys("きれいなネオンの渦")).toContain(queryGram("ネオン")!.gram);
+  });
+});
+
+describe("validatePublish(描いた軌道の弾幕)", () => {
+  it("custom には軌道が必須で、0.1刻みに丸めて保存される。ほかのパターンに軌道は付けられない", () => {
+    const ok = validatePublish(good({ emitters: [em({ t: "custom", path: [0, 0, 10.04, 5.06, 20, 10] })] }));
+    expect(ok.ok && ok.stage.emitters[0]!.path).toEqual([0, 0, 10, 5.1, 20, 10]);
+    const noPath = validatePublish(good({ emitters: [em({ t: "custom" })] }));
+    expect(noPath).toEqual({ ok: false, error: "emitter-path" });
+    const onRing = validatePublish(good({ emitters: [em({ t: "ring", path: [0, 0, 1, 1] })] }));
+    expect(onRing).toEqual({ ok: false, error: "emitter-path" });
+    for (const bad of [[0, 0], [0, 0, 1], [0, 0, 700, 0], [0, 0, "a", 0], Array(122).fill(0)]) {
+      expect(validatePublish(good({ emitters: [em({ t: "custom", path: bad })] }))).toEqual({ ok: false, error: "emitter-path" });
+    }
+  });
+  it("広告で解放するパターンも受け付ける", () => {
+    for (const t of ["twinRing", "lightRain", "helix"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
   });
 });

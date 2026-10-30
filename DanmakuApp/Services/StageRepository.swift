@@ -26,6 +26,12 @@ enum StageSort: String, CaseIterable, Identifiable {
     var titleKey: String { "world.sort.\(rawValue)" }
 }
 
+/// 自分の投稿の実績(もらったハート、遊ばれた数、クリアされた数、コメント数の合計)と、投稿の一覧
+struct MyStageSummary {
+    var stages = 0, likes = 0, plays = 0, clears = 0, comments = 0
+    var list: [RemoteStage] = []
+}
+
 struct StagePage {
     var stages: [RemoteStage]
     var cursor: DocumentSnapshot?
@@ -36,8 +42,9 @@ struct StagePage {
 struct StageRepository {
     static let pageSize = 20
 
-    func fetch(_ sort: StageSort, after cursor: DocumentSnapshot?) async throws -> StagePage {
+    func fetch(_ sort: StageSort, mode: Mode? = nil, after cursor: DocumentSnapshot?) async throws -> StagePage {
         var q: Query = Firestore.firestore().collection("stages").whereField("status", isEqualTo: "published")
+        if let mode { q = q.whereField("mode", isEqualTo: mode.rawValue) }
         switch sort {
         case .popular: q = q.order(by: "likes", descending: true)
         case .new: q = q.order(by: "createdAt", descending: true)
@@ -74,8 +81,34 @@ struct StageRepository {
         (try? await Firestore.firestore().document("stages/\(id)/likes/\(uid)").getDocument().exists) ?? false
     }
 
+    /// ステージ名で探す(部分一致、最大30件、いいねの多い順)。サーバーが検索する
+    func search(_ query: String, mode: Mode? = nil) async throws -> [RemoteStage] {
+        var payload: [String: Any] = ["query": query]
+        if let mode { payload["mode"] = mode.rawValue }
+        let r = try await Backend.functions.httpsCallable("searchStages").call(payload)
+        let rows = (r.data as? [String: Any])?["stages"] as? [[String: Any]] ?? []
+        return rows.compactMap { Self.parse(data: $0, id: $0["id"] as? String ?? "") }
+    }
+
+    /// 自分が投稿したステージ(新しい順、最大50件)と、もらったハート・遊ばれた数などの合計
+    func mine() async throws -> MyStageSummary {
+        let r = try await Backend.functions.httpsCallable("myStages").call([:] as [String: Any])
+        let d = r.data as? [String: Any] ?? [:]
+        let t = d["totals"] as? [String: Any] ?? [:]
+        func n(_ k: String) -> Int { (t[k] as? NSNumber)?.intValue ?? 0 }
+        let rows = d["stages"] as? [[String: Any]] ?? []
+        return MyStageSummary(stages: n("stages"), likes: n("likes"), plays: n("plays"), clears: n("clears"), comments: n("comments"),
+                              list: rows.compactMap { Self.parse(data: $0, id: $0["id"] as? String ?? "") })
+    }
+
     static func parse(_ doc: DocumentSnapshot) -> RemoteStage? {
-        guard let d = doc.data(), ["published", "unlisted"].contains(d["status"] as? String) else { return nil }
+        guard let d = doc.data() else { return nil }
+        return parse(data: d, id: doc.documentID)
+    }
+
+    /// 検索結果や自分の投稿(関数が返す形)は status を持たないこともあるので、公開中・URL限定のものを通す
+    static func parse(data d: [String: Any], id: String) -> RemoteStage? {
+        if let st = d["status"] as? String, !["published", "unlisted"].contains(st) { return nil }
         var json: [String: Any] = [:]
         // Stage の全項目(見た目・撃ち方・連戦の場面なども)。足りないと、世界のステージで作者の設定が反映されない
         for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm",
@@ -87,7 +120,7 @@ struct StageRepository {
         guard let data = try? JSONSerialization.data(withJSONObject: json),
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
-        return RemoteStage(id: doc.documentID, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
+        return RemoteStage(id: id, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
                            name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"))
     }
 }

@@ -77,7 +77,7 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
                 }
                 if patternOpen {
-                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index)
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, emitter: $emitter)
                 }
             }
 
@@ -152,6 +152,15 @@ struct EmitterCard: View {
         case .beam: return "angle.aimshift"
         case .accel, .bounce, .stopgo, .split: return "angle.spread"
         case .timed: return "angle.rotate"
+        case .custom: return "angle.rotate"
+        default:
+            // 広告で解放するパターン: 形によって、角度の意味が違う
+            guard let r = emitter.t.recipe else { return "angle.none" }
+            switch r.mode {
+            case 0: return r.spin == 0 ? "angle.none" : "angle.rotate"
+            case 1: return r.fan < 0 ? "angle.none" : (r.fan > 0 ? "angle.none" : "angle.spread")
+            default: return r.sweepAmp > 0 ? "angle.swing" : (r.fan == 0 ? "angle.spread" : "angle.none")
+            }
         }
     }
 }

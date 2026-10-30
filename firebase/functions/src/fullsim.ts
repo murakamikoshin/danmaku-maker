@@ -1,4 +1,6 @@
 import { inflateRawSync } from "node:zlib";
+import { RECIPES, emitRecipe } from "./adpatterns.js";
+import { pathPosition } from "./custompath.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -102,7 +104,8 @@ function hashEmitters(h: Fnv, list: Emitter[]) {
   }
 }
 
-interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number }
+interface Follow { pts: readonly number[]; ox: number; oy: number; cs: number; sn: number; scale: number }
+interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number; follow?: Follow }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
 function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[]) {
@@ -222,6 +225,25 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       const b = Math.PI / 2 + Math.sin(k * 0.25) * m.r * deg;
       for (let j = 0; j < n; j++) add(cx, cy, b + (n > 1 ? (j / (n - 1) - 0.5) * 0.5 : 0));
       break;
+    }
+    case "custom": {
+      // 弾幕作成モードで描いた軌道を、n 個、均等に回して出す
+      const pts = m.path;
+      if (!pts) break;
+      for (let j = 0; j < n; j++) {
+        const a = (j * 2 * Math.PI) / n + k * m.r * deg + off;
+        if (out.length < MAX_BULLETS) out.push({ x: cx, y: cy, vx: 0, vy: 0, color: m.k, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0, follow: { pts, ox: cx, oy: cy, cs: Math.cos(a), sn: Math.sin(a), scale: m.v / 2 } });
+      }
+      break;
+    }
+    default: {
+      // 広告で解放するパターン: 弾の出し方の表に従う
+      const recipe = RECIPES[m.t];
+      if (recipe) {
+        emitRecipe(recipe, m, k, cx, cy, px, py, off, sp, n, rng, HOMING_SECONDS, (x, y, vx, vy, e) => {
+          if (out.length < MAX_BULLETS) out.push({ x, y, vx, vy, color: m.k, turn: e.turn, homeLeft: e.homeLeft, accel: e.accel, maxSpeed: e.maxSpeed, bounces: e.bounces, script: e.script, age: 0 });
+        });
+      }
     }
   }
 }
@@ -348,6 +370,14 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     const born: Bullet[] = [];
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
+      if (b.follow) {
+        // 描いた軌道の上を、時間に沿って進む
+        const f = b.follow;
+        b.age += dt;
+        const p = pathPosition(f.pts, b.age * f.scale);
+        b.x = f.ox + f.cs * p.x - f.sn * p.y;
+        b.y = f.oy + f.sn * p.x + f.cs * p.y;
+      } else {
       let frozen = false;
       if (b.script !== 0) {
         b.age += dt;
@@ -395,6 +425,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       if (b.bounces > 0) {
         if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
         else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
+      }
       }
       if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
       const dx = b.x - px, dy = b.y - py;

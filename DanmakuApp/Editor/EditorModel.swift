@@ -23,6 +23,10 @@ extension Emitter {
         case .stopgo: return Emitter(t: t, e: end, i: 1.0, c: 5, v: 2.4, r: 60)
         case .split: return Emitter(t: t, e: end, i: 1.1, c: 3, v: 2.4, r: 50)
         case .timed: return Emitter(t: t, e: end, i: 1.6, c: 16, v: 2.0, r: 8)
+        default:
+            // 広告で解放するパターン: 表の初期値
+            let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
+            return Emitter(t: t, e: end, i: d.i, c: d.c, v: d.v, r: d.r)
         }
     }
 
@@ -30,6 +34,7 @@ extension Emitter {
     mutating func changePattern(to p: Pattern) {
         let d = Emitter.make(p, end: e)
         t = p; i = d.i; c = d.c; v = d.v; r = d.r
+        if p != .custom { path = nil }
         if !canRotate { a = 0 }
     }
 }

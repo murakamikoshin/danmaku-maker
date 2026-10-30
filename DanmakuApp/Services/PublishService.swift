@@ -4,13 +4,14 @@ import Foundation
 
 enum PublishService {
     /// 投稿して、発行された短縮IDを返す。失敗時は表示用の文言を持つ PublishError
-    static func publish(stage: Stage, authorName: String, replay: Replay?) async throws -> String {
+    static func publish(stage: Stage, authorName: String, replay: Replay?, premium: Bool = false) async throws -> String {
         guard Backend.isAvailable else { throw PublishError(message: L("error.offline")) }
         var payload = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(stage))) as? [String: Any] ?? [:]
         payload["authorName"] = authorName.trimmingCharacters(in: .whitespaces)
         // クリア記録がなければ「URLを知っている人だけ」の投稿(一覧には載らない)
         if let replay { payload["clearReplay"] = replay.encoded() } else { payload["unlisted"] = true }
         payload["termsAccepted"] = true
+        payload["premium"] = premium   // 広告削除・永久買い切りパックの購入者は、1日の公開数の上限がない
         payload["lang"] = Locale.preferredLanguages.first.map { String($0.prefix(2)) } ?? "und"
         do {
             let result = try await Backend.functions.httpsCallable("publishStage").call(payload)

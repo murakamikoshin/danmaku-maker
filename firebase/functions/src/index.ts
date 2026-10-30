@@ -9,6 +9,8 @@ import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
+import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
+import { backfillNameKeys, nameKeys, queryGram, normalizeName } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
 import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
 
@@ -74,6 +76,10 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const last = user.get("lastPostAt")?.toMillis?.() ?? 0;
   if (Date.now() - last < POST_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
   if (user.get("banned") === true) throw new HttpsError("permission-denied", "banned");
+  // 1日に公開できる数の上限(「URLを知っている人だけ」の投稿は数えない)
+  const premium = (req.data as { premium?: unknown }).premium === true;
+  const quota = readQuota(user, Date.now());
+  if (!unlisted && checkPost(quota, premium) !== "ok") throw new HttpsError("resource-exhausted", "daily-limit");
 
   const now = Date.now();
   let id = "";
@@ -81,7 +87,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     const candidate = newShortId();
     try {
       await db.doc(`stages/${candidate}`).create({
-        authorUid: uid, ...v.stage, ogImagePath: "", status: unlisted ? "unlisted" : "published",
+        authorUid: uid, ...v.stage, nameKeys: nameKeys(v.stage.name), ogImagePath: "", status: unlisted ? "unlisted" : "published",
         plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
@@ -97,6 +103,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   if (v.clearReplay) await db.doc(`stageReplays/${id}`).set({ authorUid: uid, clearReplay: v.clearReplay, createdAt: FieldValue.serverTimestamp() });
   await userRef.set({
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
+    ...quotaFields(unlisted ? quota : afterPost(quota, premium)),
     createdAt: user.exists ? user.get("createdAt") : FieldValue.serverTimestamp(),
     blockedUids: user.exists ? user.get("blockedUids") ?? [] : [],
   }, { merge: true });
@@ -107,6 +114,24 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     logger.error("ogp-failed", { id, error: String(e) }); // 画像は後から ogImage 関数が作り直す
   }
   return { id };
+});
+
+/** 広告を見たことを報告して、今日の投稿の追加券を1枚もらう(1日5本を超えて公開したいとき) */
+export const grantExtraPost = onCall(async (req) => {
+  const uid = requireMember(req);
+  const userRef = db.doc(`users/${uid}`);
+  return db.runTransaction(async (tx) => {
+    const user = await tx.get(userRef);
+    const now = Date.now();
+    const lastAt = (user.get("lastGrantAt") as number | undefined) ?? 0;
+    if (now - lastAt < MIN_GRANT_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
+    const next = afterGrant(readQuota(user, now));
+    if (!next) throw new HttpsError("resource-exhausted", "grant-limit");
+    // まだ投稿したことがない人のために、ユーザー情報の最低限の項目も作る
+    const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
+    tx.set(userRef, { ...base, ...quotaFields(next), lastGrantAt: now }, { merge: true });
+    return { extra: next.extra };
+  });
 });
 
 export const submitResults = onCall(async (req) => {
@@ -447,5 +472,55 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
 /** 1時間ごとに、急上昇の点数を、いまの時刻まで減らして保存し直す(長く遊ばれていないステージが、古い点数で上位に残らないようにする) */
 export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 300, memory: "256MiB" }, async () => {
   const n = await refreshTrending(db, Date.now());
-  logger.info("trending-refreshed", { stages: n });
+  // これまでのステージに、名前検索の手がかりを付ける(全部に付け終わったら、以後は何もしない)
+  const b = await backfillNameKeys(db);
+  logger.info("trending-refreshed", { stages: n, nameKeysAdded: b });
+});
+
+/** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
+const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "shot", "rewardFx",
+  "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
+/** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
+export const myStages = onCall(async (req) => {
+  const uid = requireMember(req);
+  const snap = await db.collection("stages").where("authorUid", "==", uid).get();
+  const totals = { stages: 0, likes: 0, plays: 0, clears: 0, comments: 0 };
+  const rows = snap.docs
+    .filter((doc) => isOpen(doc.get("status")))
+    .map((doc) => ({ doc, createdAt: (doc.get("createdAt")?.toMillis?.() as number | undefined) ?? 0 }))
+    .sort((a, b) => b.createdAt - a.createdAt);
+  for (const { doc } of rows) {
+    totals.stages++;
+    for (const k of ["likes", "plays", "clears", "comments"] as const) totals[k] += typeof doc.get(k) === "number" ? (doc.get(k) as number) : 0;
+  }
+  const stages = rows.slice(0, 50).map(({ doc }) => {
+    const o: Record<string, unknown> = { id: doc.id, status: doc.get("status") };
+    for (const k of SEARCH_FIELDS) { const v = doc.get(k); if (v !== undefined) o[k] = v; }
+    return o;
+  });
+  return { totals, stages };
+});
+
+export const searchStages = onCall(async (req) => {
+  requireAny(req);
+  const d = req.data as { query?: unknown; mode?: unknown };
+  const g = typeof d.query === "string" ? queryGram(d.query) : null;
+  if (!g) throw new HttpsError("invalid-argument", "query");
+  let q = db.collection("stages").where("status", "==", "published").where("nameKeys", "array-contains", g.gram);
+  if (d.mode !== undefined && d.mode !== null) {
+    if (typeof d.mode !== "string" || !["survive", "boss", "damage", "sequence"].includes(d.mode)) throw new HttpsError("invalid-argument", "mode");
+    q = q.where("mode", "==", d.mode);
+  }
+  // 手がかりで絞った中から、検索語を全部含むものだけを、いいねの多い順に最大30件
+  const snap = await q.orderBy("likes", "desc").limit(80).get();
+  const stages = snap.docs
+    .filter((doc) => normalizeName(String(doc.get("name") ?? "")).includes(g.norm))
+    .slice(0, 30)
+    .map((doc) => {
+      const o: Record<string, unknown> = { id: doc.id };
+      for (const k of SEARCH_FIELDS) { const v = doc.get(k); if (v !== undefined) o[k] = v; }
+      return o;
+    });
+  return { stages };
 });

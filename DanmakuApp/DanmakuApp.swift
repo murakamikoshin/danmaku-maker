@@ -31,6 +31,7 @@ struct DanmakuApp: App {
                 .environmentObject(purchases)
                 .environmentObject(CosmeticsStore.shared)
                 .environmentObject(RewardStore.shared)
+                .environmentObject(AdPatternStore.shared)
                 .task {
                     auth.start()
                     purchases.start()

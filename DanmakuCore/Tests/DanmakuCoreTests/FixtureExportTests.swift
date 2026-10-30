@@ -51,6 +51,12 @@ final class FixtureExportTests: XCTestCase {
         return out
     }
 
+    /// 弾幕作成モードで描いた軌道の見本(左右に揺れながら下へ進み、最後は速く横へ抜ける)
+    static let samplePath: [Double] = PathData.sanitized((0..<36).flatMap { i -> [Double] in
+        let t = Double(i)
+        return [70 * sin(t * 0.3), t * 5.5 + (i > 30 ? Double(i - 30) * Double(i - 30) * 3 : 0)]
+    }) ?? []
+
     private func emitters(_ patterns: [DanmakuCore.Pattern], boss: Bool) -> [Emitter] {
         let intervals: [Double] = [0.35, 0.5, 0.2, 0.8]
         let counts: [Int] = [6, 10, 3, 16]
@@ -63,7 +69,8 @@ final class FixtureExportTests: XCTestCase {
             let s: Double = boss ? 0 : Double(idx) * 0.7
             let ph: Int = boss ? idx % 4 : 0
             out.append(Emitter(t: p, x: x, y: y, s: s, e: 30, i: intervals[idx % 4], c: counts[idx % 4],
-                               v: speeds[idx % 4], r: angles[idx % 4], k: idx % 5, ph: ph, a: [0, 45, -90, 135][idx % 4]))
+                               v: speeds[idx % 4], r: angles[idx % 4], k: idx % 5, ph: ph, a: [0, 45, -90, 135][idx % 4],
+                               path: p == .custom ? FixtureExportTests.samplePath : nil))
         }
         return out
     }

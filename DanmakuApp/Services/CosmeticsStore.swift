@@ -27,6 +27,7 @@ final class CosmeticsStore: ObservableObject {
         ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [], posts: posted)
         showStageLook = defaults.object(forKey: "cosmetics.showStageLook") as? Bool ?? true
         effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
+        ownership.adPatterns = AdPatternStore.load(defaults).unlocked
         #if DEBUG
         // 画面確認用: 起動引数 -unlock-all で全部持っている状態にする（製品ビルドには入らない）
         let args = ProcessInfo.processInfo.arguments
@@ -78,11 +79,18 @@ final class CosmeticsStore: ObservableObject {
         return l
     }
 
+    /// 広告で解放したパターンを反映する(買った商品ではないので、保存は AdPatternStore がする)
+    func setAdPatterns(_ patterns: Set<Pattern>) {
+        guard ownership.adPatterns != patterns else { return }
+        ownership.adPatterns = patterns
+    }
+
     func updateOwnership(productIDs: Set<String>) {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-unlock-all") { return }
         #endif
-        let next = Ownership(productIDs: productIDs, posts: postedCount)
+        var next = Ownership(productIDs: productIDs, posts: postedCount)
+        next.adPatterns = ownership.adPatterns
         guard next != ownership else { return }
         ownership = next
         defaults.set(next.owned.map(\.id).sorted(), forKey: Self.ownedKey)

@@ -37,6 +37,10 @@ public enum Product: Hashable, Sendable {
     case pattern(Pattern)
     /// 買えるパターンの全部入り(単品で全部買うよりお得)
     case patternPack
+    /// 弾幕パターン作成モード(弾の出る位置と軌道を線で描いて、自分だけの弾幕を作る)
+    case patternMaker
+    /// 永久買い切りパック: いまある課金コンテンツと広告削除を全部、これから増える課金コンテンツも全部、一度の購入で使える
+    case lifetime
 
     public static let idPrefix = "com.koshin.danmakumaker."
 
@@ -48,6 +52,8 @@ public enum Product: Hashable, Sendable {
         case .customImages: return Product.idPrefix + "customimages"
         case .pattern(let p): return Product.idPrefix + (p == .homing ? "homing" : "pattern.\(p.rawValue)")
         case .patternPack: return Product.idPrefix + "patternpack"
+        case .patternMaker: return Product.idPrefix + "patternmaker"
+        case .lifetime: return Product.idPrefix + "lifetime"
         }
     }
 
@@ -56,6 +62,8 @@ public enum Product: Hashable, Sendable {
         if id == Product.idPrefix + "customimages" { self = .customImages; return }
         if id == Product.idPrefix + "homing" { self = .pattern(.homing); return }
         if id == Product.idPrefix + "patternpack" { self = .patternPack; return }
+        if id == Product.idPrefix + "patternmaker" { self = .patternMaker; return }
+        if id == Product.idPrefix + "lifetime" { self = .lifetime; return }
         if id.hasPrefix(Product.idPrefix + "pattern."), let p = Pattern(rawValue: String(id.dropFirst((Product.idPrefix + "pattern.").count))), p.isPaid, p != .homing {
             self = .pattern(p); return
         }
@@ -78,6 +86,8 @@ public enum Product: Hashable, Sendable {
         case .customImages: return 500
         case .pattern(let p): return p == .homing ? 300 : 100
         case .patternPack: return 600
+        case .patternMaker: return 980
+        case .lifetime: return 2980
         }
     }
 
@@ -92,6 +102,8 @@ public enum Product: Hashable, Sendable {
         list.append(.customImages)
         for p in Pattern.paid { list.append(.pattern(p)) }
         list.append(.patternPack)
+        list.append(.patternMaker)
+        list.append(.lifetime)
         return list
     }
 }
@@ -102,6 +114,9 @@ public struct Ownership: Equatable, Sendable {
     /// 投稿したステージの数(投稿で解放されるテーマの判定に使う。サーバーの記録で数える)
     public var posts: Int
 
+    /// 広告を見て解放した、無料のパターン(買う商品ではない)
+    public var adPatterns: Set<Pattern> = []
+
     public init(owned: Set<Product> = [], posts: Int = 0) { self.owned = owned; self.posts = posts }
 
     /// RevenueCat などから得た、購入済みの商品 ID の一覧から作る
@@ -109,6 +124,9 @@ public struct Ownership: Equatable, Sendable {
         owned = Set(productIDs.compactMap(Product.init(id:)))
         self.posts = posts
     }
+
+    /// 永久買い切りパックを持っているか(持っていれば、課金コンテンツは全部使える)
+    public var hasLifetime: Bool { owned.contains(.lifetime) }
 
     /// 投稿数で解放されるテーマを、もう使えるか
     public func hasUnlocked(_ theme: Theme) -> Bool {
@@ -119,20 +137,24 @@ public struct Ownership: Equatable, Sendable {
     public func has(_ part: ThemePart, of theme: Theme) -> Bool {
         if theme == .classic { return true }
         if theme.unlockPosts != nil { return hasUnlocked(theme) }
-        return owned.contains(.part(theme, part)) || owned.contains(.set(theme))
+        return hasLifetime || owned.contains(.part(theme, part)) || owned.contains(.set(theme))
     }
 
     public func has(_ shot: ShotType) -> Bool {
-        shot == .standard || owned.contains(.shot(shot))
+        shot == .standard || hasLifetime || owned.contains(.shot(shot))
     }
 
     /// そのパターンをステージ作りで使えるか(無料のパターンは、いつでも使える)
     public func has(_ pattern: Pattern) -> Bool {
-        !pattern.isPaid || owned.contains(.pattern(pattern)) || owned.contains(.patternPack)
+        if pattern.isAd { return hasLifetime || adPatterns.contains(pattern) }
+        return !pattern.isPaid || hasLifetime || owned.contains(.pattern(pattern)) || owned.contains(.patternPack)
     }
 
+    /// 弾幕パターン作成モードを使えるか
+    public var hasPatternMaker: Bool { hasLifetime || owned.contains(.patternMaker) }
+
     /// 自分の画像を使う権利があるか
-    public var hasCustomImages: Bool { owned.contains(.customImages) }
+    public var hasCustomImages: Bool { hasLifetime || owned.contains(.customImages) }
 
     /// その商品を買う意味があるか（すでに全部使えるなら false）
     public func canBuy(_ product: Product) -> Bool {
@@ -143,6 +165,8 @@ public struct Ownership: Equatable, Sendable {
         case .customImages: return !hasCustomImages
         case .pattern(let p): return !has(p)
         case .patternPack: return !Pattern.paid.allSatisfy { has($0) }
+        case .patternMaker: return !hasPatternMaker
+        case .lifetime: return !hasLifetime
         }
     }
 }
