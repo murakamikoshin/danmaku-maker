@@ -628,7 +628,7 @@ private struct AdPatternCard: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         VStack(alignment: .leading, spacing: 8) {
                             Text("shop.adpattern.next").font(.caption.bold()).foregroundStyle(.secondary)
-                            Text(LocalizedStringKey("pattern.\(next.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
+                            Text(L("pattern.\(next.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
                             claimButton
                         }
                         Spacer(minLength: 0)
@@ -649,7 +649,7 @@ private struct AdPatternCard: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .opacity(open ? 1 : 0.4)
                                     .overlay { if !open { Image(systemName: "lock.fill").foregroundStyle(Color(Palette.gold)) } }
-                                Text(LocalizedStringKey("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold, design: .rounded))
+                                Text(L("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold, design: .rounded))
                                     .foregroundStyle(open ? Color(Palette.text) : .secondary).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .frame(width: 92)

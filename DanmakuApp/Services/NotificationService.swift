@@ -8,7 +8,8 @@ import UserNotifications
 enum PushKind: String, CaseIterable, Identifiable {
     case likes, comments, plays
     var id: String { rawValue }
-    var titleKey: LocalizedStringKey { LocalizedStringKey("settings.notify.\(rawValue)") }
+    /// LocalizedStringKey("…\\(rawValue)") と書くと、キーが "settings.notify.%@" になって翻訳が引けないので、文字列をつないで作る
+    var titleKey: LocalizedStringKey { LocalizedStringKey("settings.notify." + rawValue) }
     var symbol: String {
         switch self {
         case .likes: "heart.fill"
