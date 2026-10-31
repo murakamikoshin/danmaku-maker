@@ -597,7 +597,7 @@ private struct MakerDemo: View {
     }
 }
 
-/// 広告を見て1日1つ解放する31パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
+/// 広告を見て1日1つ解放する34パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
 private struct AdPatternCard: View {
     @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var ads: AdsService

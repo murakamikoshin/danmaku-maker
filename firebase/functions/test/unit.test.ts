@@ -500,7 +500,7 @@ describe("validatePublish(描いた軌道の弾幕)", () => {
     }
   });
   it("広告で解放するパターンも受け付ける", () => {
-    for (const t of ["twinRing", "lightRain", "helix"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
+    for (const t of ["twinRing", "lightRain", "helix", "chargeBeam", "boomerang", "giantOrb", "sweepLaser"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
   });
 });
 

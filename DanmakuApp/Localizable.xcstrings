@@ -33707,6 +33707,201 @@
         }
       }
     },
+    "pattern.boomerang": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブーメラン"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boomerang"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回旋镖"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "迴力鏢"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부메랑"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bumerán"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boomerang"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bumerang"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bumerangue"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бумеранг"
+          }
+        }
+      }
+    },
+    "pattern.giantOrb": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "巨大弾"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giant Orb"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "巨型弹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "巨型彈"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "거대탄"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orbe gigante"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orbe géant"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riesenkugel"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orbe gigante"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Гигантская сфера"
+          }
+        }
+      }
+    },
+    "pattern.sweepLaser": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "なぎ払いレーザー"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sweeping Laser"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "横扫激光"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "橫掃雷射"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "휩쓸기 레이저"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Láser de barrido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laser balayant"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schwenklaser"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laser varredor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размашистый лазер"
+          }
+        }
+      }
+    },
     "shop.adpattern.title": {
       "extractionState": "manual",
       "localizations": {
@@ -34103,61 +34298,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "31パターンをすべて手に入れました"
+            "value": "34パターンをすべて手に入れました"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You have all 31 patterns"
+            "value": "You have all 34 patterns"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已获得全部31个弹幕"
+            "value": "已获得全部34个弹幕"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "已獲得全部31個彈幕"
+            "value": "已獲得全部34個彈幕"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "31개 패턴을 모두 얻었어요"
+            "value": "34개 패턴을 모두 얻었어요"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tienes los 31 patrones"
+            "value": "Tienes los 34 patrones"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vous avez les 31 motifs"
+            "value": "Vous avez les 34 motifs"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Du hast alle 31 Muster"
+            "value": "Du hast alle 34 Muster"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Você tem todos os 31 padrões"
+            "value": "Você tem todos os 34 padrões"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Получены все 31 узор"
+            "value": "Получены все 34 узора"
           }
         }
       }

@@ -92,6 +92,8 @@ final class FixtureExportTests: XCTestCase {
                      Emitter(t: .chargeBeam, x: 0.2, y: 0.3, s: 0.8, e: 20, i: 2.2, c: 1, v: 2, r: 0, k: 3)]
         stages.append(("survive-beam-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: beams, lifeMode: .lives, lifeCount: 3).sanitized()))
         stages.append(("survive-beam-hp6", Stage(name: "s", mode: .survive, durationSec: 20, emitters: beams + emitters([.ring], boss: false), lifeMode: .hp, lifeCount: 6).sanitized()))
+        stages.append(("survive-giant-hp5", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.giantOrb, .boomerang, .sweepLaser], boss: false), lifeMode: .hp, lifeCount: 5).sanitized()))
+        stages.append(("boss-sweep-boomerang", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 250, bossMove: 2, emitters: emitters([.sweepLaser, .boomerang, .giantOrb], boss: true), lifeMode: .lives, lifeCount: 4).sanitized()))
         stages.append(("boss-beam", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 1, emitters: emitters([.chargeBeam, .aim], boss: true), lifeMode: .lives, lifeCount: 3).sanitized()))
         for hp in [100, 300] {
             stages.append(("boss-hp\(hp)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: hp, bossMove: 1, emitters: emitters([.ring, .aim, .sweep, .corner], boss: true)).sanitized()))

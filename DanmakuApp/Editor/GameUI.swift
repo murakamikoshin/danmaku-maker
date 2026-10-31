@@ -562,6 +562,20 @@ struct PatternIcon: View {
                 var line = Path(); line.move(to: CGPoint(x: c.x, y: 7)); line.addLine(to: CGPoint(x: c.x, y: h - 3))
                 ctx.stroke(line, with: .color(col), style: StrokeStyle(lineWidth: 7, lineCap: .round))
                 ctx.stroke(line, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            case .sweepLaser:
+                // 発射口から、扇形に振られる光線(残像つき)
+                dot(c.x, 5, 3.4)
+                for (i, a) in [-0.55, -0.2, 0.15, 0.5].enumerated() {
+                    var p = Path(); p.move(to: CGPoint(x: c.x, y: 6))
+                    p.addLine(to: CGPoint(x: c.x + sin(a) * (h - 6), y: 6 + cos(a) * (h - 6)))
+                    let last = i == 3
+                    ctx.stroke(p, with: .color(col.opacity(last ? 1 : 0.25 + 0.15 * Double(i))), style: StrokeStyle(lineWidth: last ? 6 : 2, lineCap: .round))
+                    if last { ctx.stroke(p, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 2, lineCap: .round)) }
+                }
+            case .giantOrb:
+                dot(c.x, 5, 3.4)
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - 11, y: c.y - 6, width: 22, height: 22)), with: .color(col))
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - 5, y: c.y - 2, width: 7, height: 7)), with: .color(.white.opacity(0.6)))
             default:
                 // 広告で解放するパターン: 実際に出る弾を少し進めた形を、小さく描く(ゲームと同じ計算)
                 for q in PatternIcon.sample(pattern) { dot(q.x * w, q.y * h, 1.5) }

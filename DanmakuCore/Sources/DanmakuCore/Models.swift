@@ -31,6 +31,9 @@ public enum DanmakuConfig {
     public static let beamFire = 0.5
     /// チャージビームの当たる太さ(光線の中心からの距離の2乗。自機の当たり判定の大きさも含む)
     public static let beamHitRadiusSquared = 81.0
+    /// 巨大弾の当たる範囲(中心からの距離の2乗。自機の当たり判定の大きさも含む)と、見た目の半径
+    public static let giantHitRadiusSquared = 400.0
+    public static let giantDrawRadius = 18.0
     /// 判定距離の2乗（5.5 未満で被弾）
     public static let hitRadiusSquared = 30.25
 }
@@ -74,6 +77,12 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     // ここから下は、あとから足した、広告を見て解放するパターン(乱数シードに順番を使うので、custom より後ろに足す)
     /// チャージビーム: 細い予告線をためてから、太い光線を撃つ
     case chargeBeam
+    /// ブーメラン: 弧を描いて、戻ってくる
+    case boomerang
+    /// 巨大弾: 大きくて当たる範囲も広い弾を、1発ずつ撃つ
+    case giantOrb
+    /// なぎ払いレーザー: ためてから、光線が首を振って画面をなぎ払う
+    case sweepLaser
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 

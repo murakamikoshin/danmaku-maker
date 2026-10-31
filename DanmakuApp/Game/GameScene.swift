@@ -330,6 +330,9 @@ final class GameScene: SKScene {
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
                 n.texture = bulletTextures[b.color]
+                // 巨大弾は、当たる範囲に合わせて大きく描く
+                let size = b.isGiant ? CGSize(width: DanmakuConfig.giantDrawRadius * 2, height: DanmakuConfig.giantDrawRadius * 2) : bulletTextures[0].size()
+                if n.size != size { n.size = size }
             } else if !n.isHidden {
                 n.isHidden = true
             }

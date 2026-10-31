@@ -27,12 +27,21 @@ public struct Bullet: Equatable, Sendable {
     public var follow: PathFollow?
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
-    /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒
+    /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
+    /// なぎ払いレーザーは、turn が撃っている間に首を振る速さ(ラジアン/秒)、homeLeft が撃つ時間(秒。0 なら標準)
     public static let beamScript = 4
+    /// ブーメランの印。homeLeft 秒の間、turn(ラジアン/秒)で向きを回す(追尾ではなく、決まった弧を描く)
+    public static let boomerangScript = 5
+    /// 巨大弾の印。動きはふつうの弾と同じで、当たる範囲だけが広い
+    public static let giantScript = 6
 
-    public static func beam(x: Double, y: Double, angle a: Double, color: Int) -> Bullet {
-        Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, bounces: 1, script: beamScript)
+    public static func beam(x: Double, y: Double, angle a: Double, color: Int, sweep: Double = 0, fireTime: Double = 0) -> Bullet {
+        Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, turn: sweep, homeLeft: fireTime, bounces: 1, script: beamScript)
     }
+
+    public var isGiant: Bool { script == Bullet.giantScript }
+    /// ビームを撃っている時間(秒)
+    public var beamFireTime: Double { homeLeft > 0 ? homeLeft : DanmakuConfig.beamFire }
 
     public var isBeam: Bool { script == Bullet.beamScript }
     /// ビームが撃たれている(当たる)ところか。ためている間は当たらない
@@ -77,9 +86,30 @@ extension Bullet {
             return .alive
         }
         if isBeam {
-            // チャージビームは動かない。ためて、撃って、消える
+            // チャージビームは動かない。ためて、撃って、消える。なぎ払いは、撃っている間だけ首を振る
             age += dt
-            return age >= DanmakuConfig.beamCharge + DanmakuConfig.beamFire ? .gone : .alive
+            if age >= DanmakuConfig.beamCharge + beamFireTime { return .gone }
+            if turn != 0 && age >= DanmakuConfig.beamCharge {
+                let na = atan2(vy, vx) + turn * dt
+                vx = cos(na); vy = sin(na)
+            }
+            return .alive
+        }
+        if script == Bullet.boomerangScript {
+            // ブーメラン: 決まった時間だけ、同じ速さのまま向きを回して、弧を描いて戻ってくる
+            if homeLeft > 0 {
+                let na = atan2(vy, vx) + turn * dt
+                let speed = (vx * vx + vy * vy).squareRoot()
+                vx = cos(na) * speed
+                vy = sin(na) * speed
+                homeLeft -= dt
+            }
+            x += vx * dt; y += vy * dt
+            if bounces > 0 {
+                if x < 0 { x = -x; vx = -vx; bounces -= 1 }
+                else if x > W { x = 2 * W - x; vx = -vx; bounces -= 1 }
+            }
+            return .alive
         }
         var frozen = false
         if script != 0 {
@@ -95,8 +125,10 @@ extension Bullet {
                 } else if age >= DanmakuConfig.stopGoMove { frozen = true }
             case 2:
                 if age >= DanmakuConfig.splitAfter { return .burst }
-            default:
+            case 3:
                 if age >= DanmakuConfig.timedHold { script = 0 } else { frozen = true }
+            default:
+                break   // 巨大弾など、時間で動きが変わらない印
             }
         }
         if homeLeft > 0 {
@@ -544,7 +576,7 @@ public struct Simulation {
             }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
-            if dx * dx + dy * dy < DanmakuConfig.hitRadiusSquared {
+            if dx * dx + dy * dy < (b.isGiant ? DanmakuConfig.giantHitRadiusSquared : DanmakuConfig.hitRadiusSquared) {
                 if invincible || tick < shieldUntilTick { continue }
                 lifeLeft -= 1
                 if lifeLeft <= 0 { outcome = .hit; return }   // ライフ1・HP が尽きたとき: 以前と同じく、その場で終了

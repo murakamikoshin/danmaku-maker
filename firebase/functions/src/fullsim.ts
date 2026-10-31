@@ -1,5 +1,5 @@
 import { inflateRawSync } from "node:zlib";
-import { BEAM_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
+import { BEAM_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
@@ -21,6 +21,8 @@ const SPLIT_AFTER = 0.7, SPLIT_COUNT = 6, SPLIT_SPEED = 0.7;
 const TIMED_HOLD = 1.1;
 /** チャージビーム: ためる時間・撃つ時間(秒)と、当たる太さ(中心からの距離の2乗)。アプリの DanmakuConfig と同じ */
 const BEAM_CHARGE = 1.0, BEAM_FIRE = 0.5, BEAM_HIT_R2 = 81;
+/** 巨大弾の当たる範囲(中心からの距離の2乗)。アプリの DanmakuConfig.giantHitRadiusSquared と同じ */
+const GIANT_HIT_R2 = 400;
 
 /** チャージビームが (px, py) に当たるか。撃っている間だけ、出る場所から向きのほうへ伸びる光線に触れると当たる(1本で1回だけ) */
 export function beamHits(b: { x: number; y: number; vx: number; vy: number; age: number; bounces: number }, px: number, py: number): boolean {
@@ -382,9 +384,13 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
       if (b.script === BEAM_SCRIPT) {
-        // チャージビーム: 動かない。ためて、撃って、消える。当たっても光線は消えない
+        // チャージビーム: 動かない。ためて、撃って、消える。当たっても光線は消えない。なぎ払いは、撃っている間だけ首を振る
         b.age += dt;
-        if (b.age >= BEAM_CHARGE + BEAM_FIRE) continue;
+        if (b.age >= BEAM_CHARGE + (b.homeLeft > 0 ? b.homeLeft : BEAM_FIRE)) continue;
+        if (b.turn !== 0 && b.age >= BEAM_CHARGE) {
+          const na = Math.atan2(b.vy, b.vx) + b.turn * dt;
+          b.vx = Math.cos(na); b.vy = Math.sin(na);
+        }
         if (beamHits(b, px, py) && tick >= shieldUntil) {
           b.bounces = 0;
           lifeLeft -= 1;
@@ -394,7 +400,21 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         bullets[w++] = b;
         continue;
       }
-      if (b.follow) {
+      if (b.script === BOOMERANG_SCRIPT) {
+        // ブーメラン: 決まった時間だけ、同じ速さのまま向きを回して、弧を描いて戻ってくる
+        if (b.homeLeft > 0) {
+          const na = Math.atan2(b.vy, b.vx) + b.turn * dt;
+          const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          b.vx = Math.cos(na) * speed;
+          b.vy = Math.sin(na) * speed;
+          b.homeLeft -= dt;
+        }
+        b.x += b.vx * dt; b.y += b.vy * dt;
+        if (b.bounces > 0) {
+          if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
+          else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
+        }
+      } else if (b.follow) {
         // 描いた軌道の上を、時間に沿って進む
         const f = b.follow;
         b.age += dt;
@@ -423,7 +443,9 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
             }
             continue;
           }
-        } else if (b.age >= TIMED_HOLD) b.script = 0; else frozen = true;
+        } else if (b.script === 3) {
+          if (b.age >= TIMED_HOLD) b.script = 0; else frozen = true;
+        }   // 巨大弾など、時間で動きが変わらない印は、ここでは何もしない
       }
       if (b.homeLeft > 0) {
         const want = Math.atan2(py - b.y, px - b.x);
@@ -453,7 +475,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       }
       if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
       const dx = b.x - px, dy = b.y - py;
-      if (dx * dx + dy * dy < HIT_R2) {
+      if (dx * dx + dy * dy < (b.script === GIANT_SCRIPT ? GIANT_HIT_R2 : HIT_R2)) {
         if (tick < shieldUntil) continue;
         lifeLeft -= 1;
         if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }   // その場で終了(弾の並びはそのまま)

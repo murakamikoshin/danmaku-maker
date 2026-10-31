@@ -2,10 +2,13 @@ import XCTest
 @testable import DanmakuCore
 
 final class AdPatternTests: XCTestCase {
-    func testThereAre31AdPatternsAndTheyAreNotPaid() {
-        XCTAssertEqual(Pattern.ad.count, 31)
-        XCTAssertEqual(Set(Pattern.ad).count, 31)
+    func testThereAre34AdPatternsAndTheyAreNotPaid() {
+        XCTAssertEqual(Pattern.ad.count, 34)
+        XCTAssertEqual(Set(Pattern.ad).count, 34)
         XCTAssertEqual(Pattern.ad[4], .chargeBeam, "チャージビームは5番目に解放する")
+        XCTAssertEqual(Pattern.ad[9], .boomerang)
+        XCTAssertEqual(Pattern.ad[14], .giantOrb)
+        XCTAssertEqual(Pattern.ad[19], .sweepLaser)
         for p in Pattern.ad {
             XCTAssertTrue(p.isAd)
             XCTAssertFalse(p.isPaid, "\(p)")
@@ -14,9 +17,9 @@ final class AdPatternTests: XCTestCase {
         }
         // 並びを変えない(乱数や記録に、並びの番号を使うので、新しいものは後ろに足す)
         XCTAssertEqual(Pattern.allCases.prefix(19).last, .timed)
-        XCTAssertEqual(Set(Pattern.allCases.dropFirst(19).prefix(30)), Set(Pattern.ad).subtracting([.chargeBeam]))
+        XCTAssertEqual(Set(Pattern.allCases.dropFirst(19).prefix(30)), Set(Pattern.ad).subtracting([.chargeBeam, .boomerang, .giantOrb, .sweepLaser]))
         XCTAssertEqual(Pattern.allCases.dropFirst(49).first, .custom, "弾幕作成モードのパターンの番号は変えない")
-        XCTAssertEqual(Pattern.allCases.last, .chargeBeam, "あとから足したパターンは、custom より後ろ")
+        XCTAssertEqual(Array(Pattern.allCases.dropFirst(50)), [.chargeBeam, .boomerang, .giantOrb, .sweepLaser], "あとから足したパターンは、custom より後ろ")
         XCTAssertFalse(Pattern.custom.isAd)
         XCTAssertFalse(Pattern.custom.isPaid)
     }
@@ -40,7 +43,7 @@ final class AdPatternTests: XCTestCase {
     }
 
     func testAdPatternsLookDifferentFromEachOther() {
-        // 同じ設定で出したときの弾の並び(位置と速度)が、31個ともすべて違う
+        // 同じ設定で出したときの弾の並び(位置と速度)が、34個ともすべて違う
         var seen = Set<[Double]>()
         for p in Pattern.ad {
             let d = p.recipeDefaults!
@@ -74,11 +77,11 @@ final class AdPatternTests: XCTestCase {
         XCTAssertNil(s.claim(today: 19990), "端末の日付を戻しても解放できない")
         XCTAssertEqual(s.claim(today: 20003), Pattern.ad[1], "休んだ日があっても、順番は飛ばない")
         XCTAssertEqual(s.unlocked, Set(Pattern.ad.prefix(2)))
-        for d in 0..<40 { _ = s.claim(today: 20010 + d) }
+        for d in 0..<40 { _ = s.claim(today: 20010 + d) }   // 34個より多く試す
         XCTAssertTrue(s.isComplete)
         XCTAssertNil(s.next)
         XCTAssertFalse(s.canClaim(today: 30000))
-        XCTAssertEqual(s.claimed, 31)
+        XCTAssertEqual(s.claimed, 34)
     }
 
     func testLifetimePackUnlocksEverything() {
@@ -149,5 +152,61 @@ final class AdPatternTests: XCTestCase {
         XCTAssertFalse(b.beamHits(100, 80), "出る場所より後ろには伸びない")
         b.bounces = 0
         XCTAssertFalse(b.beamHits(100, 300), "一度当たったビームは、もう当たらない")
+    }
+
+    // MARK: ブーメラン・巨大弾・なぎ払いレーザー
+
+    func testBoomerangComesBack() {
+        let m = Emitter(t: .boomerang, x: 0.5, y: 0.2, s: 0, e: 20, i: 5, c: 2, v: 2, r: 40, k: 0)
+        var rng = Mulberry32(seed: 1)
+        var out: [Bullet] = []
+        Emit.emit(m, shot: 0, cx: 180, cy: 100, px: 180, py: 460, rng: &rng, into: &out)
+        XCTAssertEqual(out.count, 2)
+        XCTAssertTrue(out.allSatisfy { $0.script == Bullet.boomerangScript })
+        XCTAssertEqual(out[0].turn, -out[1].turn, accuracy: 1e-12, "2つは逆向きに曲がる")
+        // 弧を描いたあとは、出たときと逆(上)向きに進む
+        for i in out.indices { for _ in 0..<Int((2.0 / DanmakuConfig.step).rounded()) { _ = out[i].advance(dt: DanmakuConfig.step, width: 360, playerX: 180, playerY: 460) } }
+        XCTAssertTrue(out.allSatisfy { $0.vy < 0 }, "戻ってくる")
+    }
+
+    func testGiantOrbHasWiderHitArea() {
+        // 巨大弾は、ふつうの弾なら当たらない距離(15px)でも当たる
+        let m = Emitter(t: .giantOrb, x: 0.5, y: 0.1, s: 0, e: 20, i: 10, c: 1, v: 1.6, r: 0, k: 0)
+        var rng = Mulberry32(seed: 1)
+        var out: [Bullet] = []
+        Emit.emit(m, shot: 0, cx: 180, cy: 100, px: 180, py: 460, rng: &rng, into: &out)
+        XCTAssertEqual(out.count, 1)
+        XCTAssertTrue(out[0].isGiant)
+        XCTAssertLessThan(15.0 * 15.0, DanmakuConfig.giantHitRadiusSquared)
+        XCTAssertGreaterThan(15.0 * 15.0, DanmakuConfig.hitRadiusSquared)
+        let st = Stage(name: "g", mode: .survive, durationSec: 10, emitters: [m])
+        var sim = Simulation(stage: st)
+        // 巨大弾が出て(真下の自機に向かって)から、自機を15px横にずらして待つ
+        for _ in 0..<Int(((DanmakuConfig.readySeconds + 0.1) / DanmakuConfig.step).rounded()) { sim.step(.zero) }
+        XCTAssertEqual(sim.bullets.count, 1)
+        for _ in 0..<15 { sim.step(Move(dx: 4, dy: 0)) }
+        for _ in 0..<Int((8.0 / DanmakuConfig.step).rounded()) where sim.outcome == .playing { sim.step(.zero) }
+        XCTAssertEqual(sim.outcome, .hit)
+    }
+
+    func testSweepLaserSweepsWhileFiring() {
+        let m = Emitter(t: .sweepLaser, x: 0.5, y: 0.1, s: 0, e: 20, i: 10, c: 1, v: 2, r: 0, k: 0)
+        var rng = Mulberry32(seed: 1)
+        var out: [Bullet] = []
+        Emit.emit(m, shot: 0, cx: 180, cy: 54, px: 180, py: 459, rng: &rng, into: &out)
+        XCTAssertEqual(out.count, 1)
+        var b = out[0]
+        XCTAssertTrue(b.isBeam)
+        let start = atan2(b.vy, b.vx)
+        // ためている間は向きが変わらない
+        for _ in 0..<Int((DanmakuConfig.beamCharge / DanmakuConfig.step).rounded()) - 1 { _ = b.advance(dt: DanmakuConfig.step, width: 360, playerX: 0, playerY: 0) }
+        XCTAssertEqual(atan2(b.vy, b.vx), start, accuracy: 1e-9)
+        // 撃っている間に、90度ぶん首を振って、撃ち終わると消える
+        var gone = false
+        for _ in 0..<Int(((b.beamFireTime + 0.1) / DanmakuConfig.step).rounded()) {
+            if b.advance(dt: DanmakuConfig.step, width: 360, playerX: 0, playerY: 0) == .gone { gone = true; break }
+        }
+        XCTAssertTrue(gone)
+        XCTAssertEqual(abs(atan2(b.vy, b.vx) - start), Double.pi / 2, accuracy: 0.05)
     }
 }

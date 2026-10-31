@@ -79,7 +79,8 @@ struct EmitterPreview: View {
                 // 弾
                 for b in engine.bullets {
                     if b.isBeam { ctx.drawBeam(b, color: Color(skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)])); continue }
-                    let rect = CGRect(x: b.x - 6, y: b.y - 6, width: 12, height: 12)
+                    let r = b.isGiant ? DanmakuConfig.giantDrawRadius : 6
+                    let rect = CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)
                     if let customBullet { ctx.draw(Image(uiImage: customBullet), in: rect) }
                     else { ctx.draw(Image(uiImage: bulletImages[min(max(b.color, 0), bulletImages.count - 1)]), in: rect) }
                 }

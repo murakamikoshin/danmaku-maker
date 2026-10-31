@@ -1,7 +1,7 @@
 import Foundation
 import DanmakuCore
 
-/// 広告を見て1日1つ解放する31パターンの、解放の記録。端末に保存する
+/// 広告を見て1日1つ解放する34パターンの、解放の記録。端末に保存する
 @MainActor
 final class AdPatternStore: ObservableObject {
     static let shared = AdPatternStore()

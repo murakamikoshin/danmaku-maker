@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""広告で解放する31パターンの表から、Swift(DanmakuCore/Sources/DanmakuCore/AdPatterns.swift)と
+"""広告で解放する34パターンの表から、Swift(DanmakuCore/Sources/DanmakuCore/AdPatterns.swift)と
 サーバー(firebase/functions/src/adpatterns.ts)の弾の出し方を生成する。表を直したら、このスクリプトを実行し直す。
 同じ式を両方に手で書くと食い違いやすいので、元の表は1つにしている。
 使い方: python3 tools/gen_ad_patterns.py
@@ -23,6 +23,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #  jitter: 角度のばらつき(度、乱数)
 #  turn(度/秒)/accel/maxMul/bounces/script: 追尾・加速・反射・時間で変わる動き
 #  beam: 1 なら弾ではなく、ためてから撃つ光線(チャージビーム)を出す。向きは mode/fan で決まり、速さの部品は使わない
+#  beamSweep/beamTime: 光線を撃っている間に、beamSweep 度だけ首を振る(なぎ払い)。撃つ時間は beamTime 秒。
+#                      偶数番目と奇数番目で、振る向きが逆
+#  curve/curveTime: ブーメラン。出てから curveTime 秒の間、curve 度/秒で向きを回し、弧を描いて戻ってくる。
+#                   偶数番目と奇数番目で、回る向きが逆
+#  giant: 1 なら巨大弾(大きく、当たる範囲も広い)
 #
 # ⚠️ id は保存データ(ステージ・解放の記録)に入るので変えない。2026-10-31 に、既存のパターンとほぼ同じ動きだった5つ
 #   (swayFan≒首ふり扇、sniper≒光線、pulseRing≒時差、drizzle≒雨、twinAim≒自機狙い)を、id はそのままで別の動きに作り替えた
@@ -38,14 +43,17 @@ PATTERNS = [
     P("slither", "蛇行", "Slither", (0.6, 7, 2.2, 26), mode=2, wobbleAmp=22, wobbleFreq=1.1, wobblePhase=0.6),
     P("curtain", "カーテン", "Curtain", (0.9, 12, 1.8, 0), mode=2, fan=-1, lineWidth=330),
     P("swayFan", "跳ね返りカーテン", "Bounce Curtain", (1.3, 7, 2.0, 0), mode=2, fan=70, lineWidth=280, bounces=2),
+    P("boomerang", "ブーメラン", "Boomerang", (1.2, 4, 2.4, 40), mode=1, curve=130, curveTime=1.4),
     P("drizzle", "加速する雨", "Accelerating Rain", (0.25, 2, 2.0, 0), mode=2, fan=-1, scatter=340, speed0=0.25, accel=1.0, maxMul=2.6),
     P("comet", "彗星", "Comet", (1.0, 7, 1.8, 14), mode=1, speedStep=0.15),
     P("shotgun", "散弾", "Shotgun", (0.9, 9, 2.6, 24), mode=1, jitter=10),
     P("sniper", "追尾カーテン", "Homing Curtain", (1.8, 6, 1.5, 0), mode=2, fan=-1, lineWidth=300, turn=30),
+    P("giantOrb", "巨大弾", "Giant Orb", (2.0, 1, 1.6, 0), mode=1, fan=-1, giant=1, bounces=1),
     P("twinAim", "時差扇", "Delayed Fan", (1.0, 7, 2.4, 50), mode=1, script=3, layers=2, layerSpeed=0.7),
     P("zigzagAim", "ジグザグ狙い", "Zigzag Aim", (0.7, 8, 2.3, 30), mode=1, wobbleAmp=16, wobbleFreq=2.3, wobblePhase=0.9),
     P("accelRing", "加速輪", "Accel Ring", (1.1, 16, 2.0, 7), mode=0, speed0=0.35, accel=0.8, maxMul=2.2),
     P("homingRing", "追尾の輪", "Homing Ring", (1.8, 8, 1.5, 10), mode=0, turn=40),
+    P("sweepLaser", "なぎ払いレーザー", "Sweeping Laser", (3.0, 1, 2.0, 0), mode=1, beam=1, beamSweep=90, beamTime=1.2),
     P("bounceRing", "反射の輪", "Bounce Ring", (1.3, 10, 2.2, 8), mode=0, bounces=2),
     P("freezeRing", "停止の輪", "Freeze Ring", (1.2, 14, 2.4, 6), mode=0, script=1),
     P("shatterRing", "破裂の輪", "Shatter Ring", (1.6, 8, 2.2, 10), mode=0, script=2),
@@ -61,8 +69,9 @@ PATTERNS = [
     P("rapidFan", "連射扇", "Rapid Fan", (0.22, 6, 2.4, 36), mode=1, speedStep=0.12, speedCycle=3),
     P("lightRain", "光の雨", "Light Rain", (0.08, 2, 2.8, 0), mode=2, fan=-1, scatter=340, speed0=1.2, jitter=3),
 ]
-assert len(PATTERNS) == 31 and len({p["id"] for p in PATTERNS}) == 31
-assert PATTERNS[4]["id"] == "chargeBeam"   # 5番目に解放する
+assert len(PATTERNS) == 34 and len({p["id"] for p in PATTERNS}) == 34
+# 解放する順番(1から数えて): チャージビーム5番目、ブーメラン10番目、巨大弾15番目、なぎ払いレーザー20番目
+assert [PATTERNS[i]["id"] for i in (4, 9, 14, 19)] == ["chargeBeam", "boomerang", "giantOrb", "sweepLaser"]
 
 FIELDS = [  # (名前, 型, 既定値)
     ("mode", "Int", 0), ("fan", "Double", 0.0), ("spin", "Double", 1.0), ("sweepAmp", "Double", 0.0), ("sweepFreq", "Double", 0.25),
@@ -72,7 +81,8 @@ FIELDS = [  # (名前, 型, 既定値)
     ("speedStep", "Double", 0.0), ("speedCycle", "Int", 0), ("altSpeed", "Double", 0.0), ("speed0", "Double", 1.0),
     ("lineWidth", "Double", 0.0), ("scatter", "Double", 0.0), ("jitter", "Double", 0.0),
     ("turn", "Double", 0.0), ("accel", "Double", 0.0), ("maxMul", "Double", 0.0), ("bounces", "Int", 0), ("script", "Int", 0),
-    ("beam", "Int", 0),
+    ("beam", "Int", 0), ("beamSweep", "Double", 0.0), ("beamTime", "Double", 0.0),
+    ("curve", "Double", 0.0), ("curveTime", "Double", 0.0), ("giant", "Int", 0),
 ]
 
 def lit(t, v):
@@ -84,7 +94,7 @@ def swift():
     o = []
     o.append("// このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。\n")
     o.append("import Foundation\n")
-    o.append("/// 広告で解放する31パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある\n")
+    o.append("/// 広告で解放する34パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある\n")
     o.append("public struct PatternRecipe: Sendable {")
     for n, t, d in FIELDS:
         o.append(f"    public var {n}: {t} = {lit(t, d)}")
@@ -142,13 +152,24 @@ def swift():
     o.append("                if r.lineWidth != 0 { x += (n > 1 ? Double(j) / Double(n - 1) - 0.5 : 0) * r.lineWidth }")
     o.append("                if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }")
     o.append("                guard out.count < DanmakuConfig.maxBullets else { continue }")
+    o.append("                let side = j % 2 == 0 ? 1.0 : -1.0")
     o.append("                if r.beam != 0 {")
-    o.append("                    // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ")
-    o.append("                    out.append(Bullet.beam(x: x, y: cy, angle: a, color: m.k))")
+    o.append("                    // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。なぎ払いは、振る分の半分だけ戻した向きから始める")
+    o.append("                    if r.beamSweep != 0 {")
+    o.append("                        out.append(Bullet.beam(x: x, y: cy, angle: a - side * r.beamSweep * deg / 2, color: m.k,")
+    o.append("                                               sweep: side * r.beamSweep * deg / r.beamTime, fireTime: r.beamTime))")
+    o.append("                    } else {")
+    o.append("                        out.append(Bullet.beam(x: x, y: cy, angle: a, color: m.k))")
+    o.append("                    }")
+    o.append("                } else if r.curve != 0 {")
+    o.append("                    // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
+    o.append("                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
+    o.append("                                      turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))")
     o.append("                } else {")
     o.append("                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
     o.append("                                      turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,")
-    o.append("                                      accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces, script: r.script))")
+    o.append("                                      accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
+    o.append("                                      script: r.giant != 0 ? Bullet.giantScript : r.script))")
     o.append("                }")
     o.append("            }")
     o.append("            layerSpeed *= r.layerSpeed")
@@ -163,7 +184,7 @@ def num(v):
 def ts():
     o = []
     o.append("// このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。")
-    o.append("// 広告で解放する31パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。\n")
+    o.append("// 広告で解放する34パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。\n")
     o.append("export interface Recipe {")
     for n, t, d in FIELDS:
         o.append(f"  {n}: number;")
@@ -176,7 +197,9 @@ def ts():
         o.append(f"  {p['id']}: {{ ...BASE, {args} }},")
     o.append("};\n")
     o.append("/** チャージビームの印(弾の script)。アプリの Bullet.beamScript と同じ */")
-    o.append("export const BEAM_SCRIPT = 4;\n")
+    o.append("export const BEAM_SCRIPT = 4;")
+    o.append("/** ブーメランと巨大弾の印。アプリの Bullet.boomerangScript / giantScript と同じ */")
+    o.append("export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;\n")
     o.append("/** 弾を1つ出す関数(呼ぶ側の Bullet の形に合わせる) */")
     o.append("export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number }) => void;\n")
     o.append("export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k: number, cx: number, cy: number, px: number, py: number,")
@@ -204,13 +227,25 @@ def ts():
     o.append("      let x = cx;")
     o.append("      if (r.lineWidth !== 0) x += (n > 1 ? j / (n - 1) - 0.5 : 0) * r.lineWidth;")
     o.append("      if (r.scatter !== 0) x += (rng() - 0.5) * r.scatter;")
+    o.append("      const side = j % 2 === 0 ? 1 : -1;")
     o.append("      if (r.beam !== 0) {")
     o.append("        // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。アプリの Bullet.beam と同じ")
-    o.append("        add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("        if (r.beamSweep !== 0) {")
+    o.append("          const a0 = a - side * r.beamSweep * deg / 2;")
+    o.append("          add(x, cy, Math.cos(a0), Math.sin(a0), { turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("        } else {")
+    o.append("          add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("        }")
+    o.append("        continue;")
+    o.append("      }")
+    o.append("      if (r.curve !== 0) {")
+    o.append("        // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
+    o.append("        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { turn: side * r.curve * deg, homeLeft: r.curveTime, accel: 0, maxSpeed: 0, bounces: r.bounces, script: BOOMERANG_SCRIPT });")
     o.append("        continue;")
     o.append("      }")
     o.append("      add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {")
-    o.append("        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces, script: r.script,")
+    o.append("        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
+    o.append("        script: r.giant !== 0 ? GIANT_SCRIPT : r.script,")
     o.append("      });")
     o.append("    }")
     o.append("    layerSpeed *= r.layerSpeed;")

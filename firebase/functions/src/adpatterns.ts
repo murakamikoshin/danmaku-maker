@@ -1,5 +1,5 @@
 // このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。
-// 広告で解放する31パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。
+// 広告で解放する34パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。
 
 export interface Recipe {
   mode: number;
@@ -29,11 +29,16 @@ export interface Recipe {
   bounces: number;
   script: number;
   beam: number;
+  beamSweep: number;
+  beamTime: number;
+  curve: number;
+  curveTime: number;
+  giant: number;
 }
 
-const BASE: Recipe = { mode: 0, fan: 0, spin: 1, sweepAmp: 0, sweepFreq: 0.25, layers: 1, layerAngle: 0, layerSpeed: 1, wobbleAmp: 0, wobbleFreq: 1, wobblePhase: 0, waveAmp: 0, waveFreq: 1, wavePhase: 0, speedStep: 0, speedCycle: 0, altSpeed: 0, speed0: 1, lineWidth: 0, scatter: 0, jitter: 0, turn: 0, accel: 0, maxMul: 0, bounces: 0, script: 0, beam: 0 };
+const BASE: Recipe = { mode: 0, fan: 0, spin: 1, sweepAmp: 0, sweepFreq: 0.25, layers: 1, layerAngle: 0, layerSpeed: 1, wobbleAmp: 0, wobbleFreq: 1, wobblePhase: 0, waveAmp: 0, waveFreq: 1, wavePhase: 0, speedStep: 0, speedCycle: 0, altSpeed: 0, speed0: 1, lineWidth: 0, scatter: 0, jitter: 0, turn: 0, accel: 0, maxMul: 0, bounces: 0, script: 0, beam: 0, beamSweep: 0, beamTime: 0, curve: 0, curveTime: 0, giant: 0 };
 
-export const AD_PATTERNS = ["twinRing", "tripleRing", "pinwheel", "ripple", "chargeBeam", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain"] as const;
+export const AD_PATTERNS = ["twinRing", "tripleRing", "pinwheel", "ripple", "chargeBeam", "whirl", "slither", "curtain", "swayFan", "boomerang", "drizzle", "comet", "shotgun", "sniper", "giantOrb", "twinAim", "zigzagAim", "accelRing", "homingRing", "sweepLaser", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain"] as const;
 
 export const RECIPES: Record<string, Recipe> = {
   twinRing: { ...BASE, mode: 0, layers: 2, layerSpeed: 0.6 },
@@ -45,14 +50,17 @@ export const RECIPES: Record<string, Recipe> = {
   slither: { ...BASE, mode: 2, wobbleAmp: 22, wobbleFreq: 1.1, wobblePhase: 0.6 },
   curtain: { ...BASE, mode: 2, fan: -1, lineWidth: 330 },
   swayFan: { ...BASE, mode: 2, fan: 70, lineWidth: 280, bounces: 2 },
+  boomerang: { ...BASE, mode: 1, curve: 130, curveTime: 1.4 },
   drizzle: { ...BASE, mode: 2, fan: -1, speed0: 0.25, scatter: 340, accel: 1, maxMul: 2.6 },
   comet: { ...BASE, mode: 1, speedStep: 0.15 },
   shotgun: { ...BASE, mode: 1, jitter: 10 },
   sniper: { ...BASE, mode: 2, fan: -1, lineWidth: 300, turn: 30 },
+  giantOrb: { ...BASE, mode: 1, fan: -1, bounces: 1, giant: 1 },
   twinAim: { ...BASE, mode: 1, layers: 2, layerSpeed: 0.7, script: 3 },
   zigzagAim: { ...BASE, mode: 1, wobbleAmp: 16, wobbleFreq: 2.3, wobblePhase: 0.9 },
   accelRing: { ...BASE, mode: 0, speed0: 0.35, accel: 0.8, maxMul: 2.2 },
   homingRing: { ...BASE, mode: 0, turn: 40 },
+  sweepLaser: { ...BASE, mode: 1, beam: 1, beamSweep: 90, beamTime: 1.2 },
   bounceRing: { ...BASE, mode: 0, bounces: 2 },
   freezeRing: { ...BASE, mode: 0, script: 1 },
   shatterRing: { ...BASE, mode: 0, script: 2 },
@@ -71,6 +79,8 @@ export const RECIPES: Record<string, Recipe> = {
 
 /** チャージビームの印(弾の script)。アプリの Bullet.beamScript と同じ */
 export const BEAM_SCRIPT = 4;
+/** ブーメランと巨大弾の印。アプリの Bullet.boomerangScript / giantScript と同じ */
+export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;
 
 /** 弾を1つ出す関数(呼ぶ側の Bullet の形に合わせる) */
 export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number }) => void;
@@ -100,13 +110,25 @@ export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k:
       let x = cx;
       if (r.lineWidth !== 0) x += (n > 1 ? j / (n - 1) - 0.5 : 0) * r.lineWidth;
       if (r.scatter !== 0) x += (rng() - 0.5) * r.scatter;
+      const side = j % 2 === 0 ? 1 : -1;
       if (r.beam !== 0) {
         // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。アプリの Bullet.beam と同じ
-        add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });
+        if (r.beamSweep !== 0) {
+          const a0 = a - side * r.beamSweep * deg / 2;
+          add(x, cy, Math.cos(a0), Math.sin(a0), { turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });
+        } else {
+          add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });
+        }
+        continue;
+      }
+      if (r.curve !== 0) {
+        // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)
+        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { turn: side * r.curve * deg, homeLeft: r.curveTime, accel: 0, maxSpeed: 0, bounces: r.bounces, script: BOOMERANG_SCRIPT });
         continue;
       }
       add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {
-        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces, script: r.script,
+        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,
+        script: r.giant !== 0 ? GIANT_SCRIPT : r.script,
       });
     }
     layerSpeed *= r.layerSpeed;
