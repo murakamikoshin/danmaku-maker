@@ -210,12 +210,13 @@ struct HomeView: View {
                     .buttonStyle(BounceButtonStyle())
             }
         }
-        ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
-            .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
-        // クリア条件(モード)で絞り込む
-        ChipGrid(items: [(Mode?.none, L("world.filter.all")), (.survive, L("editor.mode.survive")), (.boss, L("editor.mode.boss")),
-                         (.damage, L("editor.mode.damage")), (.sequence, L("editor.mode.sequence"))],
-                 selection: $world.mode, idPrefix: "home.mode", minimum: 84)
+        // クリア条件(モード)の絞り込みは、並び順のチップとは見た目も場所も分ける(同じチップが2段続くと、どちらが何か分かりにくかった)
+        modeFilter
+        VStack(alignment: .leading, spacing: 8) {
+            sectionLabel("world.sort.title", "arrow.up.arrow.down")
+            ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
+        }
+        .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
         VStack(spacing: 10) {
             if !Backend.isAvailable {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
@@ -236,6 +237,47 @@ struct HomeView: View {
                 Text(world.searching ? "world.search.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
+    }
+
+    private static let modeOptions: [(Mode?, String)] = [
+        (nil, "world.filter.all"), (.survive, "editor.mode.survive"), (.boss, "editor.mode.boss"),
+        (.damage, "editor.mode.damage"), (.sequence, "editor.mode.sequence"),
+    ]
+
+    /// クリア条件の絞り込み: 見出しと、今の条件を出すプルダウン。絞り込み中は色をつけて目立たせる
+    private var modeFilter: some View {
+        let current = Self.modeOptions.first { $0.0 == world.mode }?.1 ?? "world.filter.all"
+        let active = world.mode != nil
+        return HStack(spacing: 10) {
+            sectionLabel("world.filter.title", "flag.checkered")
+            Spacer(minLength: 8)
+            Menu {
+                Picker(selection: $world.mode) {
+                    ForEach(Self.modeOptions, id: \.1) { option in
+                        Text(LocalizedStringKey(option.1)).tag(option.0)
+                    }
+                } label: { EmptyView() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(LocalizedStringKey(current)).font(.system(size: 14, weight: .heavy, design: .rounded)).lineLimit(1)
+                    Image(systemName: "chevron.down").font(.system(size: 11, weight: .heavy))
+                }
+                .foregroundStyle(active ? Color.white : Color(Palette.text))
+                .padding(.vertical, 8).padding(.horizontal, 14)
+                .background(active ? AnyShapeStyle(GameStyle.accent) : AnyShapeStyle(Color.white.opacity(0.08)), in: Capsule())
+                .overlay(Capsule().stroke(Color.white.opacity(active ? 0.65 : 0.2)))
+            }
+            .accessibilityIdentifier("home.mode")
+        }
+        .padding(.vertical, 10).padding(.horizontal, 14)
+        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+    }
+
+    private func sectionLabel(_ key: LocalizedStringKey, _ symbol: String) -> some View {
+        Label(key, systemImage: symbol)
+            .font(.system(size: 13, weight: .heavy, design: .rounded))
+            .foregroundStyle(Color(Palette.text).opacity(0.8))
     }
 
     #if DEBUG
