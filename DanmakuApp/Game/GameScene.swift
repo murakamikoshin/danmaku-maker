@@ -31,6 +31,8 @@ final class GameScene: SKScene {
     private var customBossTextures: (SKTexture, SKTexture)?
     private var mookNodes: [SKSpriteNode] = []
     private var bulletNodes: [SKSpriteNode] = []
+    /// チャージビームの光線(外側の光と、白い芯)。使い回す
+    private var beamNodes: [(glow: SKShapeNode, core: SKShapeNode)] = []
     private var shotNodes: [SKSpriteNode] = []
     private var markers: [SKShapeNode] = []
     private var starNodes: [(node: SKSpriteNode, y: Double, v: Double)] = []
@@ -90,6 +92,32 @@ final class GameScene: SKScene {
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is not used") }
 
     private func pos(_ x: Double, _ y: Double) -> CGPoint { CGPoint(x: x, y: GameScene.H - y) }
+
+    /// チャージビーム: ためている間は細い予告線(だんだん濃く太く)、撃っている間は太い光線と白い芯
+    private func drawBeam(_ b: Bullet, slot: Int) {
+        while beamNodes.count <= slot {
+            let glow = SKShapeNode(), core = SKShapeNode()
+            glow.zPosition = 3.5; glow.lineCap = .round; glow.glowWidth = 0
+            core.lineCap = .round; core.strokeColor = .white
+            glow.addChild(core)
+            addChild(glow)
+            beamNodes.append((glow, core))
+        }
+        let (glow, core) = beamNodes[slot]
+        let path = CGMutablePath()
+        path.move(to: pos(b.x, b.y))
+        path.addLine(to: pos(b.x + b.vx * BeamLook.length, b.y + b.vy * BeamLook.length))
+        glow.path = path; core.path = path
+        glow.isHidden = false
+        let color = skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)]
+        let look = BeamLook(b)
+        glow.strokeColor = color.withAlphaComponent(look.alpha)
+        glow.lineWidth = look.width
+        glow.glowWidth = look.firing ? 4 : 0
+        core.isHidden = !look.firing
+        core.lineWidth = look.coreWidth
+        core.alpha = look.alpha
+    }
 
     private func buildNodes() {
         let W = GameScene.W, H = GameScene.H
@@ -287,10 +315,18 @@ final class GameScene: SKScene {
             addChild(n)
             bulletNodes.append(n)
         }
+        var beamCount = 0
         for i in 0..<bulletNodes.count {
             let n = bulletNodes[i]
             if i < bs.count {
                 let b = bs[i]
+                if b.isBeam {
+                    // チャージビームは、弾の絵ではなく光線で描く
+                    n.isHidden = true
+                    drawBeam(b, slot: beamCount)
+                    beamCount += 1
+                    continue
+                }
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
                 n.texture = bulletTextures[b.color]
@@ -298,6 +334,8 @@ final class GameScene: SKScene {
                 n.isHidden = true
             }
         }
+
+        for i in beamCount..<beamNodes.count where !beamNodes[i].glow.isHidden { beamNodes[i].glow.isHidden = true }
 
         if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
         if sim.defeats > shownDefeats {

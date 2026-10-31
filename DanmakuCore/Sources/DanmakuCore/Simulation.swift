@@ -26,6 +26,29 @@ public struct Bullet: Equatable, Sendable {
     /// 弾幕作成モードで描いた軌道に沿って進む弾(nil なら、ふつうの弾)
     public var follow: PathFollow?
 
+    /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
+    /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒
+    public static let beamScript = 4
+
+    public static func beam(x: Double, y: Double, angle a: Double, color: Int) -> Bullet {
+        Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, bounces: 1, script: beamScript)
+    }
+
+    public var isBeam: Bool { script == Bullet.beamScript }
+    /// ビームが撃たれている(当たる)ところか。ためている間は当たらない
+    public var beamFiring: Bool { isBeam && age >= DanmakuConfig.beamCharge }
+    /// ためている間の進み具合(0〜1)
+    public var beamChargeProgress: Double { isBeam ? min(1, age / DanmakuConfig.beamCharge) : 0 }
+
+    /// ビームが (px, py) に当たるか。光線は出る場所から向きのほうへ、画面の外まで伸びる
+    public func beamHits(_ px: Double, _ py: Double) -> Bool {
+        guard beamFiring, bounces > 0 else { return false }
+        let rx = px - x, ry = py - y
+        let along = rx * vx + ry * vy
+        let d2 = along < 0 ? rx * rx + ry * ry : rx * rx + ry * ry - along * along
+        return d2 < DanmakuConfig.beamHitRadiusSquared
+    }
+
     /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)
     public func fragments() -> [Bullet] {
         let speed = (vx * vx + vy * vy).squareRoot() * DanmakuConfig.splitSpeed
@@ -37,8 +60,9 @@ public struct Bullet: Equatable, Sendable {
     }
 }
 
-/// 弾の1ステップの結果。burst は、分裂弾がはじけて消えたこと(散った小さな弾は fragments() で作る)
-public enum BulletMotion: Sendable { case alive, burst }
+/// 弾の1ステップの結果。burst は、分裂弾がはじけて消えたこと(散った小さな弾は fragments() で作る)、
+/// gone は、撃ち終わったチャージビームが消えたこと
+public enum BulletMotion: Sendable { case alive, burst, gone }
 
 extension Bullet {
     /// 1ステップ分の弾の動き(時間で変わる動き・追尾・加速・移動・壁での反射)。ゲーム本体、ショップの見本、
@@ -51,6 +75,11 @@ extension Bullet {
             x = f.ox + f.cosR * p.x - f.sinR * p.y
             y = f.oy + f.sinR * p.x + f.cosR * p.y
             return .alive
+        }
+        if isBeam {
+            // チャージビームは動かない。ためて、撃って、消える
+            age += dt
+            return age >= DanmakuConfig.beamCharge + DanmakuConfig.beamFire ? .gone : .alive
         }
         var frozen = false
         if script != 0 {
@@ -490,9 +519,27 @@ public struct Simulation {
         var born: [Bullet] = []
         for i in 0..<bullets.count {
             var b = bullets[i]
-            if b.advance(dt: dt, width: W, playerX: player.x, playerY: player.y) == .burst {
+            let motion = b.advance(dt: dt, width: W, playerX: player.x, playerY: player.y)
+            if motion == .burst {
                 let room = max(0, DanmakuConfig.maxBullets - (w + born.count + (bullets.count - i - 1)))
                 born.append(contentsOf: b.fragments().prefix(room))
+                continue
+            }
+            if motion == .gone { continue }
+            if b.isBeam {
+                // チャージビーム: 撃っている間だけ、光線に触れると当たる。当たっても光線は消えない(同じビームでは1回だけ)
+                if b.beamHits(player.x, player.y) && !(invincible || tick < shieldUntilTick) {
+                    b.bounces = 0
+                    lifeLeft -= 1
+                    if lifeLeft <= 0 { outcome = .hit; return }
+                    if lifeMode == .lives {
+                        shieldUntilTick = tick + Int((Simulation.lifeShieldSeconds / dt).rounded())
+                        hitFlash = 0.5
+                    } else {
+                        hitFlash = 0.15
+                    }
+                }
+                bullets[w] = b; w += 1
                 continue
             }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }

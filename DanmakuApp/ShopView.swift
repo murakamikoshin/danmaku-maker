@@ -597,7 +597,7 @@ private struct MakerDemo: View {
     }
 }
 
-/// 広告を見て1日1つ解放する30パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
+/// 広告を見て1日1つ解放する31パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
 private struct AdPatternCard: View {
     @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var ads: AdsService
@@ -856,10 +856,12 @@ final class PatternDemoEngine {
         for i in 0..<bullets.count {
             var b = bullets[i]
             // ゲーム本体と同じ動き(止まる・分裂・追尾・加速・反射)
-            if b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y) == .burst {
+            let motion = b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y)
+            if motion == .burst {
                 born.append(contentsOf: b.fragments())
                 continue
             }
+            if motion == .gone { continue }   // 撃ち終わったチャージビーム
             if b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > Self.fieldHeight + 20 { continue }
             bullets[w] = b; w += 1
         }

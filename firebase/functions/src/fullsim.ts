@@ -1,5 +1,5 @@
 import { inflateRawSync } from "node:zlib";
-import { RECIPES, emitRecipe } from "./adpatterns.js";
+import { BEAM_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
@@ -19,6 +19,17 @@ const HOMING_SECONDS = 2.5;
 const STOPGO_MOVE = 0.55, STOPGO_HOLD = 0.6, STOPGO_BOOST = 1.3;
 const SPLIT_AFTER = 0.7, SPLIT_COUNT = 6, SPLIT_SPEED = 0.7;
 const TIMED_HOLD = 1.1;
+/** チャージビーム: ためる時間・撃つ時間(秒)と、当たる太さ(中心からの距離の2乗)。アプリの DanmakuConfig と同じ */
+const BEAM_CHARGE = 1.0, BEAM_FIRE = 0.5, BEAM_HIT_R2 = 81;
+
+/** チャージビームが (px, py) に当たるか。撃っている間だけ、出る場所から向きのほうへ伸びる光線に触れると当たる(1本で1回だけ) */
+export function beamHits(b: { x: number; y: number; vx: number; vy: number; age: number; bounces: number }, px: number, py: number): boolean {
+  if (b.age < BEAM_CHARGE || b.bounces <= 0) return false;
+  const rx = px - b.x, ry = py - b.y;
+  const along = rx * b.vx + ry * b.vy;
+  const d2 = along < 0 ? rx * rx + ry * ry : rx * rx + ry * ry - along * along;
+  return d2 < BEAM_HIT_R2;
+}
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
 const BOSS_RADII = [17, 24, 34] as const;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
@@ -370,6 +381,19 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     const born: Bullet[] = [];
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
+      if (b.script === BEAM_SCRIPT) {
+        // チャージビーム: 動かない。ためて、撃って、消える。当たっても光線は消えない
+        b.age += dt;
+        if (b.age >= BEAM_CHARGE + BEAM_FIRE) continue;
+        if (beamHits(b, px, py) && tick >= shieldUntil) {
+          b.bounces = 0;
+          lifeLeft -= 1;
+          if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }
+          if (lifeMode === "lives") shieldUntil = tick + Math.round(LIFE_SHIELD_SECONDS / dt);
+        }
+        bullets[w++] = b;
+        continue;
+      }
       if (b.follow) {
         // 描いた軌道の上を、時間に沿って進む
         const f = b.follow;

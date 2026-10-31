@@ -1,0 +1,40 @@
+# DanmakuCore(ゲームの計算)の Swift のテストを Mac で流し、サーバーの計算と比べるための正解データ
+# (firebase/functions/test/fixtures/sim_fixtures.json)を作り直して、サーバーのテストも流す。
+# 手動実行(Actions タブ → Core tests → Run workflow)。正解データが変わったら、ci/sim-fixtures ブランチに push する
+# (main には直接入れない。中身を確かめてから取り込む)。
+name: Core tests
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app
+      - name: Swift tests (DanmakuCore)
+        working-directory: DanmakuCore
+        run: swift test 2>&1 | tail -150
+      - name: Export simulation fixtures
+        working-directory: DanmakuCore
+        run: EXPORT_SIM_FIXTURES="$GITHUB_WORKSPACE/firebase/functions/test/fixtures/sim_fixtures.json" swift test --filter FixtureExportTests 2>&1 | tail -20
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Server tests against the new fixtures
+        working-directory: firebase/functions
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          npm test
+          npx vitest run test/fullsim.test.ts 2>&1 | tail -40
+      - name: Push updated fixtures
+        run: |
+          if git diff --quiet -- firebase/functions/test/fixtures/sim_fixtures.json; then echo "fixtures unchanged"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci/sim-fixtures
+          git add firebase/functions/test/fixtures/sim_fixtures.json
+          git commit -m "サーバーの計算の正解データを、アプリ(Swift)の計算から作り直す (run ${GITHUB_RUN_NUMBER})"
+          git push -f origin ci/sim-fixtures

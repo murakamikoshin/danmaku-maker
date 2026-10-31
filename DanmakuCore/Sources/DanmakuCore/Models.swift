@@ -26,6 +26,11 @@ public enum DanmakuConfig {
     public static let splitSpeed = 0.7
     /// 時差弾: 止まっている秒数
     public static let timedHold = 1.1
+    /// チャージビーム: ためる(予告線だけで当たらない)時間と、撃っている(当たる)時間(秒)
+    public static let beamCharge = 1.0
+    public static let beamFire = 0.5
+    /// チャージビームの当たる太さ(光線の中心からの距離の2乗。自機の当たり判定の大きさも含む)
+    public static let beamHitRadiusSquared = 81.0
     /// 判定距離の2乗（5.5 未満で被弾）
     public static let hitRadiusSquared = 30.25
 }
@@ -62,10 +67,13 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case split
     /// 時差弾: 輪になったまま止まっていて、合図でいっせいに動き出す
     case timed
-    // ここから下は、広告を見て解放する30パターン(弾の出し方は AdPatterns.swift。並びは変えない)
+    // ここから下は、広告を見て解放するパターン(弾の出し方は AdPatterns.swift。並びは変えない)
     case twinRing, tripleRing, pinwheel, ripple, whirl, slither, curtain, swayFan, drizzle, comet, shotgun, sniper, twinAim, zigzagAim, accelRing, homingRing, bounceRing, freezeRing, shatterRing, pulseRing, freezeCurtain, splitCurtain, wavyRing, petalFan, waveSpiral, tide, ladder, helix, rapidFan, lightRain
     // ここから下は、弾幕作成モード(有料)で自分で描いたパターン。弾の動きは Emitter.path(描いた軌道)に入っている
     case custom
+    // ここから下は、あとから足した、広告を見て解放するパターン(乱数シードに順番を使うので、custom より後ろに足す)
+    /// チャージビーム: 細い予告線をためてから、太い光線を撃つ
+    case chargeBeam
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 

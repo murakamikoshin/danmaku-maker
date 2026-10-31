@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { beamHits } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
@@ -528,5 +529,19 @@ describe("notify", () => {
     expect(pushText("ja", "likes", "  ").body).toBe("「名前のないステージ」にいいねが付きました");
     const long = pushText("ja", "comments", "a".repeat(40), "b".repeat(80)).body;
     expect(long).toBe(`「${"a".repeat(30)}…」にコメント: ${"b".repeat(60)}…`);
+  });
+});
+
+describe("チャージビームの当たり判定", () => {
+  const beam = (o: object = {}) => ({ x: 100, y: 100, vx: 0, vy: 1, age: 1.0, bounces: 1, ...o });
+  it("撃っている間だけ、光線の太さの内側で当たる", () => {
+    expect(beamHits(beam({ age: 0.99 }), 100, 300)).toBe(false);
+    expect(beamHits(beam(), 100, 300)).toBe(true);
+    expect(beamHits(beam(), 108, 400)).toBe(true);
+    expect(beamHits(beam(), 110, 400)).toBe(false);
+  });
+  it("出る場所より後ろには伸びず、一度当たったビームはもう当たらない", () => {
+    expect(beamHits(beam(), 100, 80)).toBe(false);
+    expect(beamHits(beam({ bounces: 0 }), 100, 300)).toBe(false);
   });
 });

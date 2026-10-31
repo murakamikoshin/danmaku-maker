@@ -30,10 +30,12 @@ final class PreviewEngine {
         for i in 0..<bullets.count {
             var b = bullets[i]
             // ゲーム本体と同じ動き(止まる・分裂・追尾・加速・反射)
-            if b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y) == .burst {
+            let motion = b.advance(dt: dt, width: DanmakuConfig.width, playerX: player.x, playerY: player.y)
+            if motion == .burst {
                 born.append(contentsOf: b.fragments())
                 continue
             }
+            if motion == .gone { continue }   // 撃ち終わったチャージビーム
             if b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > PreviewEngine.height + 20 { continue }
             bullets[w] = b; w += 1
         }
@@ -76,6 +78,7 @@ struct EmitterPreview: View {
                 if custom { ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white)) }
                 // 弾
                 for b in engine.bullets {
+                    if b.isBeam { ctx.drawBeam(b, color: Color(skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)])); continue }
                     let rect = CGRect(x: b.x - 6, y: b.y - 6, width: 12, height: 12)
                     if let customBullet { ctx.draw(Image(uiImage: customBullet), in: rect) }
                     else { ctx.draw(Image(uiImage: bulletImages[min(max(b.color, 0), bulletImages.count - 1)]), in: rect) }
@@ -109,4 +112,47 @@ struct EmitterPreview: View {
         }
     }
 
+}
+
+/// チャージビームの見た目(ゲーム本体・エディタの見本で同じ)。当たる太さ(DanmakuConfig.beamHitRadiusSquared)に近い太さで描く
+struct BeamLook {
+    /// 光線の長さ(画面の外まで届く長さ)
+    static let length = 900.0
+    let firing: Bool
+    let width: CGFloat
+    let coreWidth: CGFloat
+    let alpha: CGFloat
+
+    init(_ b: Bullet) {
+        if b.beamFiring {
+            // 撃っている間: 太い光線。終わりぎわに薄くなって消える
+            let f = (b.age - DanmakuConfig.beamCharge) / DanmakuConfig.beamFire
+            firing = true
+            width = 18
+            coreWidth = 6
+            alpha = CGFloat(f > 0.75 ? max(0, (1 - f) / 0.25) : 1)
+        } else {
+            // ためている間: 細い予告線が、だんだん太く濃くなる(当たらない)
+            let p = b.beamChargeProgress
+            firing = false
+            width = CGFloat(1 + 3 * p)
+            coreWidth = 0
+            alpha = CGFloat(0.25 + 0.5 * p)
+        }
+    }
+}
+
+extension GraphicsContext {
+    /// チャージビームを描く(エディタの見本・パターンの絵)
+    func drawBeam(_ b: Bullet, color: Color, scale: CGFloat = 1) {
+        let look = BeamLook(b)
+        var p = Path()
+        p.move(to: CGPoint(x: b.x * scale, y: b.y * scale))
+        p.addLine(to: CGPoint(x: (b.x + b.vx * BeamLook.length) * scale, y: (b.y + b.vy * BeamLook.length) * scale))
+        let style = StrokeStyle(lineWidth: look.width * scale, lineCap: .round)
+        stroke(p, with: .color(color.opacity(look.alpha)), style: style)
+        if look.firing {
+            stroke(p, with: .color(.white.opacity(look.alpha)), style: StrokeStyle(lineWidth: look.coreWidth * scale, lineCap: .round))
+        }
+    }
 }

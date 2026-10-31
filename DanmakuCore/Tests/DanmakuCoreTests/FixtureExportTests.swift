@@ -87,6 +87,12 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("survive-homing", Stage(name: "s", mode: .survive, durationSec: 20, emitters: [Emitter(t: .homing, x: 0.5, y: 0.1, s: 0, e: 20, i: 0.9, c: 3, v: 2, r: 60, k: 2)]).sanitized()))
         stages.append(("survive-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.aim, .spiral], boss: false), lifeMode: .lives, lifeCount: 3).sanitized()))
         stages.append(("survive-hp8", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.rain, .ring], boss: false), lifeMode: .hp, lifeCount: 8).sanitized()))
+        // チャージビーム: ためてから撃つ光線(当たり方が弾と違う)。ライフ制・HP制・ボス戦で
+        let beams = [Emitter(t: .chargeBeam, x: 0.5, y: 0.1, s: 0, e: 20, i: 1.6, c: 3, v: 2, r: 50, k: 1),
+                     Emitter(t: .chargeBeam, x: 0.2, y: 0.3, s: 0.8, e: 20, i: 2.2, c: 1, v: 2, r: 0, k: 3)]
+        stages.append(("survive-beam-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: beams, lifeMode: .lives, lifeCount: 3).sanitized()))
+        stages.append(("survive-beam-hp6", Stage(name: "s", mode: .survive, durationSec: 20, emitters: beams + emitters([.ring], boss: false), lifeMode: .hp, lifeCount: 6).sanitized()))
+        stages.append(("boss-beam", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 1, emitters: emitters([.chargeBeam, .aim], boss: true), lifeMode: .lives, lifeCount: 3).sanitized()))
         for hp in [100, 300] {
             stages.append(("boss-hp\(hp)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: hp, bossMove: 1, emitters: emitters([.ring, .aim, .sweep, .corner], boss: true)).sanitized()))
         }

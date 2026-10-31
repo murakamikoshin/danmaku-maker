@@ -2,7 +2,7 @@
 
 import Foundation
 
-/// 広告で解放する30パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある
+/// 広告で解放する31パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある
 
 public struct PatternRecipe: Sendable {
     public var mode: Int = 0
@@ -31,11 +31,12 @@ public struct PatternRecipe: Sendable {
     public var maxMul: Double = 0.0
     public var bounces: Int = 0
     public var script: Int = 0
+    public var beam: Int = 0
 }
 
 public extension Pattern {
     /// 広告を見て解放する、無料のパターン(解放する順)
-    static let ad: [Pattern] = [.twinRing, .tripleRing, .pinwheel, .ripple, .whirl, .slither, .curtain, .swayFan, .drizzle, .comet, .shotgun, .sniper, .twinAim, .zigzagAim, .accelRing, .homingRing, .bounceRing, .freezeRing, .shatterRing, .pulseRing, .freezeCurtain, .splitCurtain, .wavyRing, .petalFan, .waveSpiral, .tide, .ladder, .helix, .rapidFan, .lightRain]
+    static let ad: [Pattern] = [.twinRing, .tripleRing, .pinwheel, .ripple, .chargeBeam, .whirl, .slither, .curtain, .swayFan, .drizzle, .comet, .shotgun, .sniper, .twinAim, .zigzagAim, .accelRing, .homingRing, .bounceRing, .freezeRing, .shatterRing, .pulseRing, .freezeCurtain, .splitCurtain, .wavyRing, .petalFan, .waveSpiral, .tide, .ladder, .helix, .rapidFan, .lightRain]
     var isAd: Bool { Pattern.ad.contains(self) }
 
     /// 弾の出し方の表(広告で解放するパターンだけ)
@@ -45,22 +46,23 @@ public extension Pattern {
         case .tripleRing: return PatternRecipe(mode: 0, layers: 3, layerSpeed: 0.75)
         case .pinwheel: return PatternRecipe(mode: 0, altSpeed: 0.45)
         case .ripple: return PatternRecipe(mode: 0, spin: 0.0, layers: 4, layerAngle: 5.0, layerSpeed: 0.85)
+        case .chargeBeam: return PatternRecipe(mode: 1, beam: 1)
         case .whirl: return PatternRecipe(mode: 0, speedStep: 0.035)
         case .slither: return PatternRecipe(mode: 2, wobbleAmp: 22.0, wobbleFreq: 1.1, wobblePhase: 0.6)
         case .curtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 330.0)
-        case .swayFan: return PatternRecipe(mode: 2, fan: 38.0, sweepAmp: 1.0, sweepFreq: 0.3)
-        case .drizzle: return PatternRecipe(mode: 2, fan: -1.0, speed0: 0.7, scatter: 340.0)
+        case .swayFan: return PatternRecipe(mode: 2, fan: 70.0, lineWidth: 280.0, bounces: 2)
+        case .drizzle: return PatternRecipe(mode: 2, fan: -1.0, speed0: 0.25, scatter: 340.0, accel: 1.0, maxMul: 2.6)
         case .comet: return PatternRecipe(mode: 1, speedStep: 0.15)
         case .shotgun: return PatternRecipe(mode: 1, jitter: 10.0)
-        case .sniper: return PatternRecipe(mode: 1, fan: -1.0, layers: 3, layerSpeed: 1.35, speed0: 0.9)
-        case .twinAim: return PatternRecipe(mode: 1, layers: 2, layerAngle: 9.0)
+        case .sniper: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, turn: 30.0)
+        case .twinAim: return PatternRecipe(mode: 1, layers: 2, layerSpeed: 0.7, script: 3)
         case .zigzagAim: return PatternRecipe(mode: 1, wobbleAmp: 16.0, wobbleFreq: 2.3, wobblePhase: 0.9)
         case .accelRing: return PatternRecipe(mode: 0, speed0: 0.35, accel: 0.8, maxMul: 2.2)
         case .homingRing: return PatternRecipe(mode: 0, turn: 40.0)
         case .bounceRing: return PatternRecipe(mode: 0, bounces: 2)
         case .freezeRing: return PatternRecipe(mode: 0, script: 1)
         case .shatterRing: return PatternRecipe(mode: 0, script: 2)
-        case .pulseRing: return PatternRecipe(mode: 0, layers: 2, layerSpeed: 0.7, script: 3)
+        case .pulseRing: return PatternRecipe(mode: 2, fan: -1.0, scatter: 340.0, script: 1)
         case .freezeCurtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, script: 1)
         case .splitCurtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, script: 2)
         case .wavyRing: return PatternRecipe(mode: 0, waveAmp: 0.35, waveFreq: 3.0)
@@ -82,22 +84,23 @@ public extension Pattern {
         case .tripleRing: return (1.2, 12, 2.6, 4.0)
         case .pinwheel: return (0.5, 8, 2.4, 9.0)
         case .ripple: return (1.4, 18, 2.4, 0.0)
+        case .chargeBeam: return (2.4, 1, 2.0, 40.0)
         case .whirl: return (0.12, 4, 1.6, 13.0)
         case .slither: return (0.6, 7, 2.2, 26.0)
         case .curtain: return (0.9, 12, 1.8, 0.0)
-        case .swayFan: return (0.18, 5, 2.4, 50.0)
-        case .drizzle: return (0.12, 2, 1.6, 0.0)
+        case .swayFan: return (1.3, 7, 2.0, 0.0)
+        case .drizzle: return (0.25, 2, 2.0, 0.0)
         case .comet: return (1.0, 7, 1.8, 14.0)
         case .shotgun: return (0.9, 9, 2.6, 24.0)
-        case .sniper: return (1.1, 1, 2.4, 0.0)
-        case .twinAim: return (0.8, 4, 2.6, 20.0)
+        case .sniper: return (1.8, 6, 1.5, 0.0)
+        case .twinAim: return (1.0, 7, 2.4, 50.0)
         case .zigzagAim: return (0.7, 8, 2.3, 30.0)
         case .accelRing: return (1.1, 16, 2.0, 7.0)
         case .homingRing: return (1.8, 8, 1.5, 10.0)
         case .bounceRing: return (1.3, 10, 2.2, 8.0)
         case .freezeRing: return (1.2, 14, 2.4, 6.0)
         case .shatterRing: return (1.6, 8, 2.2, 10.0)
-        case .pulseRing: return (1.8, 12, 2.0, 8.0)
+        case .pulseRing: return (0.45, 3, 2.0, 0.0)
         case .freezeCurtain: return (1.3, 9, 2.4, 0.0)
         case .splitCurtain: return (1.5, 6, 1.8, 0.0)
         case .wavyRing: return (1.0, 24, 2.2, 6.0)
@@ -142,7 +145,11 @@ extension Emit {
                 var x = cx
                 if r.lineWidth != 0 { x += (n > 1 ? Double(j) / Double(n - 1) - 0.5 : 0) * r.lineWidth }
                 if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }
-                if out.count < DanmakuConfig.maxBullets {
+                guard out.count < DanmakuConfig.maxBullets else { continue }
+                if r.beam != 0 {
+                    // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ
+                    out.append(Bullet.beam(x: x, y: cy, angle: a, color: m.k))
+                } else {
                     out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,
                                       turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,
                                       accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces, script: r.script))

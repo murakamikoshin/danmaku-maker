@@ -554,6 +554,14 @@ struct PatternIcon: View {
                 for (cx, cy, sx, sy) in [(3.0, 3.0, 1.0, 1.0), (w - 3, 3, -1.0, 1.0), (3, h - 3, 1.0, -1.0), (w - 3, h - 3, -1.0, -1.0)] {
                     for k in 0..<3 { dot(cx + sx * Double(k) * 7, cy + sy * Double(k) * 7, 2.2) }
                 }
+            case .chargeBeam:
+                // 発射口から下へ: 細い予告線と、太い光線(白い芯つき)
+                dot(c.x, 5, 3.4)
+                var thin = Path(); thin.move(to: CGPoint(x: c.x - 9, y: 6)); thin.addLine(to: CGPoint(x: c.x - 13, y: h - 3))
+                ctx.stroke(thin, with: .color(col.opacity(0.5)), lineWidth: 1)
+                var line = Path(); line.move(to: CGPoint(x: c.x, y: 7)); line.addLine(to: CGPoint(x: c.x, y: h - 3))
+                ctx.stroke(line, with: .color(col), style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                ctx.stroke(line, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
             default:
                 // 広告で解放するパターン: 実際に出る弾を少し進めた形を、小さく描く(ゲームと同じ計算)
                 for q in PatternIcon.sample(pattern) { dot(q.x * w, q.y * h, 1.5) }

@@ -32153,61 +32153,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ゆらぎ扇"
+            "value": "跳ね返りカーテン"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Swaying Fan"
+            "value": "Bounce Curtain"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "摇摆扇"
+            "value": "反弹弹幕帘"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "搖擺扇"
+            "value": "反彈彈幕簾"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "흔들 부채"
+            "value": "반사 커튼"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abanico oscilante"
+            "value": "Cortina rebotante"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Éventail ondulant"
+            "value": "Rideau rebondissant"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wackelfächer"
+            "value": "Abprallvorhang"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leque oscilante"
+            "value": "Cortina quicante"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Качающийся веер"
+            "value": "Отскакивающий занавес"
           }
         }
       }
@@ -32218,61 +32218,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "霧雨"
+            "value": "加速する雨"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drizzle"
+            "value": "Accelerating Rain"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "毛毛雨"
+            "value": "加速之雨"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "毛毛雨"
+            "value": "加速之雨"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가랑비"
+            "value": "가속하는 비"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Llovizna"
+            "value": "Lluvia acelerada"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bruine"
+            "value": "Pluie accélérée"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nieselregen"
+            "value": "Beschleunigender Regen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Garoa"
+            "value": "Chuva acelerada"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Морось"
+            "value": "Ускоряющийся дождь"
           }
         }
       }
@@ -32413,61 +32413,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "狙撃"
+            "value": "追尾カーテン"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sniper"
+            "value": "Homing Curtain"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "狙击"
+            "value": "追踪弹幕帘"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "狙擊"
+            "value": "追蹤彈幕簾"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "저격"
+            "value": "추적 커튼"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Francotirador"
+            "value": "Cortina teledirigida"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tireur d'élite"
+            "value": "Rideau à tête chercheuse"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scharfschütze"
+            "value": "Zielsuchender Vorhang"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atirador"
+            "value": "Cortina teleguiada"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Снайпер"
+            "value": "Самонаводящийся занавес"
           }
         }
       }
@@ -32478,61 +32478,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "二連狙い"
+            "value": "時差扇"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Twin Aim"
+            "value": "Delayed Fan"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "双连瞄准"
+            "value": "延时扇"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "雙連瞄準"
+            "value": "延時扇"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이중 조준"
+            "value": "시차 부채"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Doble puntería"
+            "value": "Abanico retardado"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Double visée"
+            "value": "Éventail retardé"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Doppelzielen"
+            "value": "Verzögerter Fächer"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mira dupla"
+            "value": "Leque atrasado"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Двойной прицел"
+            "value": "Отложенный веер"
           }
         }
       }
@@ -32933,61 +32933,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "脈動の輪"
+            "value": "止まる雨"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulse Ring"
+            "value": "Pausing Rain"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "脉动环"
+            "value": "停顿之雨"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "脈動環"
+            "value": "停頓之雨"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "맥동 링"
+            "value": "멈추는 비"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anillo pulsante"
+            "value": "Lluvia que se detiene"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anneau pulsant"
+            "value": "Pluie suspendue"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulsring"
+            "value": "Stockender Regen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anel pulsante"
+            "value": "Chuva que para"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Пульсирующее кольцо"
+            "value": "Замирающий дождь"
           }
         }
       }
@@ -33642,6 +33642,71 @@
         }
       }
     },
+    "pattern.chargeBeam": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チャージビーム"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Charge Beam"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "蓄力光束"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "蓄力光束"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "차지 빔"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rayo cargado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rayon chargé"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ladestrahl"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raio carregado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заряженный луч"
+          }
+        }
+      }
+    },
     "shop.adpattern.title": {
       "extractionState": "manual",
       "localizations": {
@@ -34038,61 +34103,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "30パターンをすべて手に入れました"
+            "value": "31パターンをすべて手に入れました"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You have all 30 patterns"
+            "value": "You have all 31 patterns"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已获得全部30个弹幕"
+            "value": "已获得全部31个弹幕"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "已獲得全部30個彈幕"
+            "value": "已獲得全部31個彈幕"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "30개 패턴을 모두 얻었어요"
+            "value": "31개 패턴을 모두 얻었어요"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tienes los 30 patrones"
+            "value": "Tienes los 31 patrones"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vous avez les 30 motifs"
+            "value": "Vous avez les 31 motifs"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Du hast alle 30 Muster"
+            "value": "Du hast alle 31 Muster"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Você tem todos os 30 padrões"
+            "value": "Você tem todos os 31 padrões"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Все 30 узоров получены"
+            "value": "Получены все 31 узор"
           }
         }
       }
