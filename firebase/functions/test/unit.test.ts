@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { crossedMilestone, pushLang, pushText } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
 import { validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
@@ -499,5 +500,33 @@ describe("validatePublish(描いた軌道の弾幕)", () => {
   });
   it("広告で解放するパターンも受け付ける", () => {
     for (const t of ["twinRing", "lightRain", "helix"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
+  });
+});
+
+describe("notify", () => {
+  it("遊ばれた回数の節目を越えたときだけ返す", () => {
+    expect(crossedMilestone(9, 10)).toBe(10);
+    expect(crossedMilestone(10, 11)).toBeUndefined();
+    expect(crossedMilestone(0, 3)).toBeUndefined();
+    expect(crossedMilestone(45, 120)).toBe(100);   // いちどに2つ越えたら、大きいほう
+    expect(crossedMilestone(999, 1000)).toBe(1000);
+  });
+
+  it("言語は、知らないものは英語、地域付きは近いものにする", () => {
+    expect(pushLang("ja")).toBe("ja");
+    expect(pushLang("ja-JP")).toBe("ja");
+    expect(pushLang("zh-Hant-TW")).toBe("zh-Hant");
+    expect(pushLang("zh-CN")).toBe("zh-Hans");
+    expect(pushLang("pt-PT")).toBe("pt-BR");
+    expect(pushLang("it")).toBe("en");
+    expect(pushLang(undefined)).toBe("en");
+  });
+
+  it("文面にステージ名とコメントを入れ、長いものは切る", () => {
+    expect(pushText("ja", "likes", "花火")).toEqual({ title: "いいねされました", body: "「花火」にいいねが付きました" });
+    expect(pushText("en", "plays", "Storm", "100").body).toBe('"Storm" has been played 100 times');
+    expect(pushText("ja", "likes", "  ").body).toBe("「名前のないステージ」にいいねが付きました");
+    const long = pushText("ja", "comments", "a".repeat(40), "b".repeat(80)).body;
+    expect(long).toBe(`「${"a".repeat(30)}…」にコメント: ${"b".repeat(60)}…`);
   });
 });

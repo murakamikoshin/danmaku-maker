@@ -170,3 +170,43 @@ describe("comments(コメント)", () => {
     await assertFails(getDoc(doc(member("u1"), "commentReports/x")));
   });
 });
+
+describe("マイステージのバックアップ", () => {
+  const ok = { data: "{}", updatedAt: new Date() };
+  it("本人(匿名も可)は読み書き・削除できる", async () => {
+    await assertSucceeds(setDoc(doc(anon("a1"), "users/a1/savedStages/s1"), ok));
+    await assertSucceeds(getDoc(doc(anon("a1"), "users/a1/savedStages/s1")));
+    await assertSucceeds(getDocs(collection(anon("a1"), "users/a1/savedStages")));
+    await assertSucceeds(deleteDoc(doc(anon("a1"), "users/a1/savedStages/s1")));
+  });
+  it("他人は読めず、書けない", async () => {
+    await assertSucceeds(setDoc(doc(member("a2"), "users/a2/savedStages/s1"), ok));
+    await assertFails(getDoc(doc(member("a3"), "users/a2/savedStages/s1")));
+    await assertFails(setDoc(doc(member("a3"), "users/a2/savedStages/s2"), ok));
+  });
+  it("決まった項目以外は書けない", async () => {
+    await assertFails(setDoc(doc(anon("a4"), "users/a4/savedStages/s1"), { ...ok, extra: 1 }));
+    await assertFails(setDoc(doc(anon("a4"), "users/a4/savedStages/s1"), { data: 1, updatedAt: new Date() }));
+  });
+});
+
+describe("通知を受け取る端末", () => {
+  const dev = { token: "tok", lang: "ja", enabled: true, likes: true, comments: false, plays: true, updatedAt: serverTimestamp() };
+  it("本人は登録・更新・削除できる", async () => {
+    await assertSucceeds(setDoc(doc(anon("p1"), "users/p1/pushDevices/d1"), dev));
+    await assertSucceeds(setDoc(doc(anon("p1"), "users/p1/pushDevices/d1"), { ...dev, enabled: false }));
+    await assertSucceeds(deleteDoc(doc(anon("p1"), "users/p1/pushDevices/d1")));
+  });
+  it("他人の端末は読めず、登録もできない", async () => {
+    await assertSucceeds(setDoc(doc(member("p2"), "users/p2/pushDevices/d1"), dev));
+    await assertFails(getDoc(doc(member("p3"), "users/p2/pushDevices/d1")));
+    await assertFails(setDoc(doc(member("p3"), "users/p2/pushDevices/d2"), dev));
+  });
+  it("型や項目が違うものは書けない", async () => {
+    await assertFails(setDoc(doc(anon("p4"), "users/p4/pushDevices/d1"), { ...dev, likes: "yes" }));
+    await assertFails(setDoc(doc(anon("p4"), "users/p4/pushDevices/d1"), { ...dev, admin: true }));
+  });
+  it("連打の間引き用の記録は、本人でも触れない", async () => {
+    await assertFails(getDoc(doc(anon("p5"), "users/p5/pushThrottle/x_likes")));
+  });
+});

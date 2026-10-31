@@ -43,6 +43,8 @@ final class LocalStageStore: ObservableObject {
 
     @Published private(set) var stages: [SavedStage] = []
     private let url: URL
+    /// 保存するたびに呼ぶ(サーバーへのバックアップ用。StageBackup が設定する)
+    var onPersist: (([SavedStage]) -> Void)?
 
     init(directory: URL? = nil) {
         let base = directory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -82,6 +84,17 @@ final class LocalStageStore: ObservableObject {
         persist()
     }
 
+    /// バックアップから戻す。端末にない ID のものだけ足す(端末にあるものは、端末の内容を優先する)。足した数を返す
+    @discardableResult
+    func restore(_ list: [SavedStage]) -> Int {
+        let have = Set(stages.map(\.id))
+        let add = list.filter { !have.contains($0.id) }.prefix(max(0, Self.maxStages - stages.count))
+        guard !add.isEmpty else { return 0 }
+        stages += add
+        persist()
+        return add.count
+    }
+
     /// 全部消す(アカウント削除のときではなく、端末内のデータの初期化用。テストでも使う)
     func removeAll() { stages = []; persist() }
 
@@ -94,6 +107,7 @@ final class LocalStageStore: ObservableObject {
         let sorted = stages.sorted { $0.updatedAt > $1.updatedAt }
         stages = sorted
         if let data = try? JSONEncoder().encode(sorted) { try? data.write(to: url, options: [.atomic, .completeFileProtection]) }
+        onPersist?(sorted)
     }
 
     /// 前のバージョンの「下書き1つだけ」を、最初のマイステージとして引き継ぐ(一度だけ)

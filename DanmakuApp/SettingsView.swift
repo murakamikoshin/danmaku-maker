@@ -63,6 +63,8 @@ struct SettingsView: View {
     @State private var showStore = false
     @State private var showDelete = false
     @State private var showHandle = false
+    @ObservedObject private var notify = NotificationService.shared
+    @State private var notifyDenied = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -80,6 +82,8 @@ struct SettingsView: View {
                         toggleRow("settings.effects", "sparkles", $cosmetics.effectsOn)
                         Text("settings.effects.note").font(.caption).foregroundStyle(.secondary)
                     }
+
+                    notificationPanel
 
                     GamePanel(title: "settings.store", tint: Color(Palette.pink)) {
                         if purchases.isPremium {
@@ -149,6 +153,37 @@ struct SettingsView: View {
         .sheet(isPresented: $showStore) { StoreView() }
         .sheet(isPresented: $showHandle) { HandleSheet() }
         .preferredColorScheme(.dark)
+    }
+
+    /// 自分のステージへの反応の通知。全体のオン/オフと、種類ごとのオン/オフ
+    private var notificationPanel: some View {
+        GamePanel(title: "settings.notify", tint: Color(Palette.gold)) {
+            toggleRow("settings.notify.enabled", "bell.fill", Binding(
+                get: { notify.enabled },
+                set: { on in Task { if !(await notify.setEnabled(on)) { notifyDenied = true } } }))
+            if notify.enabled {
+                ForEach(PushKind.allCases) { kind in
+                    toggleRow(kind.titleKey, kind.symbol, Binding(get: { notify.isOn(kind) }, set: { notify.setKind(kind, $0) }))
+                        .padding(.leading, 12)
+                }
+                if notify.authorization == .denied {
+                    // 端末の設定で通知が切られていると、ここでオンにしても届かない
+                    Button { gameTap(); openSystemSettings() } label: {
+                        Label("settings.notify.denied", systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption.weight(.bold)).foregroundStyle(Color(Palette.gold))
+                    }
+                }
+            }
+            Text("settings.notify.note").font(.caption).foregroundStyle(.secondary)
+        }
+        .alert("settings.notify.denied.title", isPresented: $notifyDenied) {
+            Button("settings.notify.open") { openSystemSettings() }
+            Button("common.cancel", role: .cancel) {}
+        } message: { Text("settings.notify.denied") }
+    }
+
+    private func openSystemSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
     }
 
     private func toggleRow(_ title: LocalizedStringKey, _ symbol: String, _ binding: Binding<Bool>) -> some View {

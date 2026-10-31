@@ -86,6 +86,8 @@ targets:
         com.apple.developer.applesignin: [Default]
         com.apple.developer.associated-domains:
           - applinks:danmaku-maker.web.app
+        # 通知(いいね・コメントなど)。App Store 用の書き出しで production に置き換わる
+        aps-environment: development
     dependencies:
       - package: DanmakuCore
       - package: Firebase
@@ -94,6 +96,8 @@ targets:
         product: FirebaseFirestore
       - package: Firebase
         product: FirebaseFunctions
+      - package: Firebase
+        product: FirebaseMessaging
       - package: GoogleMobileAds
         product: GoogleMobileAds
       - package: UserMessagingPlatform

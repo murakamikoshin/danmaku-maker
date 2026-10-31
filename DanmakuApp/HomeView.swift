@@ -221,22 +221,34 @@ struct HomeView: View {
             if !Backend.isAvailable {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
             }
-            ForEach(world.stages.filter { !blocks.isBlocked($0.authorUid) }) { s in
+            let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) }
+            ForEach(visible) { s in
                 Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
                     .buttonStyle(BounceButtonStyle())
-                    .onAppear { if s.id == world.stages.last?.id { Task { await world.loadMore() } } }
+                    // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
+                    .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
             }
             if world.isLoading { HStack { Spacer(); ProgressView().tint(Color(Palette.pink)); Spacer() }.padding(.vertical, 8) }
+            // 念のため、続きがあるときは「もっと見る」も出す(自動で読まれなかったときに、古いステージまでたどれるように)
+            if !world.isLoading && !world.reachedEnd && !world.failed && !world.searching && !visible.isEmpty {
+                Button { gameTap(); Task { await loadMoreWorld() } } label: { Chip(title: L("world.more"), selected: false) }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("home.world.more")
+            }
             if world.failed {
                 VStack(spacing: 8) {
                     Text("world.error").font(.footnote).foregroundStyle(.secondary)
-                    Button { gameTap(); Task { await world.loadMore() } } label: { Chip(title: L("world.retry"), selected: true) }.buttonStyle(BounceButtonStyle())
+                    Button { gameTap(); Task { await loadMoreWorld() } } label: { Chip(title: L("world.retry"), selected: true) }.buttonStyle(BounceButtonStyle())
                 }
             }
             if world.stages.isEmpty && !world.isLoading && !world.failed && Backend.isAvailable {
                 Text(world.searching ? "world.search.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
+    }
+
+    private func loadMoreWorld() async {
+        await world.loadMore { !blocks.isBlocked($0.authorUid) }
     }
 
     private static let modeOptions: [(Mode?, String)] = [

@@ -49,6 +49,27 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // マイステージのバックアップ(アプリを入れ直したときに戻す)。本人(匿名も可)だけが読み書きできる
+    match /users/{uid}/savedStages/{stageId} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['data', 'updatedAt'])
+        && request.resource.data.data is string && request.resource.data.data.size() < 1000000
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    // 通知を受け取る端末(トークン・言語・種類ごとのオン/オフ)。本人だけが読み書きできる。送るのは Cloud Functions
+    match /users/{uid}/pushDevices/{deviceId} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['token', 'lang', 'enabled', 'likes', 'comments', 'plays', 'updatedAt'])
+        && request.resource.data.token is string && request.resource.data.token.size() < 4096
+        && request.resource.data.lang is string && request.resource.data.lang.size() < 32
+        && request.resource.data.enabled is bool && request.resource.data.likes is bool
+        && request.resource.data.comments is bool && request.resource.data.plays is bool
+        && request.resource.data.updatedAt is timestamp;
+    }
+
     // 通報・リプレイ・管理者向けアラートはクライアントから一切触れない
     match /reports/{id} { allow read, write: if false; }
     match /stageReplays/{id} { allow read, write: if false; }

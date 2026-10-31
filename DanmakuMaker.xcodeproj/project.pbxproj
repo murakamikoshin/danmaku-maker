@@ -34,6 +34,7 @@
 		587D602678B8051E03EEC3EB /* LocalStageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8FCD68D2BDEB92DFCAD920 /* LocalStageStore.swift */; };
 		60F4407E97864A330737BEA2 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD3C27E636E8B15E076F52B /* Palette.swift */; };
 		6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */; };
+		F0F0C752AB6DD82872B54538 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 05E1B67491B0A5D3A22B03FE /* FirebaseMessaging */; };
 		69455ED16E1C066EC2FECE78 /* se_fail.caf in Resources */ = {isa = PBXBuildFile; fileRef = D8A85042053FECBD69E454F3 /* se_fail.caf */; };
 		6D3557BE1F8AC3B3CF638EA3 /* RankingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F6631C63821142B1374716 /* RankingService.swift */; };
 		6DE550727985EECB9AE11467 /* se_warning.caf in Resources */ = {isa = PBXBuildFile; fileRef = D2E13E3660EA4F407B0608E4 /* se_warning.caf */; };
@@ -56,6 +57,8 @@
 		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
 		B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DE776EFBE3A43B7196CBB2 /* CommentViews.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
+		9E18940726E098E020A5A6E9 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210EA25A9FDD6DCE33416796 /* NotificationService.swift */; };
+		5F483F31C3812977D43B3442 /* StageBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8D9094D4F5964A09210332 /* StageBackup.swift */; };
 		BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */ = {isa = PBXBuildFile; fileRef = 966ADA412BC3686AAAF4587D /* official_stages.json */; };
 		C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC441513117F025F08A727B7 /* ShareText.swift */; };
 		C869AFFC862FB1A75EE1D253 /* StageRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB986508388484596E9919F0 /* StageRepository.swift */; };
@@ -131,6 +134,8 @@
 		8AC7B188372A599912AC6166 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		8F62E287AE766D76D9CF3901 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		8FABAD127D8EABEA2C29870E /* PurchaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseService.swift; sourceTree = "<group>"; };
+		210EA25A9FDD6DCE33416796 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		4A8D9094D4F5964A09210332 /* StageBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageBackup.swift; sourceTree = "<group>"; };
 		92A243990CAD3948B58BBC48 /* EmitterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterPreview.swift; sourceTree = "<group>"; };
 		9391B5CB3600EA4B42088BAD /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		9430A9E973CE136581259DC9 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
@@ -183,6 +188,7 @@
 				FCDEC99BCF405777F76BBEB6 /* FirebaseAuth in Frameworks */,
 				D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */,
 				6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */,
+				F0F0C752AB6DD82872B54538 /* FirebaseMessaging in Frameworks */,
 				4AD6B4860B7EE9DB0976A23D /* GoogleMobileAds in Frameworks */,
 				F60366855D1624D0C085B3B0 /* GoogleUserMessagingPlatform in Frameworks */,
 				B259B87E13614269D15389E9 /* RevenueCat in Frameworks */,
@@ -250,6 +256,8 @@
 				1BD184CEA2DD857CD5676F6A /* PostQuotaService.swift */,
 				336990F3C2805B0B289AF111 /* PublishService.swift */,
 				8FABAD127D8EABEA2C29870E /* PurchaseService.swift */,
+				210EA25A9FDD6DCE33416796 /* NotificationService.swift */,
+				4A8D9094D4F5964A09210332 /* StageBackup.swift */,
 				38F6631C63821142B1374716 /* RankingService.swift */,
 				B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */,
 				D1E163A6266ACFCDDDD873ED /* RewardStore.swift */,
@@ -366,6 +374,7 @@
 				509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */,
 				0719981841E39DB1D9E6C6AB /* FirebaseFirestore */,
 				CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */,
+				05E1B67491B0A5D3A22B03FE /* FirebaseMessaging */,
 				FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */,
 				B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */,
 				7E25805402198660741F69EC /* RevenueCat */,
@@ -522,6 +531,8 @@
 				8B5EAC47BDA10AC369C1950A /* PublishFlowView.swift in Sources */,
 				1BFBA87BDE46B43E2AFD555C /* PublishService.swift in Sources */,
 				BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */,
+				9E18940726E098E020A5A6E9 /* NotificationService.swift in Sources */,
+				5F483F31C3812977D43B3442 /* StageBackup.swift in Sources */,
 				6D3557BE1F8AC3B3CF638EA3 /* RankingService.swift in Sources */,
 				FC01B1EDF7596ACE8FFD87D0 /* RankingViews.swift in Sources */,
 				7A872D6145DFFA9320989551 /* ResultsQueue.swift in Sources */,
@@ -880,6 +891,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFunctions;
+		};
+		05E1B67491B0A5D3A22B03FE /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */ = {
 			isa = XCSwiftPackageProductDependency;

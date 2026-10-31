@@ -10,6 +10,7 @@ import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
+import { crossedMilestone, notifyAuthor } from "./notify.js";
 import { backfillNameKeys, nameKeys, queryGram, normalizeName } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
 import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
@@ -149,17 +150,22 @@ export const submitResults = onCall(async (req) => {
     merged.set(id, { plays: cur.plays + p, clears: cur.clears + c });
   }
   for (const [id, add] of merged) {
-    await db.runTransaction(async (tx) => {
+    const milestone = await db.runTransaction(async (tx) => {
       const ref = db.doc(`stages/${id}`);
       const snap = await tx.get(ref);
-      if (!snap.exists || !isOpen(snap.get("status"))) return;
+      if (!snap.exists || !isOpen(snap.get("status"))) return undefined;
       const now = Date.now();
-      const plays = (snap.get("plays") as number) + add.plays;
+      const before = snap.get("plays") as number;
+      const plays = before + add.plays;
       const clears = Math.min(plays, (snap.get("clears") as number) + add.clears);
       const rate = plays > 0 ? clears / plays : 0;
       const trending = decay(snap.get("trending") ?? 0, snap.get("trendUpdatedAt") ?? now, now) + add.plays + add.clears * 2;
       tx.update(ref, { plays, clears, clearRate: rate, hardRate: plays >= 10 ? rate : FieldValue.delete(), trending, trendUpdatedAt: now });
+      const m = crossedMilestone(before, plays);
+      return m === undefined ? undefined : { m, to: snap.get("authorUid") as string, name: (snap.get("name") as string | undefined) ?? "" };
     });
+    // 遊ばれた回数が節目を越えたら、作者に知らせる
+    if (milestone) await notifyAuthor(db, { to: milestone.to, kind: "plays", stageId: id, stageName: milestone.name, extra: String(milestone.m) });
   }
   return { ok: true };
 });
@@ -167,7 +173,7 @@ export const submitResults = onCall(async (req) => {
 export const toggleLike = onCall(async (req) => {
   const uid = requireMember(req);
   const id = stageIdFrom(req.data);
-  return db.runTransaction(async (tx) => {
+  const result = await db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), likeRef = db.doc(`stages/${id}/likes/${uid}`);
     const [stage, like] = await Promise.all([tx.get(ref), tx.get(likeRef)]);
     if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
@@ -179,8 +185,11 @@ export const toggleLike = onCall(async (req) => {
     else { tx.delete(likeRef); tx.delete(mirrorRef); }
     const likes = Math.max(0, (stage.get("likes") as number) + (liked ? 1 : -1));
     tx.update(ref, { likes, trending: trending + (liked ? 5 : 0), trendUpdatedAt: now });
-    return { liked, likes };
+    return { liked, likes, to: stage.get("authorUid") as string, name: (stage.get("name") as string | undefined) ?? "" };
   });
+  // いいねされたら、作者に知らせる(取り消しのときは知らせない)
+  if (result.liked) await notifyAuthor(db, { to: result.to, from: uid, kind: "likes", stageId: id, stageName: result.name });
+  return { liked: result.liked, likes: result.likes };
 });
 
 export const reportStage = onCall(async (req) => {
@@ -318,6 +327,9 @@ export const postComment = onCall(async (req) => {
     tx.set(ref, { uid, a, n, num: handleNumber(uid), ...(dn.name ? { name: dn.name } : {}), text: v.text, status: "published", reports: 0, createdAt: FieldValue.serverTimestamp() });
     tx.update(stageRef, { comments: commentsAfter(st, 1) });
   });
+  // コメントが付いたら、作者に知らせる
+  await notifyAuthor(db, { to: stage.get("authorUid") as string, from: uid, kind: "comments", stageId: id,
+    stageName: (stage.get("name") as string | undefined) ?? "", extra: v.text });
   return { id: ref.id };
 });
 
