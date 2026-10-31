@@ -164,7 +164,8 @@ private struct PriceButton: View {
     var body: some View {
         let available = purchases.prices[product] != nil
         Button { Task { await purchases.purchase(product) } } label: {
-            Text(purchases.prices[product] ?? "¥\(product.yen)")
+            // 価格は App Store から届いたもの(その人の国の通貨)だけを出す。届くまでは「…」
+            Text(purchases.prices[product] ?? "…")
                 .font(.system(size: 15, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
                 .frame(minWidth: 70)
@@ -283,10 +284,11 @@ private struct RewardShop: View {
 
 private struct ThemeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var purchases: PurchaseService
     let theme: Theme
 
-    private var partsYen: Int { ThemePart.allCases.map { Product.part(theme, $0).yen }.reduce(0, +) }
-    private var offPercent: Int { theme == .classic ? 0 : Int((1 - Double(Product.set(theme).yen) / Double(partsYen)) * 100 + 0.5) }
+    private var parts: [Product] { ThemePart.allCases.map { Product.part(theme, $0) } }
+    private var offPercent: Int { theme == .classic ? 0 : purchases.discountPercent(bundle: .set(theme), singles: parts) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -326,11 +328,14 @@ private struct ThemeCard: View {
         HStack {
             VStack(alignment: .leading, spacing: 3) {
                 Text("shop.set").font(.system(size: 17, weight: .heavy, design: .rounded))
-                HStack(spacing: 6) {
-                    Text("¥\(partsYen)").strikethrough().foregroundStyle(.secondary)
-                    Text("→").foregroundStyle(.secondary)
-                    Text("¥\(Product.set(theme).yen)").foregroundStyle(Color(Palette.gold)).bold()
-                }.font(.caption)
+                // 単品の合計 → セットの価格(App Store の価格が届いてから出す)
+                if let total = purchases.totalText(parts), let price = purchases.prices[.set(theme)] {
+                    HStack(spacing: 6) {
+                        Text(total).strikethrough().foregroundStyle(.secondary)
+                        Text("→").foregroundStyle(.secondary)
+                        Text(price).foregroundStyle(Color(Palette.gold)).bold()
+                    }.font(.caption)
+                }
             }
             Spacer()
             if cosmetics.ownership.canBuy(.set(theme)) { PriceButton(product: .set(theme)) }
@@ -701,8 +706,9 @@ private struct AdPatternCard: View {
 
 private struct PatternShop: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var purchases: PurchaseService
 
-    private var singlesYen: Int { Pattern.paid.map { Product.pattern($0).yen }.reduce(0, +) }
+    private var singles: [Product] { Pattern.paid.map { Product.pattern($0) } }
 
     var body: some View {
         ShopCard(title: "shop.pattern.title", footer: "shop.pattern.footer") {
@@ -715,11 +721,13 @@ private struct PatternShop: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("shop.pattern.pack").font(.system(size: 17, weight: .heavy, design: .rounded))
-                            HStack(spacing: 6) {
-                                Text("¥\(singlesYen)").strikethrough().foregroundStyle(.secondary)
-                                Text("→").foregroundStyle(.secondary)
-                                Text("¥\(Product.patternPack.yen)").foregroundStyle(Color(Palette.gold)).bold()
-                            }.font(.caption)
+                            if let total = purchases.totalText(singles), let price = purchases.prices[.patternPack] {
+                                HStack(spacing: 6) {
+                                    Text(total).strikethrough().foregroundStyle(.secondary)
+                                    Text("→").foregroundStyle(.secondary)
+                                    Text(price).foregroundStyle(Color(Palette.gold)).bold()
+                                }.font(.caption)
+                            }
                         }
                         Spacer()
                         if cosmetics.ownership.canBuy(.patternPack) { PriceButton(product: .patternPack) }

@@ -17,6 +17,9 @@ final class PurchaseService: NSObject, ObservableObject {
     @Published var celebration: Product?
     /// 商品ごとの価格表示（App Store から取得できたものだけ）
     @Published private(set) var prices: [Product: String] = [:]
+    /// 商品ごとの価格の数字と、表示の書式(App Store の国の通貨)。合計や割引率の計算に使う
+    @Published private(set) var amounts: [Product: Decimal] = [:]
+    private var priceFormatter: NumberFormatter?
 
     private var package: Package?
     private var storeProducts: [Product: StoreProduct] = [:]
@@ -48,6 +51,8 @@ final class PurchaseService: NSObject, ObservableObject {
             } else if let p = Product(id: sp.productIdentifier) {
                 storeProducts[p] = sp
                 prices[p] = sp.localizedPriceString
+                amounts[p] = sp.price
+                if priceFormatter == nil { priceFormatter = sp.priceFormatter }
             }
         }
     }
@@ -108,5 +113,28 @@ final class PurchaseService: NSObject, ObservableObject {
 extension PurchaseService: PurchasesDelegate {
     nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         Task { @MainActor in self.apply(customerInfo) }
+    }
+}
+
+extension PurchaseService {
+    /// 商品をまとめて買ったときの合計(App Store の通貨で)。どれか1つでも価格が取れていなければ nil
+    func totalText(_ products: [Product]) -> String? {
+        var sum: Decimal = 0
+        for p in products {
+            guard let a = amounts[p] else { return nil }
+            sum += a
+        }
+        return priceFormatter?.string(from: sum as NSDecimalNumber)
+    }
+
+    /// まとめ売りの割引率(%)。App Store の価格が取れていなければ、目安の価格(円)で計算する
+    func discountPercent(bundle: Product, singles: [Product]) -> Int {
+        let total = singles.compactMap { amounts[$0] }.reduce(Decimal(0), +)
+        if let b = amounts[bundle], singles.allSatisfy({ amounts[$0] != nil }), total > 0 {
+            let ratio = NSDecimalNumber(decimal: b / total).doubleValue
+            return Int((1 - ratio) * 100 + 0.5)
+        }
+        let yen = singles.map(\.yen).reduce(0, +)
+        return yen > 0 ? Int((1 - Double(bundle.yen) / Double(yen)) * 100 + 0.5) : 0
     }
 }
