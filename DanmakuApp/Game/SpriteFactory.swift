@@ -69,6 +69,40 @@ enum SpriteFactory {
         return list
     }
 
+    private static var boomerangCache: [Theme: [UIImage]] = [:]
+    private static var boomerangTextureCache: [Theme: [SKTexture]] = [:]
+
+    /// ブーメランの弾の絵(くの字の🪃。16×16)。弾の色ごと。ゲームでは回しながら描く
+    static func boomerangImages(_ theme: Theme) -> [UIImage] {
+        if let c = boomerangCache[theme] { return c }
+        let list = Skin.of(theme).bulletColors.map { color in
+            image(size: CGSize(width: 16, height: 16)) { c in
+                let path = CGMutablePath()
+                path.move(to: CGPoint(x: 2, y: 3))
+                path.addQuadCurve(to: CGPoint(x: 13, y: 13), control: CGPoint(x: 13, y: 2))
+                path.addLine(to: CGPoint(x: 9.5, y: 14.5))
+                path.addQuadCurve(to: CGPoint(x: 1.5, y: 7), control: CGPoint(x: 9, y: 6.5))
+                path.closeSubpath()
+                c.addPath(path)
+                c.setFillColor(color.cgColor)
+                c.fillPath()
+                c.addPath(path)
+                c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
+                c.setLineWidth(1.2)
+                c.strokePath()
+            }
+        }
+        boomerangCache[theme] = list
+        return list
+    }
+
+    static func boomerangs(_ theme: Theme) -> [SKTexture] {
+        if let c = boomerangTextureCache[theme] { return c }
+        let list = boomerangImages(theme).map(texture)
+        boomerangTextureCache[theme] = list
+        return list
+    }
+
     static func bullets(_ theme: Theme) -> [SKTexture] {
         if let c = bulletTextureCache[theme] { return c }
         let list = bulletImages(theme).map(texture)

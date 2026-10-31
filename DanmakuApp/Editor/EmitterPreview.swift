@@ -57,6 +57,7 @@ struct EmitterPreview: View {
         let skin = Skin.of(look.bullets)
         let bg = Skin.of(look.background)
         let bulletImages = SpriteFactory.bulletImages(look.bullets)
+        let boomerangImages = SpriteFactory.boomerangImages(look.bullets)
         let own = cosmetics.ownership.hasCustomImages
         let customBullet = (own && look.customs.bullet) ? CustomImageStore.load(.bullet) : nil
         let customShip = (own && look.customs.ship) ? CustomImageStore.load(.ship) : nil
@@ -79,6 +80,14 @@ struct EmitterPreview: View {
                 // 弾
                 for b in engine.bullets {
                     if b.isBeam { ctx.drawBeam(b, color: Color(skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)])); continue }
+                    if b.script == Bullet.boomerangScript {
+                        // ブーメラン: 🪃の形を、くるくる回して描く
+                        var g = ctx
+                        g.translateBy(x: b.x, y: b.y)
+                        g.rotate(by: .radians(timeline.date.timeIntervalSinceReferenceDate * 14))
+                        g.draw(Image(uiImage: boomerangImages[min(max(b.color, 0), boomerangImages.count - 1)]), in: CGRect(x: -8, y: -8, width: 16, height: 16))
+                        continue
+                    }
                     let r = b.isGiant ? DanmakuConfig.giantDrawRadius : 6
                     let rect = CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)
                     if let customBullet { ctx.draw(Image(uiImage: customBullet), in: rect) }

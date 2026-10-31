@@ -24,6 +24,8 @@ final class GameScene: SKScene {
 
     private let skin: Skin
     private let bulletTextures: [SKTexture]
+    /// ブーメランの弾の絵(🪃の形。弾の色ごと)
+    private let boomerangTextures: [SKTexture]
     private let shipNode: SKSpriteNode
     private let bossNode: SKSpriteNode
     private var bossTexture: SKTexture
@@ -72,6 +74,7 @@ final class GameScene: SKScene {
         } else {
             bulletTextures = SpriteFactory.bullets(loadout.bullets)
         }
+        boomerangTextures = SpriteFactory.boomerangs(loadout.bullets)
         shipNode = SKSpriteNode(texture: (loadout.customShip ? SpriteFactory.custom(.ship) : nil) ?? SpriteFactory.ship(loadout.ship))
         if loadout.customBoss, let t = SpriteFactory.custom(.boss), let f = SpriteFactory.custom(.boss, flash: true) {
             bossTexture = t; bossFlashTexture = f
@@ -329,10 +332,13 @@ final class GameScene: SKScene {
                 }
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
-                n.texture = bulletTextures[b.color]
-                // 巨大弾は、当たる範囲に合わせて大きく描く
-                let size = b.isGiant ? CGSize(width: DanmakuConfig.giantDrawRadius * 2, height: DanmakuConfig.giantDrawRadius * 2) : bulletTextures[0].size()
+                let boomerang = b.script == Bullet.boomerangScript
+                n.texture = boomerang ? boomerangTextures[min(max(b.color, 0), boomerangTextures.count - 1)] : bulletTextures[b.color]
+                // 巨大弾は、当たる範囲に合わせて大きく描く。ブーメランは🪃の形で、くるくる回す
+                let size = b.isGiant ? CGSize(width: DanmakuConfig.giantDrawRadius * 2, height: DanmakuConfig.giantDrawRadius * 2)
+                    : boomerang ? CGSize(width: 16, height: 16) : bulletTextures[0].size()
                 if n.size != size { n.size = size }
+                n.zRotation = boomerang ? CGFloat(lastTime ?? 0) * 14 + CGFloat(i) : 0
             } else if !n.isHidden {
                 n.isHidden = true
             }
