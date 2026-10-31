@@ -433,6 +433,9 @@ final class GameScene: SKScene {
             let ratio = sim.isDamageRace ? 1.0 : max(0, Double(sim.hp)) / Double(max(1, sim.waveBossHp))
             barFill.size.width = max(0.001, W * CGFloat(ratio))
         } else {
+            // ボスのいない場面(連戦でボスを倒したあとの耐えきる場面など)では、自機の弾は撃たない。
+            // 前の場面で描いた弾が、その場に止まって残らないように隠す
+            for n in shotNodes where !n.isHidden { n.isHidden = true }
             // 発射台の印：撃ち始める0.6秒前から点滅し、撃ち終わったら消す
             var idx = 0
             for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {
