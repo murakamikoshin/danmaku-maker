@@ -19,7 +19,10 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.6.app
       - name: Swift tests (DanmakuCore)
         working-directory: DanmakuCore
-        run: swift test 2>&1 | tail -150
+        run: |
+          # 全部は長いので最後だけ出し、失敗したときは失敗した行をまとめて出す
+          swift test > "$RUNNER_TEMP/swift-test.log" 2>&1 || { grep -E "error:|failed|XCTAssert" "$RUNNER_TEMP/swift-test.log" | head -120; exit 1; }
+          tail -40 "$RUNNER_TEMP/swift-test.log"
       - name: Export simulation fixtures
         working-directory: DanmakuCore
         run: EXPORT_SIM_FIXTURES="$GITHUB_WORKSPACE/firebase/functions/test/fixtures/sim_fixtures.json" swift test --filter FixtureExportTests 2>&1 | tail -20
