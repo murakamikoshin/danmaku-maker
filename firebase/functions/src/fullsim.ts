@@ -290,7 +290,10 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 const LIVES_RANGE = [1, 5] as const, HP_RANGE = [3, 20] as const;
 
 /** 操作記録(dx, dy は 0.25 論理px 単位)を再生して、結果を返す。入力が尽きたら動かさずに続ける */
-export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard"): SimResult {
+/** 1ステップごとの弾の様子(分析用。ランキングの確認では使わない) */
+export type StepObserver = (tick: number, bullets: readonly { x: number; y: number; vx: number; vy: number; script: number; radius?: number }[], player: { x: number; y: number }) => void;
+
+export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard", observe?: StepObserver): SimResult {
   const specs = specsOf(stage);
   let wi = 0;
   const spec = () => specs[wi]!;
@@ -544,6 +547,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     if (died) break;
     bullets.length = w;
     for (const nb of born) bullets.push(nb);
+    observe?.(tick, bullets, { x: px, y: py });
     if (waveT >= sp.limit) {
       if (wi + 1 < specs.length) {
         // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ

@@ -239,7 +239,7 @@ final class AdPatternTests: XCTestCase {
         XCTAssertTrue(Product.all.contains(.patternPack2))
     }
 
-    private func fire(_ p: Pattern, shots: Int = 1, px: Double = 180, py: Double = 459) -> [Bullet] {
+    private func fire(_ p: DanmakuCore.Pattern, shots: Int = 1, px: Double = 180, py: Double = 459) -> [Bullet] {
         let d = p.recipeDefaults!
         let m = Emitter(t: p, x: 0.5, y: 0.15, s: 0, e: 20, i: d.i, c: d.c, v: d.v, r: d.r, k: 0)
         var rng = Mulberry32(seed: 5)
@@ -281,7 +281,7 @@ final class AdPatternTests: XCTestCase {
     func testGridLaserCrossesThePlayer() {
         let beams = fire(.gridLaser, px: 150, py: 380)
         XCTAssertEqual(beams.count, 4)
-        XCTAssertTrue(beams.allSatisfy(\.isBeam))
+        XCTAssertTrue(beams.allSatisfy { $0.isBeam })
         XCTAssertEqual(beams[0].x, 150, "1本目は自機を通る縦の線")
         XCTAssertEqual(beams[1].y, 380, "2本目は自機を通る横の線")
     }
@@ -303,9 +303,10 @@ final class AdPatternTests: XCTestCase {
 
     func testOrbitCirclesTheEmitter() {
         var b = fire(.orbit)[0]
-        let r0 = ((b.x - 180) * (b.x - 180) + (b.y - 81) * (b.y - 81)).squareRoot()
+        func distance(_ q: Bullet) -> Double { let dx: Double = q.x - 180, dy: Double = q.y - 81; return (dx * dx + dy * dy).squareRoot() }
+        let r0 = distance(b)
         for _ in 0..<Int((1.0 / DanmakuConfig.step).rounded()) { _ = b.advance(dt: DanmakuConfig.step, width: 360, playerX: 180, playerY: 459) }
-        let r1 = ((b.x - 180) * (b.x - 180) + (b.y - 81) * (b.y - 81)).squareRoot()
+        let r1 = distance(b)
         XCTAssertEqual(r1, r0, accuracy: 2, "回っている間は、発射口からの距離がほぼ変わらない")
     }
 
