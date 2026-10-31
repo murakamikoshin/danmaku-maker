@@ -22,7 +22,11 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     private var lastAdAt = Date()
     static let playsBetweenInterstitials = 3
     static let minSecondsBetweenAds: TimeInterval = 120
-    private var started = false
+    /// 広告 SDK を開始できたか。開始できるまでは、アプリが前面に戻るたびにやり直す
+    private var sdkStarted = false
+    private var starting = false
+    /// 起動時の start() がもう呼ばれたか(前面復帰時のやり直しは、これが立ってから)
+    private(set) var attemptedStart = false
     private var loading = false
     private var onDismiss: ((Bool) -> Void)?
     private var earned = false
@@ -47,15 +51,25 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     }
 
     /// 同意 → トラッキング許可 → SDK 開始 → 広告の読み込み。広告削除の購入者には呼ばない
+    /// 何度呼んでもよい。同意情報の取得に失敗して SDK を開始できなかったとき(電波が悪いなど)は、
+    /// 次に呼ばれたときにやり直す。開始済みなら、読み込めていない広告だけ読み込み直す
     func start() async {
-        guard !started else { return }
-        started = true
+        attemptedStart = true
+        guard !starting else { return }
+        if sdkStarted {
+            await load()
+            await loadInterstitial()
+            return
+        }
+        starting = true
+        defer { starting = false }
         await requestConsent()
         await requestTracking()
         guard UMPConsentInformation.sharedInstance.canRequestAds else { return }
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
             GADMobileAds.sharedInstance().start { _ in c.resume() }
         }
+        sdkStarted = true
         canShowBanner = true
         await load()
         await loadInterstitial()

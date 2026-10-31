@@ -46,6 +46,11 @@ struct DanmakuApp: App {
                 .onChange(of: scenePhase) { phase in
                     if phase == .background { Task { await ResultsQueue.shared.flush() } }
                     if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
+                    // 起動時に広告を開始できなかった・読み込めなかったときは、前面に戻るたびにやり直す
+                    // (最初の開始は上の .task で、購入状態を確かめてから行う)
+                    if phase == .active && ads.attemptedStart && !purchases.isPremium && !Self.adsDisabledForScreenshots {
+                        Task { await ads.start() }
+                    }
                 }
         }
     }
