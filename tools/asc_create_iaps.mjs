@@ -34,7 +34,7 @@ const patterns = [
   ['pattern.flower', 'Flower', '花', '花の形に広がる弾幕です。', 'A flower-shaped bullet pattern.', 100],
   ['pattern.star', 'Star', '星', '星の形に広がる弾幕です。', 'A star-shaped bullet pattern.', 100],
   ['pattern.heart', 'Heart', 'ハート', 'ハートの形に広がる弾幕です。', 'A heart-shaped bullet pattern.', 100],
-  ['pattern.beam', 'Beam', '光線', '一直線に伸びる光線の弾幕です。', 'A straight beam of bullets.', 100],
+  ['pattern.beam', 'Bullet Line', '一列弾', '一直線に伸びる光線の弾幕です。', 'A straight beam of bullets.', 100],
   ['pattern.cross', 'Cross', '十字', '上下左右に伸びる弾幕です。', 'Bullets stretching in four directions.', 100],
   ['pattern.accel', 'Accelerate', '加速', 'どんどん速くなる弾幕です。', 'Bullets that keep speeding up.', 100],
   ['pattern.bounce', 'Bounce', '反射', '壁ではね返る弾幕です。', 'Bullets that bounce off the walls.', 100],

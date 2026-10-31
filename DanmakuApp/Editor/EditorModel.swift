@@ -59,7 +59,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
         self.kind = kind
         duration = kind == .boss ? 60 : 20
         warning = kind == .boss
-        emitters = [Emitter.make(kind == .boss ? .ring : .spiral, end: Double(kind == .boss ? 60 : 20))]
+        emitters = [Emitter.make(kind == .boss ? .ring : .swirl, end: Double(kind == .boss ? 60 : 20))]
     }
 
     var wave: Wave {
@@ -108,7 +108,7 @@ struct Draft: Codable, Equatable {
     var customBoss = false
     var customBullet = false
     var customShip = false
-    var emitters: [Emitter] = [Emitter.make(.spiral, end: 20)]
+    var emitters: [Emitter] = [Emitter.make(.swirl, end: 20)]
     /// 連戦の場面(モードが連戦のとき)
     var waves: [DraftWave] = [DraftWave(kind: .survive), DraftWave(kind: .boss)]
     /// ボス戦・ダメージ勝負の、開始前の警告と、撃破の演出(DefeatEffect の番号)
@@ -155,7 +155,7 @@ struct Draft: Codable, Equatable {
         bossLook = try c.decodeIfPresent(Int.self, forKey: .bossLook) ?? 0
         mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
         mookLook = try c.decodeIfPresent(Int.self, forKey: .mookLook) ?? 0
-        emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.spiral, end: 20)]
+        emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
     }
 
     /// 遊べる・投稿できるステージのデータ(丸めた内容)。じぶんの画像の設定は、含まれない

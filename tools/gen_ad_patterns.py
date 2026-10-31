@@ -36,37 +36,44 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #  grid/gridGap: 格子レーザー。自機を通る縦と横の線から、gridGap ずつ離れた線を交互に、画面の端からためて撃つ
 #  orbitRadius/curveTime: 衛星。発射口のまわりの半径 orbitRadius の円の上を curveTime 秒回ってから飛び出す
 #  trail: スネーク。後ろの弾ほど trail px ずつ後ろから出て、列になって追いかける
-#  pack: 2 なら、広告ではなく弾幕パック2(課金)のパターン
+#  speedJitter: 弾ごとに速さをばらつかせる割合(乱数。散弾)
+#  curveSame: 1 なら、ブーメランの曲がる向きを全部そろえる(宙返り輪・渦巻き)
+#  layerFlip: 1 なら、mode 0 の重ねた形のうち奇数番目を、逆向きに回す(逆回りの二重らせん)
+#  weave/weaveTurn/weavePeriod: 飛びながら曲がる向きを、weavePeriod 秒ごとに左右に切り替える。
+#    weave=1 はなめらかに(weaveTurn 度/秒で回し続ける。蛇行)、weave=2 はカクッと(weaveTurn 度ずつ折れる。ジグザグ)
+#  pack: 2 なら、広告ではなく弾幕パック2(課金)のパターン。"free" なら、最初から使える無料のパターン
 #
 # ⚠️ id は保存データ(ステージ・解放の記録)に入るので変えない。2026-10-31 に、既存のパターンとほぼ同じ動きだった5つ
-#   (swayFan≒首ふり扇、sniper≒光線、pulseRing≒時差、drizzle≒雨、twinAim≒自機狙い)を、id はそのままで別の動きに作り替えた
+#   (swayFan≒首ふり扇、sniper≒光線、pulseRing≒時差、drizzle≒雨、twinAim≒自機狙い)を、id はそのままで別の動きに作り替えた。
+#   同じ日に、全パターンを同じ計算で動かして比べ(弾の位置の分布)、近かった6つ(pulseRing≒停止カーテン、tripleRing≒二重輪、
+#   shotgun・zigzagAim≒自機狙い、slither≒首ふり扇、helix≒渦巻き)を、もう一度作り替えた
 # defaults: エディタで選んだときの初期値 (i 間隔, c 数, v 速さ, r 角度)
 P = lambda id, ja, en, defaults, **kw: dict(id=id, ja=ja, en=en, defaults=defaults, **kw)
 PATTERNS = [
     P("twinRing", "二重輪", "Twin Ring", (1.0, 14, 2.4, 6), mode=0, layers=2, layerSpeed=0.6),
-    P("tripleRing", "三重輪", "Triple Ring", (1.2, 12, 2.6, 4), mode=0, layers=3, layerSpeed=0.75),
+    P("tripleRing", "宙返り輪", "Loop Ring", (1.3, 12, 2.2, 6), mode=0, curve=200, curveTime=0.9, curveSame=1),
     P("pinwheel", "風車", "Pinwheel", (0.5, 8, 2.4, 9), mode=0, altSpeed=0.45),
     P("ripple", "さざ波", "Ripple", (1.4, 18, 2.4, 0), mode=0, layers=4, layerAngle=5, layerSpeed=0.85, spin=0),
     P("chargeBeam", "チャージビーム", "Charge Beam", (2.4, 1, 2.0, 40), mode=1, beam=1),
     P("whirl", "渦潮", "Whirlpool", (0.12, 4, 1.6, 13), mode=0, speedStep=0.035),
-    P("slither", "蛇行", "Slither", (0.6, 7, 2.2, 26), mode=2, wobbleAmp=22, wobbleFreq=1.1, wobblePhase=0.6),
+    P("slither", "蛇行", "Slither", (0.6, 5, 2.0, 50), mode=2, weave=1, weaveTurn=160, weavePeriod=0.8),
     P("curtain", "カーテン", "Curtain", (0.9, 12, 1.8, 0), mode=2, fan=-1, lineWidth=330),
     P("swayFan", "跳ね返りカーテン", "Bounce Curtain", (1.3, 7, 2.0, 0), mode=2, fan=70, lineWidth=280, bounces=2),
     P("boomerang", "ブーメラン", "Boomerang", (1.2, 4, 2.4, 40), mode=1, curve=130, curveTime=1.4),
     P("drizzle", "加速する雨", "Accelerating Rain", (0.25, 2, 2.0, 0), mode=2, fan=-1, scatter=340, speed0=0.25, accel=1.0, maxMul=2.6),
     P("comet", "彗星", "Comet", (1.0, 7, 1.8, 14), mode=1, speedStep=0.15),
-    P("shotgun", "散弾", "Shotgun", (0.9, 9, 2.6, 24), mode=1, jitter=10),
+    P("shotgun", "散弾", "Shotgun", (1.0, 12, 2.6, 26), mode=1, jitter=12, speedJitter=0.45),
     P("sniper", "追尾カーテン", "Homing Curtain", (1.8, 6, 1.5, 0), mode=2, fan=-1, lineWidth=300, turn=30),
     P("giantOrb", "巨大弾", "Giant Orb", (2.0, 1, 1.6, 0), mode=1, fan=-1, giant=1, bounces=1, pack=2),
     P("twinAim", "時差扇", "Delayed Fan", (1.0, 7, 2.4, 50), mode=1, script=3, layers=2, layerSpeed=0.7),
-    P("zigzagAim", "ジグザグ狙い", "Zigzag Aim", (0.7, 8, 2.3, 30), mode=1, wobbleAmp=16, wobbleFreq=2.3, wobblePhase=0.9),
+    P("zigzagAim", "ジグザグ狙い", "Zigzag Aim", (0.8, 5, 2.2, 36), mode=1, weave=2, weaveTurn=70, weavePeriod=0.35),
     P("accelRing", "加速輪", "Accel Ring", (1.1, 16, 2.0, 7), mode=0, speed0=0.35, accel=0.8, maxMul=2.2),
     P("homingRing", "追尾の輪", "Homing Ring", (1.8, 8, 1.5, 10), mode=0, turn=40, pack=2),
     P("sweepLaser", "なぎ払いレーザー", "Sweeping Laser", (3.0, 1, 2.0, 0), mode=1, beam=1, beamSweep=90, beamTime=1.2, pack=2),
     P("bounceRing", "反射の輪", "Bounce Ring", (1.3, 10, 2.2, 8), mode=0, bounces=2),
     P("freezeRing", "停止の輪", "Freeze Ring", (1.2, 14, 2.4, 6), mode=0, script=1),
     P("shatterRing", "破裂の輪", "Shatter Ring", (1.6, 8, 2.2, 10), mode=0, script=2, pack=2),
-    P("pulseRing", "止まる雨", "Pausing Rain", (0.45, 3, 2.0, 0), mode=2, fan=-1, scatter=340, script=1),
+    P("pulseRing", "降り出す雨", "Sudden Downpour", (0.5, 4, 2.2, 0), mode=2, fan=-1, scatter=340, script=3),
     P("freezeCurtain", "停止カーテン", "Freeze Curtain", (1.3, 9, 2.4, 0), mode=2, fan=-1, lineWidth=300, script=1),
     P("splitCurtain", "分裂カーテン", "Split Curtain", (1.5, 6, 1.8, 0), mode=2, fan=-1, lineWidth=300, script=2),
     P("wavyRing", "波紋の輪", "Wavy Ring", (1.0, 24, 2.2, 6), mode=0, waveAmp=0.35, waveFreq=3),
@@ -74,9 +81,11 @@ PATTERNS = [
     P("waveSpiral", "波渦", "Wave Spiral", (0.1, 3, 2.0, 11), mode=0, waveAmp=0.3, waveFreq=1.7, wavePhase=0.8),
     P("tide", "満ち引き", "Tide", (0.5, 9, 2.0, 70), mode=2, waveAmp=0.5, waveFreq=2, wavePhase=1.3),
     P("ladder", "はしご", "Ladder", (0.8, 10, 2.0, 0), mode=2, fan=-1, lineWidth=300, altSpeed=0.6),
-    P("helix", "二重らせん", "Double Helix", (0.1, 3, 2.0, 12), mode=0, layers=2, layerAngle=8, layerSpeed=1.15),
+    P("helix", "二重らせん", "Double Helix", (0.1, 3, 2.0, 12), mode=0, layers=2, layerFlip=1),
     P("rapidFan", "連射扇", "Rapid Fan", (0.22, 6, 2.4, 36), mode=1, speedStep=0.12, speedCycle=3),
     P("lightRain", "光の雨", "Light Rain", (0.08, 2, 2.8, 0), mode=2, fan=-1, scatter=340, speed0=1.2, jitter=3),
+    # 最初から使える無料のパターン(旧「渦巻き」(spiral)は放射と同じ計算だったので、別の動きとして作り直した)
+    P("swirl", "渦巻き", "Spiral", (0.12, 3, 1.8, 13), mode=0, curve=30, curveTime=8, curveSame=1, pack="free"),
     # ここから下は、弾幕パック2(課金)だけのパターン
     P("mine", "地雷", "Mine", (1.6, 3, 2.2, 50), mode=1, mine=1, travel=0.9, fuse=2.6, pack=2),
     P("meteor", "隕石", "Meteor", (2.0, 1, 2.0, 0), mode=0, meteor=1, fuse=1.1, blastRadius=34, meteorGap=70, pack=2),
@@ -86,11 +95,11 @@ PATTERNS = [
     P("snake", "スネーク", "Snake", (2.2, 8, 2.0, 0), mode=1, fan=-1, turn=70, trail=11, pack=2),
     P("bubble", "膨らむ泡", "Swelling Bubble", (1.8, 2, 2.0, 40), mode=1, radius=2, grow=10, growMax=26, speed0=0.5, pack=2),
 ]
-AD = [p for p in PATTERNS if p.get("pack") != 2]
+AD = [p for p in PATTERNS if p.get("pack") not in (2, "free")]
 # 弾幕パック2の並び(ショップに出す順)
 PACK2_ORDER = ["mine", "meteor", "gridLaser", "sweepLaser", "giantOrb", "bubble", "gravity", "orbit", "snake", "shatterRing", "homingRing"]
 PACK2 = [next(p for p in PATTERNS if p["id"] == i) for i in PACK2_ORDER]
-assert len({p["id"] for p in PATTERNS}) == len(PATTERNS) == 41
+assert len({p["id"] for p in PATTERNS}) == len(PATTERNS) == 42
 assert len(AD) == 30 and len(PACK2) == 11 and {p["id"] for p in PACK2} == {p["id"] for p in PATTERNS if p.get("pack") == 2}
 # 広告で解放する順番(1から数えて): チャージビーム5番目、ブーメラン10番目
 assert AD[4]["id"] == "chargeBeam" and AD[9]["id"] == "boomerang"
@@ -109,6 +118,8 @@ FIELDS = [  # (名前, 型, 既定値)
     ("mine", "Int", 0), ("travel", "Double", 0.0), ("fuse", "Double", 0.0),
     ("meteor", "Int", 0), ("blastRadius", "Double", 0.0), ("meteorGap", "Double", 0.0),
     ("grid", "Int", 0), ("gridGap", "Double", 0.0), ("orbitRadius", "Double", 0.0), ("trail", "Double", 0.0),
+    ("speedJitter", "Double", 0.0), ("curveSame", "Int", 0), ("layerFlip", "Int", 0),
+    ("weave", "Int", 0), ("weaveTurn", "Double", 0.0), ("weavePeriod", "Double", 0.0),
 ]
 
 def lit(t, v):
@@ -161,7 +172,7 @@ def swift():
     o.append("            let layerShift = Double(layer) * r.layerAngle * deg")
     o.append("            let base: Double")
     o.append("            switch r.mode {")
-    o.append("            case 0: base = Double(k) * m.r * deg * r.spin + off")
+    o.append("            case 0: base = (r.layerFlip != 0 && layer % 2 == 1 ? -1.0 : 1.0) * Double(k) * m.r * deg * r.spin + off")
     o.append("            case 1: base = atan2(py - cy, px - cx) + off")
     o.append("            case 3: base = -Double.pi / 2 + off")
     o.append("            default: base = Double.pi / 2 + off + sin(Double(k) * r.sweepFreq) * m.r * deg * r.sweepAmp")
@@ -177,6 +188,7 @@ def swift():
     o.append("                if r.speedStep != 0 { let jj = r.speedCycle > 0 ? j % r.speedCycle : j; f *= 1 + Double(jj) * r.speedStep }")
     o.append("                if r.altSpeed != 0 && j % 2 == 1 { f *= r.altSpeed }")
     o.append("                if r.waveAmp != 0 { f *= 1 + r.waveAmp * sin(Double(j) * r.waveFreq + Double(k) * r.wavePhase) }")
+    o.append("                if r.speedJitter != 0 { f *= 1 + (rng.next() - 0.5) * 2 * r.speedJitter }")
     o.append("                var x = cx")
     o.append("                if r.lineWidth != 0 { x += (n > 1 ? Double(j) / Double(n - 1) - 0.5 : 0) * r.lineWidth }")
     o.append("                if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }")
@@ -209,7 +221,17 @@ def swift():
     o.append("                } else if r.curve != 0 {")
     o.append("                    // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
     o.append("                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
-    o.append("                                      turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))")
+    o.append("                                      turn: (r.curveSame != 0 ? 1.0 : side) * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))")
+    o.append("                } else if r.weave != 0 {")
+    o.append("                    // 蛇行(なめらか)・ジグザグ(カクッと): 向きを左右に切り替えながら進む。真ん中の向きが a になるように、少し戻した向きから出る")
+    o.append("                    let smooth = r.weave == 1")
+    o.append("                    let swing = smooth ? r.weaveTurn * deg * r.weavePeriod / 4 : r.weaveTurn * deg / 2")
+    o.append("                    let a0 = a - side * swing")
+    o.append("                    var b = Bullet(x: x, y: cy, vx: cos(a0) * sp * f, vy: sin(a0) * sp * f, color: m.k,")
+    o.append("                                   turn: side * r.weaveTurn * deg, homeLeft: smooth ? r.weavePeriod / 2 : r.weavePeriod, bounces: r.bounces,")
+    o.append("                                   script: smooth ? Bullet.weaveScript : Bullet.zigzagScript)")
+    o.append("                    b.fuse = r.weavePeriod")
+    o.append("                    out.append(b)")
     o.append("                } else {")
     o.append("                    // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)")
     o.append("                    let bx = x - cos(a) * r.trail * Double(j), by = cy - sin(a) * r.trail * Double(j)")
@@ -256,7 +278,9 @@ def ts():
     o.append("/** ブーメランと巨大弾の印。アプリの Bullet.boomerangScript / giantScript と同じ */")
     o.append("export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;")
     o.append("/** 地雷と爆風(隕石・地雷の爆発)の印。アプリの Bullet.mineScript / blastScript と同じ */")
-    o.append("export const MINE_SCRIPT = 7, BLAST_SCRIPT = 8;\n")
+    o.append("export const MINE_SCRIPT = 7, BLAST_SCRIPT = 8;")
+    o.append("/** 蛇行(なめらか)とジグザグ(カクッと)の印。アプリの Bullet.weaveScript / zigzagScript と同じ */")
+    o.append("export const WEAVE_SCRIPT = 9, ZIGZAG_SCRIPT = 10;\n")
     o.append("/** 弾を1つ出す関数(呼ぶ側の Bullet の形に合わせる) */")
     o.append("export interface BulletExtra { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; gravity: number; radius: number; grow: number; growMax: number; fuse: number }")
     o.append("const NONE: BulletExtra = { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, gravity: 0, radius: 0, grow: 0, growMax: 0, fuse: 0 };")
@@ -269,7 +293,7 @@ def ts():
     o.append("  for (let layer = 0; layer < Math.max(1, r.layers); layer++) {")
     o.append("    const layerShift = layer * r.layerAngle * deg;")
     o.append("    let base: number;")
-    o.append("    if (r.mode === 0) base = k * m.r * deg * r.spin + off;")
+    o.append("    if (r.mode === 0) base = (r.layerFlip !== 0 && layer % 2 === 1 ? -1 : 1) * k * m.r * deg * r.spin + off;")
     o.append("    else if (r.mode === 1) base = Math.atan2(py - cy, px - cx) + off;")
     o.append("    else if (r.mode === 3) base = -Math.PI / 2 + off;")
     o.append("    else base = Math.PI / 2 + off + Math.sin(k * r.sweepFreq) * m.r * deg * r.sweepAmp;")
@@ -284,6 +308,7 @@ def ts():
     o.append("      if (r.speedStep !== 0) { const jj = r.speedCycle > 0 ? j % r.speedCycle : j; f *= 1 + jj * r.speedStep; }")
     o.append("      if (r.altSpeed !== 0 && j % 2 === 1) f *= r.altSpeed;")
     o.append("      if (r.waveAmp !== 0) f *= 1 + r.waveAmp * Math.sin(j * r.waveFreq + k * r.wavePhase);")
+    o.append("      if (r.speedJitter !== 0) f *= 1 + (rng() - 0.5) * 2 * r.speedJitter;")
     o.append("      let x = cx;")
     o.append("      if (r.lineWidth !== 0) x += (n > 1 ? j / (n - 1) - 0.5 : 0) * r.lineWidth;")
     o.append("      if (r.scatter !== 0) x += (rng() - 0.5) * r.scatter;")
@@ -321,7 +346,16 @@ def ts():
     o.append("      }")
     o.append("      if (r.curve !== 0) {")
     o.append("        // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
-    o.append("        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { ...NONE, turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: BOOMERANG_SCRIPT });")
+    o.append("        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { ...NONE, turn: (r.curveSame !== 0 ? 1 : side) * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: BOOMERANG_SCRIPT });")
+    o.append("        continue;")
+    o.append("      }")
+    o.append("      if (r.weave !== 0) {")
+    o.append("        // 蛇行(なめらか)・ジグザグ(カクッと): 向きを左右に切り替えながら進む。アプリと同じ")
+    o.append("        const smooth = r.weave === 1;")
+    o.append("        const swing = smooth ? r.weaveTurn * deg * r.weavePeriod / 4 : r.weaveTurn * deg / 2;")
+    o.append("        const a0 = a - side * swing;")
+    o.append("        add(x, cy, Math.cos(a0) * sp * f, Math.sin(a0) * sp * f, { ...NONE, turn: side * r.weaveTurn * deg, homeLeft: smooth ? r.weavePeriod / 2 : r.weavePeriod,")
+    o.append("          bounces: r.bounces, script: smooth ? WEAVE_SCRIPT : ZIGZAG_SCRIPT, fuse: r.weavePeriod });")
     o.append("        continue;")
     o.append("      }")
     o.append("      // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)")

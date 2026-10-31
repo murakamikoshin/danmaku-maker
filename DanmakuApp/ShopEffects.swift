@@ -45,7 +45,7 @@ struct BulletBurstView: View {
 
     /// 5色の発射台が、同じ位置から回しながら撃つ渦巻き(Emitter の spiral)
     private static let emitters: [Emitter] = (0..<5).map { e in
-        var m = Emitter.make(.spiral, end: 60)
+        var m = Emitter.make(.swirl, end: 60)
         m.k = e; m.a = e * 72; m.c = 2; m.i = 0.09; m.v = 2; m.r = 15
         return m
     }

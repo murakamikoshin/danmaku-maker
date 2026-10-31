@@ -47,6 +47,10 @@ public struct Bullet: Equatable, Sendable {
     /// 爆風の印(隕石・地雷の爆発)。動かない。fuse 秒は予告だけで、そのあと blastActive 秒だけ、半径 radius の円が当たる。
     /// bounces が「まだ当たれるか」(1つの爆風で当たるのは1回だけ)
     public static let blastScript = 8
+    /// 蛇行の印。turn(ラジアン/秒)で向きを回し続け、fuse 秒ごとに回す向きを左右に切り替える(homeLeft は次の切り替えまでの秒)
+    public static let weaveScript = 9
+    /// ジグザグの印。fuse 秒ごとに、向きを turn(ラジアン)だけカクッと折り、次は逆に折る(homeLeft は次に折るまでの秒)
+    public static let zigzagScript = 10
 
     public static func blast(x: Double, y: Double, radius: Double, warn: Double, color: Int) -> Bullet {
         var b = Bullet(x: x, y: y, vx: 0, vy: 0, color: color, bounces: 1, script: blastScript)
@@ -158,6 +162,31 @@ extension Bullet {
             age += dt
             if age >= fuse { return .burst }
             if age < homeLeft { x += vx * dt; y += vy * dt }
+            return .alive
+        }
+        if script == Bullet.weaveScript || script == Bullet.zigzagScript {
+            let speed = (vx * vx + vy * vy).squareRoot()
+            if script == Bullet.weaveScript {
+                // 蛇行: なめらかに曲がり続け、決まった時間ごとに曲がる向きを逆にする
+                if homeLeft <= 0 { turn = -turn; homeLeft += fuse }
+                let na = atan2(vy, vx) + turn * dt
+                vx = cos(na) * speed; vy = sin(na) * speed
+                homeLeft -= dt
+            } else {
+                // ジグザグ: 決まった時間ごとに、カクッと向きを折る(次は逆に)
+                homeLeft -= dt
+                if homeLeft <= 0 {
+                    let na = atan2(vy, vx) + turn
+                    vx = cos(na) * speed; vy = sin(na) * speed
+                    turn = -turn
+                    homeLeft += fuse
+                }
+            }
+            x += vx * dt; y += vy * dt
+            if bounces > 0 {
+                if x < 0 { x = -x; vx = -vx; bounces -= 1 }
+                else if x > W { x = 2 * W - x; vx = -vx; bounces -= 1 }
+            }
             return .alive
         }
         if script == Bullet.boomerangScript {

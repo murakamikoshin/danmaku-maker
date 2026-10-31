@@ -17,7 +17,7 @@ final class AdPatternTests: XCTestCase {
         // 並びを変えない(乱数や記録に、並びの番号を使うので、新しいものは後ろに足す)
         XCTAssertEqual(Pattern.allCases.prefix(19).last, .timed)
         XCTAssertEqual(Pattern.allCases.dropFirst(49).first, .custom, "弾幕作成モードのパターンの番号は変えない")
-        XCTAssertEqual(Array(Pattern.allCases.dropFirst(50)), [.chargeBeam, .boomerang, .giantOrb, .sweepLaser, .mine, .meteor, .gridLaser, .gravity, .orbit, .snake, .bubble],
+        XCTAssertEqual(Array(Pattern.allCases.dropFirst(50)), [.chargeBeam, .boomerang, .giantOrb, .sweepLaser, .mine, .meteor, .gridLaser, .gravity, .orbit, .snake, .bubble, .swirl],
                        "あとから足したパターンは、custom より後ろ")
         XCTAssertFalse(Pattern.custom.isAd)
         XCTAssertFalse(Pattern.custom.isPaid)
@@ -315,5 +315,52 @@ final class AdPatternTests: XCTestCase {
         XCTAssertEqual(s.count, 8)
         XCTAssertTrue(s.allSatisfy { $0.homeLeft > 0 }, "全部が追いかける")
         XCTAssertLessThan(s[7].y, s[0].y, "後ろの弾ほど、進む向き(下)の後ろ(上)から出る")
+    }
+
+    // MARK: 重複をなくした作り替え(2026-10-31)
+
+    func testNewSwirlIsFreeAndDiffersFromRing() {
+        XCTAssertFalse(DanmakuCore.Pattern.swirl.isAd || DanmakuCore.Pattern.swirl.isPaid, "新しい渦巻きは、最初から使える")
+        XCTAssertTrue(Ownership().has(.swirl))
+        let s = fire(.swirl)
+        XCTAssertTrue(s.allSatisfy { $0.script == Bullet.boomerangScript && $0.turn > 0 }, "弾が同じ向きに曲がり続ける")
+        // 旧渦巻き(spiral)は、これまでどおり放射と同じ計算のまま(投稿済みのステージの動きを変えない)
+        let m = Emitter(t: .spiral, x: 0.5, y: 0.2, s: 0, e: 20, i: 0.1, c: 3, v: 2, r: 11, k: 0)
+        var r1 = Mulberry32(seed: 1), r2 = Mulberry32(seed: 1)
+        var a: [Bullet] = [], b: [Bullet] = []
+        var ring = m; ring.t = .ring
+        Emit.emit(m, shot: 2, cx: 180, cy: 100, px: 180, py: 459, rng: &r1, into: &a)
+        Emit.emit(ring, shot: 2, cx: 180, cy: 100, px: 180, py: 459, rng: &r2, into: &b)
+        XCTAssertEqual(a, b)
+    }
+
+    func testZigzagTurnsSharplyAndWeaveTurnsSmoothly() {
+        var z = fire(.zigzagAim)[0]
+        let a0 = atan2(z.vy, z.vx)
+        _ = z.advance(dt: DanmakuConfig.step, width: 360, playerX: 0, playerY: 0)
+        XCTAssertEqual(atan2(z.vy, z.vx), a0, accuracy: 1e-12, "折れるまでは、まっすぐ進む")
+        for _ in 0..<Int((0.4 / DanmakuConfig.step).rounded()) { _ = z.advance(dt: DanmakuConfig.step, width: 360, playerX: 0, playerY: 0) }
+        XCTAssertGreaterThan(abs(atan2(z.vy, z.vx) - a0), 1.0, "カクッと折れる")
+        var w = fire(.slither)[0]
+        let w0 = atan2(w.vy, w.vx)
+        _ = w.advance(dt: DanmakuConfig.step, width: 360, playerX: 0, playerY: 0)
+        XCTAssertNotEqual(atan2(w.vy, w.vx), w0, "蛇行は、少しずつ曲がり続ける")
+    }
+
+    func testShotgunPelletsHaveDifferentSpeeds() {
+        let s = fire(.shotgun)
+        let speeds = Set(s.map { (($0.vx * $0.vx + $0.vy * $0.vy).squareRoot() * 10).rounded() })
+        XCTAssertGreaterThan(speeds.count, 5, "粒ごとに速さがばらばら")
+    }
+
+    func testHelixArmsTurnOppositeWays() {
+        let d = DanmakuCore.Pattern.helix.recipeDefaults!
+        let m = Emitter(t: .helix, x: 0.5, y: 0.2, s: 0, e: 20, i: d.i, c: d.c, v: d.v, r: d.r, k: 0)
+        var rng = Mulberry32(seed: 1)
+        var out: [Bullet] = []
+        Emit.emit(m, shot: 5, cx: 180, cy: 100, px: 180, py: 459, rng: &rng, into: &out)
+        XCTAssertEqual(out.count, d.c * 2)
+        // 1本目と2本目の、最初の弾の向きが、0度をはさんで反対になる
+        XCTAssertEqual(atan2(out[0].vy, out[0].vx), -atan2(out[d.c].vy, out[d.c].vx), accuracy: 1e-9)
     }
 }

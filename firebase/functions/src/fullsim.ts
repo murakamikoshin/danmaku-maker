@@ -1,5 +1,5 @@
 import { inflateRawSync } from "node:zlib";
-import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
+import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
@@ -457,8 +457,30 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
           continue;
         }
         if (b.age < b.homeLeft) { b.x += b.vx * dt; b.y += b.vy * dt; }
-      } else
-      if (b.script === BOOMERANG_SCRIPT) {
+      } else if (b.script === WEAVE_SCRIPT || b.script === ZIGZAG_SCRIPT) {
+        const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        if (b.script === WEAVE_SCRIPT) {
+          // 蛇行: なめらかに曲がり続け、決まった時間ごとに曲がる向きを逆にする
+          if (b.homeLeft <= 0) { b.turn = -b.turn; b.homeLeft += b.fuse ?? 0; }
+          const na = Math.atan2(b.vy, b.vx) + b.turn * dt;
+          b.vx = Math.cos(na) * speed; b.vy = Math.sin(na) * speed;
+          b.homeLeft -= dt;
+        } else {
+          // ジグザグ: 決まった時間ごとに、カクッと向きを折る(次は逆に)
+          b.homeLeft -= dt;
+          if (b.homeLeft <= 0) {
+            const na = Math.atan2(b.vy, b.vx) + b.turn;
+            b.vx = Math.cos(na) * speed; b.vy = Math.sin(na) * speed;
+            b.turn = -b.turn;
+            b.homeLeft += b.fuse ?? 0;
+          }
+        }
+        b.x += b.vx * dt; b.y += b.vy * dt;
+        if (b.bounces > 0) {
+          if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
+          else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
+        }
+      } else if (b.script === BOOMERANG_SCRIPT) {
         // ブーメラン: 決まった時間だけ、同じ速さのまま向きを回して、弧を描いて戻ってくる
         if (b.homeLeft > 0) {
           const na = Math.atan2(b.vy, b.vx) + b.turn * dt;

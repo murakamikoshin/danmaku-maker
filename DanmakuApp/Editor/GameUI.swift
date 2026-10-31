@@ -351,7 +351,7 @@ struct PatternTiles: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            grid(DanmakuCore.Pattern.allCases.filter { !$0.isAd && !$0.isPack2 && $0 != .custom })
+            grid(freePatterns)
             Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.ad)
             Text("editor.pattern.pack2section").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
@@ -359,6 +359,21 @@ struct PatternTiles: View {
             customSection
         }
         .sheet(isPresented: $showShop) { ShopView() }
+    }
+
+    /// 最初から使えるパターン。旧「渦巻き」(spiral)は放射と同じ計算なので出さず、新しい渦巻き(swirl)をその場所に出す
+    /// (古いステージで旧渦巻きを選んでいるときだけ、そのまま見えるように残す)
+    private var freePatterns: [DanmakuCore.Pattern] {
+        var list: [DanmakuCore.Pattern] = []
+        for p in DanmakuCore.Pattern.allCases where !p.isAd && !p.isPack2 && p != .custom && p != .swirl {
+            if p == .spiral {
+                list.append(.swirl)
+                if selection == .spiral { list.append(.spiral) }
+            } else {
+                list.append(p)
+            }
+        }
+        return list
     }
 
     @ObservedObject private var library = PatternLibrary.shared
@@ -475,7 +490,7 @@ struct PatternIcon: View {
             switch pattern {
             case .ring:
                 for i in 0..<10 { let a = Double(i) * .pi / 5; dot(c.x + cos(a) * 14, c.y + sin(a) * 14) }
-            case .spiral:
+            case .spiral, .swirl:
                 for i in 0..<14 { let a = Double(i) * 0.75, r = 3 + Double(i) * 1.0; dot(c.x + cos(a) * r, c.y + sin(a) * r, 2.2) }
             case .aim:
                 dot(c.x, 6, 3.4)

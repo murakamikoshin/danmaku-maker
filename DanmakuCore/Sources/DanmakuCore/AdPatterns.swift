@@ -51,6 +51,12 @@ public struct PatternRecipe: Sendable {
     public var gridGap: Double = 0.0
     public var orbitRadius: Double = 0.0
     public var trail: Double = 0.0
+    public var speedJitter: Double = 0.0
+    public var curveSame: Int = 0
+    public var layerFlip: Int = 0
+    public var weave: Int = 0
+    public var weaveTurn: Double = 0.0
+    public var weavePeriod: Double = 0.0
 }
 
 public extension Pattern {
@@ -65,29 +71,29 @@ public extension Pattern {
     var recipe: PatternRecipe? {
         switch self {
         case .twinRing: return PatternRecipe(mode: 0, layers: 2, layerSpeed: 0.6)
-        case .tripleRing: return PatternRecipe(mode: 0, layers: 3, layerSpeed: 0.75)
+        case .tripleRing: return PatternRecipe(mode: 0, curve: 200.0, curveTime: 0.9, curveSame: 1)
         case .pinwheel: return PatternRecipe(mode: 0, altSpeed: 0.45)
         case .ripple: return PatternRecipe(mode: 0, spin: 0.0, layers: 4, layerAngle: 5.0, layerSpeed: 0.85)
         case .chargeBeam: return PatternRecipe(mode: 1, beam: 1)
         case .whirl: return PatternRecipe(mode: 0, speedStep: 0.035)
-        case .slither: return PatternRecipe(mode: 2, wobbleAmp: 22.0, wobbleFreq: 1.1, wobblePhase: 0.6)
+        case .slither: return PatternRecipe(mode: 2, weave: 1, weaveTurn: 160.0, weavePeriod: 0.8)
         case .curtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 330.0)
         case .swayFan: return PatternRecipe(mode: 2, fan: 70.0, lineWidth: 280.0, bounces: 2)
         case .boomerang: return PatternRecipe(mode: 1, curve: 130.0, curveTime: 1.4)
         case .drizzle: return PatternRecipe(mode: 2, fan: -1.0, speed0: 0.25, scatter: 340.0, accel: 1.0, maxMul: 2.6)
         case .comet: return PatternRecipe(mode: 1, speedStep: 0.15)
-        case .shotgun: return PatternRecipe(mode: 1, jitter: 10.0)
+        case .shotgun: return PatternRecipe(mode: 1, jitter: 12.0, speedJitter: 0.45)
         case .sniper: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, turn: 30.0)
         case .giantOrb: return PatternRecipe(mode: 1, fan: -1.0, bounces: 1, giant: 1)
         case .twinAim: return PatternRecipe(mode: 1, layers: 2, layerSpeed: 0.7, script: 3)
-        case .zigzagAim: return PatternRecipe(mode: 1, wobbleAmp: 16.0, wobbleFreq: 2.3, wobblePhase: 0.9)
+        case .zigzagAim: return PatternRecipe(mode: 1, weave: 2, weaveTurn: 70.0, weavePeriod: 0.35)
         case .accelRing: return PatternRecipe(mode: 0, speed0: 0.35, accel: 0.8, maxMul: 2.2)
         case .homingRing: return PatternRecipe(mode: 0, turn: 40.0)
         case .sweepLaser: return PatternRecipe(mode: 1, beam: 1, beamSweep: 90.0, beamTime: 1.2)
         case .bounceRing: return PatternRecipe(mode: 0, bounces: 2)
         case .freezeRing: return PatternRecipe(mode: 0, script: 1)
         case .shatterRing: return PatternRecipe(mode: 0, script: 2)
-        case .pulseRing: return PatternRecipe(mode: 2, fan: -1.0, scatter: 340.0, script: 1)
+        case .pulseRing: return PatternRecipe(mode: 2, fan: -1.0, scatter: 340.0, script: 3)
         case .freezeCurtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, script: 1)
         case .splitCurtain: return PatternRecipe(mode: 2, fan: -1.0, lineWidth: 300.0, script: 2)
         case .wavyRing: return PatternRecipe(mode: 0, waveAmp: 0.35, waveFreq: 3.0)
@@ -95,9 +101,10 @@ public extension Pattern {
         case .waveSpiral: return PatternRecipe(mode: 0, waveAmp: 0.3, waveFreq: 1.7, wavePhase: 0.8)
         case .tide: return PatternRecipe(mode: 2, waveAmp: 0.5, waveFreq: 2.0, wavePhase: 1.3)
         case .ladder: return PatternRecipe(mode: 2, fan: -1.0, altSpeed: 0.6, lineWidth: 300.0)
-        case .helix: return PatternRecipe(mode: 0, layers: 2, layerAngle: 8.0, layerSpeed: 1.15)
+        case .helix: return PatternRecipe(mode: 0, layers: 2, layerFlip: 1)
         case .rapidFan: return PatternRecipe(mode: 1, speedStep: 0.12, speedCycle: 3)
         case .lightRain: return PatternRecipe(mode: 2, fan: -1.0, speed0: 1.2, scatter: 340.0, jitter: 3.0)
+        case .swirl: return PatternRecipe(mode: 0, curve: 30.0, curveTime: 8.0, curveSame: 1)
         case .mine: return PatternRecipe(mode: 1, mine: 1, travel: 0.9, fuse: 2.6)
         case .meteor: return PatternRecipe(mode: 0, fuse: 1.1, meteor: 1, blastRadius: 34.0, meteorGap: 70.0)
         case .gridLaser: return PatternRecipe(mode: 0, grid: 1, gridGap: 72.0)
@@ -113,29 +120,29 @@ public extension Pattern {
     var recipeDefaults: (i: Double, c: Int, v: Double, r: Double)? {
         switch self {
         case .twinRing: return (1.0, 14, 2.4, 6.0)
-        case .tripleRing: return (1.2, 12, 2.6, 4.0)
+        case .tripleRing: return (1.3, 12, 2.2, 6.0)
         case .pinwheel: return (0.5, 8, 2.4, 9.0)
         case .ripple: return (1.4, 18, 2.4, 0.0)
         case .chargeBeam: return (2.4, 1, 2.0, 40.0)
         case .whirl: return (0.12, 4, 1.6, 13.0)
-        case .slither: return (0.6, 7, 2.2, 26.0)
+        case .slither: return (0.6, 5, 2.0, 50.0)
         case .curtain: return (0.9, 12, 1.8, 0.0)
         case .swayFan: return (1.3, 7, 2.0, 0.0)
         case .boomerang: return (1.2, 4, 2.4, 40.0)
         case .drizzle: return (0.25, 2, 2.0, 0.0)
         case .comet: return (1.0, 7, 1.8, 14.0)
-        case .shotgun: return (0.9, 9, 2.6, 24.0)
+        case .shotgun: return (1.0, 12, 2.6, 26.0)
         case .sniper: return (1.8, 6, 1.5, 0.0)
         case .giantOrb: return (2.0, 1, 1.6, 0.0)
         case .twinAim: return (1.0, 7, 2.4, 50.0)
-        case .zigzagAim: return (0.7, 8, 2.3, 30.0)
+        case .zigzagAim: return (0.8, 5, 2.2, 36.0)
         case .accelRing: return (1.1, 16, 2.0, 7.0)
         case .homingRing: return (1.8, 8, 1.5, 10.0)
         case .sweepLaser: return (3.0, 1, 2.0, 0.0)
         case .bounceRing: return (1.3, 10, 2.2, 8.0)
         case .freezeRing: return (1.2, 14, 2.4, 6.0)
         case .shatterRing: return (1.6, 8, 2.2, 10.0)
-        case .pulseRing: return (0.45, 3, 2.0, 0.0)
+        case .pulseRing: return (0.5, 4, 2.2, 0.0)
         case .freezeCurtain: return (1.3, 9, 2.4, 0.0)
         case .splitCurtain: return (1.5, 6, 1.8, 0.0)
         case .wavyRing: return (1.0, 24, 2.2, 6.0)
@@ -146,6 +153,7 @@ public extension Pattern {
         case .helix: return (0.1, 3, 2.0, 12.0)
         case .rapidFan: return (0.22, 6, 2.4, 36.0)
         case .lightRain: return (0.08, 2, 2.8, 0.0)
+        case .swirl: return (0.12, 3, 1.8, 13.0)
         case .mine: return (1.6, 3, 2.2, 50.0)
         case .meteor: return (2.0, 1, 2.0, 0.0)
         case .gridLaser: return (3.2, 4, 2.0, 0.0)
@@ -169,7 +177,7 @@ extension Emit {
             let layerShift = Double(layer) * r.layerAngle * deg
             let base: Double
             switch r.mode {
-            case 0: base = Double(k) * m.r * deg * r.spin + off
+            case 0: base = (r.layerFlip != 0 && layer % 2 == 1 ? -1.0 : 1.0) * Double(k) * m.r * deg * r.spin + off
             case 1: base = atan2(py - cy, px - cx) + off
             case 3: base = -Double.pi / 2 + off
             default: base = Double.pi / 2 + off + sin(Double(k) * r.sweepFreq) * m.r * deg * r.sweepAmp
@@ -185,6 +193,7 @@ extension Emit {
                 if r.speedStep != 0 { let jj = r.speedCycle > 0 ? j % r.speedCycle : j; f *= 1 + Double(jj) * r.speedStep }
                 if r.altSpeed != 0 && j % 2 == 1 { f *= r.altSpeed }
                 if r.waveAmp != 0 { f *= 1 + r.waveAmp * sin(Double(j) * r.waveFreq + Double(k) * r.wavePhase) }
+                if r.speedJitter != 0 { f *= 1 + (rng.next() - 0.5) * 2 * r.speedJitter }
                 var x = cx
                 if r.lineWidth != 0 { x += (n > 1 ? Double(j) / Double(n - 1) - 0.5 : 0) * r.lineWidth }
                 if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }
@@ -217,7 +226,17 @@ extension Emit {
                 } else if r.curve != 0 {
                     // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)
                     out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,
-                                      turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))
+                                      turn: (r.curveSame != 0 ? 1.0 : side) * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))
+                } else if r.weave != 0 {
+                    // 蛇行(なめらか)・ジグザグ(カクッと): 向きを左右に切り替えながら進む。真ん中の向きが a になるように、少し戻した向きから出る
+                    let smooth = r.weave == 1
+                    let swing = smooth ? r.weaveTurn * deg * r.weavePeriod / 4 : r.weaveTurn * deg / 2
+                    let a0 = a - side * swing
+                    var b = Bullet(x: x, y: cy, vx: cos(a0) * sp * f, vy: sin(a0) * sp * f, color: m.k,
+                                   turn: side * r.weaveTurn * deg, homeLeft: smooth ? r.weavePeriod / 2 : r.weavePeriod, bounces: r.bounces,
+                                   script: smooth ? Bullet.weaveScript : Bullet.zigzagScript)
+                    b.fuse = r.weavePeriod
+                    out.append(b)
                 } else {
                     // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)
                     let bx = x - cos(a) * r.trail * Double(j), by = cy - sin(a) * r.trail * Double(j)

@@ -105,6 +105,9 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case snake
     /// 膨らむ泡: ゆっくり進みながら、だんだん大きくなる
     case bubble
+    /// 渦巻き: 弾が少しずつ曲がって、渦の腕のように広がる(無料)。
+    /// これまでの spiral は放射(ring)と同じ計算だったので、投稿済みのステージの動きを変えないように残し、エディタには出さない
+    case swirl
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 

@@ -14978,65 +14978,66 @@
       }
     },
     "pattern.beam": {
+      "extractionState": "manual",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Beam"
-          }
-        },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "光線"
+            "value": "一列弾"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullet Line"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "光束"
+            "value": "一列弹"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "光束"
+            "value": "一列彈"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "빔"
+            "value": "일렬탄"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rayo"
+            "value": "Fila de balas"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rayon"
+            "value": "Ligne de balles"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Strahl"
+            "value": "Kugelreihe"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Raio"
+            "value": "Fila de balas"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Луч"
+            "value": "Пулевая линия"
           }
         }
       }
@@ -15682,65 +15683,66 @@
       }
     },
     "pattern.spiral": {
+      "extractionState": "manual",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spiral"
-          }
-        },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "渦巻き"
+            "value": "渦巻き(旧)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spiral (old)"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "螺旋"
+            "value": "螺旋（旧）"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "螺旋"
+            "value": "螺旋（舊）"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "나선"
+            "value": "나선(구)"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espiral"
+            "value": "Espiral (antigua)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spirale"
+            "value": "Spirale (ancienne)"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spirale"
+            "value": "Spirale (alt)"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espiral"
+            "value": "Espiral (antiga)"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Спираль"
+            "value": "Спираль (старая)"
           }
         }
       }
@@ -22274,65 +22276,66 @@
       }
     },
     "shop.pattern.beam": {
+      "extractionState": "manual",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A beam of bullets of different speeds stretching toward you."
-          }
-        },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "自機に向けて、速さの違う弾が一直線に伸びる光線。"
+            "value": "自機に向けて、速さの違う弾を一列に並べて撃つ。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bullets of different speeds fired in a line toward you."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "朝你延伸的一束速度各异的子弹。"
+            "value": "朝自机发射速度不同、排成一列的子弹。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "朝你延伸的一束速度各異的子彈。"
+            "value": "朝自機發射速度不同、排成一列的子彈。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "속도가 다른 탄들이 빔처럼 길게 뻗어 와요."
+            "value": "속도가 다른 탄을 한 줄로 내 기체를 향해 쏴요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un rayo de balas de distintas velocidades que se extiende hacia ti."
+            "value": "Balas de distintas velocidades en fila hacia ti."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un faisceau de projectiles de vitesses différentes qui s'étire vers vous."
+            "value": "Des balles de vitesses différentes tirées en ligne vers toi."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ein Strahl aus Kugeln unterschiedlicher Geschwindigkeit, der sich auf dich zu streckt."
+            "value": "Kugeln unterschiedlicher Geschwindigkeit in einer Reihe auf dich."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Um feixe de balas de velocidades diferentes que se estende até você."
+            "value": "Balas de velocidades diferentes em fila na sua direção."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Луч из пуль разной скорости, тянущийся к вам."
+            "value": "Пули разной скорости летят в вас одной линией."
           }
         }
       }
@@ -31763,61 +31766,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "三重輪"
+            "value": "宙返り輪"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Triple Ring"
+            "value": "Loop Ring"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "三层环"
+            "value": "翻转环"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "三層環"
+            "value": "翻轉環"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "삼중 링"
+            "value": "공중제비 링"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anillo triple"
+            "value": "Anillo en bucle"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Triple anneau"
+            "value": "Anneau en boucle"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dreifachring"
+            "value": "Loopingring"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anel triplo"
+            "value": "Anel em looping"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Тройное кольцо"
+            "value": "Кольцо-петля"
           }
         }
       }
@@ -32933,61 +32936,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "止まる雨"
+            "value": "降り出す雨"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pausing Rain"
+            "value": "Sudden Downpour"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "停顿之雨"
+            "value": "骤雨"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "停頓之雨"
+            "value": "驟雨"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "멈추는 비"
+            "value": "쏟아지는 비"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lluvia que se detiene"
+            "value": "Chaparrón"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pluie suspendue"
+            "value": "Averse soudaine"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stockender Regen"
+            "value": "Platzregen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chuva que para"
+            "value": "Pancada de chuva"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Замирающий дождь"
+            "value": "Внезапный ливень"
           }
         }
       }
@@ -39943,6 +39946,71 @@
           "stringUnit": {
             "state": "translated",
             "value": "Набор узоров 2"
+          }
+        }
+      }
+    },
+    "pattern.swirl": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "渦巻き"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spiral"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螺旋"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螺旋"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나선"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espiral"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spirale"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spirale"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espiral"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спираль"
           }
         }
       }
