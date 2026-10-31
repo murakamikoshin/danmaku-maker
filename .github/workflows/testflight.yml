@@ -27,6 +27,13 @@ jobs:
         run: |
           mkdir -p ~/private_keys
           echo "$KEY" | base64 --decode > ~/private_keys/AuthKey_${KEY_ID}.p8
+      - name: Revoke certificates made by earlier CI runs
+        # ビルドのたびに作られる開発用の証明書がたまって上限に達しないように、前のビルドが作ったものを取り消す
+        continue-on-error: true
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: ASC_KEY_PATH=~/private_keys/AuthKey_${ASC_KEY_ID}.p8 node tools/asc_revoke_ci_certs.mjs
       - name: Archive
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
