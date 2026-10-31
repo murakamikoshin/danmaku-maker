@@ -42,6 +42,8 @@ struct ShopView: View {
                     CustomImagesCard().id("customimages")
                     ShotSection().id("shots")
                     PatternShop().id("patterns")
+                    PatternShop(patterns: Pattern.pack2, pack: .patternPack2, title: "shop.pattern2.title", footer: "shop.pattern2.footer",
+                                packTitle: "shop.pattern2.pack").id("patterns2")
                     MakerCard().id("maker")
                     RewardShop()
                     ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
@@ -597,7 +599,7 @@ private struct MakerDemo: View {
     }
 }
 
-/// 広告を見て1日1つ解放する34パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
+/// 広告を見て1日1つ解放する30パターン(広告削除・永久買い切りパックの購入者は、広告なしで)
 private struct AdPatternCard: View {
     @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var ads: AdsService
@@ -704,24 +706,30 @@ private struct AdPatternCard: View {
     }
 }
 
+/// 買えるパターンのカード(バラと全部入り)。弾幕パック1とパック2で同じ形
 private struct PatternShop: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @EnvironmentObject private var purchases: PurchaseService
+    var patterns: [Pattern] = Pattern.paid
+    var pack: Product = .patternPack
+    var title: LocalizedStringKey = "shop.pattern.title"
+    var footer: LocalizedStringKey = "shop.pattern.footer"
+    var packTitle: LocalizedStringKey = "shop.pattern.pack"
 
-    private var singles: [Product] { Pattern.paid.map { Product.pattern($0) } }
+    private var singles: [Product] { patterns.map { Product.pattern($0) } }
 
     var body: some View {
-        ShopCard(title: "shop.pattern.title", footer: "shop.pattern.footer") {
+        ShopCard(title: title, footer: footer) {
             VStack(spacing: 10) {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) { ForEach(Pattern.paid, id: \.self) { PatternTile(pattern: $0) } }
+                    HStack(spacing: 10) { ForEach(patterns, id: \.self) { PatternTile(pattern: $0) } }
                         .padding(.horizontal, 2).padding(.vertical, 2)
                 }
                 CardBody {
                     HStack {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("shop.pattern.pack").font(.system(size: 17, weight: .heavy, design: .rounded))
-                            if let total = purchases.totalText(singles), let price = purchases.prices[.patternPack] {
+                            Text(packTitle).font(.system(size: 17, weight: .heavy, design: .rounded))
+                            if let total = purchases.totalText(singles), let price = purchases.prices[pack] {
                                 HStack(spacing: 6) {
                                     Text(total).strikethrough().foregroundStyle(.secondary)
                                     Text("→").foregroundStyle(.secondary)
@@ -730,7 +738,7 @@ private struct PatternShop: View {
                             }
                         }
                         Spacer()
-                        if cosmetics.ownership.canBuy(.patternPack) { PriceButton(product: .patternPack) }
+                        if cosmetics.ownership.canBuy(pack) { PriceButton(product: pack) }
                         else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
                     }
                     .padding(14)
@@ -744,11 +752,6 @@ private struct PatternShop: View {
 private struct PatternTile: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     let pattern: Pattern
-    private static let keys: [Pattern: String] = [
-        .homing: "pattern.homing", .flower: "pattern.flower", .star: "pattern.star", .heart: "pattern.heart",
-        .beam: "pattern.beam", .cross: "pattern.cross", .accel: "pattern.accel", .bounce: "pattern.bounce",
-        .stopgo: "pattern.stopgo", .split: "pattern.split", .timed: "pattern.timed",
-    ]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -756,7 +759,7 @@ private struct PatternTile: View {
                 .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                 .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            Text(LocalizedStringKey(Self.keys[pattern] ?? "")).font(.system(size: 18, weight: .heavy, design: .rounded))
+            Text(L("pattern.\(pattern.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
             Text(L("shop.pattern.\(pattern.rawValue)")).font(.caption).foregroundStyle(.secondary)
                 .frame(height: 44, alignment: .topLeading)
             HStack {
@@ -782,6 +785,7 @@ private struct PatternDemo: View {
 
     var body: some View {
         let images = SpriteFactory.bulletImages(.classic)
+        let boomerangs = SpriteFactory.boomerangImages(.classic)
         let ship = SpriteFactory.shipImage(.classic)
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
             Canvas { ctx, size in
@@ -789,7 +793,6 @@ private struct PatternDemo: View {
                 // 縦横同じ倍率で描く(実際の画面の一部。幅 360 を枠いっぱいに使う)
                 let s = size.width / CGFloat(PatternDemoEngine.fieldWidth)
                 // 弾・自機・ボスは、ゲームと同じ大きさ(弾 12×12、自機 20×24、ボス = 中サイズの 48)
-                let bs = 12 * s
                 let c = engine.source
                 let bossSide = EnemyArt.bossPoints(size: 1) * s
                 ctx.fill(GameBossShape().path(in: CGRect(x: c.x * s - bossSide / 2, y: c.y * s - bossSide / 2, width: bossSide, height: bossSide)),
@@ -797,7 +800,8 @@ private struct PatternDemo: View {
                 let p = engine.player
                 ctx.draw(Image(uiImage: ship), in: CGRect(x: p.x * s - 10 * s, y: p.y * s - 12 * s, width: 20 * s, height: 24 * s))
                 for b in engine.bullets {
-                    ctx.draw(Image(uiImage: images[b.color % images.count]), in: CGRect(x: b.x * s - bs / 2, y: b.y * s - bs / 2, width: bs, height: bs))
+                    ctx.drawBullet(b, images: images, boomerangs: boomerangs, colors: Skin.of(.classic).bulletColors, scale: s,
+                                   time: tl.date.timeIntervalSinceReferenceDate)
                 }
             }
         }

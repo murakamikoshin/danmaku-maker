@@ -35,6 +35,9 @@ final class GameScene: SKScene {
     private var bulletNodes: [SKSpriteNode] = []
     /// チャージビームの光線(外側の光と、白い芯)。使い回す
     private var beamNodes: [(glow: SKShapeNode, core: SKShapeNode)] = []
+    /// 爆風(隕石・地雷の爆発)の円。使い回す
+    private var blastNodes: [SKShapeNode] = []
+    private var blastRadii: [CGFloat] = []
     private var shotNodes: [SKSpriteNode] = []
     private var markers: [SKShapeNode] = []
     private var starNodes: [(node: SKSpriteNode, y: Double, v: Double)] = []
@@ -95,6 +98,36 @@ final class GameScene: SKScene {
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is not used") }
 
     private func pos(_ x: Double, _ y: Double) -> CGPoint { CGPoint(x: x, y: GameScene.H - y) }
+
+    /// 爆風: 予告の間は赤い円(だんだん濃く)、当たる間は明るいオレンジの円
+    private func drawBlast(_ b: Bullet, slot: Int) {
+        while blastNodes.count <= slot {
+            let n = SKShapeNode()
+            n.zPosition = 3.4
+            addChild(n)
+            blastNodes.append(n)
+            blastRadii.append(-1)
+        }
+        let n = blastNodes[slot]
+        let r = CGFloat(b.radius)
+        if blastRadii[slot] != r {
+            n.path = CGPath(ellipseIn: CGRect(x: -r, y: -r, width: r * 2, height: r * 2), transform: nil)
+            blastRadii[slot] = r
+        }
+        n.position = pos(b.x, b.y)
+        n.isHidden = false
+        if b.blastActive {
+            let f = CGFloat(min(1, (b.age - b.fuse) / DanmakuConfig.blastActive))
+            n.fillColor = UIColor.orange.withAlphaComponent(0.75 * (1 - f) + 0.2)
+            n.strokeColor = UIColor.white.withAlphaComponent(0.9 * (1 - f))
+            n.lineWidth = 3
+        } else {
+            let p = CGFloat(b.fuse > 0 ? min(1, b.age / b.fuse) : 1)
+            n.fillColor = UIColor.red.withAlphaComponent(0.08 + 0.15 * p)
+            n.strokeColor = UIColor.red.withAlphaComponent(0.5 + 0.4 * p)
+            n.lineWidth = 2
+        }
+    }
 
     /// チャージビーム: ためている間は細い予告線(だんだん濃く太く)、撃っている間は太い光線と白い芯
     private func drawBeam(_ b: Bullet, slot: Int) {
@@ -319,6 +352,7 @@ final class GameScene: SKScene {
             bulletNodes.append(n)
         }
         var beamCount = 0
+        var blastCount = 0
         for i in 0..<bulletNodes.count {
             let n = bulletNodes[i]
             if i < bs.count {
@@ -330,21 +364,36 @@ final class GameScene: SKScene {
                     beamCount += 1
                     continue
                 }
+                if b.isBlast {
+                    // 爆風は、予告の円 → 明るい円で描く
+                    n.isHidden = true
+                    drawBlast(b, slot: blastCount)
+                    blastCount += 1
+                    continue
+                }
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
                 let boomerang = b.script == Bullet.boomerangScript
                 n.texture = boomerang ? boomerangTextures[min(max(b.color, 0), boomerangTextures.count - 1)] : bulletTextures[b.color]
                 // 巨大弾は、当たる範囲に合わせて大きく描く。ブーメランは🪃の形で、くるくる回す
+                // 膨らむ泡など、広さを持つ弾は、当たる広さに合わせて描く
                 let size = b.isGiant ? CGSize(width: DanmakuConfig.giantDrawRadius * 2, height: DanmakuConfig.giantDrawRadius * 2)
-                    : boomerang ? CGSize(width: 16, height: 16) : bulletTextures[0].size()
+                    : boomerang ? CGSize(width: 16, height: 16)
+                    : b.radius > 0 ? CGSize(width: max(12, (b.radius + 4) * 2), height: max(12, (b.radius + 4) * 2)) : bulletTextures[0].size()
                 if n.size != size { n.size = size }
                 n.zRotation = boomerang ? CGFloat(lastTime ?? 0) * 14 + CGFloat(i) : 0
+                // 止まった地雷は点滅する(爆発が近いほど速く)
+                if b.mineStopped {
+                    let fast = b.fuse - b.age < 0.8
+                    n.alpha = sin((lastTime ?? 0) * (fast ? 40 : 14)) > 0 ? 1 : 0.35
+                } else if n.alpha != 1 { n.alpha = 1 }
             } else if !n.isHidden {
                 n.isHidden = true
             }
         }
 
         for i in beamCount..<beamNodes.count where !beamNodes[i].glow.isHidden { beamNodes[i].glow.isHidden = true }
+        for i in blastCount..<blastNodes.count where !blastNodes[i].isHidden { blastNodes[i].isHidden = true }
 
         if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
         if sim.defeats > shownDefeats {

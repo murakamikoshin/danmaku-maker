@@ -1,5 +1,5 @@
 import { inflateRawSync } from "node:zlib";
-import { BEAM_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
+import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
@@ -23,6 +23,24 @@ const TIMED_HOLD = 1.1;
 const BEAM_CHARGE = 1.0, BEAM_FIRE = 0.5, BEAM_HIT_R2 = 81;
 /** 巨大弾の当たる範囲(中心からの距離の2乗)。アプリの DanmakuConfig.giantHitRadiusSquared と同じ */
 const GIANT_HIT_R2 = 400;
+/** ふつうの弾の当たる半径、爆風の当たる時間、地雷の爆風の半径と散る弾の数。アプリの DanmakuConfig と同じ */
+const HIT_R = 5.5, BLAST_ACTIVE = 0.35, MINE_BLAST_RADIUS = 30, MINE_RING = 8;
+
+/** 爆風(隕石・地雷の爆発)が (px, py) に当たるか。予告(fuse 秒)のあと、1つで1回だけ */
+export function blastHits(b: { x: number; y: number; age: number; bounces: number; radius?: number; fuse?: number }, px: number, py: number): boolean {
+  if (b.age < (b.fuse ?? 0) || b.bounces <= 0) return false;
+  const dx = px - b.x, dy = py - b.y;
+  const r = (b.radius ?? 0) + HIT_R;
+  return dx * dx + dy * dy < r * r;
+}
+
+/** 自機に当たる距離の2乗(弾の種類と広さで変わる)。アプリの Bullet.hitDistanceSquared と同じ */
+function hitDistanceSquared(b: Bullet): number {
+  if (b.script === GIANT_SCRIPT) return GIANT_HIT_R2;
+  const radius = b.radius ?? 0;
+  if (radius > 0) { const r = radius + HIT_R; return r * r; }
+  return HIT_R2;
+}
 
 /** チャージビームが (px, py) に当たるか。撃っている間だけ、出る場所から向きのほうへ伸びる光線に触れると当たる(1本で1回だけ) */
 export function beamHits(b: { x: number; y: number; vx: number; vy: number; age: number; bounces: number }, px: number, py: number): boolean {
@@ -118,7 +136,11 @@ function hashEmitters(h: Fnv, list: Emitter[]) {
 }
 
 interface Follow { pts: readonly number[]; ox: number; oy: number; cs: number; sn: number; scale: number }
-interface Bullet { x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number; follow?: Follow }
+interface Bullet {
+  x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number; follow?: Follow;
+  /** 重力弾・膨らむ泡・地雷・爆風だけが使う(ない弾は 0 と同じ)。アプリの Bullet と同じ意味 */
+  gravity?: number; radius?: number; grow?: number; growMax?: number; fuse?: number;
+}
 interface Shot { x: number; y: number; vx: number; damage: number }
 
 function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[]) {
@@ -254,7 +276,10 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       const recipe = RECIPES[m.t];
       if (recipe) {
         emitRecipe(recipe, m, k, cx, cy, px, py, off, sp, n, rng, HOMING_SECONDS, (x, y, vx, vy, e) => {
-          if (out.length < MAX_BULLETS) out.push({ x, y, vx, vy, color: m.k, turn: e.turn, homeLeft: e.homeLeft, accel: e.accel, maxSpeed: e.maxSpeed, bounces: e.bounces, script: e.script, age: 0 });
+          if (out.length < MAX_BULLETS) {
+            out.push({ x, y, vx, vy, color: m.k, turn: e.turn, homeLeft: e.homeLeft, accel: e.accel, maxSpeed: e.maxSpeed, bounces: e.bounces, script: e.script, age: 0,
+              gravity: e.gravity, radius: e.radius, grow: e.grow, growMax: e.growMax, fuse: e.fuse });
+          }
         });
       }
     }
@@ -400,6 +425,36 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         bullets[w++] = b;
         continue;
       }
+      if (b.script === BLAST_SCRIPT) {
+        // 爆風: 動かない。予告(fuse 秒)のあと、少しの間だけ当たって消える。当たっても消えない(1回だけ)
+        b.age += dt;
+        if (b.age >= (b.fuse ?? 0) + BLAST_ACTIVE) continue;
+        if (blastHits(b, px, py) && tick >= shieldUntil) {
+          b.bounces = 0;
+          lifeLeft -= 1;
+          if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }
+          if (lifeMode === "lives") shieldUntil = tick + Math.round(LIFE_SHIELD_SECONDS / dt);
+        }
+        bullets[w++] = b;
+        continue;
+      }
+      if (b.script === MINE_SCRIPT) {
+        // 地雷: 決まった時間だけ進んで止まり、時間が来たら爆風と弾の輪になって消える
+        b.age += dt;
+        if (b.age >= (b.fuse ?? 0)) {
+          const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          const base = Math.atan2(b.vy, b.vx);
+          const frags: Bullet[] = [{ x: b.x, y: b.y, vx: 0, vy: 0, color: b.color, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BLAST_SCRIPT, age: 0, radius: MINE_BLAST_RADIUS, fuse: 0 }];
+          for (let j = 0; j < MINE_RING; j++) {
+            const a = base + (j * 2 * Math.PI) / MINE_RING;
+            frags.push({ x: b.x, y: b.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, color: b.color, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0 });
+          }
+          const room = Math.max(0, MAX_BULLETS - (w + born.length + (bullets.length - i - 1)));
+          for (const f of frags.slice(0, room)) born.push(f);
+          continue;
+        }
+        if (b.age < b.homeLeft) { b.x += b.vx * dt; b.y += b.vy * dt; }
+      } else
       if (b.script === BOOMERANG_SCRIPT) {
         // ブーメラン: 決まった時間だけ、同じ速さのまま向きを回して、弧を描いて戻ってくる
         if (b.homeLeft > 0) {
@@ -467,6 +522,8 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
           b.vx *= g; b.vy *= g;
         }
       }
+      if (b.gravity) b.vy += b.gravity * dt;
+      if (b.grow) b.radius = Math.min(b.growMax ?? 0, (b.radius ?? 0) + b.grow * dt);
       if (!frozen) { b.x += b.vx * dt; b.y += b.vy * dt; }
       if (b.bounces > 0) {
         if (b.x < 0) { b.x = -b.x; b.vx = -b.vx; b.bounces -= 1; }
@@ -475,7 +532,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       }
       if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
       const dx = b.x - px, dy = b.y - py;
-      if (dx * dx + dy * dy < (b.script === GIANT_SCRIPT ? GIANT_HIT_R2 : HIT_R2)) {
+      if (dx * dx + dy * dy < hitDistanceSquared(b)) {
         if (tick < shieldUntil) continue;
         lifeLeft -= 1;
         if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }   // その場で終了(弾の並びはそのまま)

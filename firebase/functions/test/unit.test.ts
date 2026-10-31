@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beamHits } from "../src/fullsim.js";
+import { beamHits, blastHits } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
@@ -500,7 +500,7 @@ describe("validatePublish(描いた軌道の弾幕)", () => {
     }
   });
   it("広告で解放するパターンも受け付ける", () => {
-    for (const t of ["twinRing", "lightRain", "helix", "chargeBeam", "boomerang", "giantOrb", "sweepLaser"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
+    for (const t of ["twinRing", "lightRain", "helix", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble"]) expect(validatePublish(good({ emitters: [em({ t })] })).ok).toBe(true);
   });
 });
 
@@ -543,5 +543,15 @@ describe("チャージビームの当たり判定", () => {
   it("出る場所より後ろには伸びず、一度当たったビームはもう当たらない", () => {
     expect(beamHits(beam(), 100, 80)).toBe(false);
     expect(beamHits(beam({ bounces: 0 }), 100, 300)).toBe(false);
+  });
+});
+
+describe("爆風(隕石・地雷)の当たり判定", () => {
+  const blast = (o: object = {}) => ({ x: 100, y: 100, age: 1.1, bounces: 1, radius: 34, fuse: 1.1, ...o });
+  it("予告のあとだけ、半径の内側で当たり、1回で終わる", () => {
+    expect(blastHits(blast({ age: 1.0 }), 100, 100)).toBe(false);
+    expect(blastHits(blast(), 130, 100)).toBe(true);
+    expect(blastHits(blast(), 145, 100)).toBe(false);
+    expect(blastHits(blast({ bounces: 0 }), 100, 100)).toBe(false);
   });
 });

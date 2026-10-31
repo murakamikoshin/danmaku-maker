@@ -2,7 +2,7 @@
 
 import Foundation
 
-/// 広告で解放する34パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある
+/// 広告で解放するパターンと、弾幕パック2のパターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある
 
 public struct PatternRecipe: Sendable {
     public var mode: Int = 0
@@ -37,14 +37,31 @@ public struct PatternRecipe: Sendable {
     public var curve: Double = 0.0
     public var curveTime: Double = 0.0
     public var giant: Int = 0
+    public var radius: Double = 0.0
+    public var grow: Double = 0.0
+    public var growMax: Double = 0.0
+    public var gravity: Double = 0.0
+    public var mine: Int = 0
+    public var travel: Double = 0.0
+    public var fuse: Double = 0.0
+    public var meteor: Int = 0
+    public var blastRadius: Double = 0.0
+    public var meteorGap: Double = 0.0
+    public var grid: Int = 0
+    public var gridGap: Double = 0.0
+    public var orbitRadius: Double = 0.0
+    public var trail: Double = 0.0
 }
 
 public extension Pattern {
-    /// 広告を見て解放する、無料のパターン(解放する順)
-    static let ad: [Pattern] = [.twinRing, .tripleRing, .pinwheel, .ripple, .chargeBeam, .whirl, .slither, .curtain, .swayFan, .boomerang, .drizzle, .comet, .shotgun, .sniper, .giantOrb, .twinAim, .zigzagAim, .accelRing, .homingRing, .sweepLaser, .bounceRing, .freezeRing, .shatterRing, .pulseRing, .freezeCurtain, .splitCurtain, .wavyRing, .petalFan, .waveSpiral, .tide, .ladder, .helix, .rapidFan, .lightRain]
+    /// 広告を見て解放する、無料のパターン(解放する順)。表の pack=2 のものは入らない
+    static let ad: [Pattern] = [.twinRing, .tripleRing, .pinwheel, .ripple, .chargeBeam, .whirl, .slither, .curtain, .swayFan, .boomerang, .drizzle, .comet, .shotgun, .sniper, .twinAim, .zigzagAim, .accelRing, .bounceRing, .freezeRing, .pulseRing, .freezeCurtain, .splitCurtain, .wavyRing, .petalFan, .waveSpiral, .tide, .ladder, .helix, .rapidFan, .lightRain]
     var isAd: Bool { Pattern.ad.contains(self) }
 
-    /// 弾の出し方の表(広告で解放するパターンだけ)
+    /// 弾幕パック2(課金)のパターン(ショップに出す順)
+    static let pack2: [Pattern] = [.mine, .meteor, .gridLaser, .sweepLaser, .giantOrb, .bubble, .gravity, .orbit, .snake, .shatterRing, .homingRing]
+
+    /// 弾の出し方の表(広告で解放するパターンと、弾幕パック2のパターン)
     var recipe: PatternRecipe? {
         switch self {
         case .twinRing: return PatternRecipe(mode: 0, layers: 2, layerSpeed: 0.6)
@@ -81,6 +98,13 @@ public extension Pattern {
         case .helix: return PatternRecipe(mode: 0, layers: 2, layerAngle: 8.0, layerSpeed: 1.15)
         case .rapidFan: return PatternRecipe(mode: 1, speedStep: 0.12, speedCycle: 3)
         case .lightRain: return PatternRecipe(mode: 2, fan: -1.0, speed0: 1.2, scatter: 340.0, jitter: 3.0)
+        case .mine: return PatternRecipe(mode: 1, mine: 1, travel: 0.9, fuse: 2.6)
+        case .meteor: return PatternRecipe(mode: 0, fuse: 1.1, meteor: 1, blastRadius: 34.0, meteorGap: 70.0)
+        case .gridLaser: return PatternRecipe(mode: 0, grid: 1, gridGap: 72.0)
+        case .gravity: return PatternRecipe(mode: 3, gravity: 180.0)
+        case .orbit: return PatternRecipe(mode: 0, curveTime: 2.0, orbitRadius: 40.0)
+        case .snake: return PatternRecipe(mode: 1, fan: -1.0, turn: 70.0, trail: 11.0)
+        case .bubble: return PatternRecipe(mode: 1, speed0: 0.5, radius: 2.0, grow: 10.0, growMax: 26.0)
         default: return nil
         }
     }
@@ -122,6 +146,13 @@ public extension Pattern {
         case .helix: return (0.1, 3, 2.0, 12.0)
         case .rapidFan: return (0.22, 6, 2.4, 36.0)
         case .lightRain: return (0.08, 2, 2.8, 0.0)
+        case .mine: return (1.6, 3, 2.2, 50.0)
+        case .meteor: return (2.0, 1, 2.0, 0.0)
+        case .gridLaser: return (3.2, 4, 2.0, 0.0)
+        case .gravity: return (0.9, 7, 2.2, 70.0)
+        case .orbit: return (1.4, 8, 1.6, 15.0)
+        case .snake: return (2.2, 8, 2.0, 0.0)
+        case .bubble: return (1.8, 2, 2.0, 40.0)
         default: return nil
         }
     }
@@ -140,6 +171,7 @@ extension Emit {
             switch r.mode {
             case 0: base = Double(k) * m.r * deg * r.spin + off
             case 1: base = atan2(py - cy, px - cx) + off
+            case 3: base = -Double.pi / 2 + off
             default: base = Double.pi / 2 + off + sin(Double(k) * r.sweepFreq) * m.r * deg * r.sweepAmp
             }
             for j in 0..<n {
@@ -158,7 +190,17 @@ extension Emit {
                 if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }
                 guard out.count < DanmakuConfig.maxBullets else { continue }
                 let side = j % 2 == 0 ? 1.0 : -1.0
-                if r.beam != 0 {
+                if r.meteor != 0 {
+                    // 隕石: 自機のいる場所(2つ目からは、そのまわり)に、予告の円を出してから衝撃を落とす
+                    let mx = j == 0 ? px : px + cos(a) * r.meteorGap, my = j == 0 ? py : py + sin(a) * r.meteorGap
+                    out.append(Bullet.blast(x: mx, y: my, radius: r.blastRadius, warn: r.fuse, color: m.k))
+                } else if r.grid != 0 {
+                    // 格子レーザー: 自機を通る縦と横の線から、間をあけて交互に。画面の端から反対の端まで
+                    let idx = j / 2
+                    let gap = idx == 0 ? 0 : Double(idx % 2 == 1 ? 1 : -1) * Double((idx + 1) / 2) * r.gridGap
+                    if j % 2 == 0 { out.append(Bullet.beam(x: px + gap, y: -10, angle: Double.pi / 2, color: m.k)) }
+                    else { out.append(Bullet.beam(x: -10, y: py + gap, angle: 0, color: m.k)) }
+                } else if r.beam != 0 {
                     // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。なぎ払いは、振る分の半分だけ戻した向きから始める
                     if r.beamSweep != 0 {
                         out.append(Bullet.beam(x: x, y: cy, angle: a - side * r.beamSweep * deg / 2, color: m.k,
@@ -166,15 +208,30 @@ extension Emit {
                     } else {
                         out.append(Bullet.beam(x: x, y: cy, angle: a, color: m.k))
                     }
+                } else if r.orbitRadius != 0 {
+                    // 衛星: 発射口のまわりの円の上から、円に沿う向きに出て、curveTime 秒だけ回ってから飛び出す
+                    let speed = sp * f
+                    out.append(Bullet(x: cx + cos(a) * r.orbitRadius, y: cy + sin(a) * r.orbitRadius,
+                                      vx: cos(a + Double.pi / 2) * speed, vy: sin(a + Double.pi / 2) * speed, color: m.k,
+                                      turn: speed / r.orbitRadius, homeLeft: r.curveTime, script: Bullet.boomerangScript))
                 } else if r.curve != 0 {
                     // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)
                     out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,
                                       turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))
                 } else {
-                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,
-                                      turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,
-                                      accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,
-                                      script: r.giant != 0 ? Bullet.giantScript : r.script))
+                    // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)
+                    let bx = x - cos(a) * r.trail * Double(j), by = cy - sin(a) * r.trail * Double(j)
+                    var b = Bullet(x: bx, y: by, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,
+                                   turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,
+                                   accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,
+                                   script: r.giant != 0 ? Bullet.giantScript : r.script)
+                    if r.mine != 0 {
+                        // 地雷: travel 秒進んで止まり、出てから fuse 秒で爆発する
+                        b.script = Bullet.mineScript; b.homeLeft = r.travel; b.fuse = r.fuse
+                    }
+                    b.gravity = r.gravity
+                    b.radius = r.radius; b.grow = r.grow; b.growMax = r.growMax
+                    out.append(b)
                 }
             }
             layerSpeed *= r.layerSpeed

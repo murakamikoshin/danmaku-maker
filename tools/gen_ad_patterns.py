@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""広告で解放する34パターンの表から、Swift(DanmakuCore/Sources/DanmakuCore/AdPatterns.swift)と
+"""広告で解放する30パターンと、弾幕パック2(課金)の11パターンの表から、Swift(DanmakuCore/Sources/DanmakuCore/AdPatterns.swift)と
 サーバー(firebase/functions/src/adpatterns.ts)の弾の出し方を生成する。表を直したら、このスクリプトを実行し直す。
 同じ式を両方に手で書くと食い違いやすいので、元の表は1つにしている。
 使い方: python3 tools/gen_ad_patterns.py
@@ -28,6 +28,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #  curve/curveTime: ブーメラン。出てから curveTime 秒の間、curve 度/秒で向きを回し、弧を描いて戻ってくる。
 #                   偶数番目と奇数番目で、回る向きが逆
 #  giant: 1 なら巨大弾(大きく、当たる範囲も広い)
+#  radius/grow/growMax: 弾の当たる範囲の広さ(ふつうの弾より何px広いか)と、1秒あたりに広がる量・上限(膨らむ泡)
+#  gravity: 下向きの重力(px/秒²)。mode 3 は真上向き(投げ上げて落ちてくる)
+#  mine/travel/fuse: 地雷。travel 秒進んで止まり、出てから fuse 秒で爆発する(爆風と弾の輪)
+#  meteor/fuse/blastRadius/meteorGap: 隕石。自機のいる場所に予告の円を出し、fuse 秒後に半径 blastRadius の衝撃。
+#                                     2つ目からは、自機から meteorGap 離れたまわりに落ちる
+#  grid/gridGap: 格子レーザー。自機を通る縦と横の線から、gridGap ずつ離れた線を交互に、画面の端からためて撃つ
+#  orbitRadius/curveTime: 衛星。発射口のまわりの半径 orbitRadius の円の上を curveTime 秒回ってから飛び出す
+#  trail: スネーク。後ろの弾ほど trail px ずつ後ろから出て、列になって追いかける
+#  pack: 2 なら、広告ではなく弾幕パック2(課金)のパターン
 #
 # ⚠️ id は保存データ(ステージ・解放の記録)に入るので変えない。2026-10-31 に、既存のパターンとほぼ同じ動きだった5つ
 #   (swayFan≒首ふり扇、sniper≒光線、pulseRing≒時差、drizzle≒雨、twinAim≒自機狙い)を、id はそのままで別の動きに作り替えた
@@ -48,15 +57,15 @@ PATTERNS = [
     P("comet", "彗星", "Comet", (1.0, 7, 1.8, 14), mode=1, speedStep=0.15),
     P("shotgun", "散弾", "Shotgun", (0.9, 9, 2.6, 24), mode=1, jitter=10),
     P("sniper", "追尾カーテン", "Homing Curtain", (1.8, 6, 1.5, 0), mode=2, fan=-1, lineWidth=300, turn=30),
-    P("giantOrb", "巨大弾", "Giant Orb", (2.0, 1, 1.6, 0), mode=1, fan=-1, giant=1, bounces=1),
+    P("giantOrb", "巨大弾", "Giant Orb", (2.0, 1, 1.6, 0), mode=1, fan=-1, giant=1, bounces=1, pack=2),
     P("twinAim", "時差扇", "Delayed Fan", (1.0, 7, 2.4, 50), mode=1, script=3, layers=2, layerSpeed=0.7),
     P("zigzagAim", "ジグザグ狙い", "Zigzag Aim", (0.7, 8, 2.3, 30), mode=1, wobbleAmp=16, wobbleFreq=2.3, wobblePhase=0.9),
     P("accelRing", "加速輪", "Accel Ring", (1.1, 16, 2.0, 7), mode=0, speed0=0.35, accel=0.8, maxMul=2.2),
-    P("homingRing", "追尾の輪", "Homing Ring", (1.8, 8, 1.5, 10), mode=0, turn=40),
-    P("sweepLaser", "なぎ払いレーザー", "Sweeping Laser", (3.0, 1, 2.0, 0), mode=1, beam=1, beamSweep=90, beamTime=1.2),
+    P("homingRing", "追尾の輪", "Homing Ring", (1.8, 8, 1.5, 10), mode=0, turn=40, pack=2),
+    P("sweepLaser", "なぎ払いレーザー", "Sweeping Laser", (3.0, 1, 2.0, 0), mode=1, beam=1, beamSweep=90, beamTime=1.2, pack=2),
     P("bounceRing", "反射の輪", "Bounce Ring", (1.3, 10, 2.2, 8), mode=0, bounces=2),
     P("freezeRing", "停止の輪", "Freeze Ring", (1.2, 14, 2.4, 6), mode=0, script=1),
-    P("shatterRing", "破裂の輪", "Shatter Ring", (1.6, 8, 2.2, 10), mode=0, script=2),
+    P("shatterRing", "破裂の輪", "Shatter Ring", (1.6, 8, 2.2, 10), mode=0, script=2, pack=2),
     P("pulseRing", "止まる雨", "Pausing Rain", (0.45, 3, 2.0, 0), mode=2, fan=-1, scatter=340, script=1),
     P("freezeCurtain", "停止カーテン", "Freeze Curtain", (1.3, 9, 2.4, 0), mode=2, fan=-1, lineWidth=300, script=1),
     P("splitCurtain", "分裂カーテン", "Split Curtain", (1.5, 6, 1.8, 0), mode=2, fan=-1, lineWidth=300, script=2),
@@ -68,10 +77,23 @@ PATTERNS = [
     P("helix", "二重らせん", "Double Helix", (0.1, 3, 2.0, 12), mode=0, layers=2, layerAngle=8, layerSpeed=1.15),
     P("rapidFan", "連射扇", "Rapid Fan", (0.22, 6, 2.4, 36), mode=1, speedStep=0.12, speedCycle=3),
     P("lightRain", "光の雨", "Light Rain", (0.08, 2, 2.8, 0), mode=2, fan=-1, scatter=340, speed0=1.2, jitter=3),
+    # ここから下は、弾幕パック2(課金)だけのパターン
+    P("mine", "地雷", "Mine", (1.6, 3, 2.2, 50), mode=1, mine=1, travel=0.9, fuse=2.6, pack=2),
+    P("meteor", "隕石", "Meteor", (2.0, 1, 2.0, 0), mode=0, meteor=1, fuse=1.1, blastRadius=34, meteorGap=70, pack=2),
+    P("gridLaser", "格子レーザー", "Grid Laser", (3.2, 4, 2.0, 0), mode=0, grid=1, gridGap=72, pack=2),
+    P("gravity", "重力弾", "Gravity Shot", (0.9, 7, 2.2, 70), mode=3, gravity=180, pack=2),
+    P("orbit", "衛星", "Satellites", (1.4, 8, 1.6, 15), mode=0, orbitRadius=40, curveTime=2.0, pack=2),
+    P("snake", "スネーク", "Snake", (2.2, 8, 2.0, 0), mode=1, fan=-1, turn=70, trail=11, pack=2),
+    P("bubble", "膨らむ泡", "Swelling Bubble", (1.8, 2, 2.0, 40), mode=1, radius=2, grow=10, growMax=26, speed0=0.5, pack=2),
 ]
-assert len(PATTERNS) == 34 and len({p["id"] for p in PATTERNS}) == 34
-# 解放する順番(1から数えて): チャージビーム5番目、ブーメラン10番目、巨大弾15番目、なぎ払いレーザー20番目
-assert [PATTERNS[i]["id"] for i in (4, 9, 14, 19)] == ["chargeBeam", "boomerang", "giantOrb", "sweepLaser"]
+AD = [p for p in PATTERNS if p.get("pack") != 2]
+# 弾幕パック2の並び(ショップに出す順)
+PACK2_ORDER = ["mine", "meteor", "gridLaser", "sweepLaser", "giantOrb", "bubble", "gravity", "orbit", "snake", "shatterRing", "homingRing"]
+PACK2 = [next(p for p in PATTERNS if p["id"] == i) for i in PACK2_ORDER]
+assert len({p["id"] for p in PATTERNS}) == len(PATTERNS) == 41
+assert len(AD) == 30 and len(PACK2) == 11 and {p["id"] for p in PACK2} == {p["id"] for p in PATTERNS if p.get("pack") == 2}
+# 広告で解放する順番(1から数えて): チャージビーム5番目、ブーメラン10番目
+assert AD[4]["id"] == "chargeBeam" and AD[9]["id"] == "boomerang"
 
 FIELDS = [  # (名前, 型, 既定値)
     ("mode", "Int", 0), ("fan", "Double", 0.0), ("spin", "Double", 1.0), ("sweepAmp", "Double", 0.0), ("sweepFreq", "Double", 0.25),
@@ -83,6 +105,10 @@ FIELDS = [  # (名前, 型, 既定値)
     ("turn", "Double", 0.0), ("accel", "Double", 0.0), ("maxMul", "Double", 0.0), ("bounces", "Int", 0), ("script", "Int", 0),
     ("beam", "Int", 0), ("beamSweep", "Double", 0.0), ("beamTime", "Double", 0.0),
     ("curve", "Double", 0.0), ("curveTime", "Double", 0.0), ("giant", "Int", 0),
+    ("radius", "Double", 0.0), ("grow", "Double", 0.0), ("growMax", "Double", 0.0), ("gravity", "Double", 0.0),
+    ("mine", "Int", 0), ("travel", "Double", 0.0), ("fuse", "Double", 0.0),
+    ("meteor", "Int", 0), ("blastRadius", "Double", 0.0), ("meteorGap", "Double", 0.0),
+    ("grid", "Int", 0), ("gridGap", "Double", 0.0), ("orbitRadius", "Double", 0.0), ("trail", "Double", 0.0),
 ]
 
 def lit(t, v):
@@ -94,16 +120,18 @@ def swift():
     o = []
     o.append("// このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。\n")
     o.append("import Foundation\n")
-    o.append("/// 広告で解放する34パターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある\n")
+    o.append("/// 広告で解放するパターンと、弾幕パック2のパターンの、弾の出し方。サーバー(adpatterns.ts)にも同じ表と計算がある\n")
     o.append("public struct PatternRecipe: Sendable {")
     for n, t, d in FIELDS:
         o.append(f"    public var {n}: {t} = {lit(t, d)}")
     o.append("}\n")
     o.append("public extension Pattern {")
-    o.append("    /// 広告を見て解放する、無料のパターン(解放する順)")
-    o.append("    static let ad: [Pattern] = [" + ", ".join("." + p["id"] for p in PATTERNS) + "]")
+    o.append("    /// 広告を見て解放する、無料のパターン(解放する順)。表の pack=2 のものは入らない")
+    o.append("    static let ad: [Pattern] = [" + ", ".join("." + p["id"] for p in AD) + "]")
     o.append("    var isAd: Bool { Pattern.ad.contains(self) }\n")
-    o.append("    /// 弾の出し方の表(広告で解放するパターンだけ)")
+    o.append("    /// 弾幕パック2(課金)のパターン(ショップに出す順)")
+    o.append("    static let pack2: [Pattern] = [" + ", ".join("." + p["id"] for p in PACK2) + "]\n")
+    o.append("    /// 弾の出し方の表(広告で解放するパターンと、弾幕パック2のパターン)")
     o.append("    var recipe: PatternRecipe? {")
     o.append("        switch self {")
     for p in PATTERNS:
@@ -135,6 +163,7 @@ def swift():
     o.append("            switch r.mode {")
     o.append("            case 0: base = Double(k) * m.r * deg * r.spin + off")
     o.append("            case 1: base = atan2(py - cy, px - cx) + off")
+    o.append("            case 3: base = -Double.pi / 2 + off")
     o.append("            default: base = Double.pi / 2 + off + sin(Double(k) * r.sweepFreq) * m.r * deg * r.sweepAmp")
     o.append("            }")
     o.append("            for j in 0..<n {")
@@ -153,7 +182,17 @@ def swift():
     o.append("                if r.scatter != 0 { x += (rng.next() - 0.5) * r.scatter }")
     o.append("                guard out.count < DanmakuConfig.maxBullets else { continue }")
     o.append("                let side = j % 2 == 0 ? 1.0 : -1.0")
-    o.append("                if r.beam != 0 {")
+    o.append("                if r.meteor != 0 {")
+    o.append("                    // 隕石: 自機のいる場所(2つ目からは、そのまわり)に、予告の円を出してから衝撃を落とす")
+    o.append("                    let mx = j == 0 ? px : px + cos(a) * r.meteorGap, my = j == 0 ? py : py + sin(a) * r.meteorGap")
+    o.append("                    out.append(Bullet.blast(x: mx, y: my, radius: r.blastRadius, warn: r.fuse, color: m.k))")
+    o.append("                } else if r.grid != 0 {")
+    o.append("                    // 格子レーザー: 自機を通る縦と横の線から、間をあけて交互に。画面の端から反対の端まで")
+    o.append("                    let idx = j / 2")
+    o.append("                    let gap = idx == 0 ? 0 : Double(idx % 2 == 1 ? 1 : -1) * Double((idx + 1) / 2) * r.gridGap")
+    o.append("                    if j % 2 == 0 { out.append(Bullet.beam(x: px + gap, y: -10, angle: Double.pi / 2, color: m.k)) }")
+    o.append("                    else { out.append(Bullet.beam(x: -10, y: py + gap, angle: 0, color: m.k)) }")
+    o.append("                } else if r.beam != 0 {")
     o.append("                    // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。なぎ払いは、振る分の半分だけ戻した向きから始める")
     o.append("                    if r.beamSweep != 0 {")
     o.append("                        out.append(Bullet.beam(x: x, y: cy, angle: a - side * r.beamSweep * deg / 2, color: m.k,")
@@ -161,15 +200,30 @@ def swift():
     o.append("                    } else {")
     o.append("                        out.append(Bullet.beam(x: x, y: cy, angle: a, color: m.k))")
     o.append("                    }")
+    o.append("                } else if r.orbitRadius != 0 {")
+    o.append("                    // 衛星: 発射口のまわりの円の上から、円に沿う向きに出て、curveTime 秒だけ回ってから飛び出す")
+    o.append("                    let speed = sp * f")
+    o.append("                    out.append(Bullet(x: cx + cos(a) * r.orbitRadius, y: cy + sin(a) * r.orbitRadius,")
+    o.append("                                      vx: cos(a + Double.pi / 2) * speed, vy: sin(a + Double.pi / 2) * speed, color: m.k,")
+    o.append("                                      turn: speed / r.orbitRadius, homeLeft: r.curveTime, script: Bullet.boomerangScript))")
     o.append("                } else if r.curve != 0 {")
     o.append("                    // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
     o.append("                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
     o.append("                                      turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: Bullet.boomerangScript))")
     o.append("                } else {")
-    o.append("                    out.append(Bullet(x: x, y: cy, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
-    o.append("                                      turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,")
-    o.append("                                      accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
-    o.append("                                      script: r.giant != 0 ? Bullet.giantScript : r.script))")
+    o.append("                    // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)")
+    o.append("                    let bx = x - cos(a) * r.trail * Double(j), by = cy - sin(a) * r.trail * Double(j)")
+    o.append("                    var b = Bullet(x: bx, y: by, vx: cos(a) * sp * f, vy: sin(a) * sp * f, color: m.k,")
+    o.append("                                   turn: r.turn * deg, homeLeft: r.turn > 0 ? DanmakuConfig.homingSeconds : 0,")
+    o.append("                                   accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
+    o.append("                                   script: r.giant != 0 ? Bullet.giantScript : r.script)")
+    o.append("                    if r.mine != 0 {")
+    o.append("                        // 地雷: travel 秒進んで止まり、出てから fuse 秒で爆発する")
+    o.append("                        b.script = Bullet.mineScript; b.homeLeft = r.travel; b.fuse = r.fuse")
+    o.append("                    }")
+    o.append("                    b.gravity = r.gravity")
+    o.append("                    b.radius = r.radius; b.grow = r.grow; b.growMax = r.growMax")
+    o.append("                    out.append(b)")
     o.append("                }")
     o.append("            }")
     o.append("            layerSpeed *= r.layerSpeed")
@@ -184,13 +238,14 @@ def num(v):
 def ts():
     o = []
     o.append("// このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。")
-    o.append("// 広告で解放する34パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。\n")
+    o.append("// 広告で解放するパターンと、弾幕パック2のパターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。\n")
     o.append("export interface Recipe {")
     for n, t, d in FIELDS:
         o.append(f"  {n}: number;")
     o.append("}\n")
     o.append("const BASE: Recipe = { " + ", ".join(f"{n}: {num(d)}" for n, t, d in FIELDS) + " };\n")
-    o.append("export const AD_PATTERNS = [" + ", ".join(json.dumps(p["id"]) for p in PATTERNS) + "] as const;\n")
+    o.append("export const AD_PATTERNS = [" + ", ".join(json.dumps(p["id"]) for p in AD) + "] as const;")
+    o.append("export const PACK2_PATTERNS = [" + ", ".join(json.dumps(p["id"]) for p in PACK2) + "] as const;\n")
     o.append("export const RECIPES: Record<string, Recipe> = {")
     for p in PATTERNS:
         args = ", ".join(f"{n}: {num(p[n])}" for n, t, d in FIELDS if n in p)
@@ -199,9 +254,13 @@ def ts():
     o.append("/** チャージビームの印(弾の script)。アプリの Bullet.beamScript と同じ */")
     o.append("export const BEAM_SCRIPT = 4;")
     o.append("/** ブーメランと巨大弾の印。アプリの Bullet.boomerangScript / giantScript と同じ */")
-    o.append("export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;\n")
+    o.append("export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;")
+    o.append("/** 地雷と爆風(隕石・地雷の爆発)の印。アプリの Bullet.mineScript / blastScript と同じ */")
+    o.append("export const MINE_SCRIPT = 7, BLAST_SCRIPT = 8;\n")
     o.append("/** 弾を1つ出す関数(呼ぶ側の Bullet の形に合わせる) */")
-    o.append("export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number }) => void;\n")
+    o.append("export interface BulletExtra { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; gravity: number; radius: number; grow: number; growMax: number; fuse: number }")
+    o.append("const NONE: BulletExtra = { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, gravity: 0, radius: 0, grow: 0, growMax: 0, fuse: 0 };")
+    o.append("export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: BulletExtra) => void;\n")
     o.append("export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k: number, cx: number, cy: number, px: number, py: number,")
     o.append("  off: number, sp: number, n: number, rng: () => number, homingSeconds: number, add: AddBullet): void {")
     o.append("  const deg = Math.PI / 180;")
@@ -212,6 +271,7 @@ def ts():
     o.append("    let base: number;")
     o.append("    if (r.mode === 0) base = k * m.r * deg * r.spin + off;")
     o.append("    else if (r.mode === 1) base = Math.atan2(py - cy, px - cx) + off;")
+    o.append("    else if (r.mode === 3) base = -Math.PI / 2 + off;")
     o.append("    else base = Math.PI / 2 + off + Math.sin(k * r.sweepFreq) * m.r * deg * r.sweepAmp;")
     o.append("    for (let j = 0; j < n; j++) {")
     o.append("      let a: number;")
@@ -228,24 +288,48 @@ def ts():
     o.append("      if (r.lineWidth !== 0) x += (n > 1 ? j / (n - 1) - 0.5 : 0) * r.lineWidth;")
     o.append("      if (r.scatter !== 0) x += (rng() - 0.5) * r.scatter;")
     o.append("      const side = j % 2 === 0 ? 1 : -1;")
+    o.append("      if (r.meteor !== 0) {")
+    o.append("        // 隕石: 自機のいる場所(2つ目からは、そのまわり)に、予告の円を出してから衝撃を落とす。アプリの Bullet.blast と同じ")
+    o.append("        const mx = j === 0 ? px : px + Math.cos(a) * r.meteorGap, my = j === 0 ? py : py + Math.sin(a) * r.meteorGap;")
+    o.append("        add(mx, my, 0, 0, { ...NONE, bounces: 1, script: BLAST_SCRIPT, radius: r.blastRadius, fuse: r.fuse });")
+    o.append("        continue;")
+    o.append("      }")
+    o.append("      if (r.grid !== 0) {")
+    o.append("        // 格子レーザー: 自機を通る縦と横の線から、間をあけて交互に。画面の端から反対の端まで")
+    o.append("        const idx = Math.trunc(j / 2);")
+    o.append("        const gap = idx === 0 ? 0 : (idx % 2 === 1 ? 1 : -1) * Math.trunc((idx + 1) / 2) * r.gridGap;")
+    o.append("        if (j % 2 === 0) add(px + gap, -10, Math.cos(Math.PI / 2), Math.sin(Math.PI / 2), { ...NONE, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("        else add(-10, py + gap, Math.cos(0), Math.sin(0), { ...NONE, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("        continue;")
+    o.append("      }")
     o.append("      if (r.beam !== 0) {")
     o.append("        // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。アプリの Bullet.beam と同じ")
     o.append("        if (r.beamSweep !== 0) {")
     o.append("          const a0 = a - side * r.beamSweep * deg / 2;")
-    o.append("          add(x, cy, Math.cos(a0), Math.sin(a0), { turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("          add(x, cy, Math.cos(a0), Math.sin(a0), { ...NONE, turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, bounces: 1, script: BEAM_SCRIPT });")
     o.append("        } else {")
-    o.append("          add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });")
+    o.append("          add(x, cy, Math.cos(a), Math.sin(a), { ...NONE, bounces: 1, script: BEAM_SCRIPT });")
     o.append("        }")
+    o.append("        continue;")
+    o.append("      }")
+    o.append("      if (r.orbitRadius !== 0) {")
+    o.append("        // 衛星: 発射口のまわりの円の上から、円に沿う向きに出て、curveTime 秒だけ回ってから飛び出す")
+    o.append("        const speed = sp * f;")
+    o.append("        add(cx + Math.cos(a) * r.orbitRadius, cy + Math.sin(a) * r.orbitRadius, Math.cos(a + Math.PI / 2) * speed, Math.sin(a + Math.PI / 2) * speed,")
+    o.append("          { ...NONE, turn: speed / r.orbitRadius, homeLeft: r.curveTime, script: BOOMERANG_SCRIPT });")
     o.append("        continue;")
     o.append("      }")
     o.append("      if (r.curve !== 0) {")
     o.append("        // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)")
-    o.append("        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { turn: side * r.curve * deg, homeLeft: r.curveTime, accel: 0, maxSpeed: 0, bounces: r.bounces, script: BOOMERANG_SCRIPT });")
+    o.append("        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { ...NONE, turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: BOOMERANG_SCRIPT });")
     o.append("        continue;")
     o.append("      }")
-    o.append("      add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {")
-    o.append("        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
-    o.append("        script: r.giant !== 0 ? GIANT_SCRIPT : r.script,")
+    o.append("      // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)")
+    o.append("      const bx = x - Math.cos(a) * r.trail * j, by = cy - Math.sin(a) * r.trail * j;")
+    o.append("      add(bx, by, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {")
+    o.append("        turn: r.turn * deg, homeLeft: r.mine !== 0 ? r.travel : r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,")
+    o.append("        script: r.mine !== 0 ? MINE_SCRIPT : r.giant !== 0 ? GIANT_SCRIPT : r.script,")
+    o.append("        gravity: r.gravity, radius: r.radius, grow: r.grow, growMax: r.growMax, fuse: r.mine !== 0 ? r.fuse : 0,")
     o.append("      });")
     o.append("    }")
     o.append("    layerSpeed *= r.layerSpeed;")

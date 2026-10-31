@@ -34,6 +34,13 @@ public enum DanmakuConfig {
     /// 巨大弾の当たる範囲(中心からの距離の2乗。自機の当たり判定の大きさも含む)と、見た目の半径
     public static let giantHitRadiusSquared = 400.0
     public static let giantDrawRadius = 18.0
+    /// ふつうの弾の当たる半径(hitRadiusSquared の平方根)。広さを持つ弾(膨らむ泡など)は、これに広さを足す
+    public static let hitRadius = 5.5
+    /// 爆風(隕石・地雷の爆発)が当たる時間(秒)。予告のあとに、この間だけ当たる
+    public static let blastActive = 0.35
+    /// 地雷が爆発したときの、爆風の半径と、散る弾の数
+    public static let mineBlastRadius = 30.0
+    public static let mineRing = 8
     /// 判定距離の2乗（5.5 未満で被弾）
     public static let hitRadiusSquared = 30.25
 }
@@ -83,12 +90,29 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case giantOrb
     /// なぎ払いレーザー: ためてから、光線が首を振って画面をなぎ払う
     case sweepLaser
+    // ここから下は、弾幕パック2(課金)だけのパターン(弾の出し方は AdPatterns.swift)
+    /// 地雷: ばらまかれて止まり、少しして爆発する(爆風と弾の輪)
+    case mine
+    /// 隕石: 自機のいる場所に予告の円が出て、そこに大きな衝撃が落ちる
+    case meteor
+    /// 格子レーザー: 縦と横の光線を、格子の形にためてから撃つ
+    case gridLaser
+    /// 重力弾: 投げ上げられて、放物線を描いて落ちてくる
+    case gravity
+    /// 衛星: 発射口のまわりを回ってから、外へ飛び出す
+    case orbit
+    /// スネーク: 列になって、自機を追いかけてくる
+    case snake
+    /// 膨らむ泡: ゆっくり進みながら、だんだん大きくなる
+    case bubble
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
     /// 買わないと、ステージ作りで選べないパターン(遊ぶのは誰でもできる)
-    public var isPaid: Bool { Pattern.paid.contains(self) }
+    public var isPaid: Bool { Pattern.paid.contains(self) || Pattern.pack2.contains(self) }
     public static let paid: [Pattern] = [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce, .stopgo, .split, .timed]
+    /// 弾幕パック2のパターンか(買わないと、ステージ作りで選べない)
+    public var isPack2: Bool { Pattern.pack2.contains(self) }
 }
 
 public enum Mode: String, Codable, Sendable {

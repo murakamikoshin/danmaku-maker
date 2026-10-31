@@ -79,19 +79,8 @@ struct EmitterPreview: View {
                 if custom { ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)), with: .color(.white)) }
                 // 弾
                 for b in engine.bullets {
-                    if b.isBeam { ctx.drawBeam(b, color: Color(skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)])); continue }
-                    if b.script == Bullet.boomerangScript {
-                        // ブーメラン: 🪃の形を、くるくる回して描く
-                        var g = ctx
-                        g.translateBy(x: b.x, y: b.y)
-                        g.rotate(by: .radians(timeline.date.timeIntervalSinceReferenceDate * 14))
-                        g.draw(Image(uiImage: boomerangImages[min(max(b.color, 0), boomerangImages.count - 1)]), in: CGRect(x: -8, y: -8, width: 16, height: 16))
-                        continue
-                    }
-                    let r = b.isGiant ? DanmakuConfig.giantDrawRadius : 6
-                    let rect = CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)
-                    if let customBullet { ctx.draw(Image(uiImage: customBullet), in: rect) }
-                    else { ctx.draw(Image(uiImage: bulletImages[min(max(b.color, 0), bulletImages.count - 1)]), in: rect) }
+                    ctx.drawBullet(b, images: bulletImages, boomerangs: boomerangImages, colors: skin.bulletColors,
+                                   time: timeline.date.timeIntervalSinceReferenceDate, custom: customBullet)
                 }
             }
         }
@@ -163,6 +152,54 @@ extension GraphicsContext {
         stroke(p, with: .color(color.opacity(look.alpha)), style: style)
         if look.firing {
             stroke(p, with: .color(.white.opacity(look.alpha)), style: StrokeStyle(lineWidth: look.coreWidth * scale, lineCap: .round))
+        }
+    }
+}
+
+extension GraphicsContext {
+    /// 弾を1つ描く(エディタの見本・ショップの見本で同じ)。種類ごとに形を変える:
+    /// ビームは光線、爆風は予告の円→衝撃、ブーメランは回る🪃、地雷は止まると点滅、巨大弾・膨らむ泡は当たる広さに合わせた大きさ
+    func drawBullet(_ b: Bullet, images: [UIImage], boomerangs: [UIImage], colors: [UIColor], scale s: CGFloat = 1, time: Double, custom: UIImage? = nil) {
+        let i = min(max(b.color, 0), colors.count - 1)
+        let color = Color(colors[i])
+        if b.isBeam { drawBeam(b, color: color, scale: s); return }
+        if b.isBlast { drawBlast(b, color: color, scale: s, time: time); return }
+        let c = CGPoint(x: b.x * s, y: b.y * s)
+        if b.script == Bullet.boomerangScript {
+            var g = self
+            g.translateBy(x: c.x, y: c.y)
+            g.rotate(by: .radians(time * 14))
+            g.draw(Image(uiImage: boomerangs[min(i, boomerangs.count - 1)]), in: CGRect(x: -8 * s, y: -8 * s, width: 16 * s, height: 16 * s))
+            return
+        }
+        let r: CGFloat = b.isGiant ? DanmakuConfig.giantDrawRadius : max(6, b.radius + 4)
+        let rect = CGRect(x: c.x - r * s, y: c.y - r * s, width: r * 2 * s, height: r * 2 * s)
+        var g = self
+        if b.mineStopped {
+            // 止まった地雷: 爆発が近いほど速く点滅し、爆風の届く範囲を薄く見せる
+            let left = max(0, b.fuse - b.age)
+            g.opacity = sin(time * (left < 0.8 ? 40 : 14)) > 0 ? 1 : 0.35
+            let br = DanmakuConfig.mineBlastRadius * s
+            stroke(Path(ellipseIn: CGRect(x: c.x - br, y: c.y - br, width: br * 2, height: br * 2)), with: .color(.red.opacity(0.35)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+        }
+        g.draw(Image(uiImage: custom ?? images[min(i, images.count - 1)]), in: rect)
+    }
+
+    /// 爆風: 予告の間は赤い点線の円(だんだん濃く)、当たる間は明るい円
+    func drawBlast(_ b: Bullet, color: Color, scale s: CGFloat = 1, time: Double) {
+        let r = b.radius * s
+        let rect = CGRect(x: b.x * s - r, y: b.y * s - r, width: r * 2, height: r * 2)
+        if b.blastActive {
+            let f = min(1, (b.age - b.fuse) / DanmakuConfig.blastActive)
+            fill(Path(ellipseIn: rect), with: .color(Color.orange.opacity(0.75 * (1 - f) + 0.2)))
+            fill(Path(ellipseIn: rect.insetBy(dx: r * 0.45, dy: r * 0.45)), with: .color(.white.opacity(0.8 * (1 - f))))
+        } else {
+            let p = b.fuse > 0 ? min(1, b.age / b.fuse) : 1
+            fill(Path(ellipseIn: rect), with: .color(.red.opacity(0.08 + 0.15 * p)))
+            stroke(Path(ellipseIn: rect), with: .color(.red.opacity(0.5 + 0.4 * p)), style: StrokeStyle(lineWidth: 1.5 * s, dash: [4 * s, 3 * s]))
+            // 落ちてくるまでの残りを、内側に縮む円で見せる
+            let ir = r * (1 - p)
+            stroke(Path(ellipseIn: CGRect(x: b.x * s - ir, y: b.y * s - ir, width: ir * 2, height: ir * 2)), with: .color(color.opacity(0.7)), lineWidth: 1.2 * s)
         }
     }
 }

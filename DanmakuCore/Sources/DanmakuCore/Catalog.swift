@@ -37,6 +37,8 @@ public enum Product: Hashable, Sendable {
     case pattern(Pattern)
     /// 買えるパターンの全部入り(単品で全部買うよりお得)
     case patternPack
+    /// 弾幕パック2の全部入り(地雷・隕石・格子レーザーなど11個)
+    case patternPack2
     /// 弾幕パターン作成モード(弾の出る位置と軌道を線で描いて、自分だけの弾幕を作る)
     case patternMaker
     /// 永久買い切りパック: いまある課金コンテンツと広告削除を全部、これから増える課金コンテンツも全部、一度の購入で使える
@@ -52,6 +54,7 @@ public enum Product: Hashable, Sendable {
         case .customImages: return Product.idPrefix + "customimages"
         case .pattern(let p): return Product.idPrefix + (p == .homing ? "homing" : "pattern.\(p.rawValue)")
         case .patternPack: return Product.idPrefix + "patternpack"
+        case .patternPack2: return Product.idPrefix + "patternpack2"
         case .patternMaker: return Product.idPrefix + "patternmaker"
         case .lifetime: return Product.idPrefix + "lifetime"
         }
@@ -62,6 +65,7 @@ public enum Product: Hashable, Sendable {
         if id == Product.idPrefix + "customimages" { self = .customImages; return }
         if id == Product.idPrefix + "homing" { self = .pattern(.homing); return }
         if id == Product.idPrefix + "patternpack" { self = .patternPack; return }
+        if id == Product.idPrefix + "patternpack2" { self = .patternPack2; return }
         if id == Product.idPrefix + "patternmaker" { self = .patternMaker; return }
         if id == Product.idPrefix + "lifetime" { self = .lifetime; return }
         if id.hasPrefix(Product.idPrefix + "pattern."), let p = Pattern(rawValue: String(id.dropFirst((Product.idPrefix + "pattern.").count))), p.isPaid, p != .homing {
@@ -84,8 +88,9 @@ public enum Product: Hashable, Sendable {
         case .set: return 200
         case .shot: return 300
         case .customImages: return 500
-        case .pattern(let p): return p == .homing ? 300 : 100
+        case .pattern(let p): return [.homing, .mine, .meteor, .gridLaser].contains(p) ? 300 : 100
         case .patternPack: return 600
+        case .patternPack2: return 600
         case .patternMaker: return 1000
         case .lifetime: return 3000
         }
@@ -102,6 +107,8 @@ public enum Product: Hashable, Sendable {
         list.append(.customImages)
         for p in Pattern.paid { list.append(.pattern(p)) }
         list.append(.patternPack)
+        for p in Pattern.pack2 { list.append(.pattern(p)) }
+        list.append(.patternPack2)
         list.append(.patternMaker)
         list.append(.lifetime)
         return list
@@ -147,6 +154,7 @@ public struct Ownership: Equatable, Sendable {
     /// そのパターンをステージ作りで使えるか(無料のパターンは、いつでも使える)
     public func has(_ pattern: Pattern) -> Bool {
         if pattern.isAd { return hasLifetime || adPatterns.contains(pattern) }
+        if pattern.isPack2 { return hasLifetime || owned.contains(.pattern(pattern)) || owned.contains(.patternPack2) }
         return !pattern.isPaid || hasLifetime || owned.contains(.pattern(pattern)) || owned.contains(.patternPack)
     }
 
@@ -165,6 +173,7 @@ public struct Ownership: Equatable, Sendable {
         case .customImages: return !hasCustomImages
         case .pattern(let p): return !has(p)
         case .patternPack: return !Pattern.paid.allSatisfy { has($0) }
+        case .patternPack2: return !Pattern.pack2.allSatisfy { has($0) }
         case .patternMaker: return !hasPatternMaker
         case .lifetime: return !hasLifetime
         }

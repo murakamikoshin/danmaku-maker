@@ -94,6 +94,9 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("survive-beam-hp6", Stage(name: "s", mode: .survive, durationSec: 20, emitters: beams + emitters([.ring], boss: false), lifeMode: .hp, lifeCount: 6).sanitized()))
         stages.append(("survive-giant-hp5", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.giantOrb, .boomerang, .sweepLaser], boss: false), lifeMode: .hp, lifeCount: 5).sanitized()))
         stages.append(("boss-sweep-boomerang", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 250, bossMove: 2, emitters: emitters([.sweepLaser, .boomerang, .giantOrb], boss: true), lifeMode: .lives, lifeCount: 4).sanitized()))
+        stages.append(("survive-pack2-hp8", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.mine, .meteor, .gridLaser, .gravity], boss: false), lifeMode: .hp, lifeCount: 8).sanitized()))
+        stages.append(("survive-pack2b-lives3", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([.orbit, .snake, .bubble, .mine], boss: false), lifeMode: .lives, lifeCount: 3).sanitized()))
+        stages.append(("boss-pack2", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 250, bossMove: 1, emitters: emitters([.meteor, .orbit, .bubble, .gravity], boss: true), lifeMode: .hp, lifeCount: 10).sanitized()))
         stages.append(("boss-beam", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 1, emitters: emitters([.chargeBeam, .aim], boss: true), lifeMode: .lives, lifeCount: 3).sanitized()))
         for hp in [100, 300] {
             stages.append(("boss-hp\(hp)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: hp, bossMove: 1, emitters: emitters([.ring, .aim, .sweep, .corner], boss: true)).sanitized()))

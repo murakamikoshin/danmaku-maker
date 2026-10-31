@@ -1,5 +1,5 @@
 // このファイルは tools/gen_ad_patterns.py が生成する。直接は編集しない(表を直してスクリプトを実行し直す)。
-// 広告で解放する34パターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。
+// 広告で解放するパターンと、弾幕パック2のパターンの、弾の出し方。アプリ(AdPatterns.swift)と同じ表と計算。
 
 export interface Recipe {
   mode: number;
@@ -34,11 +34,26 @@ export interface Recipe {
   curve: number;
   curveTime: number;
   giant: number;
+  radius: number;
+  grow: number;
+  growMax: number;
+  gravity: number;
+  mine: number;
+  travel: number;
+  fuse: number;
+  meteor: number;
+  blastRadius: number;
+  meteorGap: number;
+  grid: number;
+  gridGap: number;
+  orbitRadius: number;
+  trail: number;
 }
 
-const BASE: Recipe = { mode: 0, fan: 0, spin: 1, sweepAmp: 0, sweepFreq: 0.25, layers: 1, layerAngle: 0, layerSpeed: 1, wobbleAmp: 0, wobbleFreq: 1, wobblePhase: 0, waveAmp: 0, waveFreq: 1, wavePhase: 0, speedStep: 0, speedCycle: 0, altSpeed: 0, speed0: 1, lineWidth: 0, scatter: 0, jitter: 0, turn: 0, accel: 0, maxMul: 0, bounces: 0, script: 0, beam: 0, beamSweep: 0, beamTime: 0, curve: 0, curveTime: 0, giant: 0 };
+const BASE: Recipe = { mode: 0, fan: 0, spin: 1, sweepAmp: 0, sweepFreq: 0.25, layers: 1, layerAngle: 0, layerSpeed: 1, wobbleAmp: 0, wobbleFreq: 1, wobblePhase: 0, waveAmp: 0, waveFreq: 1, wavePhase: 0, speedStep: 0, speedCycle: 0, altSpeed: 0, speed0: 1, lineWidth: 0, scatter: 0, jitter: 0, turn: 0, accel: 0, maxMul: 0, bounces: 0, script: 0, beam: 0, beamSweep: 0, beamTime: 0, curve: 0, curveTime: 0, giant: 0, radius: 0, grow: 0, growMax: 0, gravity: 0, mine: 0, travel: 0, fuse: 0, meteor: 0, blastRadius: 0, meteorGap: 0, grid: 0, gridGap: 0, orbitRadius: 0, trail: 0 };
 
-export const AD_PATTERNS = ["twinRing", "tripleRing", "pinwheel", "ripple", "chargeBeam", "whirl", "slither", "curtain", "swayFan", "boomerang", "drizzle", "comet", "shotgun", "sniper", "giantOrb", "twinAim", "zigzagAim", "accelRing", "homingRing", "sweepLaser", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain"] as const;
+export const AD_PATTERNS = ["twinRing", "tripleRing", "pinwheel", "ripple", "chargeBeam", "whirl", "slither", "curtain", "swayFan", "boomerang", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "bounceRing", "freezeRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain"] as const;
+export const PACK2_PATTERNS = ["mine", "meteor", "gridLaser", "sweepLaser", "giantOrb", "bubble", "gravity", "orbit", "snake", "shatterRing", "homingRing"] as const;
 
 export const RECIPES: Record<string, Recipe> = {
   twinRing: { ...BASE, mode: 0, layers: 2, layerSpeed: 0.6 },
@@ -75,15 +90,26 @@ export const RECIPES: Record<string, Recipe> = {
   helix: { ...BASE, mode: 0, layers: 2, layerAngle: 8, layerSpeed: 1.15 },
   rapidFan: { ...BASE, mode: 1, speedStep: 0.12, speedCycle: 3 },
   lightRain: { ...BASE, mode: 2, fan: -1, speed0: 1.2, scatter: 340, jitter: 3 },
+  mine: { ...BASE, mode: 1, mine: 1, travel: 0.9, fuse: 2.6 },
+  meteor: { ...BASE, mode: 0, fuse: 1.1, meteor: 1, blastRadius: 34, meteorGap: 70 },
+  gridLaser: { ...BASE, mode: 0, grid: 1, gridGap: 72 },
+  gravity: { ...BASE, mode: 3, gravity: 180 },
+  orbit: { ...BASE, mode: 0, curveTime: 2, orbitRadius: 40 },
+  snake: { ...BASE, mode: 1, fan: -1, turn: 70, trail: 11 },
+  bubble: { ...BASE, mode: 1, speed0: 0.5, radius: 2, grow: 10, growMax: 26 },
 };
 
 /** チャージビームの印(弾の script)。アプリの Bullet.beamScript と同じ */
 export const BEAM_SCRIPT = 4;
 /** ブーメランと巨大弾の印。アプリの Bullet.boomerangScript / giantScript と同じ */
 export const BOOMERANG_SCRIPT = 5, GIANT_SCRIPT = 6;
+/** 地雷と爆風(隕石・地雷の爆発)の印。アプリの Bullet.mineScript / blastScript と同じ */
+export const MINE_SCRIPT = 7, BLAST_SCRIPT = 8;
 
 /** 弾を1つ出す関数(呼ぶ側の Bullet の形に合わせる) */
-export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number }) => void;
+export interface BulletExtra { turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; gravity: number; radius: number; grow: number; growMax: number; fuse: number }
+const NONE: BulletExtra = { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, gravity: 0, radius: 0, grow: 0, growMax: 0, fuse: 0 };
+export type AddBullet = (x: number, y: number, vx: number, vy: number, extra: BulletExtra) => void;
 
 export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k: number, cx: number, cy: number, px: number, py: number,
   off: number, sp: number, n: number, rng: () => number, homingSeconds: number, add: AddBullet): void {
@@ -95,6 +121,7 @@ export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k:
     let base: number;
     if (r.mode === 0) base = k * m.r * deg * r.spin + off;
     else if (r.mode === 1) base = Math.atan2(py - cy, px - cx) + off;
+    else if (r.mode === 3) base = -Math.PI / 2 + off;
     else base = Math.PI / 2 + off + Math.sin(k * r.sweepFreq) * m.r * deg * r.sweepAmp;
     for (let j = 0; j < n; j++) {
       let a: number;
@@ -111,24 +138,48 @@ export function emitRecipe(r: Recipe, m: { c: number; r: number; k: number }, k:
       if (r.lineWidth !== 0) x += (n > 1 ? j / (n - 1) - 0.5 : 0) * r.lineWidth;
       if (r.scatter !== 0) x += (rng() - 0.5) * r.scatter;
       const side = j % 2 === 0 ? 1 : -1;
+      if (r.meteor !== 0) {
+        // 隕石: 自機のいる場所(2つ目からは、そのまわり)に、予告の円を出してから衝撃を落とす。アプリの Bullet.blast と同じ
+        const mx = j === 0 ? px : px + Math.cos(a) * r.meteorGap, my = j === 0 ? py : py + Math.sin(a) * r.meteorGap;
+        add(mx, my, 0, 0, { ...NONE, bounces: 1, script: BLAST_SCRIPT, radius: r.blastRadius, fuse: r.fuse });
+        continue;
+      }
+      if (r.grid !== 0) {
+        // 格子レーザー: 自機を通る縦と横の線から、間をあけて交互に。画面の端から反対の端まで
+        const idx = Math.trunc(j / 2);
+        const gap = idx === 0 ? 0 : (idx % 2 === 1 ? 1 : -1) * Math.trunc((idx + 1) / 2) * r.gridGap;
+        if (j % 2 === 0) add(px + gap, -10, Math.cos(Math.PI / 2), Math.sin(Math.PI / 2), { ...NONE, bounces: 1, script: BEAM_SCRIPT });
+        else add(-10, py + gap, Math.cos(0), Math.sin(0), { ...NONE, bounces: 1, script: BEAM_SCRIPT });
+        continue;
+      }
       if (r.beam !== 0) {
         // チャージビーム: その場に止まったまま、向き(長さ1)だけを持つ。アプリの Bullet.beam と同じ
         if (r.beamSweep !== 0) {
           const a0 = a - side * r.beamSweep * deg / 2;
-          add(x, cy, Math.cos(a0), Math.sin(a0), { turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });
+          add(x, cy, Math.cos(a0), Math.sin(a0), { ...NONE, turn: side * r.beamSweep * deg / r.beamTime, homeLeft: r.beamTime, bounces: 1, script: BEAM_SCRIPT });
         } else {
-          add(x, cy, Math.cos(a), Math.sin(a), { turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 1, script: BEAM_SCRIPT });
+          add(x, cy, Math.cos(a), Math.sin(a), { ...NONE, bounces: 1, script: BEAM_SCRIPT });
         }
+        continue;
+      }
+      if (r.orbitRadius !== 0) {
+        // 衛星: 発射口のまわりの円の上から、円に沿う向きに出て、curveTime 秒だけ回ってから飛び出す
+        const speed = sp * f;
+        add(cx + Math.cos(a) * r.orbitRadius, cy + Math.sin(a) * r.orbitRadius, Math.cos(a + Math.PI / 2) * speed, Math.sin(a + Math.PI / 2) * speed,
+          { ...NONE, turn: speed / r.orbitRadius, homeLeft: r.curveTime, script: BOOMERANG_SCRIPT });
         continue;
       }
       if (r.curve !== 0) {
         // ブーメラン: 決まった時間だけ向きを回す(追尾ではない)
-        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { turn: side * r.curve * deg, homeLeft: r.curveTime, accel: 0, maxSpeed: 0, bounces: r.bounces, script: BOOMERANG_SCRIPT });
+        add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, { ...NONE, turn: side * r.curve * deg, homeLeft: r.curveTime, bounces: r.bounces, script: BOOMERANG_SCRIPT });
         continue;
       }
-      add(x, cy, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {
-        turn: r.turn * deg, homeLeft: r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,
-        script: r.giant !== 0 ? GIANT_SCRIPT : r.script,
+      // スネーク: 後ろの弾ほど、進む向きの後ろから出る(同じように曲がるので、列になって追いかける)
+      const bx = x - Math.cos(a) * r.trail * j, by = cy - Math.sin(a) * r.trail * j;
+      add(bx, by, Math.cos(a) * sp * f, Math.sin(a) * sp * f, {
+        turn: r.turn * deg, homeLeft: r.mine !== 0 ? r.travel : r.turn > 0 ? homingSeconds : 0, accel: r.accel, maxSpeed: r.maxMul > 0 ? sp * r.maxMul : 0, bounces: r.bounces,
+        script: r.mine !== 0 ? MINE_SCRIPT : r.giant !== 0 ? GIANT_SCRIPT : r.script,
+        gravity: r.gravity, radius: r.radius, grow: r.grow, growMax: r.growMax, fuse: r.mine !== 0 ? r.fuse : 0,
       });
     }
     layerSpeed *= r.layerSpeed;

@@ -1,4 +1,4 @@
-// App Store Connect に、見た目・撃ち方の買い切り商品(14個)を作る。
+// App Store Connect に、見た目・撃ち方・弾幕などの買い切り商品を作る(弾幕パック2の12個も、2026-10-31 に追加)。
 // 使い方: Chrome をデバッグ接続(localhost:9222)で起動し、App Store Connect にログインしておく。
 //   node tools/asc_create_iaps.mjs <審査用スクリーンショットのPNG | skip> [製品IDの一部で絞り込み]
 // 何度流しても、できている部分は飛ばす(途中で止まっても再実行できる)。
@@ -47,6 +47,24 @@ for (const [id, en, ja, jaDesc, enDesc, yen] of patterns) {
   products.push({ id, yen, ref: `${en} Pattern`, ja: [`${ja}の弾幕`, jaDesc], en: [`${en} Pattern`, enDesc], notes: patternNotes });
 }
 products.push({ id: 'patternpack', yen: 600, ref: 'Pattern Pack', ja: ['弾幕パック(全部入り)', '買える弾幕11種類が、すべて使えるようになります。'], en: ['All Patterns Pack', 'Unlocks all 11 paid bullet patterns.'], notes: patternNotes });
+// 弾幕パック2(2026-10-31 追加): バラ11個と全部入り。ショップの「弾幕パック2」のカードで買える
+const pattern2Notes = patternNotes.replace('scroll to "Bullet patterns"', 'scroll to "Bullet patterns 2"');
+for (const [id, en, ja, jaDesc, enDesc, yen] of [
+  ['pattern.mine', 'Mine', '地雷', '止まって点滅し、爆発する弾幕です。', 'Mines that stop, blink and explode.', 300],
+  ['pattern.meteor', 'Meteor', '隕石', '予告の円に、大きな衝撃が落ちる弾幕です。', 'A big impact lands on a warning circle.', 300],
+  ['pattern.gridLaser', 'Grid Laser', '格子レーザー', '縦と横の光線を格子に撃つ弾幕です。', 'Lasers that form a grid.', 300],
+  ['pattern.sweepLaser', 'Sweeping Laser', 'なぎ払いレーザー', '光線が画面をなぎ払う弾幕です。', 'A laser that sweeps the screen.', 100],
+  ['pattern.giantOrb', 'Giant Orb', '巨大弾', '大きな弾を1発ずつ撃つ弾幕です。', 'One huge orb at a time.', 100],
+  ['pattern.bubble', 'Swelling Bubble', '膨らむ泡', 'だんだん大きくなる泡の弾幕です。', 'Bubbles that keep getting bigger.', 100],
+  ['pattern.gravity', 'Gravity Shot', '重力弾', '投げ上げて落ちてくる弾幕です。', 'Bullets that arc up and fall.', 100],
+  ['pattern.orbit', 'Satellites', '衛星', '回ってから飛び出す弾幕です。', 'Bullets that orbit, then fly out.', 100],
+  ['pattern.snake', 'Snake', 'スネーク', '列になって追いかける弾幕です。', 'A line of bullets that chases you.', 100],
+  ['pattern.shatterRing', 'Shatter Ring', '破裂の輪', '輪がはじけて散る弾幕です。', 'A ring that bursts into pieces.', 100],
+  ['pattern.homingRing', 'Homing Ring', '追尾の輪', '輪が広がってから追いかける弾幕です。', 'A ring that curves toward you.', 100],
+]) {
+  products.push({ id, yen, ref: `${en} Pattern`, ja: [`${ja}の弾幕`, jaDesc], en: [`${en} Pattern`, enDesc], notes: pattern2Notes });
+}
+products.push({ id: 'patternpack2', yen: 600, ref: 'Pattern Pack 2', ja: ['弾幕パック2(全部入り)', '弾幕パック2の11種類が、すべて使えるようになります。'], en: ['Patterns Pack 2', 'Unlocks all 11 patterns in Pack 2.'], notes: pattern2Notes });
 products.push(
   { id: 'customimages', yen: 500, ref: 'Custom Images', ja: ['じぶんの画像', 'ボス・弾・自機を、自分で選んだ画像に変えます。'], en: ['Your Own Images', 'Use your own pictures for the boss, bullets and ship.'],
     notes: 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy "Your own images" near the top of the list. After purchase, tap "Choose" next to Boss, Bullets or Your ship and pick any photo. Images are only stored on the device and are never uploaded. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.' },

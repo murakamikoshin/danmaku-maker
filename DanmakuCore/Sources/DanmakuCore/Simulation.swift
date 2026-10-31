@@ -25,6 +25,14 @@ public struct Bullet: Equatable, Sendable {
     public var age: Double = 0
     /// 弾幕作成モードで描いた軌道に沿って進む弾(nil なら、ふつうの弾)
     public var follow: PathFollow?
+    /// 下向きの重力(px/秒²。重力弾)
+    public var gravity: Double = 0
+    /// 当たる範囲の広さ(ふつうの弾より何px広いか)と、1秒あたりに広がる量・上限(膨らむ泡)。爆風は、この広さの円
+    public var radius: Double = 0
+    public var grow: Double = 0
+    public var growMax: Double = 0
+    /// 地雷: 出てから爆発するまで(秒)。爆風: 予告の円を出している時間(秒。この間は当たらない)
+    public var fuse: Double = 0
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -34,6 +42,40 @@ public struct Bullet: Equatable, Sendable {
     public static let boomerangScript = 5
     /// 巨大弾の印。動きはふつうの弾と同じで、当たる範囲だけが広い
     public static let giantScript = 6
+    /// 地雷の印。homeLeft 秒進んで止まり、出てから fuse 秒で爆発する(爆風と弾の輪になって消える)
+    public static let mineScript = 7
+    /// 爆風の印(隕石・地雷の爆発)。動かない。fuse 秒は予告だけで、そのあと blastActive 秒だけ、半径 radius の円が当たる。
+    /// bounces が「まだ当たれるか」(1つの爆風で当たるのは1回だけ)
+    public static let blastScript = 8
+
+    public static func blast(x: Double, y: Double, radius: Double, warn: Double, color: Int) -> Bullet {
+        var b = Bullet(x: x, y: y, vx: 0, vy: 0, color: color, bounces: 1, script: blastScript)
+        b.radius = radius
+        b.fuse = warn
+        return b
+    }
+
+    public var isBlast: Bool { script == Bullet.blastScript }
+    public var isMine: Bool { script == Bullet.mineScript }
+    /// 爆風が当たる(予告が終わった)ところか
+    public var blastActive: Bool { isBlast && age >= fuse }
+    /// 地雷が止まっているか(点滅の表示に使う)
+    public var mineStopped: Bool { isMine && age >= homeLeft }
+
+    /// 爆風が (px, py) に当たるか(1つで1回だけ)
+    public func blastHits(_ px: Double, _ py: Double) -> Bool {
+        guard blastActive, bounces > 0 else { return false }
+        let dx = px - x, dy = py - y
+        let r = radius + DanmakuConfig.hitRadius
+        return dx * dx + dy * dy < r * r
+    }
+
+    /// 自機に当たる距離の2乗(弾の種類と広さで変わる)
+    public var hitDistanceSquared: Double {
+        if isGiant { return DanmakuConfig.giantHitRadiusSquared }
+        if radius > 0 { let r = radius + DanmakuConfig.hitRadius; return r * r }
+        return DanmakuConfig.hitRadiusSquared
+    }
 
     public static func beam(x: Double, y: Double, angle a: Double, color: Int, sweep: Double = 0, fireTime: Double = 0) -> Bullet {
         Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, turn: sweep, homeLeft: fireTime, bounces: 1, script: beamScript)
@@ -58,8 +100,19 @@ public struct Bullet: Equatable, Sendable {
         return d2 < DanmakuConfig.beamHitRadiusSquared
     }
 
-    /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)
+    /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)。
+    /// 地雷のときは、爆風と、まわりに散る弾の輪
     public func fragments() -> [Bullet] {
+        if isMine {
+            let speed = (vx * vx + vy * vy).squareRoot()
+            let base = atan2(vy, vx)
+            var out = [Bullet.blast(x: x, y: y, radius: DanmakuConfig.mineBlastRadius, warn: 0, color: color)]
+            for j in 0..<DanmakuConfig.mineRing {
+                let a = base + Double(j) * 2 * Double.pi / Double(DanmakuConfig.mineRing)
+                out.append(Bullet(x: x, y: y, vx: cos(a) * speed, vy: sin(a) * speed, color: color))
+            }
+            return out
+        }
         let speed = (vx * vx + vy * vy).squareRoot() * DanmakuConfig.splitSpeed
         let base = atan2(vy, vx)
         return (0..<DanmakuConfig.splitCount).map { j in
@@ -93,6 +146,18 @@ extension Bullet {
                 let na = atan2(vy, vx) + turn * dt
                 vx = cos(na); vy = sin(na)
             }
+            return .alive
+        }
+        if isBlast {
+            // 爆風: 動かない。予告(fuse 秒)のあと、少しの間だけ当たって消える
+            age += dt
+            return age >= fuse + DanmakuConfig.blastActive ? .gone : .alive
+        }
+        if isMine {
+            // 地雷: 決まった時間だけ進んで止まり、時間が来たら爆発する
+            age += dt
+            if age >= fuse { return .burst }
+            if age < homeLeft { x += vx * dt; y += vy * dt }
             return .alive
         }
         if script == Bullet.boomerangScript {
@@ -153,6 +218,8 @@ extension Bullet {
                 vx *= g; vy *= g
             }
         }
+        if gravity != 0 { vy += gravity * dt }
+        if grow != 0 { radius = min(growMax, radius + grow * dt) }
         if !frozen { x += vx * dt; y += vy * dt }
         if bounces > 0 {
             if x < 0 { x = -x; vx = -vx; bounces -= 1 }
@@ -558,9 +625,10 @@ public struct Simulation {
                 continue
             }
             if motion == .gone { continue }
-            if b.isBeam {
-                // チャージビーム: 撃っている間だけ、光線に触れると当たる。当たっても光線は消えない(同じビームでは1回だけ)
-                if b.beamHits(player.x, player.y) && !(invincible || tick < shieldUntilTick) {
+            if b.isBeam || b.isBlast {
+                // チャージビーム・爆風: 当たる間だけ、触れると当たる。当たっても消えない(同じものでは1回だけ)
+                let touched = b.isBeam ? b.beamHits(player.x, player.y) : b.blastHits(player.x, player.y)
+                if touched && !(invincible || tick < shieldUntilTick) {
                     b.bounces = 0
                     lifeLeft -= 1
                     if lifeLeft <= 0 { outcome = .hit; return }
@@ -576,7 +644,7 @@ public struct Simulation {
             }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
-            if dx * dx + dy * dy < (b.isGiant ? DanmakuConfig.giantHitRadiusSquared : DanmakuConfig.hitRadiusSquared) {
+            if dx * dx + dy * dy < b.hitDistanceSquared {
                 if invincible || tick < shieldUntilTick { continue }
                 lifeLeft -= 1
                 if lifeLeft <= 0 { outcome = .hit; return }   // ライフ1・HP が尽きたとき: 以前と同じく、その場で終了

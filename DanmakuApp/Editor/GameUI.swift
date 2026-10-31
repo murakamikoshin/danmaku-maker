@@ -351,9 +351,11 @@ struct PatternTiles: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            grid(DanmakuCore.Pattern.allCases.filter { !$0.isAd && $0 != .custom })
+            grid(DanmakuCore.Pattern.allCases.filter { !$0.isAd && !$0.isPack2 && $0 != .custom })
             Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.ad)
+            Text("editor.pattern.pack2section").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            grid(DanmakuCore.Pattern.pack2)
             customSection
         }
         .sheet(isPresented: $showShop) { ShopView() }
@@ -571,6 +573,40 @@ struct PatternIcon: View {
                     let last = i == 3
                     ctx.stroke(p, with: .color(col.opacity(last ? 1 : 0.25 + 0.15 * Double(i))), style: StrokeStyle(lineWidth: last ? 6 : 2, lineCap: .round))
                     if last { ctx.stroke(p, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 2, lineCap: .round)) }
+                }
+            case .mine:
+                // 止まった地雷と、爆風の届く範囲
+                for (x, y) in [(c.x - 9, c.y - 4), (c.x + 9, c.y + 6)] {
+                    ctx.stroke(Path(ellipseIn: CGRect(x: x - 9, y: y - 9, width: 18, height: 18)), with: .color(col.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+                    ctx.fill(Path(ellipseIn: CGRect(x: x - 3.5, y: y - 3.5, width: 7, height: 7)), with: .color(col))
+                }
+            case .meteor:
+                // 予告の円に、上から落ちてくる大きな弾
+                ctx.stroke(Path(ellipseIn: CGRect(x: c.x - 13, y: c.y - 2, width: 26, height: 18)), with: .color(col.opacity(0.6)), style: StrokeStyle(lineWidth: 1.2, dash: [3, 2]))
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - 6, y: 2, width: 12, height: 12)), with: .color(col))
+                for k in 1...3 { dot(c.x - Double(k) * 3, 2 - Double(k) * 2 + 6, 1.4) }
+            case .gridLaser:
+                for x in [w * 0.3, w * 0.7] {
+                    var p = Path(); p.move(to: CGPoint(x: x, y: 2)); p.addLine(to: CGPoint(x: x, y: h - 2))
+                    ctx.stroke(p, with: .color(col), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                }
+                for y in [h * 0.35, h * 0.72] {
+                    var p = Path(); p.move(to: CGPoint(x: 2, y: y)); p.addLine(to: CGPoint(x: w - 2, y: y))
+                    ctx.stroke(p, with: .color(col.opacity(0.55)), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                }
+            case .gravity:
+                // 投げ上げて落ちてくる放物線
+                for side in [-1.0, 1.0] { for k in 0..<6 { let t = Double(k) / 5; dot(c.x + side * t * 16, h - 6 - (1 - (2 * t - 1) * (2 * t - 1)) * 26, 2) } }
+            case .orbit:
+                ctx.stroke(Path(ellipseIn: CGRect(x: c.x - 11, y: c.y - 11, width: 22, height: 22)), with: .color(col.opacity(0.3)), lineWidth: 1)
+                dot(c.x, c.y, 3)
+                for k in 0..<5 { let a = Double(k) * 2 * .pi / 5; dot(c.x + cos(a) * 11, c.y + sin(a) * 11, 2.2) }
+            case .snake:
+                for k in 0..<7 { let t = Double(k); dot(c.x - 12 + t * 4, c.y + sin(t * 0.9) * 7, k == 6 ? 3.2 : 2.2) }
+            case .bubble:
+                for (i, r) in [3.0, 6.0, 10.0].enumerated() {
+                    let y = 8 + Double(i) * 11
+                    ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r, y: y - r / 2, width: r * 2, height: r * 2)), with: .color(col.opacity(0.5 + 0.2 * Double(i))), lineWidth: 1.5)
                 }
             case .giantOrb:
                 dot(c.x, 5, 3.4)
