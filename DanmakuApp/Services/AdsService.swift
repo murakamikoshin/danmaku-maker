@@ -1,16 +1,19 @@
 import AppTrackingTransparency
 import GoogleMobileAds
 import UIKit
-import UserMessagingPlatform
 
-/// 広告は2種類だけ。広告の前に同意(UMP)とトラッキング許可(ATT)を取る。
+/// 広告の前にトラッキング許可(ATT)を取る。
+/// ⚠️同意(UMP)は一旦外している(2026-10-31): UMP の canRequestAds が偽のままで SDK が始まらず、
+/// AdMob のリクエストが0だった疑いがあるため。トレカダッシュと同じく、UMP なしで SDK を始める。
+/// 広告が出るようになったら、UMP を戻す(取れないときだけ個人に合わせない広告にする)か決める。
+/// パッケージ(project.yml の UserMessagingPlatform)は戻しやすいように残してある。
 ///  1. リワード広告: 被弾したときの「広告を見て復活」(見るかどうかは、プレイヤーが選ぶ)
 ///  2. 全画面広告: 結果画面から次へ進むときに、3回遊ぶごと・前の広告から2分以上あいているときだけ。
 ///     広告削除の購入者・テストプレイ・ステージ開始時・プレイ中には、出さない。
 @MainActor
 final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate {
     @Published private(set) var isReady = false
-    /// SDK を開始できたか(同意が取れて、広告を要求してよい)。バナーを出してよいかの目安
+    /// SDK を開始できたか。バナーを出してよいかの目安
     @Published private(set) var canShowBanner = false
 
     private var rewarded: GADRewardedAd?
@@ -50,9 +53,8 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_INTERSTITIAL_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/4411468910"
     }
 
-    /// 同意 → トラッキング許可 → SDK 開始 → 広告の読み込み。広告削除の購入者には呼ばない
-    /// 何度呼んでもよい。同意情報の取得に失敗して SDK を開始できなかったとき(電波が悪いなど)は、
-    /// 次に呼ばれたときにやり直す。開始済みなら、読み込めていない広告だけ読み込み直す
+    /// トラッキング許可 → SDK 開始 → 広告の読み込み。広告削除の購入者には呼ばない
+    /// 何度呼んでもよい。開始済みなら、読み込めていない広告だけ読み込み直す
     func start() async {
         attemptedStart = true
         guard !starting else { return }
@@ -63,9 +65,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         }
         starting = true
         defer { starting = false }
-        await requestConsent()
         await requestTracking()
-        guard UMPConsentInformation.sharedInstance.canRequestAds else { return }
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
             GADMobileAds.sharedInstance().start { _ in c.resume() }
         }
@@ -73,19 +73,6 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         canShowBanner = true
         await load()
         await loadInterstitial()
-    }
-
-    private func requestConsent() async {
-        let params = UMPRequestParameters()
-        params.tagForUnderAgeOfConsent = false
-        let updated: Bool = await withCheckedContinuation { c in
-            UMPConsentInformation.sharedInstance.requestConsentInfoUpdate(with: params) { error in c.resume(returning: error == nil) }
-        }
-        // 取得できなくても、前回の同意状態（canRequestAds）に従う
-        guard updated, let vc = Self.topViewController() else { return }
-        await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
-            UMPConsentForm.loadAndPresentIfRequired(from: vc) { _ in c.resume() }
-        }
     }
 
     private func requestTracking() async {
@@ -96,7 +83,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     }
 
     func load() async {
-        guard UMPConsentInformation.sharedInstance.canRequestAds, rewarded == nil, !loading else { return }
+        guard sdkStarted, rewarded == nil, !loading else { return }
         loading = true
         defer { loading = false }
         let ad: GADRewardedAd? = await withCheckedContinuation { c in
@@ -108,7 +95,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     }
 
     func loadInterstitial() async {
-        guard UMPConsentInformation.sharedInstance.canRequestAds, interstitial == nil, !loadingInterstitial else { return }
+        guard sdkStarted, interstitial == nil, !loadingInterstitial else { return }
         loadingInterstitial = true
         defer { loadingInterstitial = false }
         let ad: GADInterstitialAd? = await withCheckedContinuation { c in

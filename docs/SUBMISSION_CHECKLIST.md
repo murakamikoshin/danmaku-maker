@@ -12,7 +12,7 @@
 | 購入の復元 | ✅ | 設定画面と購入画面にボタン |
 | ログインなしで遊べる | ✅ | 匿名認証。投稿・いいね・通報だけ Sign in with Apple |
 | アカウント削除 | ✅ | 設定→アカウントを削除（Apple トークン失効＋サーバーでデータ削除） |
-| ATT / UMP | ✅ | 広告前に同意 → トラッキング許可。NSUserTrackingUsageDescription は日英 |
+| ATT / UMP | ⚠️ | 広告前にトラッキング許可。UMP(同意)は 2026-10-31 に一旦外した(AdMob リクエスト0の調査のため。AdsService.swift のコメント参照)。NSUserTrackingUsageDescription は日英 |
 | プライバシー | ✅ | 規約・ポリシー公開。App のプライバシー回答済み |
 | 輸出コンプライアンス | ✅ | ITSAppUsesNonExemptEncryption=false |
 | 中国本土を除外 | ✅ | 配信地域は 174（中国本土のみ除外） |
