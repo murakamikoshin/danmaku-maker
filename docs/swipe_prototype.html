@@ -59,6 +59,26 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
 .toast{left:50%;top:42%;transform:translateX(-50%);background:#000c;border:1px solid #ffffff2a;border-radius:12px;padding:calc(var(--u)*8px) calc(var(--u)*12px);
   font-weight:700;font-size:calc(var(--u)*11px);max-width:80%;text-align:center;pointer-events:none}
+.stam{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*4px)}
+.pips{display:flex;gap:calc(var(--u)*3px)}
+.pip svg{display:block;width:calc(var(--u)*18px);height:calc(var(--u)*18px);fill:#ffffff24}
+.pip.on svg{fill:var(--gold);filter:drop-shadow(0 0 4px #ffd23f)}
+.stxt{font-size:calc(var(--u)*10.5px);color:var(--dim);font-weight:700;font-variant-numeric:tabular-nums}
+.panel{inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*12px);text-align:center;
+  background:#07040fdd;backdrop-filter:blur(3px);padding:0 calc(var(--u)*22px)}
+.panel h2{margin:0;font-family:var(--display);font-weight:400;font-size:calc(var(--u)*26px);color:var(--pink);text-shadow:0 0 18px #ff4f9a88}
+.panel .lbl{font-size:calc(var(--u)*10px);font-weight:900;letter-spacing:.2em;color:var(--dim)}
+.panel .big{font-family:var(--display);font-size:calc(var(--u)*21px);color:var(--gold);line-height:1.3;word-break:break-all;max-width:100%;text-shadow:0 0 16px #ffd23f66}
+.panel .sub{font-size:calc(var(--u)*11.5px);color:var(--dim);font-weight:700}
+.panel .sub b{color:var(--ink)}
+.panel .btns{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*8px);width:100%}
+.btn{font-family:var(--display);font-size:calc(var(--u)*14px);padding:calc(var(--u)*10px) calc(var(--u)*16px);border-radius:999px;border:0;background:var(--pink);
+  color:var(--ink);cursor:pointer;box-shadow:0 0 24px #ff4f9a88;width:100%;max-width:calc(var(--u)*260px)}
+.btn.gold{background:var(--gold);color:#2a1300;box-shadow:0 0 24px #ffd23f88}
+.btn.ghost{background:transparent;border:1px solid #ffffff33;box-shadow:none;font-family:var(--body);font-weight:900;font-size:calc(var(--u)*12px)}
+.btn:disabled{opacity:.4;cursor:default;box-shadow:none}
+#adv{z-index:5;background:#000;gap:calc(var(--u)*8px)}
+#adv .cd{font-family:var(--display);font-size:calc(var(--u)*48px);color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.hint,.title .go{animation:none}}
 </style>
 
@@ -92,7 +112,7 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
     </div>
 
     <button class="ui skip" id="bSkip" hidden>スキップ ›</button>
-    <div class="ui hint" id="hint" hidden>↑ スワイプで次へ　↓ もう一度</div>
+    <div class="ui hint" id="hint" hidden>↑ スワイプで次へ</div>
 
     <div class="ui title" id="title">
       <div class="eyebrow">弾幕メーカー 新モード試作</div>
@@ -103,10 +123,42 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
         <li>8コンボごとに<b>倍率2倍</b>、連続クリアごとに<b>3倍</b></li>
         <li>点数に上限なし。<b>無量大数</b>の先まで</li>
         <li>かすり40回で<b>ボム</b>が勝手に出る</li>
+        <li>1プレイに<b>スタミナ1</b>。被弾したら終了</li>
         <li>ドラッグで移動（PCは矢印キー、Shiftで低速）</li>
       </ul>
-      <button class="go" id="bStart">タップでスタート</button>
+      <div class="stam" id="titleStam"></div>
+      <button class="go" id="bStart">スタート（スタミナ1）</button>
       <div class="best" id="titleBest"></div>
+    </div>
+
+    <div class="ui panel" id="over" hidden>
+      <h2>プレイ終了</h2>
+      <div class="lbl">今回の点数</div>
+      <div class="big" id="oScore"></div>
+      <div class="sub" id="oStats"></div>
+      <div class="sub" id="oBest"></div>
+      <div class="stam" id="overStam"></div>
+      <div class="btns">
+        <button class="btn" id="bAgain">もう1回（スタミナ1）</button>
+        <button class="btn ghost" id="bQuit">やめる</button>
+      </div>
+    </div>
+
+    <div class="ui panel" id="empty" hidden>
+      <h2>スタミナ切れ</h2>
+      <div class="stam" id="emptyStam"></div>
+      <div class="btns">
+        <button class="btn gold" id="bAd"></button>
+        <button class="btn" id="bBuy">回復ドリンク（全回復）¥120</button>
+        <button class="btn ghost" id="bClose">閉じる</button>
+      </div>
+      <div class="sub">試作なので、どちらも押すとそのまま全回復します</div>
+    </div>
+
+    <div class="ui panel" id="adv" hidden>
+      <div class="lbl">広告</div>
+      <div class="cd" id="advN">3</div>
+      <div class="sub">本番ではここでリワード広告が流れます</div>
     </div>
 
     <div class="ui toast" id="toast" hidden></div>
@@ -168,9 +220,10 @@ const AUTHORS = ['@mochi_dan', '@kuro_neko', '@yuzu_stg', '@hanabi_p', '@tsukimi
 const PATS = ['ring', 'spiral', 'aim', 'rain', 'sweep', 'flower', 'curve', 'accel'];
 const FULL = ['耐えきる 30秒', '耐えきる 60秒', 'ボスを倒す 90秒', '耐えきる 45秒', 'ボスを倒す 60秒', '連戦 4場面'];
 
-function genStage(i) {
+// lvl: そのプレイで何本クリアしたか。連続が伸びるほど難しくなる(最初の数本は易しい)
+function genStage(i, lvl) {
   const r = rng(i * 7919 + 13);
-  const d = Math.min(1, 0.22 + i * 0.045) + r() * 0.22;
+  const d = Math.min(1, 0.1 + lvl * 0.06) + r() * 0.18;
   const n = 2 + Math.floor(r() * 2) + (d > 0.85 ? 1 : 0);
   const em = [];
   for (let k = 0; k < n; k++) {
@@ -255,8 +308,8 @@ function simStep(c, live) {
 }
 
 // 1本ぶんを作る: 途中まで早送りして、自機を一番安全な場所に置く
-function makeClip(i) {
-  const st = genStage(i);
+function makeClip(i, lvl = 0) {
+  const st = genStage(i, lvl);
   const c = { st, em: st.em.map(e => ({ ...e, next: e.next0, ang: e.ang0 })), rng: rng(i * 31 + 5), b: [], t: 0,
     px: W / 2, py: H * 0.85, coins: [], clipT: 0, freeze: 0.5, shield: 0.7, dead: false, combo: 0, lastG: -9, mult: 1, grazes: 0, glow: 0 };
   const steps = Math.round(st.pre / DT);
@@ -277,7 +330,7 @@ function makeClip(i) {
 }
 
 // ───────── 状態
-const S = { state: 'title', idx: 0, streak: 0, best: 0, score: 0n, shownScore: 0n, gauge: 0, played: 0, slowT: 0, resT: 0, transP: 0, liked: new Set(), sound: true };
+const S = { state: 'title', idx: 0, streak: 0, best: 0, score: 0n, shownScore: 0n, gauge: 0, played: 0, runClips: 0, lastStreak: 0, slowT: 0, resT: 0, transP: 0, liked: new Set(), sound: true };
 try { S.best = +localStorage.getItem('swipe-danmaku-best') || 0; } catch (e) {}
 let g = null;
 const parts = [], pops = [], banners = [], shocks = [];
@@ -390,8 +443,25 @@ function fail() {
   noise(0.5, 0.4, 1800, 80); tone(220, 0.5, 'sawtooth', 0.08, 55);
   banner('あと ' + left.toFixed(1) + '秒', '#ff4f9a', 44, H * 0.4, 1.3, 0.15);
   if (S.streak >= 2) banner(S.streak + ' 連続で終了', '#fff', 20, H * 0.5, 1.2, 0.35);
+  S.lastStreak = S.streak;
   S.streak = 0; g.combo = 0; g.mult = 1;
-  showResultUI(true);
+  showResultUI(true); $('hint').hidden = true;
+}
+// 被弾したら1プレイ終了: 結果を出す
+function gameOver() {
+  S.state = 'over';
+  S.shownScore = S.score;
+  $('info').hidden = true; $('rail').hidden = true; $('bSkip').hidden = true; $('hint').hidden = true;
+  $('oScore').textContent = jpFull(S.score) + '点';
+  $('oStats').innerHTML = '連続 <b>' + S.lastStreak + '</b> 本　遊んだ <b>' + S.runClips + '</b> 本';
+  let best = 0n;
+  try { best = BigInt(localStorage.getItem('swipe-danmaku-bestscore') || '0'); } catch (e) {}
+  if (S.score > best) {
+    try { localStorage.setItem('swipe-danmaku-bestscore', S.score.toString()); } catch (e) {}
+    $('oBest').innerHTML = '<b style="color:var(--gold)">自己ベスト更新！</b>';
+  } else $('oBest').textContent = '自己ベスト ' + jpShort(best) + '点';
+  paintStam();
+  $('over').hidden = false;
 }
 function enterFreeze() {
   S.state = 'freeze'; g.freeze = 0.5;
@@ -401,14 +471,13 @@ function enterFreeze() {
 let snap = document.createElement('canvas');
 function goTo(i) {
   snap.width = cv.width; snap.height = cv.height; snap.getContext('2d').drawImage(cv, 0, 0);
-  S.idx = i; g = makeClip(i);
+  S.idx = i; g = makeClip(i, S.streak); S.runClips++;
   S.state = 'trans'; S.transP = 0;
   banners.length = 0; pops.length = 0; parts.length = 0; shocks.length = 0;
   showResultUI(false); updateInfo();
   noise(0.18, 0.12, 900, 3000);
 }
 const next = () => goTo(S.idx + 1);
-const retry = () => goTo(S.idx);
 
 // ───────── 画面の大きさ
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), stageEl = document.getElementById('stage');
@@ -428,13 +497,16 @@ const keys = new Set();
 addEventListener('keydown', e => {
   if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
   keys.add(e.key);
-  if (S.state === 'title' && (e.key === 'Enter' || e.key === ' ')) start();
-  else if (S.state === 'clear' || S.state === 'fail') { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowUp') next(); else if (e.key === 'r' || e.key === 'R') retry(); }
+  const go = e.key === 'Enter' || e.key === ' ';
+  if (S.state === 'title' && go && $('empty').hidden) beginPlay();
+  else if (S.state === 'over' && go && $('empty').hidden) beginPlay();
+  else if (S.state === 'clear' && (go || e.key === 'ArrowUp')) next();
+  else if (S.state === 'fail' && go) gameOver();
 });
 addEventListener('keyup', e => keys.delete(e.key));
 let ptr = null;
 stageEl.addEventListener('pointerdown', e => {
-  if (e.target.closest('button') || S.state === 'title') return;
+  if (e.target.closest('button') || e.target.closest('.panel') || S.state === 'title' || S.state === 'over') return;
   try { stageEl.setPointerCapture(e.pointerId); } catch (_) {}
   ptr = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY };
 });
@@ -450,8 +522,9 @@ const endPtr = e => {
   if (!ptr || e.pointerId !== ptr.id) return;
   const dx = e.clientX - ptr.x0, dy = e.clientY - ptr.y0;
   ptr = null;
-  if (S.state !== 'clear' && S.state !== 'fail') return;
-  if (dy < -40) next(); else if (dy > 40) retry(); else if (Math.abs(dx) < 14 && Math.abs(dy) < 14) next();
+  const tapOrUp = dy < -40 || (Math.abs(dx) < 14 && Math.abs(dy) < 14);
+  if (S.state === 'clear' && tapOrUp) next();
+  else if (S.state === 'fail' && tapOrUp) gameOver();
 };
 stageEl.addEventListener('pointerup', endPtr);
 stageEl.addEventListener('pointercancel', e => { if (ptr && e.pointerId === ptr.id) ptr = null; });
@@ -477,7 +550,12 @@ $('bLike').addEventListener('click', () => {
 });
 $('bFull').addEventListener('click', () => toast('本番では、このステージの詳細画面が開きます'));
 $('bShare').addEventListener('click', () => toast('本番では「' + g.st.name + '」の共有URLを出します'));
-$('bSkip').addEventListener('click', () => { if (S.state === 'play' || S.state === 'freeze') next(); });
+// スキップは挑戦を続けたまま次へ。ただし連続は0に戻る(難しい1本だけ飛ばして倍率を守るズルを防ぐ)
+$('bSkip').addEventListener('click', () => {
+  if (S.state !== 'play' && S.state !== 'freeze') return;
+  if (S.streak > 0) toast('スキップしたので、連続は0に戻りました');
+  S.streak = 0; next();
+});
 const SOUND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const SOUND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
 function paintSound() { $('soundIc').innerHTML = S.sound ? SOUND_ON : SOUND_OFF; $('soundLb').textContent = S.sound ? '音あり' : '音なし'; }
@@ -485,14 +563,68 @@ $('bSound').addEventListener('click', () => { S.sound = !S.sound; paintSound(); 
 paintSound();
 if (S.best > 0) $('titleBest').textContent = '自己ベスト ' + S.best + ' 連続';
 
-function start() {
-  if (S.state !== 'title') return;
-  initAudio(); if (ac && ac.state === 'suspended') ac.resume();
-  $('title').hidden = true; $('info').hidden = false; $('rail').hidden = false;
-  S.score = 0n; S.shownScore = 0n; S.streak = 0; S.gauge = 0;
-  goTo(1);
+// ───────── スタミナ: 最大5、2時間で1回復。広告での全回復は1日1回。回復ドリンク(課金)で全回復
+const ST_MAX = 5, ST_REGEN = 2 * 3600 * 1000;
+const stam = { n: ST_MAX, at: Date.now(), adDay: '' };
+try { Object.assign(stam, JSON.parse(localStorage.getItem('swipe-danmaku-stamina')) || {}); } catch (e) {}
+function saveStam() { try { localStorage.setItem('swipe-danmaku-stamina', JSON.stringify(stam)); } catch (e) {} }
+function tickStam() {
+  if (stam.n >= ST_MAX) { stam.at = Date.now(); return; }
+  const k = Math.floor((Date.now() - stam.at) / ST_REGEN);
+  if (k > 0) { stam.n = Math.min(ST_MAX, stam.n + k); stam.at = stam.n >= ST_MAX ? Date.now() : stam.at + k * ST_REGEN; saveStam(); }
 }
-$('title').addEventListener('click', start);
+const today = () => new Date().toDateString();
+const adLeft = () => stam.adDay === today() ? 0 : 1;
+function nextIn() {
+  const s = Math.max(0, Math.ceil((ST_REGEN - (Date.now() - stam.at)) / 1000));
+  return Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+const BOLT = '<svg viewBox="0 0 24 24"><path d="M13.5 2 4 14h7l-1.5 8L19 10h-7z"/></svg>';
+function paintStam() {
+  tickStam();
+  const pips = Array.from({ length: ST_MAX }, (_, k) => '<span class="pip' + (k < stam.n ? ' on' : '') + '">' + BOLT + '</span>').join('');
+  const html = '<div class="pips">' + pips + '</div><div class="stxt">スタミナ ' + stam.n + '/' + ST_MAX + '　' + (stam.n >= ST_MAX ? '満タン' : '次の回復まで ' + nextIn()) + '</div>';
+  for (const id of ['titleStam', 'overStam', 'emptyStam']) $(id).innerHTML = html;
+  $('bAd').disabled = !adLeft();
+  $('bAd').textContent = adLeft() ? '広告を見て全回復（今日あと1回）' : '広告での回復は明日また使えます';
+}
+setInterval(paintStam, 1000);
+paintStam();
+function refill(msg) {
+  stam.n = ST_MAX; stam.at = Date.now(); saveStam(); paintStam();
+  $('empty').hidden = true; toast(msg);
+  tone(784, 0.1, 'triangle', 0.05); tone(1047, 0.1, 'triangle', 0.05, 0, 0.08); tone(1568, 0.25, 'triangle', 0.05, 0, 0.16);
+}
+$('bAd').addEventListener('click', () => {
+  if (!adLeft()) return;
+  let n = 3;
+  $('advN').textContent = n; $('adv').hidden = false;
+  const timer = setInterval(() => {
+    n--; $('advN').textContent = n;
+    if (n <= 0) { clearInterval(timer); $('adv').hidden = true; stam.adDay = today(); refill('スタミナが全回復しました'); }
+  }, 1000);
+});
+$('bBuy').addEventListener('click', () => refill('本番では App Store の購入画面が出ます。試作なのでそのまま全回復しました'));
+$('bClose').addEventListener('click', () => { $('empty').hidden = true; });
+
+// 1プレイを始める: スタミナを1使う。足りなければスタミナ切れの画面を出す
+function beginPlay() {
+  initAudio(); if (ac && ac.state === 'suspended') ac.resume();
+  tickStam();
+  if (stam.n <= 0) { paintStam(); $('empty').hidden = false; return; }
+  if (stam.n >= ST_MAX) stam.at = Date.now();
+  stam.n--; saveStam(); paintStam();
+  $('title').hidden = true; $('over').hidden = true; $('info').hidden = false; $('rail').hidden = false;
+  S.score = 0n; S.shownScore = 0n; S.streak = 0; S.gauge = 0; S.runClips = 0;
+  goTo(S.idx + 1);
+}
+$('title').addEventListener('click', () => { if (S.state === 'title') beginPlay(); });
+$('bAgain').addEventListener('click', beginPlay);
+$('bQuit').addEventListener('click', () => {
+  S.state = 'title'; g = null;
+  $('over').hidden = true; $('title').hidden = false;
+  if (S.best > 0) $('titleBest').textContent = '自己ベスト ' + S.best + ' 連続';
+});
 
 // ───────── 更新
 let last = performance.now(), acc = 0, lastSec = 0;
@@ -537,7 +669,9 @@ function update(rd) {
   } else if (S.state === 'clear' || S.state === 'fail') {
     acc += dt; while (acc >= DT) { acc -= DT; simStep(g, false); }
     S.resT -= rd;
-    if (S.resT <= 0 && !ptr) next();
+    if (S.resT <= 0 && !ptr) { if (S.state === 'fail') gameOver(); else next(); }
+  } else if (S.state === 'over') {
+    acc += dt; while (acc >= DT) { acc -= DT; simStep(g, false); }
   }
 
   // 得点の粒: 少し散ってから自機に吸い込まれる
