@@ -145,7 +145,16 @@ struct PublishFlowView: View {
         error = nil
         phase = .publishing
         do {
-            let id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium)
+            // アップロードを待つあいだに、全画面広告を流す(広告削除の購入者には出さない)。両方が終わってから完了画面へ
+            async let adShown: Bool = purchases.isPremium ? false : ads.showInterstitialNow()
+            let id: String
+            do {
+                id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium)
+            } catch {
+                _ = await adShown
+                throw error
+            }
+            _ = await adShown
             phase = .done(id)
             AudioManager.shared.se(.get)
             onPublished(id)

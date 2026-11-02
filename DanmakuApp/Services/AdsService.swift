@@ -123,6 +123,20 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         return true
     }
 
+    /// 回数や間隔に関係なく、読み込めていれば全画面広告を出す(閉じるまで待つ)。
+    /// コース投稿の「アップロード待ち」のように、もともと待ち時間がある場面で使う。出さなかったら false
+    @discardableResult
+    func showInterstitialNow() async -> Bool {
+        guard let ad = interstitial, let vc = Self.topViewController() else { return false }
+        playsSinceAd = 0
+        lastAdAt = Date()
+        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+            interstitialDismiss = { cont.resume() }
+            ad.present(fromRootViewController: vc)
+        }
+        return true
+    }
+
     /// 広告を見終えて報酬を得たら true
     func showRewarded() async -> Bool {
         guard let ad = rewarded, let vc = Self.topViewController() else { return false }
