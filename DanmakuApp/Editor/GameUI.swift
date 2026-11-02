@@ -708,6 +708,8 @@ struct GameTabs<T: Hashable>: View {
     let items: [(T, LocalizedStringKey)]
     @Binding var selection: T
     var idPrefix = "tabs"
+    /// 赤い点で知らせるタブ(受け取れるごほうびがあるときなど)
+    var badges: Set<T> = []
     @Namespace private var ns
 
     var body: some View {
@@ -719,8 +721,14 @@ struct GameTabs<T: Hashable>: View {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { selection = item.0 }
                 } label: {
                     Text(item.1).font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .lineLimit(1).minimumScaleFactor(0.7)
                         .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.6))
                         .frame(maxWidth: .infinity).padding(.vertical, 9)
+                        .overlay(alignment: .topTrailing) {
+                            if badges.contains(item.0) {
+                                Circle().fill(Color.red).frame(width: 9, height: 9).padding(.top, 5).padding(.trailing, 6)
+                            }
+                        }
                         .background {
                             if selected {
                                 RoundedRectangle(cornerRadius: 12).fill(GameStyle.accent)
