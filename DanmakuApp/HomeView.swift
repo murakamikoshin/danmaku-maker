@@ -49,6 +49,7 @@ struct HomeView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    DailyRewardBanner()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
                     switch tab {

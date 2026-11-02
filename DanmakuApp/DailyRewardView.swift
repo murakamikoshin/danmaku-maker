@@ -140,3 +140,59 @@ struct DailyRewardCard: View {
         }
     }
 }
+
+
+/// ホーム画面の上に出す、今日のごほうびのお知らせ。今日まだ受け取っていないときだけ出る
+struct DailyRewardBanner: View {
+    @EnvironmentObject private var rewards: RewardStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var busy = false
+
+    var body: some View {
+        Group {
+            if rewards.canClaim, let next = rewards.upcoming.first {
+                let ready = purchases.isPremium || ads.isReady
+                HStack(spacing: 12) {
+                    RewardSwatch(reward: next, size: 52)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("daily.title").font(.system(size: 15, weight: .heavy, design: .rounded))
+                        Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                    Spacer(minLength: 4)
+                    Button {
+                        Task { await claim() }
+                    } label: {
+                        Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
+                            .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(.white).lineLimit(1)
+                            .padding(.vertical, 8).padding(.horizontal, 12)
+                            .background(GameStyle.gold, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!ready || busy).opacity(ready && !busy ? 1 : 0.5)
+                    .accessibilityIdentifier("home.daily.claim")
+                }
+                .padding(12)
+                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.5)))
+            }
+        }
+        .onAppear { rewards.refreshDay() }
+        .onChange(of: scenePhase) { if $0 == .active { rewards.refreshDay() } }
+    }
+
+    private func claim() async {
+        busy = true
+        defer { busy = false }
+        if purchases.isPremium {
+            rewards.claim()
+        } else if await ads.showRewarded() {
+            rewards.claim()
+        }
+        if rewards.justClaimed != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
+        }
+    }
+}

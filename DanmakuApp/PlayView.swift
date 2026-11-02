@@ -295,6 +295,9 @@ struct ResultView: View {
     let back: () -> Void
 
     @EnvironmentObject private var rewardStore: RewardStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @State private var claiming = false
     private var win: Bool { result.outcome == .cleared }
     private var timeText: String { String(format: "%.1f", result.time) }
 
@@ -370,6 +373,22 @@ struct ResultView: View {
                             if let url = ShareText.xIntentURL(text) { Link(destination: url) { smallButton("detail.share.x", "xmark") } }
                         }
                     }
+                    if win, !isTest, rewardStore.canClaim, let next = rewardStore.upcoming.first {
+                        // クリアしたごほうびに、今日の報酬を広告つきでその場で受け取れる
+                        let ready = purchases.isPremium || ads.isReady
+                        HStack(spacing: 12) {
+                            RewardSwatch(reward: next, size: 44)
+                            GameActionButton(title: purchases.isPremium ? "daily.claim.free" : "daily.claim.ad",
+                                             systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill", fill: GameStyle.gold) {
+                                Task { await claimReward() }
+                            }
+                            .disabled(!ready || claiming).opacity(ready && !claiming ? 1 : 0.5)
+                            .accessibilityIdentifier("result.claim")
+                        }
+                    } else if win, !isTest, rewardStore.justClaimed != nil {
+                        Label("daily.claimed", systemImage: "checkmark.circle.fill")
+                            .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
+                    }
                     HStack(spacing: 10) {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                             .accessibilityIdentifier("result.retry")
@@ -388,6 +407,20 @@ struct ResultView: View {
                 .padding(24)
             }
             .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func claimReward() async {
+        claiming = true
+        defer { claiming = false }
+        if purchases.isPremium {
+            rewardStore.claim()
+        } else if await ads.showRewarded() {
+            rewardStore.claim()
+        }
+        if rewardStore.justClaimed != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
         }
     }
 
