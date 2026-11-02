@@ -100,6 +100,8 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
       <ul>
         <li><b>10秒</b>生き残ればクリア</li>
         <li>弾を<b>ギリギリでかする</b>と点が増える</li>
+        <li>8コンボごとに<b>倍率2倍</b>、連続クリアごとに<b>3倍</b></li>
+        <li>点数に上限なし。<b>無量大数</b>の先まで</li>
         <li>かすり40回で<b>ボム</b>が勝手に出る</li>
         <li>ドラッグで移動（PCは矢印キー、Shiftで低速）</li>
       </ul>
@@ -123,6 +125,37 @@ const DISPLAY = '"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif';
 const BODY = '"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif';
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TAU = Math.PI * 2;
+
+// ───────── 点数: かすり1回 = 基本点 × コンボ倍率(8コンボごとに2倍) × 連続倍率(1連続ごとに3倍)
+// 点数は BigInt(上限なしの整数)。無量大数も、その先も桁を落とさずに数える
+const BASE = 100n;
+const pow2 = k => 2n ** BigInt(k), pow3 = k => 3n ** BigInt(k);
+// 倍率の表示用(コンボの2倍 × 連続の3倍)
+const multBig = c => pow2(Math.floor(c.combo / 8)) * pow3(S.streak);
+// かすり1回の点。次の2倍までの間も、1/8ずつ上がる
+const grazePts = c => BASE * pow2(Math.floor(c.combo / 8)) * BigInt(8 + c.combo % 8) / 8n * pow3(S.streak);
+const UNITS = [['万', 4], ['億', 8], ['兆', 12], ['京', 16], ['垓', 20], ['𥝱', 24], ['穣', 28], ['溝', 32], ['澗', 36], ['正', 40], ['載', 44],
+  ['極', 48], ['恒河沙', 52], ['阿僧祇', 56], ['那由他', 60], ['不可思議', 64]].map(([s, e]) => [s, 10n ** BigInt(e)]).reverse();
+const MURYO = 10n ** 68n;
+// 1兆6532億3141万3424 のように全部の桁を出す。無量大数を超えたら「1万無量大数」のように重ねる
+function jpFull(n) {
+  if (n < 10000n) return n.toString();
+  let out = '';
+  if (n >= MURYO) { out += jpFull(n / MURYO) + '無量大数'; n %= MURYO; }
+  for (const [s, u] of UNITS) if (n >= u) { out += (n / u).toString() + s; n %= u; }
+  if (n > 0n) out += n.toString();
+  return out;
+}
+function shortNum(n, u, s) {
+  const v = Number(n * 100n / u) / 100;
+  return (v >= 100 ? String(Math.floor(v)) : v >= 10 ? v.toFixed(1).replace(/\.0$/, '') : v.toFixed(2).replace(/\.?0+$/, '')) + s;
+}
+// 4.5億 のように短く出す(かすりの「+点」や倍率用)
+function jpShort(n) {
+  if (n >= MURYO) { const q = n / MURYO; return q < 10000n ? shortNum(n, MURYO, '無量大数') : jpShort(q) + '無量大数'; }
+  for (const [s, u] of UNITS) if (n >= u) return shortNum(n, u, s);
+  return n.toString();
+}
 
 function rng(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -225,7 +258,7 @@ function simStep(c, live) {
 function makeClip(i) {
   const st = genStage(i);
   const c = { st, em: st.em.map(e => ({ ...e, next: e.next0, ang: e.ang0 })), rng: rng(i * 31 + 5), b: [], t: 0,
-    px: W / 2, py: H * 0.85, coins: [], clipT: 0, freeze: 0.5, shield: 0.7, dead: false, combo: 0, lastG: -9, mult: 1, grazes: 0 };
+    px: W / 2, py: H * 0.85, coins: [], clipT: 0, freeze: 0.5, shield: 0.7, dead: false, combo: 0, lastG: -9, mult: 1, grazes: 0, glow: 0 };
   const steps = Math.round(st.pre / DT);
   for (let k = 0; k < steps; k++) simStep(c, false);
   let best = -1, bx = W / 2, by = H * 0.85;
@@ -244,7 +277,7 @@ function makeClip(i) {
 }
 
 // ───────── 状態
-const S = { state: 'title', idx: 0, streak: 0, best: 0, score: 0, shownScore: 0, gauge: 0, played: 0, slowT: 0, resT: 0, transP: 0, liked: new Set(), sound: true };
+const S = { state: 'title', idx: 0, streak: 0, best: 0, score: 0n, shownScore: 0n, gauge: 0, played: 0, slowT: 0, resT: 0, transP: 0, liked: new Set(), sound: true };
 try { S.best = +localStorage.getItem('swipe-danmaku-best') || 0; } catch (e) {}
 let g = null;
 const parts = [], pops = [], banners = [], shocks = [];
@@ -294,17 +327,18 @@ function flash(col, a) { flashC = col; flashA = Math.max(flashA, REDUCED ? a * 0
 function graze(c, b) {
   c.combo = c.t - c.lastG < 1.5 ? c.combo + 1 : 1;
   c.lastG = c.t; c.grazes++;
-  const m = Math.min(8, 1 + Math.floor(c.combo / 10));
-  if (m > c.mult) {
-    banner('×' + m, m >= 6 ? '#ff4f9a' : m >= 4 ? '#ffd23f' : '#3ee8ff', 64 + m * 4, H * 0.36, 0.7);
+  const m = Math.min(8, 1 + Math.floor(c.combo / 8));
+  c.mult = m;
+  c.glow = 1;
+  if (c.combo % 8 === 0) {
+    banner('×' + jpShort(multBig(c)), m >= 6 ? '#ff4f9a' : m >= 4 ? '#ffd23f' : '#3ee8ff', 54 + m * 3, H * 0.36, 0.7);
     tone(523, 0.18, 'triangle', 0.06); tone(659, 0.18, 'triangle', 0.05, 0, 0.04); tone(784 * (1 + (m - 2) * 0.06), 0.3, 'triangle', 0.06, 0, 0.08);
     addShake(5); buzz(15);
   }
-  c.mult = m;
-  const pts = 5 * c.mult;
+  const pts = grazePts(c);
   S.score += pts;
-  burst(b.x, b.y, 4, ['#fff', COLS[b.col]], 140, 0.3, 2);
-  pop(b.x, b.y - 8, '+' + pts, c.mult >= 4 ? '#ffd23f' : '#fff', 10 + Math.min(6, c.mult));
+  burst(b.x, b.y, 4 + Math.min(8, m), ['#fff', COLS[b.col], '#ffd23f'], 140 + m * 20, 0.3, 2);
+  pop(b.x, b.y - 8, '+' + jpShort(pts), c.mult >= 4 ? '#ffd23f' : '#fff', 10 + Math.min(7, c.mult));
   const now = performance.now();
   if (now - lastBlip > 28) { lastBlip = now; tone(520 * Math.pow(2, Math.min(c.combo, 36) / 14), 0.05, 'square', 0.035); }
   if (c.combo % 5 === 0) buzz(6);
@@ -327,12 +361,13 @@ function bomb(c) {
 }
 function clear() {
   S.state = 'clear'; S.resT = 1.05; S.played++;
-  const bonus = 1000 * (S.streak + 1);
+  const bonus = BASE * 500n * pow2(Math.floor(g.combo / 8)) * pow3(S.streak + 1);
   S.streak++; S.score += bonus;
   shocks.push({ x: g.px, y: g.py, t: 0 });
   toCoins(g, 0.3);
   banner('CLEAR!', '#ffd23f', 72, H * 0.38, 1.1);
-  pop(W / 2, H * 0.5, '+' + bonus.toLocaleString(), '#fff', 22);
+  pop(W / 2, H * 0.5, '+' + jpShort(bonus), '#fff', 26);
+  if (S.streak >= 2) banner('連続倍率 ×' + jpShort(pow3(S.streak)), '#3ee8ff', 22, H * 0.47, 1.0, 0.15);
   confetti(150); flash('#ffd23f', 0.45); addShake(8); buzz([20, 30, 40]);
   [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'square', 0.05, 0, k * 0.07));
   tone(1568, 0.5, 'triangle', 0.05, 0, 0.3);
@@ -454,7 +489,7 @@ function start() {
   if (S.state !== 'title') return;
   initAudio(); if (ac && ac.state === 'suspended') ac.resume();
   $('title').hidden = true; $('info').hidden = false; $('rail').hidden = false;
-  S.score = 0; S.shownScore = 0; S.streak = 0; S.gauge = 0;
+  S.score = 0n; S.shownScore = 0n; S.streak = 0; S.gauge = 0;
   goTo(1);
 }
 $('title').addEventListener('click', start);
@@ -513,7 +548,7 @@ function update(rd) {
       if (cn.t > 0.15) {
         const dx = g.px - cn.x, dy = g.py - cn.y, d = Math.hypot(dx, dy) || 1;
         if (d < 12) {
-          S.score += 10 * Math.max(1, g.mult);
+          S.score += grazePts(g) / 2n;
           const now = performance.now();
           if (now - lastCoin > 22) { lastCoin = now; coinN++; tone(1046 * Math.pow(2, (coinN % 24) / 12), 0.05, 'triangle', 0.03); }
           continue;
@@ -539,12 +574,15 @@ function update(rd) {
   for (let k = pops.length - 1; k >= 0; k--) { pops[k].t += rd; pops[k].y -= 30 * rd; if (pops[k].t > pops[k].dur) pops.splice(k, 1); }
   for (let k = banners.length - 1; k >= 0; k--) { banners[k].t += rd; if (banners[k].t > banners[k].dur) banners.splice(k, 1); }
   for (let k = shocks.length - 1; k >= 0; k--) { shocks[k].t += rd; if (shocks[k].t > 0.6) shocks.splice(k, 1); }
+  if (g) g.glow = Math.max(0, g.glow - rd * 4);
   const boost = g && S.state !== 'title' ? 1 + g.combo / 18 : 1;
   for (const s of stars) { s.y += (20 + 160 * s.z) * boost * rd; if (s.y > H) { s.y = -2; s.x = fx() * W; } }
   shake *= Math.pow(0.0015, rd); if (shake < 0.2) shake = 0;
   flashA *= Math.pow(0.004, rd);
-  S.shownScore += (S.score - S.shownScore) * Math.min(1, rd * 12);
-  if (Math.abs(S.score - S.shownScore) < 1) S.shownScore = S.score;
+  { // 表示する点数は、本当の点数へカウンターで追いつく
+    const d = S.score - S.shownScore;
+    if (d > 0n) { const step = d * BigInt(Math.round(Math.min(1, rd * 12) * 1000)) / 1000n; S.shownScore += step > 0n ? step : d; }
+  }
 }
 
 // ───────── 描画
@@ -603,6 +641,26 @@ function drawEmitters(c) {
 function drawShip(c) {
   if (c.dead) return;
   const x = c.px, y = c.py, t = performance.now() / 1000;
+  // コンボが増えるほど自機の周りが光る: 水色 → 金 → ピンク → 48コンボで虹色
+  if (c.combo > 0 && S.state !== 'title') {
+    const heat = Math.min(1, c.combo / 60);
+    const hue = c.combo >= 48 ? (t * 300) % 360 : c.combo < 30 ? 190 - c.combo / 30 * 145 : 405 - (c.combo - 30) / 18 * 75;
+    const rad = 20 + heat * 46 + c.glow * 12;
+    ctx.globalCompositeOperation = 'lighter';
+    const gr = ctx.createRadialGradient(x, y, 2, x, y, rad);
+    gr.addColorStop(0, `hsla(${hue},100%,70%,${0.35 + heat * 0.4})`);
+    gr.addColorStop(0.5, `hsla(${hue},100%,60%,${0.12 + heat * 0.2 + c.glow * 0.15})`);
+    gr.addColorStop(1, `hsla(${hue},100%,50%,0)`);
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
+    // 周りを回る光の粒(6コンボごとに1つ増える)
+    const n = Math.min(14, Math.floor(c.combo / 6));
+    for (let k = 0; k < n; k++) {
+      const a = t * (3 + heat * 4) + k * TAU / n, rr = 15 + heat * 12 + Math.sin(t * 9 + k) * 2;
+      ctx.fillStyle = `hsl(${(hue + k * 25) % 360},100%,75%)`;
+      ctx.beginPath(); ctx.arc(x + Math.cos(a) * rr, y + Math.sin(a) * rr, 1.6 + heat, 0, TAU); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
   // かすりの範囲（コンボ中は明るく脈打つ）
   const on = c.combo > 0;
   ctx.strokeStyle = on ? '#ffd23f' : '#3ee8ff';
@@ -662,8 +720,15 @@ function drawHud(c) {
   const sc = S.state === 'clear' ? 1 + Math.max(0, 0.4 - (1.05 - S.resT)) : 1;
   text(String(S.streak), 14, 44, 28, S.streak >= 5 ? '#ff4f9a' : '#fff', { align: 'left', scale: sc, glow: S.streak >= 5 ? '#ff4f9a' : null });
   // 点数と倍率
-  text(Math.round(S.shownScore).toLocaleString(), W - 12, 24, 20, '#fff', { align: 'right' });
-  if (c.mult > 1) text('×' + c.mult, W - 12, 46, 16, c.mult >= 6 ? '#ff4f9a' : c.mult >= 4 ? '#ffd23f' : '#3ee8ff', { align: 'right', glow: '#000' });
+  if (S.streak > 0) text('×' + jpShort(pow3(S.streak)), 16, 66, 10, '#3ee8ff', { align: 'left', font: BODY, weight: 900 });
+  // 点数: 全部の桁を出す。長くなったら文字を小さくして収める
+  const sTxt = jpFull(S.shownScore);
+  ctx.font = `22px ${DISPLAY}`;
+  const sw = ctx.measureText(sTxt).width, maxW = W - 80;
+  const ss = sw > maxW ? Math.max(6, 22 * maxW / sw) : 22;
+  const rolling = S.score - S.shownScore > 1n;
+  text(sTxt, W - 12, 26, ss, rolling ? '#ffd23f' : '#fff', { align: 'right', glow: rolling ? '#ffd23f' : null });
+  if (S.state === 'play' && multBig(c) > 1n) text('×' + jpShort(multBig(c)), W - 12, 48, 15, c.mult >= 6 ? '#ff4f9a' : c.mult >= 4 ? '#ffd23f' : '#3ee8ff', { align: 'right', glow: '#000' });
   // コンボ
   if (c.combo >= 3 && S.state === 'play') {
     const a = clamp(1.5 - (c.t - c.lastG), 0, 1);
