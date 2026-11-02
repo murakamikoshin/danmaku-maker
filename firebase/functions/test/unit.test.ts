@@ -397,6 +397,25 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ awaken: 2 }))).toEqual({ ok: false, error: "look" });
   });
 
+  it("堕天使の技は、堕天使(bossLook 5)のボスにだけ置ける", () => {
+    const angel = (t: string) => ({ emitters: [em({ t })] });
+    for (const t of ["angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise"]) {
+      const ok = validatePublish(boss({ ...angel(t), bossLook: 5, bossMove: 0 }));
+      expect(ok.ok && ok.stage.emitters[0]!.t).toBe(t);
+      expect(validatePublish(boss({ ...angel(t), bossLook: 2 }))).toEqual({ ok: false, error: "emitter-pattern" });
+      expect(validatePublish(boss(angel(t)))).toEqual({ ok: false, error: "emitter-pattern" });
+      expect(validatePublish(good(angel(t)))).toEqual({ ok: false, error: "emitter-pattern" });
+    }
+    // 連戦では、堕天使の場面にだけ
+    const wave = (look: number | undefined, t: string) => ({ kind: "boss", durationSec: 30, bossHp: 100, bossMove: look === 5 ? 0 : 1, emitters: [em({ t })], ...(look !== undefined ? { bossLook: look } : {}) });
+    const seq = (waves: unknown[]) => validatePublish({
+      name: "連戦", authorName: "K", mode: "sequence", durationSec: 30 * waves.length + 2 * (waves.length - 1), emitters: [], waves, clearReplay: "AQIDBAUGBwg=",
+    } as never);
+    expect(seq([wave(5, "angelHalo")]).ok).toBe(true);
+    expect(seq([wave(undefined, "angelHalo")])).toEqual({ ok: false, error: "emitter-pattern" });
+    expect(seq([wave(5, "angelHalo"), wave(3, "angelTwin")])).toEqual({ ok: false, error: "emitter-pattern" });
+  });
+
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {
     const a = validatePublish(good({ emitters: [em({ a: 45 })] }));
     expect(a.ok && a.stage.emitters[0]!.a).toBe(45);

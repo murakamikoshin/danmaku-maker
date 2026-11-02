@@ -141,6 +141,18 @@ final class FixtureExportTests: XCTestCase {
             Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 2, emitters: bossEm),
             Wave(kind: .boss, durationSec: 60, bossHp: 250, bossMove: 0, emitters: bossEm, bossLook: 5, awaken: 3)]).sanitized()))
 
+        // 堕天使の専用の技(覚醒の前と後)。ここより前の並びは変えない
+        func angel(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0)
+            }
+            return Stage(name: "a", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 5, awaken: awaken).sanitized()
+        }
+        stages.append(("angel-feather-halo", angel([(.angelFeather, 0.5, 7, 3.8, 0), (.angelHalo, 2.0, 22, 4.0, 0)], awaken: 2)))
+        stages.append(("angel-twin-cross", angel([(.angelTwin, 0.3, 4, 2.3, 10), (.angelCross, 2.0, 1, 2.0, 0)], awaken: 2)))
+        stages.append(("angel-paradise", angel([(.angelParadise, 1.2, 23, 1.1, 29), (.angelFeather, 0.8, 5, 3.5, 0)], awaken: 3)))
+        stages.append(("angel-damage-all", angel([(.angelTwin, 0.4, 3, 2.0, 8), (.angelHalo, 2.0, 18, 3.0, 0), (.angelParadise, 1.5, 20, 1.0, 0)], awaken: nil, mode: .damage)))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

@@ -23,6 +23,11 @@ extension Emitter {
         case .stopgo: return Emitter(t: t, e: end, i: 1.0, c: 5, v: 2.4, r: 60)
         case .split: return Emitter(t: t, e: end, i: 1.1, c: 3, v: 2.4, r: 50)
         case .timed: return Emitter(t: t, e: end, i: 1.6, c: 16, v: 2.0, r: 8)
+        case .angelTwin: return Emitter(t: t, e: end, i: 0.1, c: 4, v: 2.3, r: 10)
+        case .angelFeather: return Emitter(t: t, e: end, i: 0.5, c: 7, v: 3.8, r: 0)
+        case .angelHalo: return Emitter(t: t, e: end, i: 2.0, c: 22, v: 4.2, r: 0)
+        case .angelCross: return Emitter(t: t, e: end, i: 2.0, c: 1, v: 2.0, r: 0)
+        case .angelParadise: return Emitter(t: t, e: end, i: 1.2, c: 23, v: 1.05, r: 29)
         default:
             // 広告で解放するパターン: 表の初期値
             let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
@@ -281,6 +286,16 @@ final class EditorModel: ObservableObject {
         let j = i + delta
         guard draft.waves.indices.contains(j) else { return }
         draft.waves.swapAt(i, j)
+    }
+
+    /// ボスの見た目を変えるとき: キャラクター専用の技を、ふつうの放射(ring)に置き換える
+    func convertCharacterPatterns() {
+        for i in draft.emitters.indices where draft.emitters[i].t.bossCharacter != nil { draft.emitters[i].changePattern(to: .ring) }
+    }
+
+    func convertCharacterPatterns(inWave id: UUID) {
+        guard let w = draft.waves.firstIndex(where: { $0.id == id }) else { return }
+        for i in draft.waves[w].emitters.indices where draft.waves[w].emitters[i].t.bossCharacter != nil { draft.waves[w].emitters[i].changePattern(to: .ring) }
     }
 
     func addEmitter(toWave id: UUID) {

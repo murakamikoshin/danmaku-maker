@@ -68,7 +68,9 @@ struct EditorView: View {
                             GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
-                                              mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken)
+                                              mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken,
+                                              usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
+                                              convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
                         }
                         MarkerPanel(model: model)
@@ -297,6 +299,18 @@ private struct EnemyControls: View {
     @Binding var mookLook: Int
     /// 覚醒する段階(nil は覚醒しない)。専用の絵を持つボスを選んだときだけ出す
     @Binding var awaken: Int?
+    /// いま置いている発射台に、キャラクターのボス専用の技があるか。見た目を変えると使えなくなるので、確認してから「放射」に置き換える
+    var usesCharacterPatterns = false
+    var convertCharacterPatterns: () -> Void = {}
+    @State private var pendingLook: Int?
+
+    /// ボスの見た目を選んだとき: 専用の技を置いているのに、そのボスをやめるなら、先に確認する
+    private var lookChoice: Binding<Int> {
+        Binding(get: { bossLook }, set: { new in
+            let leaves = usesCharacterPatterns && BossCharacter.of(look: new) != BossCharacter.of(look: bossLook)
+            if leaves { pendingLook = new } else { bossLook = new }
+        })
+    }
 
     private var isCharacter: Bool { BossCharacter.of(look: bossLook) != nil }
 
@@ -313,7 +327,7 @@ private struct EnemyControls: View {
                     Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
                 }
                 Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                looks(selection: $bossLook, choices: EnemyArt.bossLookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                looks(selection: lookChoice, choices: EnemyArt.bossLookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
                 if isCharacter {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
@@ -328,6 +342,15 @@ private struct EnemyControls: View {
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                 looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
+        }
+        .confirmationDialog("editor.boss.change.title", isPresented: Binding(get: { pendingLook != nil }, set: { if !$0 { pendingLook = nil } }), titleVisibility: .visible) {
+            Button("editor.boss.change.replace") {
+                if let new = pendingLook { convertCharacterPatterns(); bossLook = new }
+                pendingLook = nil
+            }
+            Button("common.cancel", role: .cancel) { pendingLook = nil }
+        } message: {
+            Text("editor.boss.change.message")
         }
     }
 
@@ -844,7 +867,9 @@ private struct WaveCard: View {
                                   bossLook: Binding(get: { wave.bossLook ?? 0 }, set: { model.draft.waves[i].bossLook = $0 }),
                                   mooks: Binding(get: { wave.mooks }, set: { model.draft.waves[i].mooks = $0 }),
                                   mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }),
-                                  awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }))
+                                  awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }),
+                                  usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
+                                  convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("editor.warning").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))

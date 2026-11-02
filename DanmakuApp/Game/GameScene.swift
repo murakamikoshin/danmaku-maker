@@ -153,7 +153,7 @@ final class GameScene: SKScene {
         let (glow, core) = beamNodes[slot]
         let path = CGMutablePath()
         path.move(to: pos(b.x, b.y))
-        path.addLine(to: pos(b.x + b.vx * BeamLook.length, b.y + b.vy * BeamLook.length))
+        path.addLine(to: pos(b.x + b.vx * b.beamLength, b.y + b.vy * b.beamLength))
         glow.path = path; core.path = path
         glow.isHidden = false
         let color = skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)]

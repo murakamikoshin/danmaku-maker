@@ -1,6 +1,7 @@
 import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
+import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
 import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -43,11 +44,18 @@ function hitDistanceSquared(b: Bullet): number {
 }
 
 /** チャージビームが (px, py) に当たるか。撃っている間だけ、出る場所から向きのほうへ伸びる光線に触れると当たる(1本で1回だけ) */
-export function beamHits(b: { x: number; y: number; vx: number; vy: number; age: number; bounces: number }, px: number, py: number): boolean {
+export function beamHits(b: { x: number; y: number; vx: number; vy: number; age: number; bounces: number; maxSpeed?: number }, px: number, py: number): boolean {
   if (b.age < BEAM_CHARGE || b.bounces <= 0) return false;
   const rx = px - b.x, ry = py - b.y;
   const along = rx * b.vx + ry * b.vy;
-  const d2 = along < 0 ? rx * rx + ry * ry : rx * rx + ry * ry - along * along;
+  const len = b.maxSpeed ?? 0;
+  let d2: number;
+  if (along < 0) d2 = rx * rx + ry * ry;
+  else if (len > 0 && along > len) {
+    // 長さのある光線は、先の端より向こうには届かない
+    const ex = px - (b.x + b.vx * len), ey = py - (b.y + b.vy * len);
+    d2 = ex * ex + ey * ey;
+  } else d2 = rx * rx + ry * ry - along * along;
   return d2 < BEAM_HIT_R2;
 }
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
@@ -76,17 +84,18 @@ export interface SimStage {
   waves?: Wave[] | null;
   bossSize?: number | null;
   bossLook?: number | null;
+  awaken?: number | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number }
 const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0 }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0 }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -144,10 +153,12 @@ interface Bullet {
   x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number; follow?: Follow;
   /** 重力弾・膨らむ泡・地雷・爆風だけが使う(ない弾は 0 と同じ)。アプリの Bullet と同じ意味 */
   gravity?: number; radius?: number; grow?: number; growMax?: number; fuse?: number;
+  /** 堕天使の技だけが使う予備の数値(羽・破片・閉じる輪)。アプリの Bullet と同じ意味 */
+  u0?: number; u1?: number; u2?: number; u3?: number;
 }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
-function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[]) {
+function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[], awakened = false, salt = 0) {
   const sp = m.v * 60;
   const n = Math.max(1, m.c);
   const deg = Math.PI / 180;
@@ -276,6 +287,7 @@ function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: num
       break;
     }
     default: {
+      if (isFallenAngelPattern(m.t)) { emitFallenAngel(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       // 広告で解放するパターン: 弾の出し方の表に従う
       const recipe = RECIPES[m.t];
       if (recipe) {
@@ -309,7 +321,8 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
   let damage = 0;
   let defeats = 0;
   const shotDef = SHOTS[shotType];
-  const rng = mulberry(stageSeed(stage));
+  const salt = stageSeed(stage);
+  const rng = mulberry(salt);
   let next = specs[0]!.emitters.map((m) => m.s);
   let shotCount = specs[0]!.emitters.map(() => 0);
   let bullets: Bullet[] = [];
@@ -398,7 +411,8 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         if (sp.boss) {
           if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = waveT; return; }
           while (waveT >= next[idx]!) {
-            emit(m, shotCount[idx]!, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by, px, py, rng, bullets);
+            emit(m, shotCount[idx]!, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by, px, py, rng, bullets,
+              sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);
             shotCount[idx]!++;
             next[idx]! += Math.max(0.05, m.i);
           }
@@ -448,7 +462,39 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         bullets[w++] = b;
         continue;
       }
-      if (b.script === MINE_SCRIPT) {
+      if (b.script === FEATHER_SCRIPT) {
+        // 羽: 減速して止まり、そのあと左右に揺れながら、だんだん速く落ちる
+        b.age += dt;
+        if (b.age < FEATHER_DECEL_SECONDS) { b.vx *= FEATHER_DECAY; b.vy *= FEATHER_DECAY; }
+        else {
+          if ((b.u0 ?? 0) === 0) { b.u0 = 1; b.vx = 0; b.vy = 12; }
+          b.vy = Math.min(b.vy + 180 * dt, b.maxSpeed);
+          b.vx = Math.sin((b.age * 60 + (b.fuse ?? 0)) * 0.07) * 54;
+        }
+        b.x += b.vx * dt; b.y += b.vy * dt;
+      } else if (b.script === SHARD_SCRIPT) {
+        // 破片: 光輪から輪の形に広がり、回って、時間が来た順に自機へ突進する
+        b.age += dt;
+        if (b.age >= b.homeLeft) {
+          const a = Math.atan2(py - b.y, px - b.x);
+          b.vx = Math.cos(a) * (b.u3 ?? 0); b.vy = Math.sin(a) * (b.u3 ?? 0);
+          b.script = 0; b.turn = 0; b.homeLeft = 0; b.maxSpeed = 0;
+        } else {
+          const q = 1 - Math.min(1, b.age / 0.4);
+          const e = 1 - q * q * q;
+          const ang = (b.u2 ?? 0) + b.turn * Math.max(0, b.age - 0.4);
+          b.x = (b.u0 ?? 0) + Math.cos(ang) * b.maxSpeed * e;
+          b.y = (b.u1 ?? 0) + Math.sin(ang) * b.maxSpeed * e * 0.8;
+        }
+      } else if (b.script === RING_SCRIPT) {
+        // 閉じてくる輪: 中心へ向かって縮む(回る輪もある)。中心に着いたら消える
+        b.age += dt;
+        if (b.age >= (b.fuse ?? 0)) continue;
+        const rad = RING_START_RADIUS - (b.u3 ?? 0) * b.age;
+        const ang = (b.u2 ?? 0) + b.turn * b.age;
+        b.x = (b.u0 ?? 0) + Math.cos(ang) * rad;
+        b.y = (b.u1 ?? 0) + Math.sin(ang) * rad;
+      } else if (b.script === MINE_SCRIPT) {
         // 地雷: 決まった時間だけ進んで止まり、時間が来たら爆風と弾の輪になって消える
         b.age += dt;
         if (b.age >= (b.fuse ?? 0)) {
@@ -562,7 +608,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
       }
       }
-      if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
+      if (b.script !== RING_SCRIPT && (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20)) continue;
       const dx = b.x - px, dy = b.y - py;
       if (dx * dx + dy * dy < hitDistanceSquared(b)) {
         if (tick < shieldUntil) continue;

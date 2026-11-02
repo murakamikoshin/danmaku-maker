@@ -110,6 +110,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     /// 渦巻き: 弾が少しずつ曲がって、渦の腕のように広がる(無料)。
     /// これまでの spiral は放射(ring)と同じ計算だったので、投稿済みのステージの動きを変えないように残し、エディタには出さない
     case swirl
+    // ここから下は、堕天使(ボスのキャラクター)だけが使える技。その見た目を選んでいるときだけ、ステージ作りで置ける(遊ぶのは誰でもできる)
+    /// 双月「紅き双環」: 両手のオーブから、逆回転の螺旋を撃つ
+    case angelTwin
+    /// 堕羽「フォールン・フェザー」: 翼から羽の弾を扇状に撃つ。減速して止まり、揺れながら落ちる
+    case angelFeather
+    /// 輪符「砕けし光輪」: 光輪から破片が輪になって広がり、回ったあと、端から順に自機へ突進する
+    case angelHalo
+    /// 審判「逆さ十字の裁き」: 胸を中心にした逆さ十字のレーザーが、ためてから回りながら撃たれる
+    case angelCross
+    /// 終焉「失楽園」: 自機を中心にした弾の輪が閉じてくる。抜け道は1か所だけ
+    case angelParadise
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -118,6 +129,11 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public static let paid: [Pattern] = [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce, .stopgo, .split, .timed]
     /// 弾幕パック2のパターンか(買わないと、ステージ作りで選べない)
     public var isPack2: Bool { Pattern.pack2.contains(self) }
+
+    /// 堕天使だけが使える技(並びは、出す順)
+    public static let fallenAngel: [Pattern] = [.angelFeather, .angelHalo, .angelTwin, .angelCross, .angelParadise]
+    /// ボスのキャラクターの専用の技か。その見た目のボスを選んでいるときだけ、ステージに置ける
+    public var bossCharacter: BossCharacter? { Pattern.fallenAngel.contains(self) ? .fallenAngel : nil }
 }
 
 public enum Mode: String, Codable, Sendable {
@@ -196,6 +212,12 @@ public struct Wave: Codable, Equatable, Sendable {
     }
 
     /// 向きを回す角度は、-180〜180 度の整数
+    /// キャラクターのボスの専用の技は、そのボスを選んでいるときだけ使える。そうでなければ、ふつうの輪にする
+    static func allowedPattern(_ t: Pattern, look: Int?) -> Pattern {
+        guard let owner = t.bossCharacter else { return t }
+        return look == owner.rawValue ? t : .ring
+    }
+
     static func sanitizedAngle(_ v: Int) -> Int { min(180, max(-180, v)) }
 
     /// 雑魚の見た目。標準(0)は保存しない。範囲外は標準に戻す
@@ -256,7 +278,7 @@ public struct Wave: Codable, Equatable, Sendable {
         let look = isBoss ? Wave.sanitizedBossLook(bossLook) : nil
         let mv = isBoss ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, 2).rounded())) : nil
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
-            Emitter(t: m.t,
+            Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),
@@ -585,7 +607,7 @@ public struct Stage: Codable, Equatable, Sendable {
         let mv = isBossMode ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, 2).rounded())) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
-            Emitter(t: m.t,
+            Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),

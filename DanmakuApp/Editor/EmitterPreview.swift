@@ -38,7 +38,7 @@ final class PreviewEngine {
                 continue
             }
             if motion == .gone { continue }   // 撃ち終わったチャージビーム
-            if b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > PreviewEngine.height + 20 { continue }
+            if !b.isRing && (b.x < -20 || b.x > DanmakuConfig.width + 20 || b.y < -20 || b.y > PreviewEngine.height + 20) { continue }
             bullets[w] = b; w += 1
         }
         bullets.removeSubrange(w...)
@@ -134,7 +134,7 @@ struct BeamLook {
     init(_ b: Bullet) {
         if b.beamFiring {
             // 撃っている間: 太い光線。終わりぎわに薄くなって消える
-            let f = (b.age - DanmakuConfig.beamCharge) / DanmakuConfig.beamFire
+            let f = (b.age - DanmakuConfig.beamCharge) / b.beamFireTime
             firing = true
             width = 18
             coreWidth = 6
@@ -156,7 +156,7 @@ extension GraphicsContext {
         let look = BeamLook(b)
         var p = Path()
         p.move(to: CGPoint(x: b.x * scale, y: b.y * scale))
-        p.addLine(to: CGPoint(x: (b.x + b.vx * BeamLook.length) * scale, y: (b.y + b.vy * BeamLook.length) * scale))
+        p.addLine(to: CGPoint(x: (b.x + b.vx * b.beamLength) * scale, y: (b.y + b.vy * b.beamLength) * scale))
         let style = StrokeStyle(lineWidth: look.width * scale, lineCap: .round)
         stroke(p, with: .color(color.opacity(look.alpha)), style: style)
         if look.firing {
