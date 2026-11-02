@@ -399,6 +399,8 @@ function graze(c, b) {
   if (S.gauge >= BOMB_AT) bomb(c);
 }
 function toCoins(c, delay) {
+  // 金の粒の点は、この瞬間にまとめて入れる(吸い込まれるのは見た目だけ。ランキングの検証を単純にするため)
+  S.score += grazePts(c) / 2n * BigInt(c.b.length);
   for (const b of c.b) c.coins.push({ x: b.x, y: b.y, vx: b.vx * 0.25 + (fx() - 0.5) * 60, vy: b.vy * 0.25 - 40 - fx() * 60, t: -delay * fx() });
   for (const b of c.b) if (fx() < 0.35) burst(b.x, b.y, 2, ['#fff', '#ffd23f'], 90, 0.35, 2);
   c.b.length = 0; coinN = 0;
@@ -682,7 +684,6 @@ function update(rd) {
       if (cn.t > 0.15) {
         const dx = g.px - cn.x, dy = g.py - cn.y, d = Math.hypot(dx, dy) || 1;
         if (d < 12) {
-          S.score += grazePts(g) / 2n;
           const now = performance.now();
           if (now - lastCoin > 22) { lastCoin = now; coinN++; tone(1046 * Math.pow(2, (coinN % 24) / 12), 0.05, 'triangle', 0.03); }
           continue;
