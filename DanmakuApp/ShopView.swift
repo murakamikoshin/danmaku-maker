@@ -9,11 +9,13 @@ struct ShopView: View {
     @EnvironmentObject private var rewards: RewardStore
     @State private var showRemoveAds = false
     @State private var celebrate = false
-    @State private var tab: ShopTab = .deals
+    @State private var tab: ShopTab
+
+    init(initialTab: ShopTab = .deals) { _tab = State(initialValue: initialTab) }
 
     /// ショップの区切り。上のタブで切り替える
     enum ShopTab: Hashable {
-        case deals, patterns, shots, looks
+        case deals, patterns, shots, looks, bosses
 
         /// 起動引数 -shop-focus で動かす先(画面確認用)が、どのタブにあるか
         static func containing(_ id: String) -> ShopTab? {
@@ -22,6 +24,7 @@ struct ShopView: View {
             case "adpatterns", "patterns", "patterns2", "maker": return .patterns
             case "shots": return .shots
             case "customimages": return .looks
+            case "bosses": return .bosses
             default: return nil
             }
         }
@@ -31,7 +34,7 @@ struct ShopView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 header
-                GameTabs(items: [(ShopTab.deals, "shop.tab.deals"), (.patterns, "shop.tab.patterns"), (.shots, "shop.tab.shots"), (.looks, "shop.tab.looks")],
+                GameTabs(items: tabItems,
                          selection: $tab, idPrefix: "shop.tab",
                          badges: !purchases.isPremium && rewards.canClaim ? [.deals] : [])
                     .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 8)
@@ -90,6 +93,12 @@ struct ShopView: View {
         .preferredColorScheme(.dark)
     }
 
+    private var tabItems: [(ShopTab, LocalizedStringKey)] {
+        var items: [(ShopTab, LocalizedStringKey)] = [(.deals, "shop.tab.deals"), (.patterns, "shop.tab.patterns"), (.shots, "shop.tab.shots"), (.looks, "shop.tab.looks")]
+        if BossCharacter.editorEnabled { items.append((.bosses, "shop.tab.bosses")) }
+        return items
+    }
+
     /// 上の見出し: 画面の名前と、購入の復元
     private var header: some View {
         VStack(spacing: 4) {
@@ -143,6 +152,8 @@ struct ShopView: View {
             MakerCard().id("maker")
         case .shots:
             ShotSection().id("shots")
+        case .bosses:
+            ForEach(BossCharacter.allCases, id: \.self) { BossShopCard(boss: $0) }
         case .looks:
             CustomImagesCard().id("customimages")
             RewardShop()
@@ -915,5 +926,50 @@ final class PatternDemoEngine {
         }
         bullets.removeSubrange(w...)
         bullets.append(contentsOf: born)
+    }
+}
+
+
+/// ボスの販売カード。待機アニメと覚醒した姿を見せる。買うと、公開するステージで使える(置いて試すのは、買う前からできる)
+private struct BossShopCard: View {
+    let boss: BossCharacter
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        ShopCard(title: LocalizedStringKey(L("enemy.boss.\(boss.rawValue)")), footer: "shop.boss.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(L("shop.boss.\(boss.rawValue).desc")).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    HStack(spacing: 0) {
+                        sprite(awakened: false)
+                        sprite(awakened: true)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                    Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.has(boss) {
+                            EquippedLabel()
+                        } else {
+                            PriceButton(product: .boss(boss))
+                        }
+                    }
+                }
+                .padding(14)
+            }
+        }
+        .accessibilityIdentifier("shop.boss.\(boss.productKey)")
+    }
+
+    private func sprite(awakened: Bool) -> some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 15.0)) { tl in
+            if let art = BossSprites.art(boss, awakened: awakened) {
+                let i = BossSprites.frameIndex(at: tl.date.timeIntervalSinceReferenceDate)
+                Image(decorative: art.frames[i].cgImage(), scale: 1)
+                    .interpolation(.none).resizable().aspectRatio(art.size, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+            }
+        }
     }
 }

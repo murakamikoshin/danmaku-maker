@@ -354,7 +354,7 @@ struct PatternTiles: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let character {
-                Text(LocalizedStringKey("editor.pattern.bosssection.\(character.rawValue)")).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text(L("editor.pattern.bosssection.\(character.rawValue)")).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                 grid(DanmakuCore.Pattern.allCases.filter { $0.bossCharacter == character })
             }
             grid(freePatterns)

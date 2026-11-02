@@ -12,6 +12,8 @@ struct PublishFlowView: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showShop = false
     @Environment(\.dismiss) private var dismiss
     @State private var quota: PostQuota?
     @State private var granting = false
@@ -45,6 +47,7 @@ struct PublishFlowView: View {
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
+        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses) }
         .task(id: auth.isMember) { await refreshQuota() }
         .preferredColorScheme(.dark)
     }
@@ -79,7 +82,14 @@ struct PublishFlowView: View {
                     Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 quotaView
-                if limitReached {
+                if let boss = missingBoss {
+                    // 置いて試すのは持っていなくてもできるが、公開には持っている必要がある
+                    GamePanel(title: "publish.boss.title") {
+                        Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                    }
+                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
+                        .accessibilityIdentifier("publish.boss.shop")
+                } else if limitReached {
                     GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.gold) { Task { await watchForExtra() } }
                         .disabled(!ads.isReady || granting).opacity(ads.isReady && !granting ? 1 : 0.5)
                         .accessibilityIdentifier("publish.quota.watch")
@@ -90,6 +100,9 @@ struct PublishFlowView: View {
             }
         }
     }
+
+    /// 使っているのに持っていないボス(あれば公開できない)
+    private var missingBoss: BossCharacter? { stage.usedBosses.first { !cosmetics.ownership.has($0) } }
 
     /// 今日あと何本公開できるか(「URLを知っている人だけ」の投稿は数えないので、出さない)
     private var remaining: Int? { quota?.remaining(premium: purchases.isPremium) }

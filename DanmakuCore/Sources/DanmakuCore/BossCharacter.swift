@@ -21,6 +21,13 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         #endif
     }
 
+    /// 商品 ID に使う名前(com.koshin.danmakumaker.boss.<これ>)
+    public var productKey: String {
+        switch self {
+        case .fallenAngel: return "fallen_angel"
+        }
+    }
+
     public static func of(look: Int) -> BossCharacter? { BossCharacter(rawValue: look) }
 
     /// 弾(自機のショット)が当たる半径(論理px)。大きさの設定(小・中・大)は、キャラクターでは使わない

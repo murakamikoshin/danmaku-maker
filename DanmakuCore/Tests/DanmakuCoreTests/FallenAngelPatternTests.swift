@@ -147,3 +147,37 @@ final class FallenAngelPatternTests: XCTestCase {
         XCTAssertLessThanOrEqual(maxBullets, DanmakuConfig.maxBullets)
     }
 }
+
+final class BossProductTests: XCTestCase {
+    func testBossProductIDRoundTripAndPrice() {
+        let p = Product.boss(.fallenAngel)
+        XCTAssertEqual(p.id, "com.koshin.danmakumaker.boss.fallen_angel")
+        XCTAssertEqual(Product(id: p.id), p)
+        XCTAssertNil(Product(id: "com.koshin.danmakumaker.boss.unknown"))
+        XCTAssertTrue(Product.all.contains(p))
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, Product.all.count)
+    }
+
+    func testOwnershipAndLifetime() {
+        XCTAssertFalse(Ownership().has(.fallenAngel))
+        XCTAssertTrue(Ownership().canBuy(.boss(.fallenAngel)))
+        let own = Ownership(owned: [.boss(.fallenAngel)])
+        XCTAssertTrue(own.has(.fallenAngel))
+        XCTAssertFalse(own.canBuy(.boss(.fallenAngel)))
+        let life = Ownership(owned: [.lifetime])
+        XCTAssertTrue(life.has(.fallenAngel))
+        XCTAssertFalse(life.canBuy(.boss(.fallenAngel)))
+        XCTAssertEqual(Ownership(productIDs: ["com.koshin.danmakumaker.boss.fallen_angel"]).has(.fallenAngel), true)
+    }
+
+    func testUsedBosses() {
+        let em = [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 1, c: 8, v: 2, r: 0, k: 0)]
+        XCTAssertEqual(Stage(name: "a", mode: .boss, durationSec: 60, bossHp: 200, emitters: em, bossLook: 5).sanitized().usedBosses, [.fallenAngel])
+        XCTAssertEqual(Stage(name: "a", mode: .boss, durationSec: 60, bossHp: 200, emitters: em, bossLook: 2).sanitized().usedBosses, [])
+        XCTAssertEqual(Stage(name: "a", mode: .survive, durationSec: 20, emitters: em).sanitized().usedBosses, [])
+        let seq = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 1, emitters: em),
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 0, emitters: em, bossLook: 5)]).sanitized()
+        XCTAssertEqual(seq.usedBosses, [.fallenAngel])
+    }
+}

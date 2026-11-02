@@ -575,6 +575,16 @@ public struct Stage: Codable, Equatable, Sendable {
     ]
 
     /// 値の範囲を丸めた安全なステージを返す（試作の sanitize と同じ。HP は 50 刻み、小数は 2 桁、角度は整数に揃える）
+    /// このステージで使っている、キャラクターのボス(連戦なら、場面ごとの全部)。公開には、持っている必要がある
+    public var usedBosses: [BossCharacter] {
+        var list: [BossCharacter] = []
+        let looks = mode == .sequence ? (waves ?? []).filter { $0.kind == .boss }.map(\.bossLook) : (mode == .boss || mode == .damage ? [bossLook] : [])
+        for look in looks {
+            if let b = BossCharacter.of(look: look ?? 0), !list.contains(b) { list.append(b) }
+        }
+        return list
+    }
+
     public func sanitized() -> Stage {
         func clamp(_ v: Double, _ lo: Double, _ hi: Double) -> Double {
             let f = v.isFinite ? v : 0
