@@ -491,7 +491,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "shot", "rewardFx",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {

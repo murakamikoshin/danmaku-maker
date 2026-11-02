@@ -31,6 +31,17 @@ final class GameScene: SKScene {
     private var bossTexture: SKTexture
     private var bossFlashTexture: SKTexture
     private var customBossTextures: (SKTexture, SKTexture)?
+    /// 専用の絵を持つボス(堕天使など)の待機アニメ。通常の姿と、覚醒した姿
+    private var characterNormal: BossSprites.Art?
+    private var characterAwakened: BossSprites.Art?
+    /// 覚醒の演出: 覚醒した瞬間のステージ時刻(演出中だけ入っている)と、演出を出したか・衝撃波を出したか
+    private var awakenStartT: Double?
+    private var awakenShown = false
+    private var awakenRingShown = false
+    private let awakenOverlay = SKSpriteNode(color: .white, size: CGSize(width: 360, height: 540))
+    /// 覚醒の演出の長さ(秒)と、姿が変わる時刻。ボスの段階が変わる間(Simulation の banner 1.2秒)に収める
+    private static let awakenLength = 1.2
+    private static let awakenSwap = 0.45
     private var mookNodes: [SKSpriteNode] = []
     private var bulletNodes: [SKSpriteNode] = []
     /// チャージビームの光線(外側の光と、白い芯)。使い回す
@@ -197,6 +208,10 @@ final class GameScene: SKScene {
         warningOverlay.zPosition = 9
         warningOverlay.alpha = 0
         addChild(warningOverlay)
+        awakenOverlay.position = CGPoint(x: W / 2, y: H / 2)
+        awakenOverlay.zPosition = 9.5
+        awakenOverlay.alpha = 0
+        addChild(awakenOverlay)
         enterWave(sim.waveIndex)
         centerLabel.fontSize = 28
         centerLabel.fontColor = Palette.text
@@ -209,15 +224,25 @@ final class GameScene: SKScene {
     /// 場面ごとに決まっている、ボスの見た目と大きさ(当たる範囲と同じ比率)、発射点の雑魚の姿
     private func applyEnemyLooks() {
         let bossSize = CGSize(width: EnemyArt.bossPoints(size: sim.bossSizeIndex), height: EnemyArt.bossPoints(size: sim.bossSizeIndex))
-        if let c = customBossTextures {
+        characterNormal = nil; characterAwakened = nil
+        if let c = sim.bossCharacter, let art = BossSprites.art(c, awakened: false) {
+            // 専用の絵を持つボスは、自分の画像への差し替えより優先する(絵・位置・当たり判定が決まっているため)
+            characterNormal = art
+            characterAwakened = BossSprites.art(c, awakened: true)
+            bossTexture = art.frames[0]; bossFlashTexture = art.flashFrames[0]
+            bossNode.texture = bossTexture
+            bossNode.size = art.size
+        } else if let c = customBossTextures {
             bossTexture = c.0; bossFlashTexture = c.1
         } else {
             let look = sim.bossLookIndex
             bossTexture = SpriteFactory.bossTexture(look: look, size: sim.bossSizeIndex, flash: false)
             bossFlashTexture = SpriteFactory.bossTexture(look: look, size: sim.bossSizeIndex, flash: true)
         }
-        bossNode.texture = bossTexture
-        bossNode.size = bossSize
+        if characterNormal == nil {
+            bossNode.texture = bossTexture
+            bossNode.size = bossSize
+        }
         for n in mookNodes { n.removeFromParent() }
         mookNodes.removeAll()
         guard let mookSize = sim.mookSizeIndex else { return }
@@ -233,9 +258,53 @@ final class GameScene: SKScene {
         }
     }
 
+    /// 覚醒の演出(見た目だけ)。覚醒する段階に入った瞬間から1.2秒: 白くなって震え → 姿が変わって赤い衝撃波と「覚醒」
+    private func updateAwaken(at bp: Point) {
+        if sim.isAwakened && !awakenShown {
+            awakenShown = true
+            if effectsOn { awakenStartT = sim.t }
+        } else if !sim.isAwakened {
+            awakenShown = false; awakenStartT = nil; awakenRingShown = false
+        }
+        guard let st = awakenStartT else {
+            if awakenOverlay.alpha != 0 { awakenOverlay.alpha = 0 }
+            return
+        }
+        let e = sim.t - st
+        if e >= GameScene.awakenLength {
+            awakenStartT = nil
+            awakenOverlay.alpha = 0
+            return
+        }
+        if e < GameScene.awakenSwap {
+            let k = e / GameScene.awakenSwap
+            awakenOverlay.color = .white
+            awakenOverlay.alpha = CGFloat(k * 0.85)
+            // 震える
+            bossNode.position.x += CGFloat(sin(e * 90) * 3 * k)
+        } else {
+            let k = (e - GameScene.awakenSwap) / (GameScene.awakenLength - GameScene.awakenSwap)
+            awakenOverlay.color = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
+            awakenOverlay.alpha = CGFloat((1 - k) * 0.5)
+            if !awakenRingShown {
+                awakenRingShown = true
+                let ring = SKShapeNode(circleOfRadius: 20)
+                ring.strokeColor = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
+                ring.lineWidth = 4
+                ring.fillColor = .clear
+                ring.position = pos(bp.x, bp.y)
+                ring.zPosition = 3
+                addChild(ring)
+                ring.run(.sequence([.group([.scale(to: 14, duration: 0.75), .fadeOut(withDuration: 0.75)]), .removeFromParent()]))
+            }
+        }
+    }
+
     /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
     private func enterWave(_ index: Int) {
         shownWave = index
+        awakenStartT = nil; awakenShown = false; awakenRingShown = false
+        awakenOverlay.alpha = 0
         for m in markers { m.removeFromParent() }
         markers.removeAll()
         if !sim.isBoss && sim.stage.showsMarkers {
@@ -412,7 +481,16 @@ final class GameScene: SKScene {
         if sim.isBoss {
             let bp = sim.bossPosition
             bossNode.position = pos(bp.x, bp.y)
-            bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
+            updateAwaken(at: bp)
+            if let normal = characterNormal {
+                let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
+                let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
+                let i = BossSprites.frameIndex(at: sim.t)
+                bossNode.size = art.size
+                bossNode.texture = sim.flash > 0 ? art.flashFrames[i] : art.frames[i]
+            } else {
+                bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
+            }
             let ss = sim.shots
             while shotNodes.count < ss.count {
                 let n = SKSpriteNode(color: Palette.gold, size: CGSize(width: 3, height: 10))
@@ -458,8 +536,16 @@ final class GameScene: SKScene {
         } else if sim.isIntermission {
             centerLabel.text = "WAVE \(sim.waveIndex + 1)"; centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
         } else if sim.isBoss && sim.banner > 0 {
-            centerLabel.text = String(format: L("play.phase"), sim.phase)
-            centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
+            if let st = awakenStartT {
+                // 覚醒の演出中: 白くなっている間は文字を出さず、姿が変わったら「覚醒」を出す
+                let e = sim.t - st
+                centerLabel.text = L("play.awaken")
+                centerLabel.fontColor = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
+                centerLabel.isHidden = e < GameScene.awakenSwap
+            } else {
+                centerLabel.text = String(format: L("play.phase"), sim.phase)
+                centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
+            }
         } else {
             centerLabel.isHidden = true
             centerLabel.fontColor = Palette.text

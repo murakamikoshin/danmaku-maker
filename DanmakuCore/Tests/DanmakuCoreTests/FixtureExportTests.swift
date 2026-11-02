@@ -133,6 +133,14 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("damage-moving", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 2, emitters: emitters([.aim, .rain, .corner], boss: true), lifeMode: .hp, lifeCount: 12).sanitized()))
         stages.append(("damage-empty", Stage(name: "d", mode: .damage, durationSec: 60, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 1, v: 1, r: 0, k: 0, ph: 3)]).sanitized()))
 
+        // 堕天使(専用の位置・当たり判定)と覚醒。ここより前の並びは変えない(操作記録の乱数が変わるため)
+        stages.append(("boss-angel", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, emitters: emitters([.ring, .aim, .sweep], boss: true), bossLook: 5, awaken: 3).sanitized()))
+        stages.append(("boss-angel-lives3", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, emitters: emitters([.spiral, .homing], boss: true), lifeMode: .lives, lifeCount: 3, bossLook: 5, awaken: 2).sanitized()))
+        stages.append(("damage-angel", Stage(name: "d", mode: .damage, durationSec: 30, emitters: emitters([.ring, .aim], boss: true), bossLook: 5).sanitized()))
+        stages.append(("seq-angel", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 12, waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 2, emitters: bossEm),
+            Wave(kind: .boss, durationSec: 60, bossHp: 250, bossMove: 0, emitters: bossEm, bossLook: 5, awaken: 3)]).sanitized()))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

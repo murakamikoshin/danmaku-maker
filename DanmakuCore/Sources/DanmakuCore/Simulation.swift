@@ -499,6 +499,12 @@ public struct Simulation {
     /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
     public var bossSizeIndex: Int { spec.size }
     public var bossLookIndex: Int { spec.look }
+    /// 専用の絵を持つボスか(図形のボスなら nil)
+    public var bossCharacter: BossCharacter? { spec.character }
+    /// 覚醒する段階(nil は覚醒しない)
+    public var awakenPhase: Int? { spec.awaken }
+    /// いま、覚醒した状態か(ボスの場面で、覚醒する段階に入ったあと)
+    public var isAwakened: Bool { isBoss && (spec.awaken.map { phase >= $0 } ?? false) }
     public var mookSizeIndex: Int? { spec.mooks }
     public var mookLookIndex: Int { spec.mookLook }
     /// 場面の数
@@ -550,6 +556,7 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
+        if let c = spec.character { return c.position(waveT: waveT) }
         let mv = Simulation.bossMoves[min(max(spec.move, 0), 2)]
         return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, waveT) * mv.w)),
                      y: DanmakuConfig.height * 0.18)
@@ -599,7 +606,7 @@ public struct Simulation {
                 s.y -= 600 * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
-                let br = DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
+                let br = spec.character?.hitRadius ?? DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
                 if dx * dx + dy * dy < br * br {
                     damageDealt += s.damage
                     if !isDamageRace { hp -= s.damage }

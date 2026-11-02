@@ -376,8 +376,25 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 5 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 6 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
+  });
+
+  it("堕天使(ボスの見た目5)は、大きさ・動きを使わないものだけ受け付ける。ボスのないステージには付けられない", () => {
+    const a = validatePublish(boss({ bossLook: 5, bossMove: 0 }));
+    expect(a.ok && a.stage.bossLook).toBe(5);
+    expect(validatePublish(boss({ bossLook: 5, bossMove: 1 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 5, bossMove: 0, bossSize: 2 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ bossLook: 5 }))).toEqual({ ok: false, error: "look" });
+  });
+
+  it("覚醒する段階(2か3)は、ボス戦だけ受け付ける", () => {
+    const a = validatePublish(boss({ bossLook: 5, bossMove: 0, awaken: 3 }));
+    expect(a.ok && a.stage.awaken).toBe(3);
+    const b = validatePublish(boss({}));
+    expect(b.ok && "awaken" in b.stage).toBe(false);
+    for (const bad of [1, 4, 0, "2", 2.5]) expect(validatePublish(boss({ awaken: bad }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ awaken: 2 }))).toEqual({ ok: false, error: "look" });
   });
 
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {

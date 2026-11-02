@@ -40,9 +40,11 @@ export interface Wave {
   bossSize?: number;
   /** 雑魚の姿の大きさ(0〜2)。見た目だけ */
   mooks?: number;
-  /** ボス・雑魚の見た目(1〜4。標準=0は入れない)。見た目だけ */
+  /** ボスの見た目(1〜5。標準=0は入れない。5 は堕天使で、位置と当たる範囲が変わる)・雑魚の見た目(1〜4)。図形のボスと雑魚は見た目だけ */
   bossLook?: number;
   mookLook?: number;
+  /** 覚醒する段階(2 か 3)。ボスの場面だけ */
+  awaken?: number;
 }
 
 export interface Stage {
@@ -75,6 +77,8 @@ export interface Stage {
   mooks?: number;
   bossLook?: number;
   mookLook?: number;
+  /** 覚醒する段階(2 か 3)。ボス戦・ダメージ勝負だけ */
+  awaken?: number;
   /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
   shot?: "spread" | "heavy";
   /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
@@ -93,6 +97,11 @@ function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: t
   if (n === null) return { ok: false };
   return { ok: true, v: n === std ? undefined : n };
 }
+
+/** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使)。アプリの BossCharacter.maxLook と同じ */
+export const BOSS_LOOK_MAX = 5;
+/** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
+export const BOSS_CHARACTER_MIN = 5;
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
 export const UNLIMITED_CAP_SEC = 600;
@@ -179,15 +188,20 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     }
     const wSize = optInt(w.bossSize, 0, 2, 1);
     const wMooks = optInt(w.mooks, 0, 2, null);
-    const wBossLook = optInt(w.bossLook, 0, 4, 0);
+    const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
     const wMookLook = optInt(w.mookLook, 0, 4, 0);
-    if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok) return { ok: false, error: "wave-look" };
+    const wAwaken = optInt(w.awaken, 2, 3, null);
+    if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok || !wAwaken.ok) return { ok: false, error: "wave-look" };
+    if (wAwaken.v !== undefined && kind !== "boss") return { ok: false, error: "wave-look" };
+    // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
+    if ((wBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (wSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "wave-look" };
     if ((wSize.v !== undefined || wBossLook.v !== undefined) && kind !== "boss") return { ok: false, error: "wave-look" };
     if (wMookLook.v !== undefined && wMooks.v === undefined && w.mooks === undefined) return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
       ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}),
-      ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}) });
+      ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}),
+      ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}) });
   }
   return { ok: true, list, total: total + INTERMISSION_BUDGET * (list.length - 1) };
 }
@@ -290,9 +304,13 @@ export function validatePublish(input: unknown): Validated {
 
   const bSize = optInt(input.bossSize, 0, 2, 1);
   const bMooks = optInt(input.mooks, 0, 2, null);
-  const bBossLook = optInt(input.bossLook, 0, 4, 0);
+  const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
   const bMookLook = optInt(input.mookLook, 0, 4, 0);
-  if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok) return { ok: false, error: "look" };
+  const bAwaken = optInt(input.awaken, 2, 3, null);
+  if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok || !bAwaken.ok) return { ok: false, error: "look" };
+  if (bAwaken.v !== undefined && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
+  // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
+  if ((bBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (bSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "look" };
   if ((bSize.v !== undefined || bBossLook.v !== undefined) && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
   if (mode === "sequence" && (bMooks.v !== undefined || bMookLook.v !== undefined)) return { ok: false, error: "look" };
   if (bMookLook.v !== undefined && input.mooks === undefined) return { ok: false, error: "look" };
@@ -328,6 +346,7 @@ export function validatePublish(input: unknown): Validated {
     stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
+      ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}) },
   };
 }

@@ -68,7 +68,7 @@ struct EditorView: View {
                             GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
-                                              mooks: $model.draft.mooks, mookLook: $model.draft.mookLook)
+                                              mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken)
                             }
                         }
                         MarkerPanel(model: model)
@@ -236,7 +236,7 @@ private struct TimingPanel: View {
             ChipGrid(items: model.durations.map { ($0, $0 == 0 ? L("editor.unlimited") : String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { model.draft.duration }, set: model.setDuration),
                      idPrefix: "editor.duration")
-            if model.draft.mode != .survive {
+            if model.draft.mode != .survive && BossCharacter.of(look: model.draft.bossLook) == nil {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                     BossMoveCards(move: $model.draft.bossMove)
@@ -295,32 +295,46 @@ private struct EnemyControls: View {
     @Binding var bossLook: Int
     @Binding var mooks: Int?
     @Binding var mookLook: Int
+    /// 覚醒する段階(nil は覚醒しない)。専用の絵を持つボスを選んだときだけ出す
+    @Binding var awaken: Int?
+
+    private var isCharacter: Bool { BossCharacter.of(look: bossLook) != nil }
 
     private func sizeItems() -> [(Int, String)] { [(0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))] }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showBoss {
-                Text("editor.enemy.size").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                ChipGrid(items: sizeItems(), selection: $bossSize, idPrefix: "editor.boss.size")
-                Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
+                if isCharacter {
+                    Text("editor.enemy.character.note").font(.caption2).foregroundStyle(.secondary)
+                } else {
+                    Text("editor.enemy.size").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    ChipGrid(items: sizeItems(), selection: $bossSize, idPrefix: "editor.boss.size")
+                    Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
+                }
                 Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                looks(selection: $bossLook, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                looks(selection: $bossLook, choices: EnemyArt.bossLookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                if isCharacter {
+                    Text("editor.awaken.title").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
+                             selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
+                    Text("editor.awaken.note").font(.caption2).foregroundStyle(.secondary)
+                }
             }
             Text("editor.enemy.mooks").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
             ChipGrid(items: [(-1, L("editor.enemy.none")), (0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))],
                      selection: Binding(get: { mooks ?? -1 }, set: { mooks = $0 < 0 ? nil : $0 }), idPrefix: "editor.mook.size")
             if mooks != nil {
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                looks(selection: $mookLook, idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
+                looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
         }
     }
 
-    private func looks(selection: Binding<Int>, idPrefix: String, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
+    private func looks(selection: Binding<Int>, choices: [Int], idPrefix: String, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(0..<EnemyArt.looks, id: \.self) { n in
+                ForEach(choices, id: \.self) { n in
                     let selected = selection.wrappedValue == n
                     Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection.wrappedValue = n } } label: {
                         VStack(spacing: 4) {
@@ -818,8 +832,10 @@ private struct WaveCard: View {
     }
 
     @ViewBuilder private var bossControls: some View {
-                Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
+                if BossCharacter.of(look: wave.bossLook ?? 0) == nil {
+                    Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
+                }
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
                           range: 100...1000, step: 50) { String(Int($0)) }
                 if advanced {
@@ -827,7 +843,8 @@ private struct WaveCard: View {
                                   bossSize: Binding(get: { wave.bossSize ?? 1 }, set: { model.draft.waves[i].bossSize = $0 }),
                                   bossLook: Binding(get: { wave.bossLook ?? 0 }, set: { model.draft.waves[i].bossLook = $0 }),
                                   mooks: Binding(get: { wave.mooks }, set: { model.draft.waves[i].mooks = $0 }),
-                                  mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }))
+                                  mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }),
+                                  awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }))
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("editor.warning").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))

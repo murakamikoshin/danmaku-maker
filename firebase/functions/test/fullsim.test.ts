@@ -14,7 +14,7 @@ const fixtures: Fixture[] = JSON.parse(readFileSync(new URL("./fixtures/sim_fixt
 
 describe("サーバーのゲーム計算は、アプリ(Swift)の計算と同じ結果になる", () => {
   it("正解データが十分にある", () => {
-    expect(fixtures.length).toBeGreaterThan(380);
+    expect(fixtures.length).toBeGreaterThan(390);
     expect(fixtures.filter((f) => f.name.startsWith("seq-")).length).toBeGreaterThan(30);
     expect(fixtures.filter((f) => f.expect.outcome === "cleared").length).toBeGreaterThan(10);
     expect(fixtures.filter((f) => f.expect.outcome === "hit").length).toBeGreaterThan(10);

@@ -12,14 +12,16 @@ final class PreviewEngine {
     private(set) var bullets: [Bullet] = []
     private(set) var player = Point(x: 180, y: PreviewEngine.height - 40)
 
-    func advance(to now: Date, emitter m: Emitter, boss: Bool) {
+    func advance(to now: Date, emitter m: Emitter, boss: Bool, character: BossCharacter? = nil) {
         let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
         last = now
         t += dt
         player = Point(x: 180 + sin(t * 0.9) * 90, y: PreviewEngine.height - 40)
         let atBoss = boss && !m.firesFromPoint
-        let cx = atBoss ? 180 : m.x * DanmakuConfig.width
-        let cy = atBoss ? DanmakuConfig.height * 0.18 : m.y * DanmakuConfig.height
+        // 専用の絵を持つボスは、実際のゲームと同じ位置(待機のゆれの最初)から撃つ
+        let home = character?.position(waveT: 0)
+        let cx = atBoss ? (home?.x ?? 180) : m.x * DanmakuConfig.width
+        let cy = atBoss ? (home?.y ?? DanmakuConfig.height * 0.18) : m.y * DanmakuConfig.height
         while t >= next {
             Emit.emit(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, rng: &rng, into: &bullets)
             shot += 1
@@ -65,7 +67,7 @@ struct EmitterPreview: View {
         let bossImage = (own && look.customs.boss) ? CustomImageStore.load(.boss) : nil
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
-                engine.advance(to: timeline.date, emitter: emitter, boss: isBoss)
+                engine.advance(to: timeline.date, emitter: emitter, boss: isBoss, character: BossCharacter.of(look: look.bossLook))
                 let s = size.width / DanmakuConfig.width
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
                 ctx.scaleBy(x: s, y: s)
@@ -91,11 +93,18 @@ struct EmitterPreview: View {
 
     private func drawSource(_ ctx: inout GraphicsContext, skin: Skin, bossImage: UIImage?) {
         if isBoss {
-            // ボスの大きさは、当たる範囲と同じ比率(小・中・大)
-            let side = EnemyArt.bossPoints(size: look.bossSize)
-            let rect = CGRect(x: 180 - side / 2, y: DanmakuConfig.height * 0.18 - side / 2, width: side, height: side)
-            if let bossImage { ctx.draw(Image(uiImage: bossImage), in: rect) }
-            else { ctx.draw(Image(uiImage: EnemyArt.bossImage(look: look.bossLook, size: look.bossSize, flash: false)), in: rect) }
+            // 専用の絵を持つボスは、実際のゲームと同じ位置・大きさで描く
+            if let c = BossCharacter.of(look: look.bossLook), let art = BossSprites.art(c, awakened: false) {
+                let p = c.position(waveT: 0)
+                ctx.draw(Image(uiImage: art.still).interpolation(.none),
+                         in: CGRect(x: p.x - art.size.width / 2, y: p.y - art.size.height / 2, width: art.size.width, height: art.size.height))
+            } else {
+                // ボスの大きさは、当たる範囲と同じ比率(小・中・大)
+                let side = EnemyArt.bossPoints(size: look.bossSize)
+                let rect = CGRect(x: 180 - side / 2, y: DanmakuConfig.height * 0.18 - side / 2, width: side, height: side)
+                if let bossImage { ctx.draw(Image(uiImage: bossImage), in: rect) }
+                else { ctx.draw(Image(uiImage: EnemyArt.bossImage(look: look.bossLook, size: look.bossSize, flash: false)), in: rect) }
+            }
         }
         if let mooks = look.mooks, (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
             let side = EnemyArt.mookPoints(size: mooks)

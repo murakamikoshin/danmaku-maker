@@ -52,6 +52,9 @@ export function beamHits(b: { x: number; y: number; vx: number; vy: number; age:
 }
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
 const BOSS_RADII = [17, 24, 34] as const;
+/** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
+const FALLEN_ANGEL_LOOK = 5;
+const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 
 export type ShotType = "standard" | "spread" | "heavy";
@@ -72,17 +75,18 @@ export interface SimStage {
   lifeCount?: number | null;
   waves?: Wave[] | null;
   bossSize?: number | null;
+  bossLook?: number | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number }
 const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1 }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0 }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1 }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0 }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -349,8 +353,11 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     const sp = spec();
     const waveT = t - waveStart;
     const bm = BOSS_MOVES[sp.move] ?? BOSS_MOVES[0];
-    const bx = sp.boss ? W * (0.5 + bm.a * Math.sin(Math.max(0, waveT) * bm.w)) : 0;
-    const by = sp.boss ? H * 0.18 : 0;
+    const angel = sp.look === FALLEN_ANGEL_LOOK;
+    const wt = Math.max(0, waveT);
+    const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : W * (0.5 + bm.a * Math.sin(wt * bm.w));
+    const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : H * 0.18;
+    const bossRadius = angel ? FALLEN_ANGEL_RADIUS : BOSS_RADII[Math.min(Math.max(sp.size, 0), 2)]!;
     if (sp.boss) {
       const ph = phaseOf(waveT);
       if (ph !== phase) {
@@ -370,7 +377,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         s.y -= 600 * dt;
         if (s.y < -10 || s.x < -10 || s.x > W + 10) continue;
         const dx = s.x - bx, dy = s.y - by;
-        if (dx * dx + dy * dy < BOSS_RADII[Math.min(Math.max(sp.size, 0), 2)]! ** 2) {
+        if (dx * dx + dy * dy < bossRadius ** 2) {
           damage += s.damage;
           if (!sp.damage) hp -= s.damage;
           flash = 0.06; continue;
