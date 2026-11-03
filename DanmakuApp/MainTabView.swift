@@ -5,13 +5,14 @@ import DanmakuCore
 /// 画面の下のタブ: あそぶ / ショップ / せってい。アイコンは、ゲームの部品で描いたオリジナル
 struct MainTabView: View {
     enum Tab: Int, CaseIterable {
-        case play, shop, settings
-        var titleKey: String { ["tab.play", "tab.shop", "tab.settings"][rawValue] }
-        var id: String { ["play", "shop", "settings"][rawValue] }
+        case play, swipe, shop, settings
+        var titleKey: String { ["tab.play", "tab.swipe", "tab.shop", "tab.settings"][rawValue] }
+        var id: String { ["play", "swipe", "shop", "settings"][rawValue] }
     }
 
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
+    @EnvironmentObject private var swipeConfig: SwipeConfig
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
@@ -19,6 +20,7 @@ struct MainTabView: View {
     var body: some View {
         ZStack {
             page(.play) { HomeView() }
+            if swipeConfig.enabled { page(.swipe) { SwipeHomeView() } }
             page(.shop) { ShopView() }
             page(.settings) { SettingsView() }
         }
@@ -30,7 +32,7 @@ struct MainTabView: View {
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
                         .frame(width: width, height: BannerAdView.adSize(width: width).size.height)
                 }
-                TabBar(selection: $tab)
+                TabBar(selection: $tab, showSwipe: swipeConfig.enabled)
             }
         }
         .onChange(of: tab) { opened.insert($0) }
@@ -38,6 +40,7 @@ struct MainTabView: View {
             AudioManager.shared.play(.menu)
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
+            if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }
             if args.contains("-open-shop") { tab = .shop; opened.insert(.shop) }
             if args.contains("-open-settings") { tab = .settings; opened.insert(.settings) }
             #endif
@@ -56,10 +59,11 @@ struct MainTabView: View {
 
 private struct TabBar: View {
     @Binding var selection: MainTabView.Tab
+    var showSwipe: Bool
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(MainTabView.Tab.allCases, id: \.self) { tab in
+            ForEach(MainTabView.Tab.allCases.filter { showSwipe || $0 != .swipe }, id: \.self) { tab in
                 let selected = selection == tab
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -106,6 +110,7 @@ private struct TabIcon: View {
     private var glow: Color {
         switch tab {
         case .play: return Color(UIColor(hex: 0x5CE1E6))
+        case .swipe: return Color(SwipePalette.gold)
         case .shop: return Color(Palette.pink)
         case .settings: return Color(Palette.gold)
         }
@@ -120,6 +125,13 @@ private struct TabIcon: View {
                 Circle().fill(Color.white).frame(width: 7, height: 7)
             }
             .frame(width: 26, height: 31)
+        case .swipe:
+            // 重なったカードと上向きの矢印（縦にスワイプ）
+            ZStack {
+                RoundedRectangle(cornerRadius: 5).fill(Color(SwipePalette.pink)).frame(width: 20, height: 26).rotationEffect(.degrees(-8)).offset(x: -3)
+                RoundedRectangle(cornerRadius: 5).fill(Color(SwipePalette.cyan)).frame(width: 20, height: 26).rotationEffect(.degrees(8)).offset(x: 3)
+                Image(systemName: "chevron.up").font(.system(size: 14, weight: .black)).foregroundStyle(.white)
+            }
         case .shop:
             // ボス: ピンクの星(中央に穴)
             GameBossShape()

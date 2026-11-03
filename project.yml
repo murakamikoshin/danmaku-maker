@@ -35,6 +35,7 @@ targets:
         REVENUECAT_API_KEY: $(REVENUECAT_API_KEY)
         NSUserTrackingUsageDescription: 広告を表示するために使用します。許可しなくても遊べます。
         ITSAppUsesNonExemptEncryption: false
+        UIAppFonts: [DelaGothicOne-Regular.ttf]
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
           - SKAdNetworkIdentifier: 4fzdc2evr5.skadnetwork
@@ -98,6 +99,8 @@ targets:
         product: FirebaseFunctions
       - package: Firebase
         product: FirebaseMessaging
+      - package: Firebase
+        product: FirebaseRemoteConfig
       - package: GoogleMobileAds
         product: GoogleMobileAds
       - package: UserMessagingPlatform

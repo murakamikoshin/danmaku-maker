@@ -211,5 +211,9 @@
 			<string>3qcr597p9d.skadnetwork</string>
 		</dict>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>DelaGothicOne-Regular.ttf</string>
+	</array>
 </dict>
 </plist>

@@ -21,6 +21,9 @@ final class PurchaseService: NSObject, ObservableObject {
     @Published private(set) var amounts: [Product: Decimal] = [:]
     private var priceFormatter: NumberFormatter?
 
+    @Published fileprivate(set) var drinkPrice: String?
+    @Published fileprivate(set) var passPrice: String?
+    fileprivate var swipeProducts: [String: StoreProduct] = [:]
     private var package: Package?
     private var storeProducts: [Product: StoreProduct] = [:]
     private(set) var isConfigured = false
@@ -71,7 +74,7 @@ final class PurchaseService: NSObject, ObservableObject {
         if !cosmetics.ownership.canBuy(product) { celebration = product }
     }
 
-    private func run(_ buy: () async throws -> PurchaseResultData) async {
+    fileprivate func run(_ buy: () async throws -> PurchaseResultData) async {
         isBusy = true; defer { isBusy = false }
         do {
             let result = try await buy()
@@ -107,6 +110,39 @@ final class PurchaseService: NSObject, ObservableObject {
         // 永久買い切りパックは、広告削除も含む
         isPremium = info.entitlements[Self.entitlementID]?.isActive == true || ids.contains(Self.removeAdsID) || ids.contains(Product.lifetime.id)
         cosmetics.updateOwnership(productIDs: ids)
+    }
+}
+
+// MARK: スワイプ弾幕（回復ドリンク・無限スタミナパス）
+
+extension PurchaseService {
+    static let drinkID = "com.koshin.danmakumaker.stamina.drink"
+    static let passID = "com.koshin.danmakumaker.pass.stamina.monthly"
+
+    func loadSwipeProducts() async {
+        guard isConfigured, swipeProducts.isEmpty else { return }
+        for sp in await Purchases.shared.products([Self.drinkID, Self.passID]) { swipeProducts[sp.productIdentifier] = sp }
+        drinkPrice = swipeProducts[Self.drinkID]?.localizedPriceString
+        passPrice = swipeProducts[Self.passID]?.localizedPriceString
+    }
+
+    /// 回復ドリンクを買う。反映はサーバー（RevenueCat の通知）で行うので、少し待ってから残りを読み直す
+    func buyDrink() async { await buySwipe(Self.drinkID) }
+    /// 無限スタミナパス（月額）を買う
+    func buyPass() async { await buySwipe(Self.passID) }
+
+    private func buySwipe(_ id: String) async {
+        await loadSwipeProducts()
+        guard let sp = swipeProducts[id] else { message = L("store.unavailable"); return }
+        await run { try await Purchases.shared.purchase(product: sp) }
+        // サーバーが購入の通知を受けて反映するまでの、ごく短い待ち
+        try? await Task.sleep(nanoseconds: 2_500_000_000)
+    }
+
+    /// RevenueCat の購入者 ID を Firebase の uid にそろえる（サーバーが購入の通知から、どの人のものか分かるように）
+    func identify(uid: String?) async {
+        guard isConfigured, let uid, Purchases.shared.appUserID != uid else { return }
+        if let r = try? await Purchases.shared.logIn(uid) { apply(r.customerInfo) }
     }
 }
 
