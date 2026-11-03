@@ -22,7 +22,8 @@ final class SwipeFixtureExportTests: XCTestCase {
         var prepared: [Prepared]
         var runs: [RunCase]
     }
-    struct Out: Codable { var pool: [SwipeFeed.Entry]; var cases: [Case] }
+    struct Gen: Codable { var seed: UInt32; var hard: Int; var id: String; var stage: Stage }
+    struct Out: Codable { var pool: [SwipeFeed.Entry]; var cases: [Case]; var generated: [Gen] }
 
     private func clipMoves(style: Int, count: Int, seed: Int) -> [Int] {
         var s = UInt64(seed) &* 2654435761 &+ 88172645463325252
@@ -94,6 +95,13 @@ final class SwipeFixtureExportTests: XCTestCase {
             cases.append(Case(name: name, stage: st, counts: counts, gaps: gaps, candidates: cands, prepared: prepared, runs: runs))
         }
         let enc = JSONEncoder()
-        try enc.encode(Out(pool: pool, cases: cases)).write(to: URL(fileURLWithPath: path))
+        var generated: [Gen] = []
+        for (n, hard) in [0, 120, 349, 350, 500, 699, 700, 850, 999].enumerated() {
+            for k in 0..<4 {
+                let seed = UInt32(n * 1_000_003 + k * 7919 + 17) &* 2_654_435_761
+                generated.append(Gen(seed: seed, hard: hard, id: SwipeGenerator.id(seed: seed, hard: hard), stage: SwipeGenerator.stage(seed: seed, hard: hard)))
+            }
+        }
+        try enc.encode(Out(pool: pool, cases: cases, generated: generated)).write(to: URL(fileURLWithPath: path))
     }
 }

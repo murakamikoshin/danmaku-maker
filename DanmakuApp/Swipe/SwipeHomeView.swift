@@ -199,9 +199,13 @@ private struct PlayHUD: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(model.clipName).font(.system(size: 17, weight: .black)).foregroundStyle(.white).lineLimit(1)
-                            Button(action: filter) {
-                                HStack(spacing: 3) { Image(systemName: "person.fill").font(.system(size: 10)); Text(model.clipAuthor).lineLimit(1); Image(systemName: "line.3.horizontal.decrease").font(.system(size: 9)) }
-                                    .font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                            if model.currentAuthorUid == SwipeGenerator.author {
+                                Label("swipe.gen.tag", systemImage: "dice.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.dim))
+                            } else {
+                                Button(action: filter) {
+                                    HStack(spacing: 3) { Image(systemName: "person.fill").font(.system(size: 10)); Text(model.clipAuthor).lineLimit(1); Image(systemName: "line.3.horizontal.decrease").font(.system(size: 9)) }
+                                        .font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                                }
                             }
                             if let _ = model.filterAuthor {
                                 Button(action: exitFilter) { Text(String(format: L("swipe.filter.only"), model.filterAuthorName) + " ✕").font(.system(size: 11, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }

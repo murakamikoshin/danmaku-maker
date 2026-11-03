@@ -7,6 +7,8 @@ import { candidatesOf, estimatedClearRate, playRunAsync, rankingKey, type FeedEn
 import { botCanClear } from "./swipebot.js";
 import { current, dayKeyJst, hasPass, refill, spend, type StaminaState } from "./stamina.js";
 import { validateDisplayName } from "./validate.js";
+import { GEN_AUTHOR, GEN_CLIP_AT, genId, generateStage, parseGenId } from "./swipegen.js";
+import { GEN_SEEDS } from "./swipegen_seeds.js";
 
 /** スワイプ弾幕のサーバー処理(仕様書 8〜16 章)。index.ts の onCall から呼ぶ */
 const db = (): Firestore => getFirestore();
@@ -109,6 +111,8 @@ export async function buildPool(): Promise<{ version: string; count: number }> {
     if (snap.size < 500) break;
     last = snap.docs[snap.size - 1]!.id;
   }
+  // ボットでクリアできると確かめたランダム生成ステージ(アプリにも同じ生成のしかたが入っている)
+  for (const [seed, hard, d] of GEN_SEEDS) entries.push({ id: genId(seed, hard), d, author: GEN_AUTHOR });
   if (entries.length === 0) return { version: "", count: 0 };
   const version = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
   for (let i = 0; i * CHUNK < entries.length; i++) {
@@ -201,6 +205,8 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
   const stageCache = new Map<string, { stage: SimStage; at: number } | null>();
   const result = await playRunAsync(run.seed as number, usePool, blocked, async (id) => {
     if (!stageCache.has(id)) {
+      const gen = parseGenId(id);
+      if (gen) { stageCache.set(id, { stage: generateStage(gen.seed, gen.hard), at: GEN_CLIP_AT }); return stageCache.get(id) ?? null; }
       const s = await db().doc(`stages/${id}`).get();
       stageCache.set(id, s.exists && typeof s.get("clip.at") === "number" ? { stage: s.data() as SimStage, at: s.get("clip.at") as number } : null);
     }
@@ -213,6 +219,7 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
   // クリップごとの挑戦数・クリア数(クリア率の実測)。スキップは数えない
   const stat = new Map<string, { plays: number; clears: number }>();
   result.clipIDs.forEach((id, i) => {
+    if (parseGenId(id)) return;   // 生成したものは、挑戦数を数えない
     const o = result.clipOutcomes[i];
     if (o === "skipped" || o === "abandoned") return;
     const cur = stat.get(id) ?? { plays: 0, clears: 0 };

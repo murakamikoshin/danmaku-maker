@@ -118,6 +118,10 @@ final class SwipeService: ObservableObject {
 
     /// クリップのステージ（先読みして使い回す）。見つからなければ nil
     func clip(id: String) async -> Clip? {
+        // ランダム生成のクリップ: ID（種と難しさ）から、この端末で同じステージを作る（サーバーの検証と同じ）
+        if let g = SwipeGenerator.parse(id: id) {
+            return Clip(id: id, stage: SwipeGenerator.stage(seed: g.seed, hard: g.hard), at: SwipeGenerator.clipAt, name: L("swipe.gen.name"), authorName: "")
+        }
         if let c = clipCache[id] { return Clip(id: id, stage: c.stage, at: c.at, name: c.name, authorName: c.authorName) }
         guard Backend.isAvailable, let snap = try? await Firestore.firestore().document("stages/\(id)").getDocument(),
               let remote = StageRepository.parse(snap), let at = (snap.data()?["clip"] as? [String: Any])?["at"] as? NSNumber else { return nil }
