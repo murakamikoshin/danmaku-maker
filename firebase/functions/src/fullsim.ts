@@ -89,7 +89,7 @@ export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
 export interface SimResult { outcome: Outcome; tick: number; hp: number; damage: number; lifeLeft: number; wave: number; defeats: number; bulletCount: number; bulletHash: number; bulletHashCoarse: number }
 
 // --- 乱数(mulberry32)とハッシュ(FNV-1a)
-function mulberry(seed: number) {
+export function mulberry(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -644,6 +644,9 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     get player() { return { x: px, y: py }; },
     get grazeCount() { return grazeCount; },
     get grazedThisStep(): readonly Bullet[] { return grazedThisStep; },
+    setInvincible(v: boolean) { invincible = v; },
+    setCountsGrazes(v: boolean) { countsGrazes = v; },
+    get isIntermission() { return wi > 0 && t - waveStart < 0; },
     get waveLimitTicks() { return (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144; },
   };
 }
