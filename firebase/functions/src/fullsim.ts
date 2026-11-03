@@ -140,6 +140,8 @@ interface Bullet {
   x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number; follow?: Follow;
   /** 重力弾・膨らむ泡・地雷・爆風だけが使う(ない弾は 0 と同じ)。アプリの Bullet と同じ意味 */
   gravity?: number; radius?: number; grow?: number; growMax?: number; fuse?: number;
+  /** スワイプ弾幕: もうかすった弾(1発で1回だけ数える) */
+  grazed?: boolean;
 }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
@@ -293,13 +295,30 @@ const LIVES_RANGE = [1, 5] as const, HP_RANGE = [3, 20] as const;
 /** 1ステップごとの弾の様子(分析用。ランキングの確認では使わない) */
 export type StepObserver = (tick: number, bullets: readonly { x: number; y: number; vx: number; vy: number; script: number; radius?: number }[], player: { x: number; y: number }) => void;
 
-export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard", observe?: StepObserver): SimResult {
+export interface SwipeOptions { swipe?: boolean }
+
+/** かする距離の2乗(アプリの Bullet.grazeDistanceSquared と同じ)。ふつうの弾は 18px、巨大弾や広さのある弾は当たる広さ + 12.5px */
+const GRAZE_MARGIN = 12.5;
+function grazeDistanceSquared(b: Bullet): number {
+  const radius = b.radius ?? 0;
+  if (b.script !== GIANT_SCRIPT && radius === 0) { const r = HIT_R + GRAZE_MARGIN; return r * r; }
+  const r = Math.sqrt(hitDistanceSquared(b)) + GRAZE_MARGIN;
+  return r * r;
+}
+
+/**
+ * 1 ステップずつ進められるゲーム計算。`simulate` はこれを最後まで回すだけ。
+ * `swipe: true` はスワイプ弾幕用(ライフ 1・自機はショットを撃たない・ボスの場面は「ダメージ勝負」と同じ扱い)
+ */
+export function createSim(stage: SimStage, shotType: ShotType = "standard", observe?: StepObserver, opts: SwipeOptions = {}) {
+  const swipe = opts.swipe === true;
   const specs = specsOf(stage);
+  if (swipe) for (const sp of specs) if (sp.boss) sp.damage = true;
   let wi = 0;
   const spec = () => specs[wi]!;
-  const lifeMode: LifeMode = stage.lifeMode ?? "lives";
+  const lifeMode: LifeMode = swipe ? "lives" : (stage.lifeMode ?? "lives");
   const range = lifeMode === "lives" ? LIVES_RANGE : HP_RANGE;
-  const lifeMax = clamp(stage.lifeCount ?? 1, range[0], range[1]);
+  const lifeMax = swipe ? 1 : clamp(stage.lifeCount ?? 1, range[0], range[1]);
   let lifeLeft = lifeMax;
   let hp = specs[0]!.hp;
   let damage = 0;
@@ -314,8 +333,8 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
   let px = W / 2, py = H * 0.85;
   let phase = 1, banner = 0, flash = 0, cooldown = 0, shieldUntil = 0;
   let outcome: Outcome = "playing";
-  const limitSec = timeLimitSec(stage.mode, stage.durationSec);
-  const limit = (limitSec + 3) * 120 + 144;
+  let invincible = false, countsGrazes = true, grazeCount = 0;
+  let grazedThisStep: Bullet[] = [];
 
   const phaseOf = (waveT: number) => {
     const sp = spec();
@@ -337,9 +356,10 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
     shieldUntil = Math.max(shieldUntil, tick + Math.round(INTERMISSION / dt));
   };
 
-  while (outcome === "playing" && tick < limit) {
-    const dx0 = tick < moveCount ? moves[tick * 2]! : 0;
-    const dy0 = tick < moveCount ? moves[tick * 2 + 1]! : 0;
+  /** 1 ステップ(1/120 秒)進める。dx0, dy0 は 0.25 論理px 単位。終了後は何もしない */
+  const step = (dx0: number, dy0: number): void => {
+    if (outcome !== "playing") return;
+    grazedThisStep = [];
     const dt = STEP;
     tick += 1;
     t += dt;
@@ -359,7 +379,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       }
       if (banner > 0) banner -= dt;
       cooldown -= dt;
-      if (waveT >= 0 && cooldown <= 0) {
+      if (!swipe && waveT >= 0 && cooldown <= 0) {
         cooldown = shotDef.interval;
         for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage });
       }
@@ -382,7 +402,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       if (!sp.damage && hp <= 0) {
         defeats += 1;
         if (wi + 1 < specs.length) advanceWave(dt); else outcome = "cleared";
-        continue;
+        return;
       }
     }
 
@@ -419,7 +439,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
           const na = Math.atan2(b.vy, b.vx) + b.turn * dt;
           b.vx = Math.cos(na); b.vy = Math.sin(na);
         }
-        if (beamHits(b, px, py) && tick >= shieldUntil) {
+        if (beamHits(b, px, py) && !(invincible || tick < shieldUntil)) {
           b.bounces = 0;
           lifeLeft -= 1;
           if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }
@@ -432,7 +452,7 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         // 爆風: 動かない。予告(fuse 秒)のあと、少しの間だけ当たって消える。当たっても消えない(1回だけ)
         b.age += dt;
         if (b.age >= (b.fuse ?? 0) + BLAST_ACTIVE) continue;
-        if (blastHits(b, px, py) && tick >= shieldUntil) {
+        if (blastHits(b, px, py) && !(invincible || tick < shieldUntil)) {
           b.bounces = 0;
           lifeLeft -= 1;
           if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }
@@ -558,15 +578,20 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
       if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) continue;
       const dx = b.x - px, dy = b.y - py;
       if (dx * dx + dy * dy < hitDistanceSquared(b)) {
-        if (tick < shieldUntil) continue;
+        if (invincible || tick < shieldUntil) continue;
         lifeLeft -= 1;
         if (lifeLeft <= 0) { outcome = "hit"; died = true; break; }   // その場で終了(弾の並びはそのまま)
         if (lifeMode === "lives") shieldUntil = tick + Math.round(LIFE_SHIELD_SECONDS / dt);
         continue;   // 当たった弾は消える
       }
+      if (countsGrazes && !b.grazed && dx * dx + dy * dy < grazeDistanceSquared(b)) {
+        b.grazed = true;
+        grazeCount += 1;
+        grazedThisStep.push(b);
+      }
       bullets[w++] = b;
     }
-    if (died) break;
+    if (died) return;
     bullets.length = w;
     for (const nb of born) bullets.push(nb);
     observe?.(tick, bullets, { x: px, y: py });
@@ -578,20 +603,59 @@ export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: n
         outcome = sp.boss && !sp.damage ? "timeUp" : "cleared";
       }
     }
-  }
+  };
 
-  const h = new Fnv();
-  const f64 = new Float64Array(1), u32 = new Uint32Array(f64.buffer);
-  for (const b of bullets) {
-    for (const q of [b.x, b.y]) {
-      f64[0] = q;
-      // リトルエンディアン: 下位32bit → 上位32bit の順に1バイトずつ
-      for (const word of [u32[0]!, u32[1]!]) for (let s = 0; s < 32; s += 8) h.addByte((word >>> s) & 0xff);
+  const result = (): SimResult => {
+    const h = new Fnv();
+    const f64 = new Float64Array(1), u32 = new Uint32Array(f64.buffer);
+    for (const b of bullets) {
+      for (const q of [b.x, b.y]) {
+        f64[0] = q;
+        // リトルエンディアン: 下位32bit → 上位32bit の順に1バイトずつ
+        for (const word of [u32[0]!, u32[1]!]) for (let s = 0; s < 32; s += 8) h.addByte((word >>> s) & 0xff);
+      }
     }
+    const c = new Fnv();
+    for (const b of bullets) for (const q of [b.x, b.y]) c.addInt32(Math.round(q * 1000));
+    return { outcome, tick, hp, damage, lifeLeft, wave: wi, defeats, bulletCount: bullets.length, bulletHash: h.value, bulletHashCoarse: c.value };
+  };
+
+  // --- スワイプ弾幕用(仕様書 3.2 章)。本編では使わない
+  /** 自機を置く(画面の端から 6px の内側に収める) */
+  const place = (x: number, y: number) => { px = clamp(x, 6, W - 6); py = clamp(y, 6, H - 6); };
+  /** 弾も時間も止めたまま、自機だけ動かす(クリップの「GO」の間) */
+  const nudgePlayer = (dx: number, dy: number) => place(px + dx * MOVE_UNIT, py + dy * MOVE_UNIT);
+  /** 次の steps ステップの間、被弾しない(バリア) */
+  const giveShield = (steps: number) => { shieldUntil = Math.max(shieldUntil, tick + steps + 1); };
+  const clearBullets = () => { bullets = []; };
+  /** 自機を動かさず、無敵で、かすりも数えずに target ステップ目まで進める */
+  const fastForward = (target: number) => {
+    const was = [invincible, countsGrazes] as const;
+    invincible = true; countsGrazes = false;
+    while (outcome === "playing" && tick < target) step(0, 0);
+    invincible = was[0]; countsGrazes = was[1];
+  };
+
+  return {
+    step, result, place, nudgePlayer, giveShield, clearBullets, fastForward,
+    get tick() { return tick; },
+    get outcome() { return outcome; },
+    get bullets(): readonly Bullet[] { return bullets; },
+    get player() { return { x: px, y: py }; },
+    get grazeCount() { return grazeCount; },
+    get grazedThisStep(): readonly Bullet[] { return grazedThisStep; },
+    get waveLimitTicks() { return (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144; },
+  };
+}
+
+export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard", observe?: StepObserver): SimResult {
+  const sim = createSim(stage, shotType, observe);
+  const limit = sim.waveLimitTicks;
+  while (sim.outcome === "playing" && sim.tick < limit) {
+    const k = sim.tick;
+    sim.step(k < moveCount ? moves[k * 2]! : 0, k < moveCount ? moves[k * 2 + 1]! : 0);
   }
-  const c = new Fnv();
-  for (const b of bullets) for (const q of [b.x, b.y]) c.addInt32(Math.round(q * 1000));
-  return { outcome, tick, hp, damage, lifeLeft, wave: wi, defeats, bulletCount: bullets.length, bulletHash: h.value, bulletHashCoarse: c.value };
+  return sim.result();
 }
 
 /** アプリが送ってくる操作記録(Base64 → [先頭1バイト: 0=そのまま/1=圧縮] → (回数, dx, dy) の繰り返し)を、1ステップずつの [dx, dy, ...] に戻す */
