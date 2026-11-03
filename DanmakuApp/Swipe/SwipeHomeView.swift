@@ -48,7 +48,12 @@ struct SwipeHomeView: View {
         .sheet(isPresented: $showStamina) { StaminaSheet(service: service, close: { showStamina = false }) }
         .sheet(isPresented: $showRanking) { SwipeRankingView(service: service) }
         .task { await service.refresh() }
-        .onAppear { makeScene() }
+        .onAppear {
+            makeScene()
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-swipe-stamina-sheet") { showStamina = true }
+            #endif
+        }
         .onChange(of: model.phase) { p in if p == .title || p == .over { SwipeAudio.shared.stop() } }
         .onChange(of: cosmetics.effectsOn) { _ in makeScene() }
     }

@@ -46,6 +46,8 @@ jobs:
             shot shop_daily -open-shop -shop-focus daily
             shot shop_daily_collected -open-shop -shop-focus daily -rewards-claimed 12
             shot settings -open-settings
+            shot swipe -open-swipe
+            shot swipe_stamina -open-swipe -swipe-stamina-sheet
             shot stage -open-stage o29 -rewards-claimed 12
             xcrun simctl shutdown "$UDID" || true
           done
