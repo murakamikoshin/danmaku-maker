@@ -354,7 +354,7 @@ final class SwipeScene: SKScene {
     private func outlined(_ s: String, size: CGFloat, color: UIColor) -> NSAttributedString {
         let font = SwipePalette.display(size)
         let para = NSMutableParagraphStyle(); para.alignment = .center
-        return NSAttributedString(string: s, attributes: [.font: font, .foregroundColor: color, .strokeColor: SwipePalette.outline, .strokeWidth: -20, .paragraphStyle: para])
+        return NSAttributedString(string: s, attributes: [.font: font, .foregroundColor: color, .strokeColor: SwipePalette.outline, .strokeWidth: -6, .paragraphStyle: para])
     }
 
     private func ring(at pt: CGPoint, maxRadius: CGFloat, color: UIColor, dur: Double) {

@@ -30,8 +30,8 @@ struct SwipeHomeView: View {
             switch model.phase {
             case .title: TitleView(start: { start(author: nil) }, ranking: { showRanking = true }, service: service, model: model, openStamina: { showStamina = true })
             case .starting, .transition: ProgressView().tint(.white).scaleEffect(1.4)
-            case .go, .playing: PlayHUD(model: model, skip: { Task { await model.skip() } }, filter: { start(author: model.currentAuthorUid, name: model.clipAuthor) }, exitFilter: { model.backToTitle() })
-            case .cleared, .failed: PlayHUD(model: model, skip: {}, filter: {}, exitFilter: {}, showSwipeHint: model.phase == .cleared)
+            case .go, .playing: PlayHUD(model: model, filter: { start(author: model.currentAuthorUid, name: model.clipAuthor) }, exitFilter: { model.backToTitle() })
+            case .cleared, .failed: PlayHUD(model: model, filter: {}, exitFilter: {}, showSwipeHint: model.phase == .cleared)
             case .over: SwipeResultView(model: model, service: service, again: { start(author: model.filterAuthor, name: model.filterAuthorName) }, quit: { model.backToTitle() },
                                    ranking: { showRanking = true }, retry: { Task { await model.submit() } }, openStamina: { showStamina = true })
             }
@@ -103,7 +103,7 @@ private struct TitleView: View {
             Text("swipe.beta").font(.system(size: 11, weight: .black)).padding(.horizontal, 8).padding(.vertical, 2)
                 .background(Capsule().fill(Color(uiColor: SwipePalette.pink))).foregroundStyle(.white)
             VStack(alignment: .leading, spacing: 5) {
-                ForEach(["swipe.rule.1", "swipe.rule.2", "swipe.rule.3", "swipe.rule.4", "swipe.rule.5", "swipe.rule.6"], id: \.self) { k in
+                ForEach(["swipe.rule.1", "swipe.rule.2", "swipe.rule.3", "swipe.rule.4", "swipe.rule.5"], id: \.self) { k in
                     Text(LocalizedStringKey(k)).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Color(uiColor: SwipePalette.text).opacity(0.9))
                 }
             }.padding(.horizontal, 28)
@@ -161,7 +161,6 @@ struct StaminaBar: View {
 
 private struct PlayHUD: View {
     @ObservedObject var model: SwipeModel
-    let skip: () -> Void
     let filter: () -> Void
     let exitFilter: () -> Void
     var showSwipeHint = false
@@ -187,10 +186,6 @@ private struct PlayHUD: View {
                             if sc.combo > 0 {
                                 Text("×" + ScoreFormat.short(sc.multiplier, lang)).font(.system(size: 15, weight: .black, design: .rounded))
                                     .foregroundStyle(Color(uiColor: sc.level >= 6 ? SwipePalette.pink : sc.level >= 4 ? SwipePalette.gold : SwipePalette.cyan))
-                            }
-                            if model.phase == .go || model.phase == .playing {
-                                Button(action: skip) { Text("swipe.skip").font(.system(size: 12, weight: .heavy)).foregroundStyle(.white).padding(.horizontal, 10).padding(.vertical, 5)
-                                    .background(Capsule().fill(Color.white.opacity(0.14))) }
                             }
                         }
                     }

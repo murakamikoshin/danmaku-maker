@@ -42287,61 +42287,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "みんなのステージから、一番盛り上がる10秒が次々に流れてくる"
+            "value": "ランダムに作られたステージと、みんなのステージから、一番盛り上がる10秒が次々に流れてくる"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The most intense 10 seconds of players' stages keep coming, one after another"
+            "value": "A 10-second clip from a randomly generated stage or a player-made stage keeps coming, one after another"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "玩家关卡中最精彩的10秒接连出现"
+            "value": "随机生成的关卡和玩家关卡中最精彩的10秒接连出现"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "玩家關卡中最精彩的10秒接連出現"
+            "value": "隨機生成的關卡和玩家關卡中最精彩的10秒接連出現"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "모두가 만든 스테이지의 가장 치열한 10초가 계속 이어져요"
+            "value": "랜덤으로 만든 스테이지와 모두가 만든 스테이지의 가장 치열한 10초가 계속 이어져요"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los 10 segundos más intensos de los niveles de todos, uno tras otro"
+            "value": "Los 10 segundos más intensos de niveles aleatorios y de los creados por todos, uno tras otro"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les 10 secondes les plus intenses des niveaux de tous, à la chaîne"
+            "value": "Les 10 secondes les plus intenses de niveaux aléatoires et de ceux de tous, à la chaîne"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die intensivsten 10 Sekunden aus den Stages aller, eine nach der anderen"
+            "value": "Die intensivsten 10 Sekunden aus zufälligen Stages und den Stages aller, eine nach der anderen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os 10 segundos mais intensos das fases de todos, um após o outro"
+            "value": "Os 10 segundos mais intensos de fases aleatórias e das fases de todos, um após o outro"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Самые жаркие 10 секунд из уровней игроков идут один за другим"
+            "value": "Самые жаркие 10 секунд из случайных уровней и уровней игроков идут один за другим"
           }
         }
       }

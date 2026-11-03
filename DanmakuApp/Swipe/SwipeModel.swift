@@ -8,7 +8,16 @@ import SwiftUI
 final class SwipeModel: ObservableObject {
     enum Phase: Equatable { case title, starting, transition, go, playing, cleared, failed, over }
 
-    @Published private(set) var phase: Phase = .title
+    @Published private(set) var phase: Phase = .title {
+        didSet {
+            // 遊んでいる間はスワイプ専用の曲、タイトルに戻ったら通常の曲
+            switch phase {
+            case .go, .playing, .cleared, .failed, .transition: AudioManager.shared.play(.swipe)
+            case .title: AudioManager.shared.play(.menu)
+            default: break
+            }
+        }
+    }
     @Published private(set) var scoring = SwipeScoring()
     @Published private(set) var clipName = ""
     @Published private(set) var clipAuthor = ""
@@ -151,16 +160,6 @@ final class SwipeModel: ObservableObject {
     private func record(skipped: Bool) { current.skipped = skipped; records.append(current) }
 
     // MARK: 操作
-
-    /// スキップ（連続は 0 に戻る）
-    func skip() async {
-        guard phase == .go || phase == .playing, player != nil else { return }
-        scoring.skip()
-        record(skipped: true)
-        player = nil
-        toast = L("swipe.toast.skip")
-        await advanceAfterResult()
-    }
 
     /// クリア画面から次へ（自動・上スワイプ・タップ）
     func advanceAfterResult() async {

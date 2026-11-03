@@ -7,7 +7,7 @@ final class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
     enum Track: String {
-        case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery"
+        case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery", swipe = "bgm_swipe"
         /// ステージの BGM 番号(0=ビビッド 1=ダーク 2=ゆったり 3=キラキラ 4=ミステリアス)の曲
         static func forNumber(_ n: Int) -> Track { [Track.stage, .boss, .menu, .bright, .mystery][min(max(n, 0), 4)] }
     }
