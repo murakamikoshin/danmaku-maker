@@ -12,14 +12,8 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     /// bossLook に入れられる最大の番号
     public static var maxLook: Int { allCases.map(\.rawValue).max() ?? firstCharacterLook - 1 }
 
-    /// エディタで選べるか。課金とチケットの仕組みができるまでは、開発用ビルドだけ
-    public static var editorEnabled: Bool {
-        #if DEBUG
-        true
-        #else
-        false
-        #endif
-    }
+    /// エディタで選べるか。買い切りと無料チケットの仕組みがそろったので、製品ビルドでも選べる
+    public static var editorEnabled: Bool { true }
 
     /// 商品 ID に使う名前(com.koshin.danmakumaker.boss.<これ>)
     public var productKey: String {

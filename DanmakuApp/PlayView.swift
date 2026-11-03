@@ -159,7 +159,7 @@ struct PlayView: View {
                 }
                 .overlay {
                     if let r = model.result {
-                        ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves,
+                        ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await adBreak(); model.restart(); onStart?() } },
                                    back: { Task { await adBreak(); onExit() } })
                     }
@@ -291,9 +291,13 @@ struct ResultView: View {
     var share: ShareContext?
     var ranking: RankingContext?
     var moves: [Move] = []
+    /// このステージのボスがキャラクターなら、それ(クリア画面から「このボスを使う」でショップへ行ける)
+    var boss: BossCharacter?
     let retry: () -> Void
     let back: () -> Void
 
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showBossShop = false
     @EnvironmentObject private var rewardStore: RewardStore
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
@@ -389,6 +393,11 @@ struct ResultView: View {
                         Label("daily.claimed", systemImage: "checkmark.circle.fill")
                             .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
                     }
+                    if win, !isTest, BossCharacter.editorEnabled, let boss, !cosmetics.ownership.has(boss) {
+                        // ボスを倒したあと、自分のステージにも置きたくなったときの入り口
+                        GameActionButton(title: "result.useboss", systemImage: "crown.fill", fill: GameStyle.cyan) { showBossShop = true }
+                            .accessibilityIdentifier("result.useboss")
+                    }
                     HStack(spacing: 10) {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                             .accessibilityIdentifier("result.retry")
@@ -408,6 +417,7 @@ struct ResultView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
         }
+        .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
     }
 
     private func claimReward() async {

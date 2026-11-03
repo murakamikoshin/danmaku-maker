@@ -1018,5 +1018,39 @@
    "aim": "終極考驗。通關你就是高手。",
    "name": "神之領域"
   }
+ },
+ "o31": {
+  "de": {
+   "aim": "Die fünf Techniken des Gefallenen Engels. Er erwacht und wird stärker, wenn seine LP sinken.",
+   "name": "Urteil des Gefallenen Engels"
+  },
+  "es": {
+   "aim": "Las cinco técnicas del Ángel caído. Despierta y se vuelve más fuerte al bajar su vida.",
+   "name": "El juicio del Ángel caído"
+  },
+  "fr": {
+   "aim": "Les cinq techniques de l'Ange déchu. Il s'éveille et se renforce quand ses PV baissent.",
+   "name": "Le jugement de l'Ange déchu"
+  },
+  "ko": {
+   "aim": "타천사의 다섯 가지 기술. HP가 줄어들면 각성해서 기술이 강해져요.",
+   "name": "타천사의 심판"
+  },
+  "pt-BR": {
+   "aim": "Os cinco golpes do Anjo Caído. Ele desperta e fica mais forte conforme o HP cai.",
+   "name": "O Julgamento do Anjo Caído"
+  },
+  "ru": {
+   "aim": "Пять приёмов Падшего ангела. Когда его HP падает, он пробуждается и становится сильнее.",
+   "name": "Суд Падшего ангела"
+  },
+  "zh-Hans": {
+   "aim": "堕天使的五种招式。生命值降低时会觉醒，招式变得更强。",
+   "name": "堕天使的审判"
+  },
+  "zh-Hant": {
+   "aim": "墮天使的五種招式。生命值降低時會覺醒，招式變得更強。",
+   "name": "墮天使的審判"
+  }
  }
 }

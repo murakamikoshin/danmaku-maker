@@ -14,6 +14,7 @@ struct PublishFlowView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    @State private var claimingTicket = false
     @Environment(\.dismiss) private var dismiss
     @State private var quota: PostQuota?
     @State private var granting = false
@@ -87,6 +88,18 @@ struct PublishFlowView: View {
                     GamePanel(title: "publish.boss.title") {
                         Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }
+                    if cosmetics.canClaimBossTicket {
+                        // 初めての公開は、無料チケットで好きなボスを1体もらえる
+                        GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.accent) {
+                            Task {
+                                claimingTicket = true
+                                if !(await cosmetics.claimBossTicket(boss)) { error = L("publish.boss.ticket.failed") }
+                                claimingTicket = false
+                            }
+                        }
+                        .disabled(claimingTicket).opacity(claimingTicket ? 0.5 : 1)
+                        .accessibilityIdentifier("publish.boss.ticket")
+                    }
                     GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")
                 } else if limitReached {
@@ -139,6 +152,15 @@ struct PublishFlowView: View {
                 Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
             }
             Text("publish.done").font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+            if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { !cosmetics.ownership.has($0) }) {
+                // 初めての公開のごほうび: ボスの無料チケット
+                Button { gameTap(); showShop = true } label: {
+                    Label("publish.done.ticket", systemImage: "ticket.fill").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(GameStyle.accent, in: RoundedRectangle(cornerRadius: 14))
+                }
+                .accessibilityIdentifier("publish.done.ticket")
+            }
             Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
                 .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 14))
             let text = ShareText.author(name: stage.name, id: id)
@@ -171,6 +193,7 @@ struct PublishFlowView: View {
             phase = .done(id)
             AudioManager.shared.se(.get)
             onPublished(id)
+            if BossCharacter.editorEnabled { Task { await cosmetics.refreshBossTickets(uid: auth.uid) } }
         } catch {
             self.error = error.localizedDescription
             phase = .start

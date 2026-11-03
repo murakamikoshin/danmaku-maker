@@ -36,6 +36,37 @@ async function publish(over: object = {}) {
   return call("publishStage", { ...stage, ...over });
 }
 
+describe("ボスの無料チケット", () => {
+  const uidOf = () => auth.currentUser!.uid;
+  it("初めて公開すると、チケットが1枚もらえる。2回目以降はもらえない", async () => {
+    await publish();
+    const u1 = (await db.doc(`users/${uidOf()}`).get()).data()!;
+    expect(u1).toMatchObject({ ticketGranted: true, bossTickets: 1 });
+    await new Promise((r) => setTimeout(r, 11000));   // 連続投稿の間隔
+    await call("publishStage", { ...stage, name: "二本目" });
+    expect((await db.doc(`users/${uidOf()}`).get()).get("bossTickets")).toBe(1);
+  }, 40000);
+  it("チケットでボスをもらうと、チケットが減って、同じボスは二重に使わない", async () => {
+    await publish();
+    const r = await call("claimBossTicket", { boss: "fallen_angel" });
+    expect(r).toMatchObject({ freeBosses: ["fallen_angel"], bossTickets: 0 });
+    expect(await call("claimBossTicket", { boss: "fallen_angel" })).toMatchObject({ freeBosses: ["fallen_angel"], bossTickets: 0 });
+  });
+  it("まだ公開していない人も、初めての公開のために1体もらえる(チケットを使ったことになる)", async () => {
+    await signUp();
+    expect(await call("claimBossTicket", { boss: "fallen_angel" })).toMatchObject({ freeBosses: ["fallen_angel"], bossTickets: 0 });
+    await call("publishStage", stage);
+    expect((await db.doc(`users/${uidOf()}`).get()).get("bossTickets")).toBe(0);   // 公開しても、もう一枚はもらえない
+  });
+  it("チケットがないときと、知らないボス・匿名は拒否", async () => {
+    await publish();
+    await call("claimBossTicket", { boss: "fallen_angel" });
+    expect(await callErr("claimBossTicket", { boss: "fallen_angel_2" })).toMatch(/boss/);
+    await signOut(auth); await signInAnonymously(auth);
+    expect(await callErr("claimBossTicket", { boss: "fallen_angel" })).toMatch(/sign-in-required/);
+  });
+});
+
 describe("publishStage", () => {
   it("匿名ユーザーは投稿できない", async () => {
     await signOut(auth); await signInAnonymously(auth);

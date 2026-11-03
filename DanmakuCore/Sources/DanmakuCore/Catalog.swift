@@ -132,6 +132,9 @@ public struct Ownership: Equatable, Sendable {
     /// 広告を見て解放した、無料のパターン(買う商品ではない)
     public var adPatterns: Set<Pattern> = []
 
+    /// 無料チケットでもらったボス(買う商品ではない。サーバーの記録)
+    public var freeBosses: Set<BossCharacter> = []
+
     public init(owned: Set<Product> = [], posts: Int = 0) { self.owned = owned; self.posts = posts }
 
     /// RevenueCat などから得た、購入済みの商品 ID の一覧から作る
@@ -167,7 +170,7 @@ public struct Ownership: Equatable, Sendable {
     }
 
     /// そのボスを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)
-    public func has(_ boss: BossCharacter) -> Bool { hasLifetime || owned.contains(.boss(boss)) }
+    public func has(_ boss: BossCharacter) -> Bool { hasLifetime || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
 
     /// 弾幕パターン作成モードを使えるか
     public var hasPatternMaker: Bool { hasLifetime || owned.contains(.patternMaker) }

@@ -45,7 +45,7 @@ struct DanmakuApp: App {
                     await ResultsQueue.shared.flush()
                 }
                 .onChange(of: auth.uid) { uid in
-                    Task { await CosmeticsStore.shared.refreshPosts(uid: uid) }
+                    Task { await CosmeticsStore.shared.refreshPosts(uid: uid); await CosmeticsStore.shared.refreshBossTickets(uid: uid) }
                     // マイステージのバックアップ(入れ直したあとは、ここで戻る)
                     StageBackup.shared.attach(uid: uid)
                     NotificationService.shared.attach(uid: uid)

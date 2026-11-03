@@ -87,7 +87,15 @@ add(5, "弾幕地獄", "Danmaku Hell", "密度が桁違い。見切る目と指�
 add(5, "神の領域", "Divine Realm", "真の最難関。クリアできたら達人。", "The ultimate test. Clear it and you're a master.",
     survive(120, [E("spiral", y=.22, i=.08, c=5, v=2, r=11, k=2), E("ring", x=.2, y=.2, s=8, i=.8, c=26, v=2.1, r=6, k=0), E("ring", x=.8, y=.2, s=8.4, i=.8, c=26, v=2.1, r=-6, k=1), E("rain", y=0, s=25, i=.14, c=3, v=2.8, k=3), E("aim", x=.5, y=.08, s=40, i=.6, c=7, v=3.1, r=44, k=4), E("sweep", y=.08, s=60, i=.12, c=5, v=2.9, r=80, k=2), E("spiral", x=.5, y=.4, s=85, i=.1, c=4, v=2.2, r=-13, k=1)]))
 
-assert len(S) == 30, len(S)
+# ---- ボス「堕天使」の見本(ボスは課金/無料チケットで公開できる。遊ぶのは誰でも無料) ----
+def angel_boss(d, hp, awaken, ems):
+    return dict(mode="boss", durationSec=d, bossHp=hp, bossMove=0, bossLook=5, awaken=awaken,
+                emitters=[{**m, "e": d} for m in ems], formatVersion=1)
+add(5, "堕天使の裁き", "Judgment of the Fallen Angel", "堕天使の5つの技。HPが減ると覚醒して、技が強くなる。", "The Fallen Angel's five moves. It awakens and grows stronger as its HP drops.",
+    angel_boss(90, 500, 3, [E("angelFeather", i=.5, c=7, v=3.8, k=0, ph=1), E("angelTwin", i=.1, c=4, v=2.3, r=10, k=1, ph=1), E("angelHalo", i=2, c=22, v=4.2, k=2, ph=2),
+                           E("angelCross", i=2, c=1, v=2, k=3, ph=2), E("angelParadise", i=1.2, c=23, v=1.05, r=29, k=4, ph=3), E("angelFeather", i=.6, c=8, v=3.8, k=0, ph=3)]))
+
+assert len(S) == 31, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

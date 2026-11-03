@@ -1,3 +1,4 @@
+import FirebaseFirestore
 import Foundation
 import UIKit
 import DanmakuCore
@@ -14,6 +15,16 @@ final class CosmeticsStore: ObservableObject {
     private static let loadoutKey = "cosmetics.loadout"
     private static let ownedKey = "cosmetics.owned"
     private static let postedKey = "cosmetics.posted"
+    private static let freeBossesKey = "cosmetics.freeBosses"
+    private static let bossTicketsKey = "cosmetics.bossTickets"
+    private static let ticketGrantedKey = "cosmetics.ticketGranted"
+
+    /// ボスの無料チケット(初めて公開すると1枚もらえる。サーバーの記録)の残り枚数と、もうもらったか
+    @Published private(set) var bossTickets = 0
+    @Published private(set) var ticketGranted = false
+
+    /// 無料チケットでボスをもらえるか。チケットが残っているか、まだ一度も公開しておらず、初めての公開のために1体もらえるとき
+    var canClaimBossTicket: Bool { bossTickets > 0 || (!ticketGranted && postedCount == 0) }
 
     /// 投稿したステージの数(サーバーの記録から数えた、いちばん多い値)。投稿数で解放される見た目に使う
     @Published private(set) var postedCount: Int
@@ -28,6 +39,9 @@ final class CosmeticsStore: ObservableObject {
         showStageLook = defaults.object(forKey: "cosmetics.showStageLook") as? Bool ?? true
         effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
         ownership.adPatterns = AdPatternStore.load(defaults).unlocked
+        ownership.freeBosses = Set((defaults.stringArray(forKey: Self.freeBossesKey) ?? []).compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
+        bossTickets = defaults.integer(forKey: Self.bossTicketsKey)
+        ticketGranted = defaults.bool(forKey: Self.ticketGrantedKey)
         #if DEBUG
         // 画面確認用: 起動引数 -unlock-all で全部持っている状態にする（製品ビルドには入らない）
         let args = ProcessInfo.processInfo.arguments
@@ -91,6 +105,7 @@ final class CosmeticsStore: ObservableObject {
         #endif
         var next = Ownership(productIDs: productIDs, posts: postedCount)
         next.adPatterns = ownership.adPatterns
+        next.freeBosses = ownership.freeBosses
         guard next != ownership else { return }
         ownership = next
         defaults.set(next.owned.map(\.id).sorted(), forKey: Self.ownedKey)
@@ -100,6 +115,34 @@ final class CosmeticsStore: ObservableObject {
     func refreshPosts(uid: String?) async {
         guard let uid, let n = await StageRepository().publishedCount(uid: uid) else { return }
         setPostedCount(n)
+    }
+
+    /// サーバーに保存されている無料チケットの状態を読み直す(もらったボスは、ずっと残る)
+    func refreshBossTickets(uid: String?) async {
+        guard let uid, Backend.isAvailable, let d = try? await Firestore.firestore().document("users/\(uid)").getDocument().data() else { return }
+        applyTickets(free: d["freeBosses"] as? [String] ?? [], tickets: (d["bossTickets"] as? NSNumber)?.intValue ?? 0, granted: d["ticketGranted"] as? Bool ?? false)
+    }
+
+    /// 無料チケットで、ボスを1体もらう。成功したら true
+    @discardableResult
+    func claimBossTicket(_ boss: BossCharacter) async -> Bool {
+        guard Backend.isAvailable,
+              let r = try? await Backend.functions.httpsCallable("claimBossTicket").call(["boss": boss.productKey]),
+              let d = r.data as? [String: Any] else { return false }
+        applyTickets(free: d["freeBosses"] as? [String] ?? [], tickets: (d["bossTickets"] as? NSNumber)?.intValue ?? 0, granted: true)
+        return true
+    }
+
+    private func applyTickets(free: [String], tickets: Int, granted: Bool) {
+        let bosses = Set(free.compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
+        var next = ownership
+        next.freeBosses = ownership.freeBosses.union(bosses)
+        if next != ownership { ownership = next }
+        bossTickets = tickets
+        ticketGranted = granted || ticketGranted
+        defaults.set(next.freeBosses.map(\.productKey).sorted(), forKey: Self.freeBossesKey)
+        defaults.set(tickets, forKey: Self.bossTicketsKey)
+        defaults.set(ticketGranted, forKey: Self.ticketGrantedKey)
     }
 
     func setPostedCount(_ n: Int) {

@@ -952,6 +952,15 @@ private struct BossShopCard: View {
                         if cosmetics.ownership.has(boss) {
                             EquippedLabel()
                         } else {
+                            if cosmetics.canClaimBossTicket {
+                                Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
+                                    Label("shop.boss.ticket", systemImage: "ticket.fill").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                        .padding(.vertical, 8).padding(.horizontal, 12)
+                                        .background(Color(Palette.bullets[4]), in: Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("shop.boss.ticket")
+                            }
                             PriceButton(product: .boss(boss))
                         }
                     }

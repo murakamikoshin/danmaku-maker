@@ -87,7 +87,7 @@ struct HomeView: View {
                 var e = saved.stage(id: entry.id) ?? entry
                 e.publishedStage = e.stage; e.publishedID = id
                 saved.update(e)
-                Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid) }
+                Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid); await CosmeticsStore.shared.refreshBossTickets(uid: auth.uid) }
             }
         }
         .confirmationDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }), titleVisibility: .visible) {
