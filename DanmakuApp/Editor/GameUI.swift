@@ -339,6 +339,8 @@ struct BossMoveCards: View {
 struct PatternTiles: View {
     @Binding var selection: DanmakuCore.Pattern
     let index: Int
+    /// 専用の絵を持つボスを選んでいるときは、そのボスだけの技も出す
+    var character: BossCharacter? = nil
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
     private let keys: [DanmakuCore.Pattern: String] = [
@@ -351,6 +353,10 @@ struct PatternTiles: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            if let character {
+                Text(L("editor.pattern.bosssection.\(character.rawValue)")).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                grid(DanmakuCore.Pattern.allCases.filter { $0.bossCharacter == character })
+            }
             grid(freePatterns)
             Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.ad)
@@ -365,7 +371,7 @@ struct PatternTiles: View {
     /// (古いステージで旧渦巻きを選んでいるときだけ、そのまま見えるように残す)
     private var freePatterns: [DanmakuCore.Pattern] {
         var list: [DanmakuCore.Pattern] = []
-        for p in DanmakuCore.Pattern.allCases where !p.isAd && !p.isPack2 && p != .custom && p != .swirl {
+        for p in DanmakuCore.Pattern.allCases where !p.isAd && !p.isPack2 && p != .custom && p != .swirl && p.bossCharacter == nil {
             if p == .spiral {
                 list.append(.swirl)
                 if selection == .spiral { list.append(.spiral) }
@@ -623,6 +629,32 @@ struct PatternIcon: View {
                     let y = 8 + Double(i) * 11
                     ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r, y: y - r / 2, width: r * 2, height: r * 2)), with: .color(col.opacity(0.5 + 0.2 * Double(i))), lineWidth: 1.5)
                 }
+            case .angelTwin:
+                // 左右のオーブから、逆回転の螺旋
+                for side in [-1.0, 1.0] {
+                    for i in 0..<8 { let a = Double(i) * 0.8 * side + (side < 0 ? 0 : 1.2), r = 2 + Double(i) * 1.5; dot(c.x + side * 11 + cos(a) * r, c.y + sin(a) * r, 1.8) }
+                }
+            case .angelFeather:
+                // 羽が扇状に広がって、落ちる
+                for (i, x) in [-14.0, -8, 0, 8, 14].enumerated() {
+                    var p = Path()
+                    let y = 8 + Double(abs(i - 2)) * 5 + (i % 2 == 0 ? 6 : 0)
+                    p.addEllipse(in: CGRect(x: c.x + x - 2, y: y, width: 4, height: 9))
+                    ctx.fill(p, with: .color(col))
+                }
+            case .angelHalo:
+                // 光輪の形に並んだ破片
+                ctx.stroke(Path(ellipseIn: CGRect(x: c.x - 15, y: c.y - 10, width: 30, height: 20)), with: .color(col.opacity(0.3)), lineWidth: 1)
+                for i in 0..<9 { let a = Double(i) * 2 * .pi / 9; dot(c.x + cos(a) * 15, c.y + sin(a) * 10, 2.2) }
+            case .angelCross:
+                // 逆さ十字のレーザー
+                for (dx, dy, len) in [(0.0, 1.0, 16.0), (0.0, -1.0, 8.0), (1.0, 0.0, 12.0), (-1.0, 0.0, 12.0)] {
+                    var p = Path(); p.move(to: CGPoint(x: c.x, y: c.y - 3)); p.addLine(to: CGPoint(x: c.x + dx * len, y: c.y - 3 + dy * len))
+                    ctx.stroke(p, with: .color(col), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                }
+            case .angelParadise:
+                // 閉じてくる輪(抜け道が1か所)
+                for i in 0..<14 where i != 3 && i != 4 { let a = Double(i) * 2 * .pi / 14; dot(c.x + cos(a) * 15, c.y + sin(a) * 15, 2.2) }
             case .giantOrb:
                 dot(c.x, 5, 3.4)
                 ctx.fill(Path(ellipseIn: CGRect(x: c.x - 11, y: c.y - 6, width: 22, height: 22)), with: .color(col))
@@ -708,6 +740,8 @@ struct GameTabs<T: Hashable>: View {
     let items: [(T, LocalizedStringKey)]
     @Binding var selection: T
     var idPrefix = "tabs"
+    /// 赤い点で知らせるタブ(受け取れるごほうびがあるときなど)
+    var badges: Set<T> = []
     @Namespace private var ns
 
     var body: some View {
@@ -719,8 +753,14 @@ struct GameTabs<T: Hashable>: View {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { selection = item.0 }
                 } label: {
                     Text(item.1).font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .lineLimit(1).minimumScaleFactor(0.7)
                         .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.6))
                         .frame(maxWidth: .infinity).padding(.vertical, 9)
+                        .overlay(alignment: .topTrailing) {
+                            if badges.contains(item.0) {
+                                Circle().fill(Color.red).frame(width: 9, height: 9).padding(.top, 5).padding(.trailing, 6)
+                            }
+                        }
                         .background {
                             if selected {
                                 RoundedRectangle(cornerRadius: 12).fill(GameStyle.accent)

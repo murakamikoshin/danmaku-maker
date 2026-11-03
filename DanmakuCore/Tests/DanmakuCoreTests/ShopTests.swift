@@ -63,12 +63,12 @@ final class ShopTests: XCTestCase {
         o.posts = 10
         XCTAssertTrue(o.hasUnlocked(.rainbow))
         XCTAssertFalse(Ownership(owned: Set(Product.all)).hasUnlocked(.gold), "買っても、投稿数で解放されるものは解放されない")
-        XCTAssertEqual(Product.all.count, 41)   // 弾幕パック2(バラ11個と全部入り)で12個増えた
+        XCTAssertEqual(Product.all.count, 42)   // 弾幕パック2で12個、ボス(堕天使)で1個増えた
     }
 
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 41)
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 41)
+        XCTAssertEqual(Product.all.count, 42)
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 42)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))

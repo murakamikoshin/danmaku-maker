@@ -133,6 +133,26 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("damage-moving", Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 2, emitters: emitters([.aim, .rain, .corner], boss: true), lifeMode: .hp, lifeCount: 12).sanitized()))
         stages.append(("damage-empty", Stage(name: "d", mode: .damage, durationSec: 60, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 1, v: 1, r: 0, k: 0, ph: 3)]).sanitized()))
 
+        // 堕天使(専用の位置・当たり判定)と覚醒。ここより前の並びは変えない(操作記録の乱数が変わるため)
+        stages.append(("boss-angel", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, emitters: emitters([.ring, .aim, .sweep], boss: true), bossLook: 5, awaken: 3).sanitized()))
+        stages.append(("boss-angel-lives3", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, emitters: emitters([.spiral, .homing], boss: true), lifeMode: .lives, lifeCount: 3, bossLook: 5, awaken: 2).sanitized()))
+        stages.append(("damage-angel", Stage(name: "d", mode: .damage, durationSec: 30, emitters: emitters([.ring, .aim], boss: true), bossLook: 5).sanitized()))
+        stages.append(("seq-angel", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 12, waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 2, emitters: bossEm),
+            Wave(kind: .boss, durationSec: 60, bossHp: 250, bossMove: 0, emitters: bossEm, bossLook: 5, awaken: 3)]).sanitized()))
+
+        // 堕天使の専用の技(覚醒の前と後)。ここより前の並びは変えない
+        func angel(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0)
+            }
+            return Stage(name: "a", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 5, awaken: awaken).sanitized()
+        }
+        stages.append(("angel-feather-halo", angel([(.angelFeather, 0.5, 7, 3.8, 0), (.angelHalo, 2.0, 22, 4.0, 0)], awaken: 2)))
+        stages.append(("angel-twin-cross", angel([(.angelTwin, 0.3, 4, 2.3, 10), (.angelCross, 2.0, 1, 2.0, 0)], awaken: 2)))
+        stages.append(("angel-paradise", angel([(.angelParadise, 1.2, 23, 1.1, 29), (.angelFeather, 0.8, 5, 3.5, 0)], awaken: 3)))
+        stages.append(("angel-damage-all", angel([(.angelTwin, 0.4, 3, 2.0, 8), (.angelHalo, 2.0, 18, 3.0, 0), (.angelParadise, 1.5, 20, 1.0, 0)], awaken: nil, mode: .damage)))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

@@ -1919,5 +1919,107 @@
    "formatVersion": 1,
    "name": "o30"
   }
+ },
+ {
+  "id": "o31",
+  "difficulty": 5,
+  "name": {
+   "ja": "堕天使の裁き",
+   "en": "Judgment of the Fallen Angel"
+  },
+  "aim": {
+   "ja": "堕天使の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Fallen Angel's five moves. It awakens and grows stronger as its HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 5,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "angelFeather",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.5,
+     "c": 7,
+     "v": 3.8,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "angelTwin",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.1,
+     "c": 4,
+     "v": 2.3,
+     "r": 10,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "angelHalo",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2,
+     "c": 22,
+     "v": 4.2,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "angelCross",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2,
+     "c": 1,
+     "v": 2,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "angelParadise",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 1.2,
+     "c": 23,
+     "v": 1.05,
+     "r": 29,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "angelFeather",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.6,
+     "c": 8,
+     "v": 3.8,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o31"
+  }
  }
 ]

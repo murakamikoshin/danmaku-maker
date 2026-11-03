@@ -41,6 +41,8 @@ public enum Product: Hashable, Sendable {
     case patternPack2
     /// 弾幕パターン作成モード(弾の出る位置と軌道を線で描いて、自分だけの弾幕を作る)
     case patternMaker
+    /// キャラクターのボスを、ステージ作りで公開できるようにする(遊ぶのは誰でもできる。置いて試すのも買う前からできる)
+    case boss(BossCharacter)
     /// 永久買い切りパック: いまある課金コンテンツと広告削除を全部、これから増える課金コンテンツも全部、一度の購入で使える
     case lifetime
 
@@ -56,6 +58,7 @@ public enum Product: Hashable, Sendable {
         case .patternPack: return Product.idPrefix + "patternpack"
         case .patternPack2: return Product.idPrefix + "patternpack2"
         case .patternMaker: return Product.idPrefix + "patternmaker"
+        case .boss(let b): return Product.idPrefix + "boss." + b.productKey
         case .lifetime: return Product.idPrefix + "lifetime"
         }
     }
@@ -68,6 +71,9 @@ public enum Product: Hashable, Sendable {
         if id == Product.idPrefix + "patternpack2" { self = .patternPack2; return }
         if id == Product.idPrefix + "patternmaker" { self = .patternMaker; return }
         if id == Product.idPrefix + "lifetime" { self = .lifetime; return }
+        if id.hasPrefix(Product.idPrefix + "boss."), let b = BossCharacter.allCases.first(where: { $0.productKey == String(id.dropFirst((Product.idPrefix + "boss.").count)) }) {
+            self = .boss(b); return
+        }
         if id.hasPrefix(Product.idPrefix + "pattern."), let p = Pattern(rawValue: String(id.dropFirst((Product.idPrefix + "pattern.").count))), p.isPaid, p != .homing {
             self = .pattern(p); return
         }
@@ -92,6 +98,7 @@ public enum Product: Hashable, Sendable {
         case .patternPack: return 600
         case .patternPack2: return 600
         case .patternMaker: return 1000
+        case .boss: return 400
         case .lifetime: return 3000
         }
     }
@@ -110,6 +117,7 @@ public enum Product: Hashable, Sendable {
         for p in Pattern.pack2 { list.append(.pattern(p)) }
         list.append(.patternPack2)
         list.append(.patternMaker)
+        for b in BossCharacter.allCases { list.append(.boss(b)) }
         list.append(.lifetime)
         return list
     }
@@ -123,6 +131,9 @@ public struct Ownership: Equatable, Sendable {
 
     /// 広告を見て解放した、無料のパターン(買う商品ではない)
     public var adPatterns: Set<Pattern> = []
+
+    /// 無料チケットでもらったボス(買う商品ではない。サーバーの記録)
+    public var freeBosses: Set<BossCharacter> = []
 
     public init(owned: Set<Product> = [], posts: Int = 0) { self.owned = owned; self.posts = posts }
 
@@ -158,6 +169,9 @@ public struct Ownership: Equatable, Sendable {
         return !pattern.isPaid || hasLifetime || owned.contains(.pattern(pattern)) || owned.contains(.patternPack)
     }
 
+    /// そのボスを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)
+    public func has(_ boss: BossCharacter) -> Bool { hasLifetime || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
+
     /// 弾幕パターン作成モードを使えるか
     public var hasPatternMaker: Bool { hasLifetime || owned.contains(.patternMaker) }
 
@@ -175,6 +189,7 @@ public struct Ownership: Equatable, Sendable {
         case .patternPack: return !Pattern.paid.allSatisfy { has($0) }
         case .patternPack2: return !Pattern.pack2.allSatisfy { has($0) }
         case .patternMaker: return !hasPatternMaker
+        case .boss(let b): return !has(b)
         case .lifetime: return !hasLifetime
         }
     }

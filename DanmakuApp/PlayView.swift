@@ -159,7 +159,7 @@ struct PlayView: View {
                 }
                 .overlay {
                     if let r = model.result {
-                        ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves,
+                        ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { model.restart(); onStart?() },   // もう一度は、広告なしで何回でも(広告は、やめて戻るときだけ)
                                    back: { Task { await adBreak(); onExit() } })
                     }
@@ -291,13 +291,17 @@ struct ResultView: View {
     var share: ShareContext?
     var ranking: RankingContext?
     var moves: [Move] = []
+    /// このステージのボスがキャラクターなら、それ(クリア画面から「このボスを使う」でショップへ行ける)
+    var boss: BossCharacter?
     let retry: () -> Void
     let back: () -> Void
 
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showBossShop = false
     @EnvironmentObject private var rewardStore: RewardStore
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
-    @State private var claimBusy = false
+    @State private var claiming = false
     private var win: Bool { result.outcome == .cleared }
     private var timeText: String { String(format: "%.1f", result.time) }
 
@@ -373,19 +377,26 @@ struct ResultView: View {
                             if let url = ShareText.xIntentURL(text) { Link(destination: url) { smallButton("detail.share.x", "xmark") } }
                         }
                     }
-                    // クリアしたら、広告を見て「毎日のごほうび」をもらえる(1日1つ。広告削除の購入者は広告なしで)
-                    if win, !isTest, rewardStore.canClaim {
+                    if win, !isTest, rewardStore.canClaim, let next = rewardStore.upcoming.first {
+                        // クリアしたごほうびに、今日の報酬を広告つきでその場で受け取れる
                         let ready = purchases.isPremium || ads.isReady
-                        Button { Task { await claimReward() } } label: {
-                            Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                                .font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-                                .padding(.vertical, 9).padding(.horizontal, 16)
-                                .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                        HStack(spacing: 12) {
+                            RewardSwatch(reward: next, size: 44)
+                            GameActionButton(title: purchases.isPremium ? "daily.claim.free" : "daily.claim.ad",
+                                             systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill", fill: GameStyle.gold) {
+                                Task { await claimReward() }
+                            }
+                            .disabled(!ready || claiming).opacity(ready && !claiming ? 1 : 0.5)
+                            .accessibilityIdentifier("result.claim")
                         }
-                        .buttonStyle(.plain).disabled(!ready || claimBusy).opacity(ready && !claimBusy ? 1 : 0.5)
-                        .accessibilityIdentifier("result.claimreward")
                     } else if win, !isTest, rewardStore.justClaimed != nil {
-                        Label("daily.claimed", systemImage: "checkmark.circle.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                        Label("daily.claimed", systemImage: "checkmark.circle.fill")
+                            .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
+                    }
+                    if win, !isTest, BossCharacter.editorEnabled, let boss, !cosmetics.ownership.has(boss) {
+                        // ボスを倒したあと、自分のステージにも置きたくなったときの入り口
+                        GameActionButton(title: "result.useboss", systemImage: "crown.fill", fill: GameStyle.cyan) { showBossShop = true }
+                            .accessibilityIdentifier("result.useboss")
                     }
                     HStack(spacing: 10) {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
@@ -406,12 +417,17 @@ struct ResultView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
         }
+        .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
     }
 
     private func claimReward() async {
-        claimBusy = true
-        defer { claimBusy = false }
-        if purchases.isPremium { rewardStore.claim() } else if await ads.showRewarded() { rewardStore.claim() }
+        claiming = true
+        defer { claiming = false }
+        if purchases.isPremium {
+            rewardStore.claim()
+        } else if await ads.showRewarded() {
+            rewardStore.claim()
+        }
         if rewardStore.justClaimed != nil {
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             AudioManager.shared.se(.get)

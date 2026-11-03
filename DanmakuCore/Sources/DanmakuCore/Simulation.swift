@@ -35,6 +35,26 @@ public struct Bullet: Equatable, Sendable {
     public var fuse: Double = 0
     /// すでにかすった(1 発につき 1 回だけ数える。スワイプ弾幕の点数に使う。弾の動きや当たり判定には関わらない)
     public var grazed = false
+    /// 堕天使の技だけが使う、予備の数値(羽・破片・閉じる輪。意味は印ごとに違う)
+    public var u0: Double = 0
+    public var u1: Double = 0
+    public var u2: Double = 0
+    public var u3: Double = 0
+
+    /// 羽の印。出てすぐ減速して止まり、そのあと揺れながら落ちる。fuse が揺れの位相、maxSpeed が落ちる速さの上限(px/秒)、u0 が落ち始めたか(0/1)
+    public static let featherScript = 11
+    /// 破片の印(砕けし光輪)。(u0, u1) を中心に、半径 maxSpeed の輪へ広がって回り、homeLeft 秒で自機へ突進する。
+    /// u2 が最初の角度、turn が回る速さ(ラジアン/秒)、u3 が突進の速さ(px/秒)
+    public static let shardScript = 12
+    /// 閉じてくる輪の印(失楽園)。(u0, u1) を中心に、半径 radiusStart から u3 px/秒で縮む。u2 が最初の角度、turn が回る速さ、fuse 秒で消える
+    public static let ringScript = 13
+    /// 閉じてくる輪の最初の半径
+    public static let ringStartRadius = 240.0
+    /// 羽が減速する間(秒)と、1ステップごとの速さの倍率(1/60 秒あたり 0.93 を、1/120 秒の刻みに直したもの)
+    static let featherDecelSeconds = 32.0 / 60
+    static let featherDecay = (0.93 as Double).squareRoot()
+
+    public var isRing: Bool { script == Bullet.ringScript }
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -90,9 +110,12 @@ public struct Bullet: Equatable, Sendable {
         return r * r
     }
 
-    public static func beam(x: Double, y: Double, angle a: Double, color: Int, sweep: Double = 0, fireTime: Double = 0) -> Bullet {
-        Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, turn: sweep, homeLeft: fireTime, bounces: 1, script: beamScript)
+    /// length は光線の長さ(0 なら画面の外まで)。長さのあるビームは、maxSpeed に長さを入れる
+    public static func beam(x: Double, y: Double, angle a: Double, color: Int, sweep: Double = 0, fireTime: Double = 0, length: Double = 0) -> Bullet {
+        Bullet(x: x, y: y, vx: cos(a), vy: sin(a), color: color, turn: sweep, homeLeft: fireTime, maxSpeed: length, bounces: 1, script: beamScript)
     }
+    /// 画面に描く光線の長さ
+    public var beamLength: Double { maxSpeed > 0 ? maxSpeed : 900 }
 
     public var isGiant: Bool { script == Bullet.giantScript }
     /// ビームを撃っている時間(秒)
@@ -109,7 +132,13 @@ public struct Bullet: Equatable, Sendable {
         guard beamFiring, bounces > 0 else { return false }
         let rx = px - x, ry = py - y
         let along = rx * vx + ry * vy
-        let d2 = along < 0 ? rx * rx + ry * ry : rx * rx + ry * ry - along * along
+        let d2: Double
+        if along < 0 { d2 = rx * rx + ry * ry }
+        else if maxSpeed > 0 && along > maxSpeed {
+            // 長さのある光線は、先の端より向こうには届かない
+            let ex = px - (x + vx * maxSpeed), ey = py - (y + vy * maxSpeed)
+            d2 = ex * ex + ey * ey
+        } else { d2 = rx * rx + ry * ry - along * along }
         return d2 < DanmakuConfig.beamHitRadiusSquared
     }
 
@@ -171,6 +200,45 @@ extension Bullet {
             age += dt
             if age >= fuse { return .burst }
             if age < homeLeft { x += vx * dt; y += vy * dt }
+            return .alive
+        }
+        if script == Bullet.featherScript {
+            // 羽: 減速して止まり、そのあと左右に揺れながら、だんだん速く落ちる
+            age += dt
+            if age < Bullet.featherDecelSeconds {
+                vx *= Bullet.featherDecay; vy *= Bullet.featherDecay
+            } else {
+                if u0 == 0 { u0 = 1; vx = 0; vy = 12 }
+                vy = min(vy + 180 * dt, maxSpeed)
+                vx = sin((age * 60 + fuse) * 0.07) * 54
+            }
+            x += vx * dt; y += vy * dt
+            return .alive
+        }
+        if script == Bullet.shardScript {
+            // 破片: 光輪から輪の形に広がり、回って、時間が来た順に自機へ突進する
+            age += dt
+            if age >= homeLeft {
+                let a = atan2(playerY - y, playerX - x)
+                vx = cos(a) * u3; vy = sin(a) * u3
+                script = 0; turn = 0; homeLeft = 0; maxSpeed = 0
+                return .alive
+            }
+            let q = 1 - min(1, age / 0.4)
+            let e = 1 - q * q * q
+            let ang = u2 + turn * max(0, age - 0.4)
+            x = u0 + cos(ang) * maxSpeed * e
+            y = u1 + sin(ang) * maxSpeed * e * 0.8
+            return .alive
+        }
+        if script == Bullet.ringScript {
+            // 閉じてくる輪: 中心へ向かって縮む(回る輪もある)。中心に着いたら消える
+            age += dt
+            if age >= fuse { return .gone }
+            let rad = Bullet.ringStartRadius - u3 * age
+            let ang = u2 + turn * age
+            x = u0 + cos(ang) * rad
+            y = u1 + sin(ang) * rad
             return .alive
         }
         if script == Bullet.weaveScript || script == Bullet.zigzagScript {
@@ -282,8 +350,9 @@ public enum Outcome: Equatable, Sendable {
 
 public enum Emit {
     /// 試作の `emit` と同じ。弾数は 1600 で頭打ち（乱数は上限でも消費する）
+    /// awakened は、ボスが覚醒した状態か(堕天使の技が強くなる)。salt は、ステージごとに決まる数(失楽園の抜け道を決める)
     public static func emit(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
-                     rng: inout Mulberry32, into out: inout [Bullet]) {
+                     rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool = false, salt: UInt32 = 0) {
         let sp = m.v * 60
         let n = max(1, m.c)
         let deg = Double.pi / 180
@@ -430,6 +499,8 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise:
+            emitFallenAngel(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         default:
             // 広告で解放するパターン: 弾の出し方の表に従う
             if let r = m.t.recipe { emitRecipe(r, m, shot: k, cx: cx, cy: cy, px: px, py: py, off: off, sp: sp, n: n, rng: &rng, into: &out) }
@@ -478,6 +549,8 @@ public struct Simulation {
     /// 自機がショットを撃つか(スワイプ弾幕では撃たない)
     private let firesShots: Bool
     private var cooldown = 0.0
+    /// 失楽園の抜け道など、ステージごとに決まる数(ステージのシード)
+    private let salt: UInt32
     private var rng: Mulberry32
     private var next: [Double]
     private var shotCount: [Int]
@@ -515,6 +588,7 @@ public struct Simulation {
         self.specs = specs
         hp = specs[0].hp
         rng = Mulberry32(seed: seed)
+        salt = seed
         next = specs[0].emitters.map(\.s)
         shotCount = Array(repeating: 0, count: specs[0].emitters.count)
     }
@@ -523,6 +597,12 @@ public struct Simulation {
     /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
     public var bossSizeIndex: Int { spec.size }
     public var bossLookIndex: Int { spec.look }
+    /// 専用の絵を持つボスか(図形のボスなら nil)
+    public var bossCharacter: BossCharacter? { spec.character }
+    /// 覚醒する段階(nil は覚醒しない)
+    public var awakenPhase: Int? { spec.awaken }
+    /// いま、覚醒した状態か(ボスの場面で、覚醒する段階に入ったあと)
+    public var isAwakened: Bool { isBoss && (spec.awaken.map { phase >= $0 } ?? false) }
     public var mookSizeIndex: Int? { spec.mooks }
     public var mookLookIndex: Int { spec.mookLook }
     /// 場面の数
@@ -602,6 +682,7 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
+        if let c = spec.character { return c.position(waveT: waveT) }
         let mv = Simulation.bossMoves[min(max(spec.move, 0), 2)]
         return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, waveT) * mv.w)),
                      y: DanmakuConfig.height * 0.18)
@@ -652,7 +733,7 @@ public struct Simulation {
                 s.y -= 600 * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
-                let br = DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
+                let br = spec.character?.hitRadius ?? DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
                 if dx * dx + dy * dy < br * br {
                     damageDealt += s.damage
                     if !isDamageRace { hp -= s.damage }
@@ -680,7 +761,7 @@ public struct Simulation {
                         let fx = m.firesFromPoint ? m.x * W : bp.x
                         let fy = m.firesFromPoint ? m.y * H : bp.y
                         Emit.emit(m, shot: shotCount[idx], cx: m.t == .rain ? 0 : fx, cy: fy,
-                                  px: player.x, py: player.y, rng: &rng, into: &bullets)
+                                  px: player.x, py: player.y, rng: &rng, into: &bullets, awakened: isAwakened, salt: salt)
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
                     }
@@ -724,7 +805,7 @@ public struct Simulation {
                 bullets[w] = b; w += 1
                 continue
             }
-            if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
+            if !b.isRing && (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) { continue }
             let dx = b.x - player.x, dy = b.y - player.y
             let d2 = dx * dx + dy * dy
             if d2 < b.hitDistanceSquared {

@@ -89,7 +89,7 @@ final class PurchaseService: NSObject, ObservableObject {
         case .part, .set: break   // 見た目は、ステージ作りで選ぶ(装備はない)
         case .shot(let s): cosmetics.equip(s)
         case .customImages: break   // 画像を選んだときに使う設定になる
-        case .pattern, .patternPack, .patternPack2, .patternMaker, .lifetime: break   // ステージ作りで、そのパターンや作成モードが使えるようになる
+        case .pattern, .patternPack, .patternPack2, .patternMaker, .boss, .lifetime: break   // ステージ作りで、そのパターンや作成モードが使えるようになる
         }
     }
 

@@ -8,7 +8,7 @@ import UIKit
 /// 広告が出るようになったら、UMP を戻す(取れないときだけ個人に合わせない広告にする)か決める。
 /// パッケージ(project.yml の UserMessagingPlatform)は戻しやすいように残してある。
 ///  1. リワード広告: 被弾したときの「広告を見て復活」(見るかどうかは、プレイヤーが選ぶ)
-///  2. 全画面広告: 結果画面から次へ進むときに、3回遊ぶごと・前の広告から2分以上あいているときだけ。
+///  2. 全画面広告: 結果画面から次へ進むときに、2回遊ぶごと・前の広告から2分以上あいているときだけ。
 ///     広告削除の購入者・テストプレイ・ステージ開始時・プレイ中には、出さない。
 @MainActor
 final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate {
@@ -123,10 +123,12 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         return true
     }
 
-    /// スワイプ弾幕: 15 本クリアごとに、クリアの後の切り替えの前だけで出す（本編の間隔とは別に数える）
+    /// 回数や間隔に関係なく、読み込めていれば全画面広告を出す(閉じるまで待つ)。
+    /// コース投稿の「アップロード待ち」のように、もともと待ち時間がある場面で使う。出さなかったら false
     @discardableResult
-    func showInterstitialForSwipe() async -> Bool {
-        guard Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds, let ad = interstitial, let vc = Self.topViewController() else { return false }
+    func showInterstitialNow() async -> Bool {
+        guard let ad = interstitial, let vc = Self.topViewController() else { return false }
+        playsSinceAd = 0
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }

@@ -23,6 +23,11 @@ extension Emitter {
         case .stopgo: return Emitter(t: t, e: end, i: 1.0, c: 5, v: 2.4, r: 60)
         case .split: return Emitter(t: t, e: end, i: 1.1, c: 3, v: 2.4, r: 50)
         case .timed: return Emitter(t: t, e: end, i: 1.6, c: 16, v: 2.0, r: 8)
+        case .angelTwin: return Emitter(t: t, e: end, i: 0.1, c: 4, v: 2.3, r: 10)
+        case .angelFeather: return Emitter(t: t, e: end, i: 0.5, c: 7, v: 3.8, r: 0)
+        case .angelHalo: return Emitter(t: t, e: end, i: 2.0, c: 22, v: 4.2, r: 0)
+        case .angelCross: return Emitter(t: t, e: end, i: 2.0, c: 1, v: 2.0, r: 0)
+        case .angelParadise: return Emitter(t: t, e: end, i: 1.2, c: 23, v: 1.05, r: 29)
         default:
             // 広告で解放するパターン: 表の初期値
             let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
@@ -53,6 +58,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var bossLook: Int?
     var mooks: Int?
     var mookLook: Int?
+    /// 覚醒する段階(2 か 3)。nil は覚醒しない
+    var awaken: Int?
     var emitters: [Emitter]
 
     init(kind: WaveKind) {
@@ -65,7 +72,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var wave: Wave {
         Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
              emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
-             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook)
+             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil)
     }
 
     var durations: [Int] { kind == .boss ? Wave.bossDurations : Wave.surviveDurations }
@@ -123,12 +130,14 @@ struct Draft: Codable, Equatable {
     var bossLook = 0
     var mooks: Int?
     var mookLook = 0
+    /// 覚醒する段階(2 か 3)。nil は覚醒しない
+    var awaken: Int?
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -155,6 +164,7 @@ struct Draft: Codable, Equatable {
         bossLook = try c.decodeIfPresent(Int.self, forKey: .bossLook) ?? 0
         mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
         mookLook = try c.decodeIfPresent(Int.self, forKey: .mookLook) ?? 0
+        awaken = try c.decodeIfPresent(Int.self, forKey: .awaken)
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
     }
 
@@ -172,7 +182,7 @@ struct Draft: Codable, Equatable {
               bossWarning: bossWarning ? true : nil,
               bossDefeat: mode == .boss ? bossDefeat : nil,
               bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
-              shot: shot, rewardFx: rewardFx).sanitized()
+              shot: shot, rewardFx: rewardFx, awaken: awaken).sanitized()
     }
 
     /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)
@@ -276,6 +286,16 @@ final class EditorModel: ObservableObject {
         let j = i + delta
         guard draft.waves.indices.contains(j) else { return }
         draft.waves.swapAt(i, j)
+    }
+
+    /// ボスの見た目を変えるとき: キャラクター専用の技を、ふつうの放射(ring)に置き換える
+    func convertCharacterPatterns() {
+        for i in draft.emitters.indices where draft.emitters[i].t.bossCharacter != nil { draft.emitters[i].changePattern(to: .ring) }
+    }
+
+    func convertCharacterPatterns(inWave id: UUID) {
+        guard let w = draft.waves.firstIndex(where: { $0.id == id }) else { return }
+        for i in draft.waves[w].emitters.indices where draft.waves[w].emitters[i].t.bossCharacter != nil { draft.waves[w].emitters[i].changePattern(to: .ring) }
     }
 
     func addEmitter(toWave id: UUID) {

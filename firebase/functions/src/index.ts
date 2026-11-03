@@ -108,6 +108,8 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   await userRef.set({
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
     ...quotaFields(unlisted ? quota : afterPost(quota, premium)),
+    // 初めて公開したとき(「URLを知っている人だけ」は数えない): ボスの無料チケットを1枚渡す
+    ...(!unlisted && user.get("ticketGranted") !== true ? { ticketGranted: true, bossTickets: FieldValue.increment(1) } : {}),
     createdAt: user.get("createdAt") ?? FieldValue.serverTimestamp(),
     blockedUids: user.exists ? user.get("blockedUids") ?? [] : [],
   }, { merge: true });
@@ -118,6 +120,32 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     logger.error("ogp-failed", { id, error: String(e) }); // 画像は後から ogImage 関数が作り直す
   }
   return { id };
+});
+
+/** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
+const BOSS_KEYS = ["fallen_angel"];
+
+/**
+ * 無料チケットで、ボスを1体もらう。チケットは初めて公開したときに1枚もらえる。
+ * まだ一度も公開していない人も、その初めての公開で使うボスを、公開の前にもらえる(その場合は、チケットを使ったことになる)
+ */
+export const claimBossTicket = onCall(async (req) => {
+  const uid = requireMember(req);
+  const boss = (req.data as { boss?: unknown })?.boss;
+  if (typeof boss !== "string" || !BOSS_KEYS.includes(boss)) throw new HttpsError("invalid-argument", "boss");
+  const userRef = db.doc(`users/${uid}`);
+  return db.runTransaction(async (tx) => {
+    const user = await tx.get(userRef);
+    const free = (user.get("freeBosses") as string[] | undefined) ?? [];
+    if (free.includes(boss)) return { freeBosses: free, bossTickets: (user.get("bossTickets") as number | undefined) ?? 0 };
+    const tickets = (user.get("bossTickets") as number | undefined) ?? 0;
+    const first = user.get("ticketGranted") !== true && ((user.get("postCount") as number | undefined) ?? 0) === 0;
+    if (tickets <= 0 && !first) throw new HttpsError("failed-precondition", "no-ticket");
+    const left = first ? 0 : tickets - 1;
+    const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
+    tx.set(userRef, { ...base, freeBosses: [...free, boss], bossTickets: left, ticketGranted: true }, { merge: true });
+    return { freeBosses: [...free, boss], bossTickets: left };
+  });
 });
 
 /** 広告を見たことを報告して、今日の投稿の追加券を1枚もらう(1日5本を超えて公開したいとき) */
@@ -494,7 +522,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "shot", "rewardFx",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {

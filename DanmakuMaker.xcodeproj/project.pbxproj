@@ -23,6 +23,7 @@
 		258439472FCE7575D6175586 /* ShopEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */; };
 		2A55DA44E85BB1B20F77D9DE /* RewardArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6825279BEB581088B0F51469 /* RewardArt.swift */; };
 		2AFD1CC65A31EF1FF80CECE9 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
+		2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */; };
 		2E1D7BA494A7D8D3E7C932FC /* StageBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5F25C818B20290A6230677 /* StageBackup.swift */; };
 		348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */ = {isa = PBXBuildFile; fileRef = 61E6BCB8DCD4762D19C79CA3 /* bgm_mystery.caf */; };
 		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
@@ -32,6 +33,7 @@
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
 		4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE99B3637315E889FFCC33EC /* GameUI.swift */; };
 		45924AE0CA078873D2A83691 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6318A05C51A88952A6A8B21 /* NotificationService.swift */; };
+		46EB774F011D97C35EB1A667 /* BossSprites.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA14CF6B0BFE45CC242D979A /* BossSprites.swift */; };
 		4AD6B4860B7EE9DB0976A23D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */; };
 		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
@@ -86,6 +88,7 @@
 		E06EA720167D731F500C2403 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8AC7B188372A599912AC6166 /* Localizable.xcstrings */; };
 		E28E2C6C3A57F8E558CEE711 /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8524A918F37005EBA71BD0DF /* PatternLibrary.swift */; };
 		E4E6996BDADAFB8F4FC72BFD /* PatternMakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20CD895E1DF2E57774AA998 /* PatternMakerView.swift */; };
+		E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */; };
 		E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A243990CAD3948B58BBC48 /* EmitterPreview.swift */; };
 		E96BBAD084A36275A32A62ED /* SwipeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F9BB1B9ADCDC084D4AABDE /* SwipeModel.swift */; };
 		EDDCF8004675950DE540838A /* bgm_bright.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4BB7DF7FE9B74CEEDCAC0BA6 /* bgm_bright.caf */; };
@@ -177,11 +180,13 @@
 		CAEDF0B0A7D3F0B6DB776BA4 /* DailyRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyRewardView.swift; sourceTree = "<group>"; };
 		CBED3045376B6993745B32B4 /* DanmakuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmakuApp.swift; sourceTree = "<group>"; };
 		CE2E8AF4C2864B6CCE26CD02 /* se_clear.caf */ = {isa = PBXFileReference; path = se_clear.caf; sourceTree = "<group>"; };
+		D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		D1E163A6266ACFCDDDD873ED /* RewardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardStore.swift; sourceTree = "<group>"; };
 		D2BAD28940EC30276707CFDA /* SwipeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeService.swift; sourceTree = "<group>"; };
 		D2E13E3660EA4F407B0608E4 /* se_warning.caf */ = {isa = PBXFileReference; path = se_warning.caf; sourceTree = "<group>"; };
 		D3C37708B7ECADCE444E276D /* DanmakuCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DanmakuCore; path = DanmakuCore; sourceTree = SOURCE_ROOT; };
 		D6318A05C51A88952A6A8B21 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_idle_sheet.png; sourceTree = "<group>"; };
 		D8A85042053FECBD69E454F3 /* se_fail.caf */ = {isa = PBXFileReference; path = se_fail.caf; sourceTree = "<group>"; };
 		DAA4624B3387C7D797F98B70 /* EmitterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterCard.swift; sourceTree = "<group>"; };
 		E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */ = {isa = PBXFileReference; path = se_boom.caf; sourceTree = "<group>"; };
@@ -190,6 +195,7 @@
 		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F432139D4D93210AE9BDE2F4 /* bgm_menu.caf */ = {isa = PBXFileReference; path = bgm_menu.caf; sourceTree = "<group>"; };
 		F7E34F9A7A2229BC09000B94 /* se_life.caf */ = {isa = PBXFileReference; path = se_life.caf; sourceTree = "<group>"; };
+		FA14CF6B0BFE45CC242D979A /* BossSprites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BossSprites.swift; sourceTree = "<group>"; };
 		FB986508388484596E9919F0 /* StageRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageRepository.swift; sourceTree = "<group>"; };
 		FC441513117F025F08A727B7 /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		FD3D2EA322BA8AD7A2883996 /* bgm_stage.caf */ = {isa = PBXFileReference; path = bgm_stage.caf; sourceTree = "<group>"; };
@@ -256,6 +262,15 @@
 				D2BAD28940EC30276707CFDA /* SwipeService.swift */,
 			);
 			path = Swipe;
+			sourceTree = "<group>";
+		};
+		43B65B20DF0832EA6FC67203 /* Bosses */ = {
+			isa = PBXGroup;
+			children = (
+				D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */,
+				D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */,
+			);
+			path = Bosses;
 			sourceTree = "<group>";
 		};
 		99A389FD256B46C647F04C63 /* Editor */ = {
@@ -362,6 +377,7 @@
 				C215A3C95C2A8021A12A703D /* official_stages_i18n.json */,
 				966ADA412BC3686AAAF4587D /* official_stages.json */,
 				9EB622873E11664021659A20 /* Audio */,
+				43B65B20DF0832EA6FC67203 /* Bosses */,
 				EDCB6797248E2A223B587519 /* Fonts */,
 			);
 			path = Resources;
@@ -370,6 +386,7 @@
 		CD8CFC363DC68F19E88DF9D0 /* Game */ = {
 			isa = PBXGroup;
 			children = (
+				FA14CF6B0BFE45CC242D979A /* BossSprites.swift */,
 				C8393515DD0F1156221C5E1B /* EnemyArt.swift */,
 				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
 				FDD3C27E636E8B15E076F52B /* Palette.swift */,
@@ -517,6 +534,8 @@
 				F7C2FDF958DAEA96763CB3ED /* bgm_menu.caf in Resources */,
 				348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */,
 				19B9548383503BD2EE44B99A /* bgm_stage.caf in Resources */,
+				2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */,
+				E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
 				4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */,
 				CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */,
@@ -555,6 +574,7 @@
 				4FB11696D193E6302F80B9DA /* Backend.swift in Sources */,
 				A97071E62973560D1F271F87 /* BannerAdView.swift in Sources */,
 				1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */,
+				46EB774F011D97C35EB1A667 /* BossSprites.swift in Sources */,
 				D06B87FBA6FC1D1D54206E05 /* CommentService.swift in Sources */,
 				B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */,
 				87237EE186219FB19202E0D5 /* CosmeticsStore.swift in Sources */,
@@ -699,7 +719,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
 				PRODUCT_NAME = DanmakuMaker;
 				REVENUECAT_API_KEY = appl_EhUVgOXVczuSOnQUNULxohhhjMa;
@@ -769,7 +789,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.koshin.danmakumaker;
 				PRODUCT_NAME = DanmakuMaker;
 				REVENUECAT_API_KEY = appl_EhUVgOXVczuSOnQUNULxohhhjMa;

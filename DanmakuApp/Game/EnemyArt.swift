@@ -6,6 +6,10 @@ import DanmakuCore
 /// 見た目と大きさだけで、計算には関わらない。ただしボスの大きさは、弾が当たる範囲(DanmakuConfig.bossRadii)と同じ比率にする
 enum EnemyArt {
     static let looks = DanmakuConfig.enemyLooks
+    /// エディタで選べるボスの見た目の番号。専用の絵を持つボスは、課金などの仕組みができるまで開発用ビルドだけ
+    static var bossLookChoices: [Int] {
+        Array(0..<BossCharacter.firstCharacterLook) + (BossCharacter.editorEnabled ? BossCharacter.allCases.map(\.rawValue) : [])
+    }
 
     /// ボスの絵の一辺(ポイント)。当たる半径の2倍にそろえて、見た目と当たり判定がずれないようにする
     static func bossPoints(size: Int) -> CGFloat { CGFloat(DanmakuConfig.bossRadii[min(max(size, 0), 2)] * 2) }
@@ -23,6 +27,8 @@ enum EnemyArt {
     }
 
     static func bossImage(look: Int, size: Int, flash: Bool) -> UIImage {
+        // 専用の絵を持つボス: エディタの選択肢・プレビュー用に、1コマ目の絵を返す
+        if let c = BossCharacter.of(look: look), let art = BossSprites.art(c, awakened: false) { return art.still }
         let key = "b\(look).\(size).\(flash)"
         if let c = cache[key] { return c }
         let color = flash ? UIColor.white : Palette.pink

@@ -12,10 +12,10 @@ final class OfficialStagesTests: XCTestCase {
         return try JSONDecoder().decode([Entry].self, from: Data(contentsOf: url))
     }
 
-    func testThirtyStagesInOrder() throws {
+    func testAllStagesInOrder() throws {
         let e = try load()
-        XCTAssertEqual(e.count, 30)
-        XCTAssertEqual(Set(e.map(\.id)).count, 30, "IDは重複しない")
+        XCTAssertEqual(e.count, 31)   // 30本 + ボス「堕天使」の見本
+        XCTAssertEqual(Set(e.map(\.id)).count, 31, "IDは重複しない")
         XCTAssertEqual(e.map(\.difficulty), e.map(\.difficulty).sorted(), "易しい→難しい順")
         XCTAssertEqual(e.first?.difficulty, 1)
         XCTAssertEqual(e.last?.difficulty, 5)

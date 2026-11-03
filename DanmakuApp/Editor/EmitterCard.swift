@@ -77,7 +77,7 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
                 }
                 if patternOpen {
-                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, emitter: $emitter)
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil, emitter: $emitter)
                 }
             }
 
@@ -153,6 +153,9 @@ struct EmitterCard: View {
         case .accel, .bounce, .stopgo, .split: return "angle.spread"
         case .timed: return "angle.rotate"
         case .custom: return "angle.rotate"
+        case .angelTwin: return "angle.rotate"
+        case .angelParadise: return "angle.gap"
+        case .angelFeather, .angelHalo, .angelCross: return "angle.none"
         default:
             // 広告で解放するパターン: 形によって、角度の意味が違う
             guard let r = emitter.t.recipe else { return "angle.none" }

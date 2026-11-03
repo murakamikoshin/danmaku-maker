@@ -17,7 +17,7 @@ final class AdPatternTests: XCTestCase {
         // 並びを変えない(乱数や記録に、並びの番号を使うので、新しいものは後ろに足す)
         XCTAssertEqual(Pattern.allCases.prefix(19).last, .timed)
         XCTAssertEqual(Pattern.allCases.dropFirst(49).first, .custom, "弾幕作成モードのパターンの番号は変えない")
-        XCTAssertEqual(Array(Pattern.allCases.dropFirst(50)), [.chargeBeam, .boomerang, .giantOrb, .sweepLaser, .mine, .meteor, .gridLaser, .gravity, .orbit, .snake, .bubble, .swirl],
+        XCTAssertEqual(Array(Pattern.allCases.dropFirst(50).prefix(12)), [.chargeBeam, .boomerang, .giantOrb, .sweepLaser, .mine, .meteor, .gridLaser, .gravity, .orbit, .snake, .bubble, .swirl],
                        "あとから足したパターンは、custom より後ろ")
         XCTAssertFalse(Pattern.custom.isAd)
         XCTAssertFalse(Pattern.custom.isPaid)

@@ -11,6 +11,8 @@ struct MainTabView: View {
     }
 
     @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var rewards: RewardStore
+    @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var swipeConfig: SwipeConfig
     @State private var tab: Tab = .play
@@ -32,7 +34,7 @@ struct MainTabView: View {
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
                         .frame(width: width, height: BannerAdView.adSize(width: width).size.height)
                 }
-                TabBar(selection: $tab, showSwipe: swipeConfig.enabled)
+                TabBar(selection: $tab, showSwipe: swipeConfig.enabled, shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
             }
         }
         .onChange(of: tab) { opened.insert($0) }
@@ -60,6 +62,8 @@ struct MainTabView: View {
 private struct TabBar: View {
     @Binding var selection: MainTabView.Tab
     var showSwipe: Bool
+    /// ショップに「広告を見てもらえるごほうび」が残っているとき、赤い点で知らせる
+    let shopBadge: Bool
 
     var body: some View {
         HStack(spacing: 0) {
@@ -74,6 +78,13 @@ private struct TabBar: View {
                             .frame(width: 36, height: 36)
                             .scaleEffect(selected ? 1.18 : 1)
                             .offset(y: selected ? -3 : 0)
+                            .overlay(alignment: .topTrailing) {
+                                if tab == .shop && shopBadge {
+                                    Circle().fill(Color.red).frame(width: 10, height: 10)
+                                        .overlay(Circle().stroke(Color(Palette.background), lineWidth: 2))
+                                        .offset(x: 2, y: 2)
+                                }
+                            }
                         Text(LocalizedStringKey(tab.titleKey))
                             .font(.system(size: 11, weight: .heavy, design: .rounded))
                             .foregroundStyle(selected ? Color(Palette.text) : Color(Palette.text).opacity(0.45))

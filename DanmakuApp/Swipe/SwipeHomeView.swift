@@ -63,7 +63,7 @@ struct SwipeHomeView: View {
         sc.onAdvance = {
             Task { @MainActor in
                 // 15 本クリアするごとに全画面広告（クリアの後の切り替えの前だけ。広告削除の購入者には出さない）
-                if model.phase == .cleared, model.clipsPlayed > 0, model.clipsPlayed % 15 == 0, !purchases.isPremium { await ads.showInterstitialForSwipe() }
+                if model.phase == .cleared, model.clipsPlayed > 0, model.clipsPlayed % 15 == 0, !purchases.isPremium { await ads.showInterstitialNow() }
                 await model.advanceAfterResult()
             }
         }
