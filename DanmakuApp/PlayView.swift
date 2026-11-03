@@ -160,7 +160,7 @@ struct PlayView: View {
                 .overlay {
                     if let r = model.result {
                         ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves,
-                                   retry: { Task { await adBreak(); model.restart(); onStart?() } },
+                                   retry: { model.restart(); onStart?() },   // もう一度は、広告なしで何回でも(広告は、やめて戻るときだけ)
                                    back: { Task { await adBreak(); onExit() } })
                     }
                 }
@@ -295,6 +295,9 @@ struct ResultView: View {
     let back: () -> Void
 
     @EnvironmentObject private var rewardStore: RewardStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @State private var claimBusy = false
     private var win: Bool { result.outcome == .cleared }
     private var timeText: String { String(format: "%.1f", result.time) }
 
@@ -370,6 +373,20 @@ struct ResultView: View {
                             if let url = ShareText.xIntentURL(text) { Link(destination: url) { smallButton("detail.share.x", "xmark") } }
                         }
                     }
+                    // クリアしたら、広告を見て「毎日のごほうび」をもらえる(1日1つ。広告削除の購入者は広告なしで)
+                    if win, !isTest, rewardStore.canClaim {
+                        let ready = purchases.isPremium || ads.isReady
+                        Button { Task { await claimReward() } } label: {
+                            Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
+                                .font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                .padding(.vertical, 9).padding(.horizontal, 16)
+                                .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                        }
+                        .buttonStyle(.plain).disabled(!ready || claimBusy).opacity(ready && !claimBusy ? 1 : 0.5)
+                        .accessibilityIdentifier("result.claimreward")
+                    } else if win, !isTest, rewardStore.justClaimed != nil {
+                        Label("daily.claimed", systemImage: "checkmark.circle.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                    }
                     HStack(spacing: 10) {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                             .accessibilityIdentifier("result.retry")
@@ -388,6 +405,16 @@ struct ResultView: View {
                 .padding(24)
             }
             .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func claimReward() async {
+        claimBusy = true
+        defer { claimBusy = false }
+        if purchases.isPremium { rewardStore.claim() } else if await ads.showRewarded() { rewardStore.claim() }
+        if rewardStore.justClaimed != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
         }
     }
 

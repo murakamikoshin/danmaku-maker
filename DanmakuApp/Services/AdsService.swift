@@ -23,7 +23,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// 全画面広告を出す間隔: 遊んだ回数と、最後に広告を出した時刻
     private var playsSinceAd = 0
     private var lastAdAt = Date()
-    static let playsBetweenInterstitials = 3
+    static let playsBetweenInterstitials = 2
     static let minSecondsBetweenAds: TimeInterval = 120
     /// 広告 SDK を開始できたか。開始できるまでは、アプリが前面に戻るたびにやり直す
     private var sdkStarted = false
@@ -115,6 +115,18 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
               Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds,
               let ad = interstitial, let vc = Self.topViewController() else { return false }
         playsSinceAd = 0
+        lastAdAt = Date()
+        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+            interstitialDismiss = { cont.resume() }
+            ad.present(fromRootViewController: vc)
+        }
+        return true
+    }
+
+    /// スワイプ弾幕: 15 本クリアごとに、クリアの後の切り替えの前だけで出す（本編の間隔とは別に数える）
+    @discardableResult
+    func showInterstitialForSwipe() async -> Bool {
+        guard Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds, let ad = interstitial, let vc = Self.topViewController() else { return false }
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }

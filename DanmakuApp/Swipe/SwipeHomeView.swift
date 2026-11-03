@@ -55,7 +55,13 @@ struct SwipeHomeView: View {
 
     private func makeScene() {
         let sc = SwipeScene(model: model, effects: cosmetics.effectsOn)
-        sc.onAdvance = { Task { @MainActor in await model.advanceAfterResult() } }
+        sc.onAdvance = {
+            Task { @MainActor in
+                // 15 本クリアするごとに全画面広告（クリアの後の切り替えの前だけ。広告削除の購入者には出さない）
+                if model.phase == .cleared, model.clipsPlayed > 0, model.clipsPlayed % 15 == 0, !purchases.isPremium { await ads.showInterstitialForSwipe() }
+                await model.advanceAfterResult()
+            }
+        }
         scene = sc
     }
 
