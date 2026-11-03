@@ -16,7 +16,8 @@ const fns = getFunctions(app, "asia-northeast1");
 connectFunctionsEmulator(fns, "127.0.0.1", 5001);
 const db = adminDb(adminInit({ projectId: "demo-danmaku" }, "swipe-admin"));
 
-const call = (name: string, data: unknown = {}) => httpsCallable(fns, name)(data).then((r) => r.data as Record<string, any>);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const call = (name: string, data: unknown = {}) => httpsCallable(fns, name)(data).then((r) => r.data as Record<string, never> & Record<string, unknown> & { [k: string]: any });
 const callErr = async (name: string, data: unknown = {}) => { try { await call(name, data); return null; } catch (e) { return (e as { message: string }).message; } };
 let n = 0;
 const signUp = async () => { await signOut(auth); const c = await createUserWithEmailAndPassword(auth, `s${Date.now()}${n++}@test.dev`, "password123"); return c.user.uid; };
