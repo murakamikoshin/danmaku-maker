@@ -43,6 +43,10 @@ public enum DanmakuConfig {
     public static let mineRing = 8
     /// 判定距離の2乗（5.5 未満で被弾）
     public static let hitRadiusSquared = 30.25
+    /// スワイプ弾幕のかすり: その弾の当たり判定から、さらにこの距離まで近づいたら 1 かすり(ふつうの弾なら 5.5 + 12.5 = 18px)
+    public static let grazeMargin = 12.5
+    public static let grazeRadius = hitRadius + grazeMargin
+    public static let grazeRadiusSquared = grazeRadius * grazeRadius
 }
 
 public enum Pattern: String, Codable, CaseIterable, Sendable {

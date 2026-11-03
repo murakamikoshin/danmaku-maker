@@ -33,6 +33,8 @@ public struct Bullet: Equatable, Sendable {
     public var growMax: Double = 0
     /// 地雷: 出てから爆発するまで(秒)。爆風: 予告の円を出している時間(秒。この間は当たらない)
     public var fuse: Double = 0
+    /// すでにかすった(1 発につき 1 回だけ数える。スワイプ弾幕の点数に使う。弾の動きや当たり判定には関わらない)
+    public var grazed = false
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -79,6 +81,13 @@ public struct Bullet: Equatable, Sendable {
         if isGiant { return DanmakuConfig.giantHitRadiusSquared }
         if radius > 0 { let r = radius + DanmakuConfig.hitRadius; return r * r }
         return DanmakuConfig.hitRadiusSquared
+    }
+
+    /// かする距離の 2 乗。ふつうの弾は 18px。巨大弾や膨らむ泡は当たり判定が大きいので、その分だけ広げる(でないと、かする前に当たってしまう)
+    public var grazeDistanceSquared: Double {
+        if !isGiant && radius == 0 { return DanmakuConfig.grazeRadiusSquared }
+        let r = hitDistanceSquared.squareRoot() + DanmakuConfig.grazeMargin
+        return r * r
     }
 
     public static func beam(x: Double, y: Double, angle a: Double, color: Int, sweep: Double = 0, fireTime: Double = 0) -> Bullet {
@@ -460,7 +469,14 @@ public struct Simulation {
     public private(set) var defeats = 0
     public private(set) var lastDefeatPosition = Point(x: 0, y: 0)
     public private(set) var lastDefeatEffect = DefeatEffect.standard
+    /// スワイプ弾幕: かすった弾の数(合計)と、直前の 1 ステップでかすった弾。ビーム・爆風はかすりの対象にしない
+    public private(set) var grazeCount = 0
+    public private(set) var grazedThisStep: [Bullet] = []
+    /// かすりを数えるか。早送りの間は止める(止まっている自機のそばを通った分は、数えない)
+    public var countsGrazes = true
 
+    /// 自機がショットを撃つか(スワイプ弾幕では撃たない)
+    private let firesShots: Bool
     private var cooldown = 0.0
     private var rng: Mulberry32
     private var next: [Double]
@@ -481,13 +497,21 @@ public struct Simulation {
         self.init(stage: stage, seed: stage.seed, shotType: shotType ?? stage.shotType)
     }
 
-    init(stage: Stage, seed: UInt32, shotType: ShotType = .standard) {
+    /// スワイプ弾幕用の作り方(仕様書 3.4 章)。ライフ 1、自機はショットを撃たない、ボスの場面は「ダメージ勝負」と同じ扱い
+    /// (HP は無限でボスは倒れない。「第N段階」は時間の 3 分の 1 ずつで進む)。乱数の種は元のステージと同じ
+    public init(swipeStage stage: Stage) {
+        self.init(stage: stage, seed: stage.seed, shotType: .standard, swipe: true)
+    }
+
+    init(stage: Stage, seed: UInt32, shotType: ShotType = .standard, swipe: Bool = false) {
         self.stage = stage
         self.shotType = shotType
-        lifeMode = stage.effectiveLifeMode
-        lifeMax = stage.effectiveLifeCount
-        lifeLeft = stage.effectiveLifeCount
-        let specs = stage.waveSpecs
+        firesShots = !swipe
+        lifeMode = swipe ? .lives : stage.effectiveLifeMode
+        lifeMax = swipe ? 1 : stage.effectiveLifeCount
+        lifeLeft = swipe ? 1 : stage.effectiveLifeCount
+        var specs = stage.waveSpecs
+        if swipe { for i in specs.indices where specs[i].boss { specs[i].damage = true } }
         self.specs = specs
         hp = specs[0].hp
         rng = Mulberry32(seed: seed)
@@ -549,6 +573,34 @@ public struct Simulation {
         shieldUntilTick = tick + Int((shieldSeconds / DanmakuConfig.step).rounded())
     }
 
+    // MARK: スワイプ弾幕用(仕様書 3.2 章)。本編では使わない
+
+    /// 自機を置く(画面の端から 6px の内側に収める)
+    public mutating func place(at p: Point) {
+        player = Point(x: Simulation.clamp(p.x, 6, DanmakuConfig.width - 6), y: Simulation.clamp(p.y, 6, DanmakuConfig.height - 6))
+    }
+
+    /// 弾も時間も止めたまま、自機だけ動かす(クリップの「GO」の間)
+    public mutating func nudgePlayer(_ move: Move) {
+        place(at: Point(x: player.x + Double(move.dx) * Move.unit, y: player.y + Double(move.dy) * Move.unit))
+    }
+
+    /// 次の `steps` ステップの間、被弾しない(バリア)。当たりそうな弾は、その場で消える
+    public mutating func giveShield(steps: Int) {
+        shieldUntilTick = max(shieldUntilTick, tick + steps + 1)
+    }
+
+    /// 画面の弾をすべて消す(ボム)
+    public mutating func clearBullets() { bullets.removeAll(keepingCapacity: true) }
+
+    /// 自機を動かさず、無敵で、かすりも数えずに `target` ステップ目まで進める。途中でステージが終わったら、そこで止まる
+    public mutating func fastForward(toTick target: Int) {
+        let (wasInvincible, wasCounting) = (invincible, countsGrazes)
+        invincible = true; countsGrazes = false
+        while outcome == .playing && tick < target { step(.zero) }
+        invincible = wasInvincible; countsGrazes = wasCounting
+    }
+
     public var bossPosition: Point {
         let mv = Simulation.bossMoves[min(max(spec.move, 0), 2)]
         return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, waveT) * mv.w)),
@@ -570,6 +622,7 @@ public struct Simulation {
     /// 1ステップ（1/120 秒）進める。終了後は何もしない
     public mutating func step(_ move: Move) {
         guard outcome == .playing else { return }
+        grazedThisStep.removeAll(keepingCapacity: true)
         let dt = DanmakuConfig.step
         let W = DanmakuConfig.width, H = DanmakuConfig.height
         tick += 1
@@ -587,7 +640,7 @@ public struct Simulation {
             }
             if banner > 0 { banner -= dt }
             cooldown -= dt
-            if waveT >= 0 && cooldown <= 0 {
+            if firesShots && waveT >= 0 && cooldown <= 0 {
                 cooldown = shotType.interval
                 for spec in shotType.volley {
                     shots.append(PlayerShot(x: player.x + spec.dx, y: player.y - 10, vx: spec.vx, damage: spec.damage))
@@ -673,7 +726,8 @@ public struct Simulation {
             }
             if b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20 { continue }
             let dx = b.x - player.x, dy = b.y - player.y
-            if dx * dx + dy * dy < b.hitDistanceSquared {
+            let d2 = dx * dx + dy * dy
+            if d2 < b.hitDistanceSquared {
                 if invincible || tick < shieldUntilTick { continue }
                 lifeLeft -= 1
                 if lifeLeft <= 0 { outcome = .hit; return }   // ライフ1・HP が尽きたとき: 以前と同じく、その場で終了
@@ -684,6 +738,11 @@ public struct Simulation {
                     hitFlash = 0.15
                 }
                 continue   // 当たった弾は消える
+            }
+            if countsGrazes && !b.grazed && d2 < b.grazeDistanceSquared {
+                b.grazed = true
+                grazeCount += 1
+                grazedThisStep.append(b)
             }
             bullets[w] = b; w += 1
         }
