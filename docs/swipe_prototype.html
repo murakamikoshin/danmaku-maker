@@ -304,6 +304,7 @@ function simStep(c, live) {
   }
   bs.length = w;
   if (bs.length > 1400) bs.splice(0, bs.length - 1400);
+  if (c.bombPending) { c.bombPending = false; if (!hit) bomb(c); }   // 被弾したステップではボムを出さない(そのプレイは終わり)
   return hit;
 }
 
@@ -441,7 +442,8 @@ function graze(c, b) {
   if (now - lastBlip > 28) { lastBlip = now; tone(520 * Math.pow(2, Math.min(c.combo, 36) / 14), 0.05, 'square', 0.035); }
   if (c.combo % 5 === 0) buzz(6);
   S.gauge++;
-  if (S.gauge >= BOMB_AT) bomb(c);
+  // ボムは、そのステップの弾の処理が終わってから出す(弾の配列を回している途中で空にすると壊れるため)
+  if (S.gauge >= BOMB_AT) { S.gauge = 0; c.bombPending = true; }
 }
 function toCoins(c, delay) {
   // 金の粒の点は、この瞬間にまとめて入れる(吸い込まれるのは見た目だけ。ランキングの検証を単純にするため)
@@ -451,7 +453,6 @@ function toCoins(c, delay) {
   c.b.length = 0; coinN = 0;
 }
 function bomb(c) {
-  S.gauge = 0;
   shocks.push({ x: c.px, y: c.py, t: 0 });
   toCoins(c, 0.2);
   c.shield = Math.max(c.shield, 1.0);
