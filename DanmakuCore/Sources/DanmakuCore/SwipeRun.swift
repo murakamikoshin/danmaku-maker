@@ -78,11 +78,10 @@ public enum SwipeRun {
         return result
     }
 
-    /// 1 本を遊ぶ（早送り → 安全な位置 → GO の動き → 1200 ステップ）
+    /// 1 本を遊ぶ（早送り → 安全な位置 → GO の動き → 1200 ステップ）。手順は `SwipeClipPlayer`（アプリの画面と共通）
     static func playClip(stage: Stage, at seconds: Double, input: ClipInput, scoring: inout SwipeScoring, result: inout Result) -> ClipEnd {
-        var sim = SwipeClip.prepare(stage: stage, at: seconds)
-        scoring.beginClip()
-        for m in input.go.prefix(SwipeClip.goSteps) { sim.nudgePlayer(m) }
+        var player = SwipeClipPlayer(stage: stage, at: seconds, scoring: &scoring)
+        for m in input.go.prefix(SwipeClip.goSteps) { player.nudge(m) }
 
         let moves = input.moves.prefix(SwipeClip.playSteps)
         for n in 1...SwipeClip.playSteps {
@@ -91,20 +90,13 @@ public enum SwipeRun {
                 if input.skipped { scoring.skip(); return .skipped }
                 return .abandoned
             }
-            sim.step(moves[moves.startIndex + n - 1])
-            for _ in sim.grazedThisStep { scoring.graze(step: n); result.grazes += 1 }
-            let hit = sim.outcome == .hit
-            if scoring.endStep(step: n, bulletCount: coinBullets(sim), hit: hit) != nil {
-                // ボム: 画面の弾を全部消して、次の 1 秒（120 ステップ）はバリア
-                sim.clearBullets()
-                sim.giveShield(steps: 120)
-                result.bombs += 1
-            }
-            if hit { scoring.hit(); return .hit }
-            // 最後のステップ（またはステージが終わったとき）は、ボム → クリアの順
-            if n == SwipeClip.playSteps || sim.outcome == .cleared {
-                _ = scoring.clear(bulletCount: coinBullets(sim))
-                return .cleared
+            let ev = player.advance(moves[moves.startIndex + n - 1], scoring: &scoring)
+            result.grazes += ev.grazes.count
+            if ev.bomb != nil { result.bombs += 1 }
+            switch ev.end {
+            case .hit: return .hit
+            case .cleared: return .cleared
+            case nil: break
             }
         }
         return .cleared   // ここには来ない（ループは 1200 ステップ目で必ず終わる）
