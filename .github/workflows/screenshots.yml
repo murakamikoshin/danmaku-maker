@@ -5,6 +5,7 @@ on: workflow_dispatch
 jobs:
   shots:
     runs-on: macos-26
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26
@@ -28,7 +29,7 @@ jobs:
           BID=com.koshin.danmakumaker
           mkdir -p shots
           pick() { xcrun simctl list devices available | grep "$1" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/'; }
-          for kind in iPhone iPad; do
+          for kind in iPhone; do
             UDID=$(pick "$kind")
             echo "$kind => $UDID"
             xcrun simctl boot "$UDID" || true
@@ -38,17 +39,11 @@ jobs:
               name=$1; shift
               xcrun simctl terminate "$UDID" $BID || true
               xcrun simctl launch "$UDID" $BID -force-banner "$@"
-              sleep 12
+              sleep 14
               xcrun simctl io "$UDID" screenshot "shots/${kind}_${name}.png"
             }
-            shot home
-            shot shop -open-shop
-            shot shop_daily -open-shop -shop-focus daily
-            shot shop_daily_collected -open-shop -shop-focus daily -rewards-claimed 12
-            shot settings -open-settings
             shot swipe -open-swipe
             shot swipe_stamina -open-swipe -swipe-stamina-sheet
-            shot stage -open-stage o29 -rewards-claimed 12
             xcrun simctl shutdown "$UDID" || true
           done
       - uses: actions/upload-artifact@v4
