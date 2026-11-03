@@ -56,3 +56,18 @@
 - 試作の不具合を直した: ボムが弾の配列を回している最中に弾を消していて、最初のボムで落ちていた。仕様 5 章に「ボムはそのステップの弾の処理が終わった後に出す。被弾したステップでは出さない」と書いた。**Claude.ai に公開してある試作のリンクは古いまま**(修正は `docs/swipe_prototype.html` にだけ入っている)。
 - 次: サーバー(TypeScript): `fullsim.ts` に同じ手順(スワイプ用の作り方・かすり・`SwipeScoring`・`SwipeClip`・`SwipeFeed`・`SwipeRun`)を移し、Swift と一致するテスト(フィクスチャ)を作る → クリップの保存・候補の一覧・スタミナ・記録の検証 → アプリ(SwiftUI・SpriteKit)→ 課金の登録 → TestFlight。
 - ブラウザのログイン(2026-11-03 確認): ASC・RevenueCat・Apple Developer は専用 Chrome(`open -na "Google Chrome" --args --remote-debugging-port=9222 --user-data-dir=$HOME/.local/chrome-debug`)でログイン済み。Chrome が 1 つだけのときのポートは `127.0.0.1:9222`(`[::1]` ではない)。
+
+## スワイプ弾幕 1.1.0 の進み具合（2026-11-03 夜）
+
+完了:
+- DanmakuCore（SwipeClipPlayer まで）、サーバー TS の移植（fullsim.ts の createSim / swipe.ts / swipebot.ts / stamina.ts / swipefns.ts）、Swift↔TS の一致テスト（CI の Xcode 26 でも一致）、エミュレーター通しテスト、ルールのテスト
+- アプリ: Swipe/ 一式（SwipeHomeView / SwipeModel / SwipeScene / SwipeAudio / SwipeService / SwipeConfig）、10 言語の文言、本編の「もう一度」は広告なし・全画面広告は 2 プレイごと（やめるとき）・クリア後に広告でごほうび・スワイプは 15 本ごとに全画面広告
+- TestFlight: 1.1.0 (37) が ASC に届いた。TestFlight・審査ビルドは swipe_enabled に関わらずスワイプ弾幕が出る（SwipeConfig.isSandbox）
+- ASC: 回復ドリンク（消耗型 com.koshin.danmakumaker.stamina.drink、ID 6830164751、価格は ¥100 にした。¥120 は「他の価格を確認」から選べる）、Stamina Pass グループ（22541161）と月額 無限スタミナパス（com.koshin.danmakumaker.pass.stamina.monthly、ID 6830171590、¥980）。日本語・英語の表示名入力済み。永久買い切りの説明文を更新（消耗品と定期購読は除く）
+- RevenueCat: 商品 2 つを追加、Webhook（購入通知）を追加（合言葉は /tmp/rc_secret と Firebase の REVENUECAT_WEBHOOK_SECRET に同じ値）
+
+残り:
+1. 本番デプロイ（Koshin が `firebase deploy --only firestore:rules,functions,remoteconfig --project danmaku-maker`）。済んだら Cloud Scheduler で swipeCheckMissingClips → swipeBuildPool を「強制実行」して候補を作る
+2. ASC: 2 つの課金の審査用スクリーンショット（CI の UI Screenshots の成果物 swipe_stamina を使う）、1.1.0 のバージョン作成・説明文（スワイプ弾幕と課金の記載、EULA リンク）・ビルド 37 以降を選択・課金 2 つとドリンクを提出物に追加
+3. 実機確認（TestFlight、Koshin）: 遊べる・音・触感・購入（サンドボックス）・RevenueCat の logIn 後の購入復元
+4. 「審査へ提出」は Koshin
