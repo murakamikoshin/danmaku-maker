@@ -195,19 +195,31 @@ export function pickFeed(pool: FeedEntry[], seed: number, index: number, streak:
 export interface ClipInput { go: ArrayLike<number>; goCount: number; moves: ArrayLike<number>; moveCount: number; skipped: boolean }
 export interface RunResult {
   score: bigint; streak: number; bestStreak: number; clipsPlayed: number; clipsCleared: number; clipIDs: string[];
-  scoreAfterEachClip: string[]; bombs: number; grazes: number; endedByHit: boolean; abandoned: boolean; invalid: string | null;
+  scoreAfterEachClip: string[]; clipOutcomes: ClipEnd[]; bombs: number; grazes: number; endedByHit: boolean; abandoned: boolean; invalid: string | null;
 }
 export type ClipSource = (id: string) => { stage: SimStage; at: number } | null;
-type ClipEnd = "cleared" | "hit" | "skipped" | "abandoned";
+export type ClipEnd = "cleared" | "hit" | "skipped" | "abandoned";
 
 export function playRun(seed: number, pool: FeedEntry[], excluded: Set<string>, source: ClipSource, clips: ClipInput[]): RunResult {
-  const r: RunResult = { score: 0n, streak: 0, bestStreak: 0, clipsPlayed: 0, clipsCleared: 0, clipIDs: [], scoreAfterEachClip: [], bombs: 0, grazes: 0, endedByHit: false, abandoned: false, invalid: null };
+  const it = playRunSteps(seed, pool, excluded, clips);
+  for (let r = it.next(); ; r = it.next(r.done ? undefined : source(r.value))) { if (r.done) return r.value; }
+}
+
+/** 非同期にステージを読み込みたいとき用(サーバー)。同じ計算 */
+export async function playRunAsync(seed: number, pool: FeedEntry[], excluded: Set<string>, source: (id: string) => Promise<{ stage: SimStage; at: number } | null>, clips: ClipInput[]): Promise<RunResult> {
+  const it = playRunSteps(seed, pool, excluded, clips);
+  for (let r = it.next(); ; r = it.next(r.done ? undefined : await source(r.value))) { if (r.done) return r.value; }
+}
+
+/** 流れるクリップの ID を順に返し、そのステージを受け取りながら計算を進める */
+function* playRunSteps(seed: number, pool: FeedEntry[], excluded: Set<string>, clips: ClipInput[]): Generator<string, RunResult, { stage: SimStage; at: number } | null | undefined> {
+  const r: RunResult = { score: 0n, streak: 0, bestStreak: 0, clipsPlayed: 0, clipsCleared: 0, clipIDs: [], scoreAfterEachClip: [], clipOutcomes: [], bombs: 0, grazes: 0, endedByHit: false, abandoned: false, invalid: null };
   const sc = new SwipeScoring();
   const used = new Set<string>();
   for (let index = 0; index < clips.length; index++) {
     const entry = pickFeed(pool, seed, index, sc.streak, used, excluded);
     if (!entry) { r.invalid = "pool-exhausted"; break; }
-    const clip = source(entry.id);
+    const clip = yield entry.id;
     if (!clip) { r.invalid = `missing-stage:${entry.id}`; break; }
     used.add(entry.id);
     r.clipIDs.push(entry.id);
@@ -215,6 +227,7 @@ export function playRun(seed: number, pool: FeedEntry[], excluded: Set<string>, 
     const end = playClip(clip.stage, clip.at, clips[index]!, sc, r);
     r.bestStreak = Math.max(r.bestStreak, sc.streak);
     r.scoreAfterEachClip.push(sc.score.toString());
+    r.clipOutcomes.push(end);
     if (end === "cleared") r.clipsCleared += 1;
     else if (end === "hit") r.endedByHit = true;
     else if (end === "abandoned") r.abandoned = true;

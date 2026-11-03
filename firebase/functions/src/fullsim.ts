@@ -89,14 +89,17 @@ export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
 export interface SimResult { outcome: Outcome; tick: number; hp: number; damage: number; lifeLeft: number; wave: number; defeats: number; bulletCount: number; bulletHash: number; bulletHashCoarse: number }
 
 // --- 乱数(mulberry32)とハッシュ(FNV-1a)
-export function mulberry(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
+export interface Rng { (): number; state: number }
+export function mulberry(seed: number): Rng {
+  const f = (() => {
+    f.state = (f.state + 0x6d2b79f5) >>> 0;
+    const a = f.state;
     let t = Math.imul(a ^ (a >>> 15), 1 | a) >>> 0;
     t = ((t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t) >>> 0;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  }) as Rng;
+  f.state = seed >>> 0;
+  return f;
 }
 
 class Fnv {
@@ -636,8 +639,18 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     invincible = was[0]; countsGrazes = was[1];
   };
 
+  /** 状態を丸ごと控える/戻す(ボットが先読みするため)。控えは入れ替わらない値のコピー */
+  type Snap = { wi: number; lifeLeft: number; hp: number; damage: number; defeats: number; next: number[]; shotCount: number[]; bullets: Bullet[]; shots: Shot[]; tick: number; t: number; waveStart: number; px: number; py: number; phase: number; banner: number; flash: number; cooldown: number; shieldUntil: number; outcome: Outcome; grazeCount: number; rng: number };
+  const snapshot = (): Snap => ({ wi, lifeLeft, hp, damage, defeats, next: [...next], shotCount: [...shotCount], bullets: bullets.map((b) => ({ ...b })), shots: shots.map((x) => ({ ...x })), tick, t, waveStart, px, py, phase, banner, flash, cooldown, shieldUntil, outcome, grazeCount, rng: rng.state });
+  const restore = (c: Snap) => {
+    wi = c.wi; lifeLeft = c.lifeLeft; hp = c.hp; damage = c.damage; defeats = c.defeats; next = [...c.next]; shotCount = [...c.shotCount];
+    bullets = c.bullets.map((b) => ({ ...b })); shots = c.shots.map((x) => ({ ...x }));
+    tick = c.tick; t = c.t; waveStart = c.waveStart; px = c.px; py = c.py; phase = c.phase; banner = c.banner; flash = c.flash; cooldown = c.cooldown;
+    shieldUntil = c.shieldUntil; outcome = c.outcome; grazeCount = c.grazeCount; rng.state = c.rng; grazedThisStep = [];
+  };
+
   return {
-    step, result, place, nudgePlayer, giveShield, clearBullets, fastForward,
+    snapshot, restore, step, result, place, nudgePlayer, giveShield, clearBullets, fastForward,
     get tick() { return tick; },
     get outcome() { return outcome; },
     get bullets(): readonly Bullet[] { return bullets; },

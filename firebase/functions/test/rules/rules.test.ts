@@ -210,3 +210,31 @@ describe("通知を受け取る端末", () => {
     await assertFails(getDoc(doc(anon("p5"), "users/p5/pushThrottle/x_likes")));
   });
 });
+
+describe("スワイプ弾幕", () => {
+  it("候補の一覧とランキングは、ログイン済みなら読めるが、書けない", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "swipePools/meta"), { current: "v1" });
+      await setDoc(doc(ctx.firestore(), "swipePools/v1/chunks/0000"), { entries: [] });
+      await setDoc(doc(ctx.firestore(), "swipeScores/u1"), { key: "001" + "1", score: "1" });
+      await setDoc(doc(ctx.firestore(), "swipeRuns/r1"), { uid: "u1" });
+    });
+    await assertSucceeds(getDoc(doc(anon("s1"), "swipePools/meta")));
+    await assertSucceeds(getDoc(doc(member("s1"), "swipePools/v1/chunks/0000")));
+    await assertSucceeds(getDoc(doc(member("s1"), "swipeScores/u1")));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "swipeScores/u1")));
+    await assertFails(setDoc(doc(member("u1"), "swipeScores/u1"), { key: "999", score: "9" }));
+    await assertFails(setDoc(doc(member("u1"), "swipePools/meta"), { current: "x" }));
+  });
+  it("実行中のプレイと課金の記録は、本人でも触れない", async () => {
+    await assertFails(getDoc(doc(member("u1"), "swipeRuns/r1")));
+    await assertFails(setDoc(doc(member("u1"), "swipeRuns/r2"), { uid: "u1", seed: 1 }));
+    await assertFails(getDoc(doc(member("u1"), "swipeEvents/e1")));
+  });
+  it("スタミナ・パス・ドリンクは、自分で書き換えられない(読むのはよい)", async () => {
+    await assertSucceeds(getDoc(doc(member("u1"), "users/u1")));
+    await assertFails(updateDoc(doc(member("u1"), "users/u1"), { drinks: 99 }));
+    await assertFails(updateDoc(doc(member("u1"), "users/u1"), { stamina: { v: 5, at: 0 } }));
+    await assertFails(updateDoc(doc(member("u1"), "users/u1"), { pass: { until: 9e15 } }));
+  });
+});

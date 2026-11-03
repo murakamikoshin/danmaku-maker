@@ -5,6 +5,9 @@ import { getStorage } from "firebase-admin/storage";
 import { logger, setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { defineSecret } from "firebase-functions/params";
+import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
@@ -535,4 +538,48 @@ export const searchStages = onCall(async (req) => {
       return o;
     });
   return { stages };
+});
+
+
+// ---------- スワイプ弾幕(仕様書 docs/SWIPE_MODE.md) ----------
+export const swipeGetStamina = onCall(async (req) => getStamina(requireAny(req)));
+export const swipeUseStamina = onCall(async (req) => useStamina(requireAny(req), req.data));
+export const swipeRefillByAd = onCall(async (req) => refillByAd(requireAny(req)));
+export const swipeUseDrink = onCall(async (req) => useDrink(requireAny(req)));
+export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, async (req) => {
+  const uid = requireAny(req);
+  return submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
+});
+export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req)));
+
+/** 新しく公開されたステージのクリップを調べる(盛り上がっている 10 秒を、ボットでクリアできるか確かめる) */
+export const swipeCheckNewStage = onDocumentCreated({ document: "stages/{id}", memory: "1GiB", timeoutSeconds: 300 }, async (event) => {
+  const snap = event.data;
+  if (!snap || snap.get("status") !== "published" || snap.get("clip") !== undefined) return;
+  try { await checkClip(snap.id, snap.data() as never); } catch (e) { logger.error("clip-check-failed", { id: snap.id, error: String(e) }); }
+});
+
+/** 調べていない既存のステージを、1 時間ごとに少しずつ調べる */
+export const swipeCheckMissingClips = onSchedule({ schedule: "every 60 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "1GiB" }, async () => {
+  const n = await checkMissingClips(8);
+  if (n > 0) logger.info("swipe-clips-checked", { n });
+});
+
+/** 毎日 0 時に、流すクリップの一覧を作り直す */
+export const swipeBuildPool = onSchedule({ schedule: "0 0 * * *", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "512MiB" }, async () => {
+  const r = await buildPool();
+  logger.info("swipe-pool-built", r);
+});
+
+const revenuecatSecret = defineSecret("REVENUECAT_WEBHOOK_SECRET");
+/** RevenueCat からの購入の通知(無限スタミナパス・回復ドリンク)。Authorization ヘッダーが合うものだけ受け付ける */
+export const revenuecatWebhook = onRequest({ secrets: [revenuecatSecret] }, async (req, res) => {
+  if (req.method !== "POST" || req.get("authorization") !== `Bearer ${revenuecatSecret.value()}`) { res.status(401).send("unauthorized"); return; }
+  try {
+    const outcome = await applyPurchaseEvent((req.body as { event?: never })?.event ?? {});
+    res.status(200).json({ outcome });
+  } catch (e) {
+    logger.error("revenuecat-webhook-failed", { error: String(e) });
+    res.status(500).send("error");
+  }
 });

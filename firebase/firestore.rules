@@ -79,6 +79,12 @@ service cloud.firestore {
     match /commentReports/{id} { allow read, write: if false; }
     match /admin_alerts/{id} { allow read, write: if false; }
 
+    // スワイプ弾幕: 候補の一覧とランキングは、ログイン済み(匿名も可)なら読める。書き込みは Cloud Functions だけ
+    match /swipePools/{doc=**} { allow read: if signedIn(); allow write: if false; }
+    match /swipeScores/{uid} { allow read: if signedIn(); allow write: if false; }
+    match /swipeRuns/{id} { allow read, write: if false; }
+    match /swipeEvents/{id} { allow read, write: if false; }
+
     match /{document=**} { allow read, write: if false; }
   }
 }

@@ -22,3 +22,5 @@ firebase/*-debug.log
 firebase/.firebase/
 DanmakuMaker.xcodeproj/xcuserdata/
 DanmakuMaker.xcodeproj/project.xcworkspace/xcuserdata/
+
+.secret.local
