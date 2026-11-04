@@ -46,7 +46,8 @@ final class DisplayNameStore: ObservableObject {
     static let maxLength = 12
     @Published var useAuthorName: Bool { didSet { UserDefaults.standard.set(useAuthorName, forKey: key) } }
 
-    init() { useAuthorName = UserDefaults.standard.bool(forKey: key) }
+    /// まだ選んでいない人は、ユーザー名で出す(名前が空なら、そのまま匿名で出る)
+    init() { useAuthorName = UserDefaults.standard.object(forKey: key) as? Bool ?? true }
 
     /// サーバーに送る名前。投稿者名で出す設定で、名前が入っているときだけ。nil なら匿名で出る
     var publicName: String? {

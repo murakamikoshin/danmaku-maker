@@ -73,7 +73,7 @@ struct SwipeHomeView: View {
     private func start(author: String?, name: String = "") {
         guard !busy else { return }
         busy = true
-        model.displayName = nil
+        model.displayName = DisplayNameStore.shared.publicName   // 名前の出し方の設定に従う(ユーザー名がなければ匿名)
         Task {
             await model.begin(author: author, authorName: name, blocked: Set(blocks.blocked.keys), myUid: auth.uid)
             busy = false
