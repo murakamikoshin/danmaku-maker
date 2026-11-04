@@ -368,11 +368,24 @@ struct SwipeRankingView: View {
     @State private var myScore: BigScore?
     @State private var loading = true
     @State private var failed = false
+    @State private var editingName = false
+    @ObservedObject private var names = DisplayNameStore.shared
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             List {
+                // 名前の出し方(匿名 / ユーザー名)。変えたあとのプレイから反映される
+                Section {
+                    Button { editingName = true } label: {
+                        HStack {
+                            Label("handle.title", systemImage: "person.crop.circle")
+                            Spacer()
+                            Text(names.publicName ?? L("handle.mode.anon")).font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).lineLimit(1)
+                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
+                        }
+                    }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                }
                 if let r = myRank, let s = myScore {
                     Section { HStack { Text(String(format: L("swipe.rank.mine"), r)).font(.system(size: 14, weight: .black)); Spacer()
                         Text(ScoreFormat.short(s, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)) } }
@@ -397,6 +410,7 @@ struct SwipeRankingView: View {
             .navigationTitle("swipe.ranking").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("swipe.close") { dismiss() } } }
         }
+        .sheet(isPresented: $editingName) { HandleSheet() }
         .task {
             do { let r = try await service.ranking(); rows = r.rows; myRank = r.myRank; myScore = r.myScore } catch { failed = true }
             loading = false
