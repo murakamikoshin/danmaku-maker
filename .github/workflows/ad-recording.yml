@@ -61,7 +61,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Debug \
-            -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO \
+            -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" \
+            CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=-" DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
             > "$OUT/build.log" 2>&1 || { grep -E "error:" "$OUT/build.log" | head -60; tail -40 "$OUT/build.log"; exit 1; }
           tail -3 "$OUT/build.log"
       - name: Boot simulator
@@ -89,6 +90,8 @@ jobs:
       - name: Crash reports
         if: always()
         run: |
+          xcrun simctl spawn "$UDID" log show --last 60m --style compact --predicate 'eventMessage CONTAINS "AD-REC" OR eventMessage CONTAINS[c] "keychain"' > "$OUT/applog.txt" 2>&1 || true
+          tail -40 "$OUT/applog.txt" || true
           mkdir -p "$OUT/crash"
           find ~/Library/Logs/DiagnosticReports -name "*anmaku*" -mmin -90 -exec cp {} "$OUT/crash/" \; 2>/dev/null || true
           ls "$OUT/crash"

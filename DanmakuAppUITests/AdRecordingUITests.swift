@@ -31,13 +31,22 @@ final class AdRecordingUITests: XCTestCase {
         try? app.debugDescription.write(toFile: "\(dir)/tree_\(name).txt", atomically: true, encoding: .utf8)
     }
 
-    /// 見つかるまで下へスクロールして、画面に出す
+    /// 画面を少しだけスクロールする(大きく飛ばないように、指でゆっくりなぞる)。up=true で下の内容を出す
+    private func nudge(up: Bool) {
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.72 : 0.38))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.38 : 0.72))
+        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .slow, thenHoldForDuration: 0.15)
+    }
+
+    /// 見つかるまでスクロールして、画面に出す。部品が画面より上にあれば上へ、下(またはまだ作られていない)なら下へ
     @discardableResult
-    private func reveal(_ e: XCUIElement, tries: Int = 10, timeout: Double = 4) -> Bool {
+    private func reveal(_ e: XCUIElement, tries: Int = 14, timeout: Double = 4) -> Bool {
         _ = e.waitForExistence(timeout: timeout)
         var n = 0
         while !(e.exists && e.isHittable) && n < tries {
-            app.swipeUp(velocity: .slow); n += 1
+            let h = app.frame.height
+            if e.exists && e.frame.maxY < h * 0.25 { nudge(up: false) } else { nudge(up: true) }
+            n += 1
         }
         return e.exists && e.isHittable
     }

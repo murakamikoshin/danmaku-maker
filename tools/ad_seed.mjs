@@ -32,7 +32,7 @@ const demo = [
 const now = Date.now();
 let n = 0;
 for (const s of demo) {
-  const id = `AD${String(n + 1).padStart(4, "0")}`;
+  const id = ["K7QM2", "R4XTB", "9HWNC", "P3ZDV", "M8GAE", "T5YJQ", "W2KRF", "B6NUH"][n];
   await db.doc(`stages/${id}`).set({
     authorUid: `demo-${n}`, authorName: s.author, name: s.name, mode: s.mode, durationSec: s.d,
     bossHp: s.hp ?? null, bossMove: s.mv ?? null, emitters: s.em, formatVersion: 1,

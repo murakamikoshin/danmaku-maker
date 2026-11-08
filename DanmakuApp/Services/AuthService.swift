@@ -27,8 +27,15 @@ final class AuthService: ObservableObject {
         if ProcessInfo.processInfo.arguments.contains("-ad-member") && ProcessInfo.processInfo.arguments.contains("-use-emulator") {
             Task {
                 let mail = "ad-recording@example.com", pass = "ad-recording-pass"
-                if (try? await Auth.auth().signIn(withEmail: mail, password: pass)) == nil {
-                    _ = try? await Auth.auth().createUser(withEmail: mail, password: pass)
+                do {
+                    _ = try await Auth.auth().signIn(withEmail: mail, password: pass)
+                    NSLog("AD-REC auth signIn ok")
+                } catch {
+                    NSLog("AD-REC auth signIn failed: \(error)")
+                    do {
+                        _ = try await Auth.auth().createUser(withEmail: mail, password: pass)
+                        NSLog("AD-REC auth createUser ok")
+                    } catch { NSLog("AD-REC auth createUser failed: \(error)") }
                 }
             }
             return
