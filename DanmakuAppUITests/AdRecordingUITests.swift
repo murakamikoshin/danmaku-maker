@@ -7,7 +7,9 @@ final class AdRecordingUITests: XCTestCase {
     private var app: XCUIApplication!
     private var dir: String { ProcessInfo.processInfo.environment["AD_DIR"] ?? "/tmp/ad-recording" }
     private var marks = ""
-    private let stageName = "星くずの渦"
+    /// 収録する言語(ワークフローの AD_LANG。既定は日本語)
+    private var lang: String { ProcessInfo.processInfo.environment["AD_LANG"] ?? "ja" }
+    private var stageName: String { lang == "en" ? "Stardust Vortex" : "星くずの渦" }
 
     override func setUpWithError() throws {
         continueAfterFailure = true
@@ -15,7 +17,7 @@ final class AdRecordingUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments += ["-use-emulator", "-emulator-host", "127.0.0.1", "-ad-member", "-ad-autopilot", "-no-ads", "-no-debug-overlay",
                                 "-ad-name", stageName, "-ad-author", "Koshin",
-                                "-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+                                "-AppleLanguages", "(\(lang))", "-AppleLocale", lang == "en" ? "en_US" : "ja_JP"]
     }
 
     private func mark(_ s: String) {
@@ -96,7 +98,7 @@ final class AdRecordingUITests: XCTestCase {
         var k = 0
         var last: CGRect?
         for i in 0..<18 {
-            let probe = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "発射台")).firstMatch
+            let probe = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@ OR label BEGINSWITH %@", "発射台", "Emitter")).firstMatch
             let before = frameOf(probe)?.minY
             dragX = xs[k]
             drag(up: true, fast: true)
@@ -167,7 +169,7 @@ final class AdRecordingUITests: XCTestCase {
             mark("testplay.result \(label)")
             shot("07_result_\(attempt)")
             sleep(2)
-            if headline.exists && !label.contains("被弾") && !label.contains("時間切れ") { cleared = true; break }
+            if headline.exists && label.contains("CLEAR") { cleared = true; break }
         }
         mark("cleared \(cleared)")
         tap(btn("result.back"), "back", pause: 3)
@@ -224,6 +226,19 @@ final class AdRecordingUITests: XCTestCase {
         if !tap(btn("play.quit"), "quitMine", timeout: 2, pause: 2) { tap(btn("result.back"), "backMine", pause: 2) }
         tap(btn("detail.close"), "detailCloseMine", pause: 2)
 
+        // 世界のステージ(ほかの人が作ったもの)を遊ぶ。遊んでいる間は問い合わせない(収録のコマ落ち対策)
+        tap(btn("home.sort.popular"), "sortPopular2", pause: 3)
+        let others = lang == "en" ? ["Twisted Galaxy", "Pink Nightmare"] : ["ねじれ銀河", "ピンクの悪夢"]
+        for (i, name) in others.enumerated() {
+            let r = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", name)).firstMatch
+            tap(r, "worldRow\(i)", pause: 3)
+            mark("worlddetail\(i)"); shot("19_worlddetail_\(i)")
+            tap(btn("detail.play"), "worldPlay\(i)", pause: 0)
+            mark("worldplay\(i) \(name)"); sleep(16)
+            mark("worldplay\(i).end"); shot("20_worldplay_\(i)")
+            if !tap(btn("play.quit"), "worldQuit\(i)", timeout: 2, pause: 2) { tap(btn("result.back"), "worldBack\(i)", pause: 2) }
+            tap(btn("detail.close"), "worldDetailClose\(i)", pause: 2)
+        }
         mark("end")
         dump("end")
     }
