@@ -38,25 +38,32 @@ final class AdRecordingUITests: XCTestCase {
         from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .slow, thenHoldForDuration: 0.15)
     }
 
-    /// 見つかるまでスクロールして、画面に出す。部品が画面より上にあれば上へ、下(またはまだ作られていない)なら下へ
+    /// 部品が画面の見える帯(縦の割合)に入るまで、少しずつスクロールする。
+    /// エディタは上にプレビューが固定で出ているので、帯をその下にする(isHittable は固定ヘッダーの下だと false になるので使わない)
     @discardableResult
-    private func reveal(_ e: XCUIElement, tries: Int = 14, timeout: Double = 4) -> Bool {
-        _ = e.waitForExistence(timeout: timeout)
+    private func reveal(_ e: XCUIElement, band: ClosedRange<CGFloat> = 0.12...0.93, timeout: Double = 4) -> Bool {
         var n = 0
-        while !(e.exists && e.isHittable) && n < tries {
-            let h = app.frame.height
-            if e.exists && e.frame.maxY < h * 0.25 { nudge(up: false) } else { nudge(up: true) }
-            n += 1
+        if !e.waitForExistence(timeout: timeout) {
+            // LazyVStack の中は、画面に近づくまで作られない
+            while !e.exists && n < 10 { nudge(up: true); n += 1 }
         }
-        return e.exists && e.isHittable
+        guard e.exists else { return false }
+        n = 0
+        while n < 14 {
+            let y = e.frame.midY / app.frame.height
+            if band.contains(y) { return true }
+            nudge(up: y > band.upperBound); n += 1
+        }
+        return band.contains(e.frame.midY / app.frame.height)
     }
 
     @discardableResult
-    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, pause: UInt32 = 0) -> Bool {
-        guard reveal(e, timeout: timeout) else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
+    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, pause: UInt32 = 0, band: ClosedRange<CGFloat> = 0.12...0.93) -> Bool {
+        guard reveal(e, band: band, timeout: timeout) else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
+        usleep(300_000)
         let f = e.frame, a = app.frame
         mark(String(format: "tap %@ @%.4f,%.4f", label, f.midX / a.width, f.midY / a.height))
-        e.tap()
+        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.midX, dy: f.midY)).tap()
         if pause > 0 { sleep(pause) }
         return true
     }
@@ -72,18 +79,18 @@ final class AdRecordingUITests: XCTestCase {
         tap(btn("home.create"), "create", pause: 3)
         mark("editor"); shot("02_editor")
         sleep(2)
-        tap(btn("emitter.color.0.1"), "color0", pause: 2)
-        tap(btn("emitter.pattern.toggle.0"), "patternToggle0", pause: 1)
+        tap(btn("emitter.color.0.1"), "color0", band: 0.42...0.93, pause: 2)
+        tap(btn("emitter.pattern.toggle.0"), "patternToggle0", band: 0.42...0.93, pause: 1)
         shot("03_pattern_tiles")
-        tap(btn("emitter.pattern.0.spiral"), "pattern0.spiral", pause: 2)
-        tap(btn("editor.add"), "add1", pause: 2)
-        reveal(app.otherElements["emitter.card.1"].firstMatch)
-        tap(btn("emitter.color.1.2"), "color1", pause: 2)
+        tap(btn("emitter.pattern.0.spiral"), "pattern0.spiral", band: 0.42...0.93, pause: 2)
+        tap(btn("editor.add"), "add1", band: 0.42...0.93, pause: 2)
+        reveal(app.otherElements["emitter.card.1"].firstMatch, band: 0.42...0.93)
+        tap(btn("emitter.color.1.2"), "color1", band: 0.42...0.93, pause: 2)
         shot("04_editor_two")
-        tap(btn("editor.add"), "add2", pause: 1)
-        tap(btn("emitter.pattern.toggle.2"), "patternToggle2", pause: 1)
-        tap(btn("emitter.pattern.2.rain"), "pattern2.rain", pause: 1)
-        tap(btn("emitter.color.2.3"), "color2", pause: 2)
+        tap(btn("editor.add"), "add2", band: 0.42...0.93, pause: 1)
+        tap(btn("emitter.pattern.toggle.2"), "patternToggle2", band: 0.42...0.93, pause: 1)
+        tap(btn("emitter.pattern.2.rain"), "pattern2.rain", band: 0.42...0.93, pause: 1)
+        tap(btn("emitter.color.2.3"), "color2", band: 0.42...0.93, pause: 2)
         shot("05_editor_three")
 
         // テストプレイ(自動操縦で本当によける。無敵ではない)
