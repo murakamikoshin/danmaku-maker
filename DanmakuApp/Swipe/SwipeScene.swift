@@ -174,7 +174,8 @@ final class SwipeScene: SKScene {
     }
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { touchLast = nil; touchStart = nil; touching = false }
 
-    private func advance() { resultTimer = 0; onAdvance?() }
+    /// 次へ。タップと自動のタイマーが同時に来ても、1 回だけ呼ぶ
+    private func advance() { guard resultTimer < 90 else { return }; resultTimer = 99; onAdvance?() }
 
     private func takeMove() -> Move {
         func take(_ v: inout CGFloat) -> Int8 {
@@ -211,7 +212,7 @@ final class SwipeScene: SKScene {
         // 結果のあとは自動で次へ（指が触れている間は進まない）
         if model.phase == .cleared || model.phase == .failed {
             if !touching { resultTimer -= dt }
-            if resultTimer <= 0 { advance(); resultTimer = 99 }
+            if resultTimer <= 0 { advance() }
         }
     }
 

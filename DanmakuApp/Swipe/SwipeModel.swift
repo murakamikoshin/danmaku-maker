@@ -84,6 +84,8 @@ final class SwipeModel: ObservableObject {
 
     /// 次のクリップを選んで、切り替え → GO の準備をする。選べなければ（全部遊んだ）プレイ終了
     private func nextClip() async {
+        // 二重に呼ばれても、選び直さない(開始直後か、クリア画面のときだけ進む)
+        guard phase == .starting || phase == .cleared else { return }
         guard let run else { return }
         guard let entry = SwipeFeed.pick(pool: pool, seed: run.seed, index: records.count, streak: scoring.streak, used: used, excludedAuthors: excluded) else {
             await finish(); return
@@ -169,7 +171,7 @@ final class SwipeModel: ObservableObject {
     /// クリア画面から次へ（自動・上スワイプ・タップ）
     func advanceAfterResult() async {
         switch phase {
-        case .cleared, .go, .playing: await nextClip()
+        case .cleared: await nextClip()   // クリア画面のときだけ。GO・プレイ中に呼ばれると、クリップが選び直されて記録とずれる
         case .failed: await finish()
         default: break
         }
