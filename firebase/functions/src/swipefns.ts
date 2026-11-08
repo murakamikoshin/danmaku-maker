@@ -5,7 +5,7 @@ import { logger } from "firebase-functions/v2";
 import { decodeReplay, type SimStage } from "./fullsim.js";
 import { candidatesOf, estimatedClearRate, playRunAsync, rankingKey, type FeedEntry } from "./swipe.js";
 import { botCanClear } from "./swipebot.js";
-import { current, dayKeyJst, hasPass, refill, spend, type StaminaState } from "./stamina.js";
+import { addDrink, current, dayKeyJst, hasPass, refillKeep, spend, type StaminaState } from "./stamina.js";
 import { validateDisplayName } from "./validate.js";
 import { GEN_AUTHOR, GEN_CLIP_AT, genId, generateStage, parseGenId } from "./swipegen.js";
 import { GEN_SEEDS } from "./swipegen_seeds.js";
@@ -71,12 +71,12 @@ export async function refillByAd(uid: string) {
     const today = dayKeyJst(now);
     if (user.get("adRefillDay") === today) throw new HttpsError("resource-exhausted", "ad-refill-used");
     const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
-    tx.set(ref, { ...base, stamina: refill(now), adRefillDay: today }, { merge: true });
+    tx.set(ref, { ...base, stamina: refillKeep(staminaOf(user), now), adRefillDay: today }, { merge: true });
   });
   return staminaView(uid, now);
 }
 
-/** 回復ドリンクを 1 本使って全回復する */
+/** 回復ドリンクを 1 本使って、スタミナを +5 する(5 を超えて持てる) */
 export async function useDrink(uid: string) {
   const now = Date.now();
   const ref = db().doc(`users/${uid}`);
@@ -84,7 +84,7 @@ export async function useDrink(uid: string) {
     const user = await tx.get(ref);
     const drinks = (user.get("drinks") as number | undefined) ?? 0;
     if (drinks < 1) throw new HttpsError("failed-precondition", "no-drink");
-    tx.update(ref, { drinks: drinks - 1, stamina: refill(now) });
+    tx.update(ref, { drinks: drinks - 1, stamina: addDrink(staminaOf(user), now) });
   });
   return staminaView(uid, now);
 }

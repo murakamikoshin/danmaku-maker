@@ -99,6 +99,9 @@ describe("スワイプ弾幕のサーバー", () => {
     const d = await call("swipeUseDrink");
     expect(d.value).toBe(5);
     expect(d.drinks).toBe(1);
+    const d2 = await call("swipeUseDrink");   // 満タンでも使えて、5 を超えて持てる(+5)
+    expect(d2.value).toBe(10);
+    expect(d2.drinks).toBe(0);
   }, 60_000);
 
   it("匿名でも遊べるが、ランキングには載らない", async () => {

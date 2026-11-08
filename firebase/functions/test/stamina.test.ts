@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { REGEN_MS, STAMINA_MAX, current, dayKeyJst, hasPass, refill, spend } from "../src/stamina.js";
+import { REGEN_MS, STAMINA_MAX, addDrink, current, dayKeyJst, hasPass, refill, refillKeep, spend } from "../src/stamina.js";
 
 describe("スタミナ", () => {
   it("はじめは満タン。1 回使うと 4", () => {
@@ -34,5 +34,21 @@ describe("スタミナ", () => {
     expect(hasPass({ until: 100 }, 99)).toBe(true);
     expect(hasPass({ until: 100 }, 100)).toBe(false);
     expect(hasPass(undefined, 1)).toBe(false);
+  });
+  it("回復ドリンクは +5。満タンでも使え、5 を超えて持てる", () => {
+    expect(current(addDrink(undefined, 0), 0).value).toBe(10);
+    const s = addDrink({ v: 2, at: 0 }, 0);
+    expect(current(s, 0).value).toBe(7);
+    expect(current(s, REGEN_MS * 10).value).toBe(7);   // 5 を超えたぶんは、時間では増えも減りもしない
+  });
+  it("5 を超えて持っていても、1 回使うと 1 減る", () => {
+    const s = spend({ v: 9, at: 0 }, 5)!;
+    expect(current(s, 5).value).toBe(8);
+    expect(current(spend({ v: 6, at: 0 }, 5)!, 5).value).toBe(5);
+  });
+  it("広告での全回復は、5 を超えているぶんを減らさない", () => {
+    expect(refillKeep({ v: 8, at: 0 }, 1).v).toBe(8);
+    expect(refillKeep({ v: 1, at: 0 }, 1).v).toBe(5);
+    expect(refillKeep(undefined, 1).v).toBe(5);
   });
 });

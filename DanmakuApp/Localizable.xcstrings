@@ -44887,61 +44887,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "回復ドリンク（全回復）%@"
+            "value": "回復ドリンク（スタミナ+5）%@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recovery Drink (full refill) %@"
+            "value": "Recovery Drink (+5 stamina) %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "恢复饮料(完全恢复)%@"
+            "value": "恢复饮料(体力+5)%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "恢復飲料(完全恢復)%@"
+            "value": "恢復飲料(體力+5)%@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "회복 드링크(전부 회복) %@"
+            "value": "회복 드링크(스태미나 +5) %@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bebida de recuperación (recarga total) %@"
+            "value": "Bebida de recuperación (+5 de energía) %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boisson de récupération (recharge totale) %@"
+            "value": "Boisson de récupération (+5 d'énergie) %@"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Erholungsgetränk (volle Füllung) %@"
+            "value": "Erholungsgetränk (+5 Ausdauer) %@"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bebida de recuperação (recarga total) %@"
+            "value": "Bebida de recuperação (+5 de energia) %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Напиток восстановления (полное) %@"
+            "value": "Напиток восстановления (+5 энергии) %@"
           }
         }
       }
