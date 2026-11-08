@@ -40,30 +40,38 @@ final class AdRecordingUITests: XCTestCase {
 
     /// 部品が画面の見える帯(縦の割合)に入るまで、少しずつスクロールする。
     /// エディタは上にプレビューが固定で出ているので、帯をその下にする(isHittable は固定ヘッダーの下だと false になるので使わない)
+    /// 部品の位置。見つからないときは nil(frame を直接読むと、消えた瞬間にテストが止まるので snapshot で読む)
+    private func frameOf(_ e: XCUIElement) -> CGRect? {
+        guard let f = try? e.snapshot().frame, !f.isEmpty else { return nil }
+        return f
+    }
+
     @discardableResult
-    private func reveal(_ e: XCUIElement, band: ClosedRange<CGFloat> = 0.03...0.96, timeout: Double = 4) -> Bool {
+    private func reveal(_ e: XCUIElement, band: ClosedRange<CGFloat> = 0.03...0.96, timeout: Double = 4) -> CGRect? {
+        let h = app.frame.height
         var n = 0
         if !e.waitForExistence(timeout: timeout) {
             // LazyVStack の中は、画面に近づくまで作られない
-            while !e.exists && n < 10 { nudge(up: true); n += 1 }
+            while frameOf(e) == nil && n < 10 { nudge(up: true); n += 1 }
         }
-        guard e.exists else { return false }
         n = 0
-        while n < 14 {
-            let y = e.frame.midY / app.frame.height
-            if band.contains(y) { return true }
+        while n < 16 {
+            guard let f = frameOf(e) else { nudge(up: true); n += 1; continue }
+            let y = f.midY / h
+            if band.contains(y) { return f }
             nudge(up: y > band.upperBound); n += 1
         }
         // 帯からわずかに外れても、画面の中に見えていれば押してよい(スワイプが行き過ぎて往復するのを防ぐ)
-        let y = e.frame.midY / app.frame.height
-        return y > band.lowerBound - 0.04 && y < 0.975
+        if let f = frameOf(e), f.midY / h > band.lowerBound - 0.04, f.midY / h < 0.975 { return f }
+        return nil
     }
 
     @discardableResult
     private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, band: ClosedRange<CGFloat> = 0.03...0.96, pause: UInt32 = 0) -> Bool {
-        guard reveal(e, band: band, timeout: timeout) else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
+        guard reveal(e, band: band, timeout: timeout) != nil else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
         usleep(300_000)
-        let f = e.frame, a = app.frame
+        guard let f = frameOf(e) else { mark("MISSING \(label) (moved)"); return false }
+        let a = app.frame
         mark(String(format: "tap %@ @%.4f,%.4f", label, f.midX / a.width, f.midY / a.height))
         app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.midX, dy: f.midY)).tap()
         if pause > 0 { sleep(pause) }
