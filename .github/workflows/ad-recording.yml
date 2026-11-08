@@ -14,8 +14,6 @@ concurrency:
 jobs:
   record:
     runs-on: macos-26
-    env:
-      AD_LANG: en
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
@@ -46,8 +44,6 @@ jobs:
           done
           sleep 15
           tail -20 "$OUT/emulators.log"
-      - name: Seed demo world stages
-        run: FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node tools/ad_seed.mjs 2>&1 | tee "$OUT/seed.log"
       - name: Generate project
         run: xcodegen generate
       - name: Pick simulator
@@ -62,7 +58,10 @@ jobs:
       - name: Build for testing
         run: |
           set -o pipefail
-          xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Debug \
+          # 最適化ありのリリース設定でビルドする(デバッグ設定だと描画が間に合わず、収録が1秒11コマ程度になった)。
+          # 収録用の仕掛けは #if DEBUG の中なので、DEBUG の印だけ付ける
+          xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Release \
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=DEBUG" \
             -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=-" DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
             > "$OUT/build.log" 2>&1 || { grep -E "error:" "$OUT/build.log" | head -60; tail -40 "$OUT/build.log"; exit 1; }
@@ -74,21 +73,30 @@ jobs:
           xcrun simctl ui "$UDID" appearance dark || true
           xcrun simctl status_bar "$UDID" override --time "9:41" --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
           sleep 5
-      - name: Record
+      - name: Record (en, ja)
         run: |
-          python3 -c 'import time; print(f"{time.time():.3f} rec.start")' > "$OUT/rec_start.txt"
-          xcrun simctl io "$UDID" recordVideo --codec=h264 --force "$OUT/rec.mov" > "$OUT/record.log" 2>&1 &
-          REC=$!
-          sleep 2
-          python3 -c 'import time; print(f"{time.time():.3f} rec.started")' >> "$OUT/rec_start.txt"
           set +e
-          TEST_RUNNER_AD_DIR="$OUT" TEST_RUNNER_AD_LANG="$AD_LANG" xcodebuild test-without-building -project DanmakuMaker.xcodeproj -scheme DanmakuApp \
-            -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" \
-            -only-testing:DanmakuAppUITests/AdRecordingUITests > "$OUT/test.log" 2>&1
-          echo "test exit $?" >> "$OUT/test.log"
-          kill -INT $REC; wait $REC
-          tail -30 "$OUT/test.log"
-          cat "$OUT/marks.txt" || true
+          XCR=$(ls "$RUNNER_TEMP"/dd/Build/Products/*.xctestrun | head -1)
+          echo "xctestrun: $XCR"
+          for L in en ja; do
+            D="$OUT/$L"; mkdir -p "$D"
+            # 言語ごとに、サーバーとアプリの状態をまっさらにしてから撮る
+            curl -s -X DELETE "http://127.0.0.1:8080/emulator/v1/projects/demo-danmaku/databases/(default)/documents" > /dev/null
+            curl -s -X DELETE "http://127.0.0.1:9099/emulator/v1/projects/demo-danmaku/accounts" > /dev/null
+            AD_LANG=$L FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node tools/ad_seed.mjs > "$D/seed.log" 2>&1
+            xcrun simctl uninstall "$UDID" com.koshin.danmakumaker > /dev/null 2>&1
+            python3 -c 'import time; print(f"{time.time():.3f} rec.start")' > "$D/rec_start.txt"
+            xcrun simctl io "$UDID" recordVideo --codec=h264 --force "$D/rec.mov" > "$D/record.log" 2>&1 &
+            REC=$!
+            sleep 2
+            python3 -c 'import time; print(f"{time.time():.3f} rec.started")' >> "$D/rec_start.txt"
+            TEST_RUNNER_AD_DIR="$D" TEST_RUNNER_AD_LANG="$L" xcodebuild test-without-building -xctestrun "$XCR" \
+              -destination "platform=iOS Simulator,id=$UDID" \
+              -only-testing:DanmakuAppUITests/AdRecordingUITests > "$D/test.log" 2>&1
+            echo "test exit $?" >> "$D/test.log"
+            kill -INT $REC; wait $REC
+            echo "== $L"; tail -5 "$D/test.log"; cat "$D/marks.txt"
+          done
       - name: Crash reports
         if: always()
         run: |
@@ -100,12 +108,14 @@ jobs:
       - name: Compress video
         if: always()
         run: |
-          if [ -f "$OUT/rec.mov" ]; then
-            ffmpeg -y -loglevel error -i "$OUT/rec.mov" -vf "scale=1080:-2" -c:v libx264 -crf 24 -preset veryfast -pix_fmt yuv420p -r 30 -an "$OUT/rec.mp4"
-            ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT/rec.mov" > "$OUT/rec_duration.txt"
-            rm "$OUT/rec.mov"
-          fi
-          ls -la "$OUT"
+          for D in "$OUT"/en "$OUT"/ja; do
+            if [ -f "$D/rec.mov" ]; then
+              ffmpeg -y -loglevel error -i "$D/rec.mov" -vf "scale=1080:-2" -c:v libx264 -crf 24 -preset veryfast -pix_fmt yuv420p -r 30 -an "$D/rec.mp4"
+              ffprobe -v error -show_entries format=duration -of csv=p=0 "$D/rec.mov" > "$D/rec_duration.txt"
+              rm "$D/rec.mov"
+            fi
+          done
+          ls -la "$OUT" "$OUT"/en "$OUT"/ja
       - name: Save to branch
         if: always()
         run: |
