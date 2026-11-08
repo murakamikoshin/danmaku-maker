@@ -5,95 +5,2670 @@ Resolve Package Graph
 
 
 Resolved source packages:
-  GoogleUserMessagingPlatform: https://github.com/googleads/swift-package-manager-google-user-messaging-platform @ 2.3.0
-  GTMSessionFetcher: https://github.com/google/gtm-session-fetcher.git @ 4.5.0
-  GoogleDataTransport: https://github.com/google/GoogleDataTransport.git @ 10.1.1
-  Promises: https://github.com/google/promises.git @ 2.4.1
-  DanmakuCore: /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuCore
-  gRPC: https://github.com/google/grpc-binary.git @ 1.65.1
-  RevenueCat: https://github.com/RevenueCat/purchases-ios-spm @ 5.69.0
-  SwiftProtobuf: https://github.com/apple/swift-protobuf.git @ 1.29.0
-  abseil: https://github.com/google/abseil-cpp-binary.git @ 1.2024011602.0
-  nanopb: https://github.com/firebase/nanopb.git @ 2.30910.1
   leveldb: https://github.com/firebase/leveldb.git @ 1.22.5
-  Firebase: https://github.com/firebase/firebase-ios-sdk @ 11.6.0
-  InteropForGoogle: https://github.com/google/interop-ios-for-google-sdks.git @ 100.0.0
-  GoogleUtilities: https://github.com/google/GoogleUtilities.git @ 8.1.5
-  GoogleMobileAds: https://github.com/googleads/swift-package-manager-google-mobile-ads @ 11.2.0
-  AppCheck: https://github.com/google/app-check.git @ 11.2.0
   GoogleAppMeasurement: https://github.com/google/GoogleAppMeasurement.git @ 11.4.0
+  GoogleDataTransport: https://github.com/google/GoogleDataTransport.git @ 10.1.1
+  Firebase: https://github.com/firebase/firebase-ios-sdk @ 11.6.0
+  GoogleUtilities: https://github.com/google/GoogleUtilities.git @ 8.1.5
+  RevenueCat: https://github.com/RevenueCat/purchases-ios-spm @ 5.69.0
+  abseil: https://github.com/google/abseil-cpp-binary.git @ 1.2024011602.0
+  AppCheck: https://github.com/google/app-check.git @ 11.2.0
+  Promises: https://github.com/google/promises.git @ 2.4.1
+  InteropForGoogle: https://github.com/google/interop-ios-for-google-sdks.git @ 100.0.0
+  SwiftProtobuf: https://github.com/apple/swift-protobuf.git @ 1.29.0
+  GTMSessionFetcher: https://github.com/google/gtm-session-fetcher.git @ 4.5.0
+  GoogleUserMessagingPlatform: https://github.com/googleads/swift-package-manager-google-user-messaging-platform @ 2.3.0
+  nanopb: https://github.com/firebase/nanopb.git @ 2.30910.1
+  gRPC: https://github.com/google/grpc-binary.git @ 1.65.1
+  DanmakuCore: /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuCore
+  GoogleMobileAds: https://github.com/googleads/swift-package-manager-google-mobile-ads @ 11.2.0
 
 --- xcodebuild: WARNING: Using the first of multiple matching destinations:
 { platform:iOS Simulator, arch:arm64, id:78974B82-8A98-4B1E-B8FD-2C4852E3B705, OS:26.2, name:iPhone 17 Pro Max }
 { platform:iOS Simulator, arch:x86_64, id:78974B82-8A98-4B1E-B8FD-2C4852E3B705, OS:26.2, name:iPhone 17 Pro Max }
-2026-11-08 01:16:23.044017+0000 DanmakuAppUITests-Runner[35479:96680] [Default] Running tests...
-Test Suite 'Selected tests' started at 2026-11-08 01:16:29.071.
-Test Suite 'DanmakuAppUITests.xctest' started at 2026-11-08 01:16:29.072.
-Test Suite 'AdRecordingUITests' started at 2026-11-08 01:16:29.072.
+2026-11-08 01:30:52.135337+0000 DanmakuAppUITests-Runner[17716:55623] [Default] Running tests...
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-11-08 01:30:59.571.
+Test Suite 'DanmakuAppUITests.xctest' started at 2026-11-08 01:30:59.572.
+Test Suite 'AdRecordingUITests' started at 2026-11-08 01:30:59.572.
 Test Case '-[DanmakuAppUITests.AdRecordingUITests testRecordAd]' started.
-    t =     0.00s Start Test at 2026-11-08 01:16:29.073
-    t =     0.16s Set Up
-    t =     0.18s Open com.koshin.danmakumaker
-    t =     0.19s     Launch com.koshin.danmakumaker
-2026-11-08 01:16:30.860 xcodebuild[33106:90004] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
-2026-11-08 01:16:30.860 xcodebuild[33106:90004] [MT] IDELaunchParametersSnapshot: no debugger version
-    t =    15.70s         Setting up automation session
-    t =    75.74s         Wait for com.koshin.danmakumaker to idle
-    t =    82.30s Waiting 5.0s for "home.create" Button to exist
-    t =    83.35s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
-    t =    83.36s         Checking existence of `"home.create" Button`
-    t =    83.36s         Capturing element debug description
-    t =    84.40s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
-    t =    84.40s         Checking existence of `"home.create" Button`
-    t =    84.40s         Capturing element debug description
-    t =    85.38s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
-    t =    85.38s         Checking existence of `"home.create" Button`
-    t =    85.38s         Capturing element debug description
-    t =    86.31s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
-    t =    86.31s         Checking existence of `"home.create" Button`
-    t =    86.31s         Capturing element debug description
-    t =    87.31s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
-    t =    87.32s         Checking existence of `"home.create" Button`
-    t =    87.32s         Capturing element debug description
-    t =    87.32s     Checking existence of `"home.create" Button`
-    t =    88.33s     Checking existence of `"home.create" Button` (retry 1)
-    t =    89.34s     Checking existence of `"home.create" Button` (retry 2)
-    t =    89.34s Collecting debug information to assist test failure triage
-    t =    89.34s Checking existence of `"home.create" Button`
-    t =    90.36s Checking existence of `"home.create" Button` (retry 1)
-    t =    91.37s Checking existence of `"home.create" Button` (retry 2)
-    t =    91.38s Swipe up Target Application 'com.koshin.danmakumaker'
-    t =    91.38s     Wait for com.koshin.danmakumaker to idle
-    t =    91.39s     Find the Target Application 'com.koshin.danmakumaker'
-    t =    92.40s     Retrying `Swipe up Target Application 'com.koshin.danmakumaker'` (attempt #2)
-    t =    92.40s         Wait for com.koshin.danmakumaker to idle
-    t =    92.40s         Find the Target Application 'com.koshin.danmakumaker'
-    t =    93.41s     Retrying `Swipe up Target Application 'com.koshin.danmakumaker'` (attempt #3)
-    t =    93.41s         Wait for com.koshin.danmakumaker to idle
-    t =    93.41s         Find the Target Application 'com.koshin.danmakumaker'
-<unknown>:0: error: -[DanmakuAppUITests.AdRecordingUITests testRecordAd] : Failed to application com.koshin.danmakumaker is not running
-    t =    93.50s Tear Down
-    t =    93.71s Checking for crash reports corresponding to unexpected termination of com.koshin.danmakumaker
-<unknown>:0: error: -[DanmakuAppUITests.AdRecordingUITests testRecordAd] : com.koshin.danmakumaker crashed in <external symbol>
-Test Case '-[DanmakuAppUITests.AdRecordingUITests testRecordAd]' failed (94.196 seconds).
-Test Suite 'AdRecordingUITests' failed at 2026-11-08 01:18:03.269.
-	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.198) seconds
-Test Suite 'DanmakuAppUITests.xctest' failed at 2026-11-08 01:18:03.270.
-	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.198) seconds
-Test Suite 'Selected tests' failed at 2026-11-08 01:18:03.270.
-	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.200) seconds
-2026-11-08 01:18:30.092 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 156.829 elapsed -- Testing started completed.
-2026-11-08 01:18:30.093 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
-2026-11-08 01:18:30.093 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 156.829 sec, +156.829 sec -- end
+    t =     0.00s Start Test at 2026-11-08 01:30:59.573
+2026-11-08 01:31:03.990 xcodebuild[13992:45393] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-11-08 01:31:03.990 xcodebuild[13992:45393] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     0.21s Set Up
+    t =     0.24s Open com.koshin.danmakumaker
+    t =     0.24s     Launch com.koshin.danmakumaker
+    t =    23.41s         Setting up automation session
+    t =    24.33s         Wait for com.koshin.danmakumaker to idle
+    t =    30.99s Waiting 5.0s for "home.create" Button to exist
+    t =    32.04s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    32.04s         Checking existence of `"home.create" Button`
+    t =    32.24s Checking existence of `"home.create" Button`
+    t =    32.39s Find the "home.create" Button
+    t =    32.46s Checking existence of `"home.create" Button`
+    t =    32.52s Find the "home.create" Button
+    t =    32.56s Tap "home.create" Button
+    t =    32.56s     Wait for com.koshin.danmakumaker to idle
+    t =    32.56s     Find the "home.create" Button
+    t =    32.67s     Check for interrupting elements affecting "home.create" Button
+    t =    32.91s     Synthesize event
+    t =    33.34s     Wait for com.koshin.danmakumaker to idle
+    t =    39.85s Waiting 5.0s for "emitter.color.0.1" Button to exist
+    t =    40.91s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.0.1" Button`
+    t =    40.92s         Checking existence of `"emitter.color.0.1" Button`
+    t =    44.00s Checking existence of `"emitter.color.0.1" Button`
+    t =    45.62s Find the "emitter.color.0.1" Button
+    t =    46.90s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    46.90s     Wait for com.koshin.danmakumaker to idle
+    t =    47.03s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    47.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    47.69s     Synthesize event
+    t =    48.33s     Wait for com.koshin.danmakumaker to idle
+    t =    50.41s Checking existence of `"emitter.color.0.1" Button`
+    t =    52.07s Find the "emitter.color.0.1" Button
+    t =    52.75s Checking existence of `"emitter.color.0.1" Button`
+    t =    54.08s Find the "emitter.color.0.1" Button
+    t =    54.86s Tap "emitter.color.0.1" Button
+    t =    54.87s     Wait for com.koshin.danmakumaker to idle
+    t =    54.89s     Find the "emitter.color.0.1" Button
+    t =    55.54s     Check for interrupting elements affecting "emitter.color.0.1" Button
+    t =    55.79s     Synthesize event
+    t =    56.30s     Wait for com.koshin.danmakumaker to idle
+    t =    58.51s Waiting 5.0s for "emitter.pattern.toggle.0" Button to exist
+    t =    59.52s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.0" Button`
+    t =    59.59s         Checking existence of `"emitter.pattern.toggle.0" Button`
+    t =    60.95s Checking existence of `"emitter.pattern.toggle.0" Button`
+    t =    61.23s Find the "emitter.pattern.toggle.0" Button
+    t =    61.42s Checking existence of `"emitter.pattern.toggle.0" Button`
+    t =    61.59s Find the "emitter.pattern.toggle.0" Button
+    t =    61.79s Tap "emitter.pattern.toggle.0" Button
+    t =    61.79s     Wait for com.koshin.danmakumaker to idle
+    t =    61.80s     Find the "emitter.pattern.toggle.0" Button
+    t =    62.07s     Check for interrupting elements affecting "emitter.pattern.toggle.0" Button
+    t =    62.20s     Synthesize event
+    t =    62.55s     Wait for com.koshin.danmakumaker to idle
+    t =    64.32s Waiting 5.0s for "emitter.pattern.0.spiral" Button to exist
+    t =    65.33s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.0.spiral" Button`
+    t =    65.33s         Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    65.74s         Capturing element debug description
+    t =    66.38s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.0.spiral" Button`
+    t =    66.39s         Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    67.19s         Capturing element debug description
+    t =    67.40s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.0.spiral" Button`
+    t =    67.41s         Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    69.60s         Capturing element debug description
+    t =    69.61s     Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    70.35s Collecting debug information to assist test failure triage
+    t =    70.35s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =    70.68s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    71.96s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    71.96s     Wait for com.koshin.danmakumaker to idle
+    t =    71.97s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    72.26s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    72.74s     Synthesize event
+    t =    73.31s     Wait for com.koshin.danmakumaker to idle
+    t =    75.43s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    77.54s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    77.54s     Wait for com.koshin.danmakumaker to idle
+    t =    77.85s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    78.14s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    78.63s     Synthesize event
+    t =    79.22s     Wait for com.koshin.danmakumaker to idle
+    t =    81.20s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    82.02s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    82.02s     Wait for com.koshin.danmakumaker to idle
+    t =    82.03s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    82.17s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    82.49s     Synthesize event
+    t =    83.36s     Wait for com.koshin.danmakumaker to idle
+    t =    85.11s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    86.34s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    86.34s     Wait for com.koshin.danmakumaker to idle
+    t =    86.37s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    86.50s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    86.87s     Synthesize event
+    t =    87.41s     Wait for com.koshin.danmakumaker to idle
+    t =    87.43s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    90.06s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    90.06s     Wait for com.koshin.danmakumaker to idle
+    t =    90.10s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    91.17s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    92.07s     Synthesize event
+    t =    92.68s     Wait for com.koshin.danmakumaker to idle
+    t =    92.69s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =    97.24s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    97.25s     Wait for com.koshin.danmakumaker to idle
+    t =    97.30s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    97.73s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =    99.19s     Synthesize event
+    t =    99.87s     Wait for com.koshin.danmakumaker to idle
+    t =    99.89s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   104.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   104.28s     Wait for com.koshin.danmakumaker to idle
+    t =   104.32s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   104.77s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   105.44s     Synthesize event
+    t =   106.01s     Wait for com.koshin.danmakumaker to idle
+    t =   106.01s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   106.93s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   106.94s     Wait for com.koshin.danmakumaker to idle
+    t =   106.95s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   107.32s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   108.73s     Synthesize event
+    t =   109.31s     Wait for com.koshin.danmakumaker to idle
+    t =   109.33s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   111.56s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   111.56s     Wait for com.koshin.danmakumaker to idle
+    t =   111.58s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   112.91s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   113.27s     Synthesize event
+    t =   113.87s     Wait for com.koshin.danmakumaker to idle
+    t =   113.89s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   116.39s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   116.39s     Wait for com.koshin.danmakumaker to idle
+    t =   116.40s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   117.41s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   117.94s     Synthesize event
+    t =   118.52s     Wait for com.koshin.danmakumaker to idle
+    t =   118.53s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   118.96s Checking existence of `"emitter.pattern.0.spiral" Button`
+    t =   119.24s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   120.36s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   121.57s Waiting 5.0s for "editor.add" Button to exist
+    t =   122.62s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.add" Button`
+    t =   122.65s         Checking existence of `"editor.add" Button`
+    t =   122.85s Checking existence of `"editor.add" Button`
+    t =   122.99s Find the "editor.add" Button
+    t =   123.17s Checking existence of `"editor.add" Button`
+    t =   123.38s Find the "editor.add" Button
+    t =   123.54s Tap "editor.add" Button
+    t =   123.54s     Wait for com.koshin.danmakumaker to idle
+    t =   123.54s     Find the "editor.add" Button
+    t =   123.67s     Check for interrupting elements affecting "editor.add" Button
+    t =   123.83s     Synthesize event
+    t =   124.21s     Wait for com.koshin.danmakumaker to idle
+    t =   137.60s Waiting 4.0s for "emitter.card.1" Other to exist
+    t =   138.65s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.card.1" Other`
+    t =   138.65s         Checking existence of `"emitter.card.1" Other`
+    t =   138.90s Checking existence of `"emitter.card.1" Other`
+    t =   139.14s Find the "emitter.card.1" Other
+    t =   139.36s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   139.36s     Wait for com.koshin.danmakumaker to idle
+    t =   139.37s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   139.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   139.87s     Synthesize event
+    t =   140.39s     Wait for com.koshin.danmakumaker to idle
+    t =   140.40s Checking existence of `"emitter.card.1" Other`
+    t =   140.61s Find the "emitter.card.1" Other
+    t =   140.79s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   140.79s     Wait for com.koshin.danmakumaker to idle
+    t =   140.80s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   140.90s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   141.05s     Synthesize event
+    t =   141.58s     Wait for com.koshin.danmakumaker to idle
+    t =   141.60s Checking existence of `"emitter.card.1" Other`
+    t =   141.79s Find the "emitter.card.1" Other
+    t =   141.97s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   141.97s     Wait for com.koshin.danmakumaker to idle
+    t =   141.98s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   142.12s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   142.25s     Synthesize event
+    t =   142.76s     Wait for com.koshin.danmakumaker to idle
+    t =   142.77s Checking existence of `"emitter.card.1" Other`
+    t =   142.97s Find the "emitter.card.1" Other
+    t =   143.13s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   143.13s     Wait for com.koshin.danmakumaker to idle
+    t =   143.14s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   143.30s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   143.52s     Synthesize event
+    t =   144.11s     Wait for com.koshin.danmakumaker to idle
+    t =   144.15s Checking existence of `"emitter.card.1" Other`
+    t =   144.40s Find the "emitter.card.1" Other
+    t =   144.54s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   144.54s     Wait for com.koshin.danmakumaker to idle
+    t =   144.56s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   144.76s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   145.46s     Synthesize event
+    t =   146.05s     Wait for com.koshin.danmakumaker to idle
+    t =   146.17s Checking existence of `"emitter.card.1" Other`
+    t =   146.55s Find the "emitter.card.1" Other
+    t =   146.95s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   146.96s     Wait for com.koshin.danmakumaker to idle
+    t =   146.96s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   147.32s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   147.95s     Synthesize event
+    t =   148.48s     Wait for com.koshin.danmakumaker to idle
+    t =   148.55s Checking existence of `"emitter.card.1" Other`
+    t =   148.92s Find the "emitter.card.1" Other
+    t =   149.19s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   149.19s     Wait for com.koshin.danmakumaker to idle
+    t =   149.22s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   149.50s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   149.92s     Synthesize event
+    t =   150.51s     Wait for com.koshin.danmakumaker to idle
+    t =   150.53s Checking existence of `"emitter.card.1" Other`
+    t =   151.00s Find the "emitter.card.1" Other
+    t =   151.83s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   151.83s     Wait for com.koshin.danmakumaker to idle
+    t =   151.88s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   152.36s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   152.57s     Synthesize event
+    t =   153.12s     Wait for com.koshin.danmakumaker to idle
+    t =   153.13s Checking existence of `"emitter.card.1" Other`
+    t =   153.51s Find the "emitter.card.1" Other
+    t =   153.77s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   153.78s     Wait for com.koshin.danmakumaker to idle
+    t =   153.88s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   154.21s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   154.96s     Synthesize event
+    t =   155.54s     Wait for com.koshin.danmakumaker to idle
+    t =   155.57s Checking existence of `"emitter.card.1" Other`
+    t =   155.98s Find the "emitter.card.1" Other
+    t =   156.31s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   156.31s     Wait for com.koshin.danmakumaker to idle
+    t =   156.34s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   156.52s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   156.93s     Synthesize event
+    t =   157.47s     Wait for com.koshin.danmakumaker to idle
+    t =   157.49s Checking existence of `"emitter.card.1" Other`
+    t =   157.94s Find the "emitter.card.1" Other
+    t =   158.64s Checking existence of `"emitter.card.1" Other`
+    t =   159.39s Find the "emitter.card.1" Other
+    t =   159.69s Waiting 5.0s for "emitter.color.1.2" Button to exist
+    t =   160.74s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.1.2" Button`
+    t =   160.76s         Checking existence of `"emitter.color.1.2" Button`
+    t =   162.34s Checking existence of `"emitter.color.1.2" Button`
+    t =   164.44s Find the "emitter.color.1.2" Button
+    t =   166.40s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   166.41s     Wait for com.koshin.danmakumaker to idle
+    t =   166.42s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   166.71s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   167.62s     Synthesize event
+    t =   168.26s     Wait for com.koshin.danmakumaker to idle
+    t =   168.27s Checking existence of `"emitter.color.1.2" Button`
+    t =   169.57s Find the "emitter.color.1.2" Button
+    t =   170.87s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   170.87s     Wait for com.koshin.danmakumaker to idle
+    t =   170.89s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   171.11s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   172.07s     Synthesize event
+    t =   173.02s     Wait for com.koshin.danmakumaker to idle
+    t =   173.04s Checking existence of `"emitter.color.1.2" Button`
+    t =   175.33s Find the "emitter.color.1.2" Button
+    t =   178.50s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   178.50s     Wait for com.koshin.danmakumaker to idle
+    t =   178.51s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   179.72s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   181.78s     Synthesize event
+    t =   182.58s     Wait for com.koshin.danmakumaker to idle
+    t =   182.59s Checking existence of `"emitter.color.1.2" Button`
+    t =   185.68s Find the "emitter.color.1.2" Button
+    t =   190.22s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   190.22s     Wait for com.koshin.danmakumaker to idle
+    t =   190.26s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   190.93s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   193.06s     Synthesize event
+    t =   193.77s     Wait for com.koshin.danmakumaker to idle
+    t =   193.78s Checking existence of `"emitter.color.1.2" Button`
+    t =   196.55s Find the "emitter.color.1.2" Button
+    t =   198.56s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   198.56s     Wait for com.koshin.danmakumaker to idle
+    t =   198.83s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   199.81s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   200.92s     Synthesize event
+    t =   201.64s     Wait for com.koshin.danmakumaker to idle
+    t =   201.65s Checking existence of `"emitter.color.1.2" Button`
+    t =   202.47s Find the "emitter.color.1.2" Button
+    t =   203.64s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   203.64s     Wait for com.koshin.danmakumaker to idle
+    t =   205.70s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   210.07s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   211.45s     Synthesize event
+    t =   212.07s     Wait for com.koshin.danmakumaker to idle
+    t =   212.08s Checking existence of `"emitter.color.1.2" Button`
+    t =   216.26s Find the "emitter.color.1.2" Button
+    t =   219.00s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   219.00s     Wait for com.koshin.danmakumaker to idle
+    t =   219.02s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   219.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   219.64s     Synthesize event
+    t =   220.24s     Wait for com.koshin.danmakumaker to idle
+    t =   220.25s Checking existence of `"emitter.color.1.2" Button`
+    t =   220.76s Find the "emitter.color.1.2" Button
+    t =   221.15s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   221.15s     Wait for com.koshin.danmakumaker to idle
+    t =   221.16s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   221.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   221.39s     Synthesize event
+    t =   221.96s     Wait for com.koshin.danmakumaker to idle
+    t =   221.99s Checking existence of `"emitter.color.1.2" Button`
+    t =   222.50s Find the "emitter.color.1.2" Button
+    t =   223.01s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   223.01s     Wait for com.koshin.danmakumaker to idle
+    t =   223.02s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   223.49s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   224.06s     Synthesize event
+    t =   224.68s     Wait for com.koshin.danmakumaker to idle
+    t =   224.71s Checking existence of `"emitter.color.1.2" Button`
+    t =   225.59s Find the "emitter.color.1.2" Button
+    t =   226.75s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   226.75s     Wait for com.koshin.danmakumaker to idle
+    t =   226.76s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   227.55s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   229.34s     Synthesize event
+    t =   229.93s     Wait for com.koshin.danmakumaker to idle
+    t =   229.96s Checking existence of `"emitter.color.1.2" Button`
+    t =   231.84s Find the "emitter.color.1.2" Button
+    t =   232.58s Checking existence of `"emitter.color.1.2" Button`
+    t =   233.41s Find the "emitter.color.1.2" Button
+    t =   234.16s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   236.84s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   238.15s Waiting 5.0s for "editor.add" Button to exist
+    t =   239.24s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.add" Button`
+    t =   239.35s         Checking existence of `"editor.add" Button`
+    t =   240.87s Checking existence of `"editor.add" Button`
+    t =   242.36s Find the "editor.add" Button
+    t =   242.88s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   242.88s     Wait for com.koshin.danmakumaker to idle
+    t =   242.89s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   243.29s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   244.50s     Synthesize event
+    t =   245.25s     Wait for com.koshin.danmakumaker to idle
+    t =   245.26s Checking existence of `"editor.add" Button`
+    t =   245.59s Find the "editor.add" Button
+    t =   245.79s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   245.79s     Wait for com.koshin.danmakumaker to idle
+    t =   245.82s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   245.95s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   246.10s     Synthesize event
+    t =   246.62s     Wait for com.koshin.danmakumaker to idle
+    t =   246.63s Checking existence of `"editor.add" Button`
+    t =   247.12s Find the "editor.add" Button
+    t =   247.39s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   247.39s     Wait for com.koshin.danmakumaker to idle
+    t =   247.40s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   247.62s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   247.80s     Synthesize event
+    t =   248.34s     Wait for com.koshin.danmakumaker to idle
+    t =   248.35s Checking existence of `"editor.add" Button`
+    t =   248.59s Find the "editor.add" Button
+    t =   248.92s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   248.92s     Wait for com.koshin.danmakumaker to idle
+    t =   248.93s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   249.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   249.34s     Synthesize event
+    t =   249.85s     Wait for com.koshin.danmakumaker to idle
+    t =   249.86s Checking existence of `"editor.add" Button`
+    t =   250.37s Find the "editor.add" Button
+    t =   250.70s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   250.70s     Wait for com.koshin.danmakumaker to idle
+    t =   250.71s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   250.84s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   251.08s     Synthesize event
+    t =   251.61s     Wait for com.koshin.danmakumaker to idle
+    t =   251.63s Checking existence of `"editor.add" Button`
+    t =   251.95s Find the "editor.add" Button
+    t =   252.36s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   252.36s     Wait for com.koshin.danmakumaker to idle
+    t =   252.39s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   252.50s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   252.66s     Synthesize event
+    t =   253.24s     Wait for com.koshin.danmakumaker to idle
+    t =   253.25s Checking existence of `"editor.add" Button`
+    t =   253.48s Find the "editor.add" Button
+    t =   253.68s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   253.68s     Wait for com.koshin.danmakumaker to idle
+    t =   253.69s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   253.78s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   253.88s     Synthesize event
+    t =   254.38s     Wait for com.koshin.danmakumaker to idle
+    t =   254.39s Checking existence of `"editor.add" Button`
+    t =   254.59s Find the "editor.add" Button
+    t =   254.71s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   254.71s     Wait for com.koshin.danmakumaker to idle
+    t =   254.72s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   254.80s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   255.06s     Synthesize event
+    t =   255.59s     Wait for com.koshin.danmakumaker to idle
+    t =   255.61s Checking existence of `"editor.add" Button`
+    t =   255.73s Find the "editor.add" Button
+    t =   255.86s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   255.86s     Wait for com.koshin.danmakumaker to idle
+    t =   255.87s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   255.97s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   256.11s     Synthesize event
+    t =   256.67s     Wait for com.koshin.danmakumaker to idle
+    t =   256.68s Checking existence of `"editor.add" Button`
+    t =   256.77s Find the "editor.add" Button
+    t =   256.97s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   256.97s     Wait for com.koshin.danmakumaker to idle
+    t =   256.97s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   257.09s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   257.20s     Synthesize event
+    t =   257.70s     Wait for com.koshin.danmakumaker to idle
+    t =   257.71s Checking existence of `"editor.add" Button`
+    t =   257.84s Find the "editor.add" Button
+    t =   257.93s Checking existence of `"editor.add" Button`
+    t =   258.05s Find the "editor.add" Button
+    t =   258.18s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   259.02s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   259.56s Waiting 5.0s for "emitter.pattern.toggle.2" Button to exist
+    t =   260.60s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.2" Button`
+    t =   260.60s         Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   261.21s         Capturing element debug description
+    t =   261.63s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.2" Button`
+    t =   261.63s         Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   262.45s         Capturing element debug description
+    t =   262.57s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.2" Button`
+    t =   262.57s         Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   263.11s         Capturing element debug description
+    t =   263.65s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.2" Button`
+    t =   263.65s         Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   264.23s         Capturing element debug description
+    t =   264.56s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.toggle.2" Button`
+    t =   264.56s         Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   264.88s         Capturing element debug description
+    t =   264.88s     Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   265.51s Collecting debug information to assist test failure triage
+    t =   265.51s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   265.83s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   266.35s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   266.35s     Wait for com.koshin.danmakumaker to idle
+    t =   266.38s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   266.55s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   266.78s     Synthesize event
+    t =   267.34s     Wait for com.koshin.danmakumaker to idle
+    t =   267.35s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   267.75s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   267.75s     Wait for com.koshin.danmakumaker to idle
+    t =   267.76s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   267.96s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   268.11s     Synthesize event
+    t =   268.69s     Wait for com.koshin.danmakumaker to idle
+    t =   268.70s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   269.19s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   269.19s     Wait for com.koshin.danmakumaker to idle
+    t =   269.21s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   269.31s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   269.46s     Synthesize event
+    t =   270.04s     Wait for com.koshin.danmakumaker to idle
+    t =   270.08s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   270.69s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   270.69s     Wait for com.koshin.danmakumaker to idle
+    t =   270.71s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   271.37s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   271.73s     Synthesize event
+    t =   272.23s     Wait for com.koshin.danmakumaker to idle
+    t =   272.24s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   272.82s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   272.82s     Wait for com.koshin.danmakumaker to idle
+    t =   272.94s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   273.08s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   273.28s     Synthesize event
+    t =   273.89s     Wait for com.koshin.danmakumaker to idle
+    t =   273.89s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   274.45s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   274.45s     Wait for com.koshin.danmakumaker to idle
+    t =   274.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   274.63s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   275.23s     Synthesize event
+    t =   275.83s     Wait for com.koshin.danmakumaker to idle
+    t =   275.85s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   276.41s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   276.41s     Wait for com.koshin.danmakumaker to idle
+    t =   276.43s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   276.58s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   276.77s     Synthesize event
+    t =   277.32s     Wait for com.koshin.danmakumaker to idle
+    t =   277.34s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   278.00s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   278.00s     Wait for com.koshin.danmakumaker to idle
+    t =   278.01s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   278.08s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   278.19s     Synthesize event
+    t =   278.72s     Wait for com.koshin.danmakumaker to idle
+    t =   278.73s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   279.15s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   279.16s     Wait for com.koshin.danmakumaker to idle
+    t =   279.17s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   279.28s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   279.42s     Synthesize event
+    t =   279.94s     Wait for com.koshin.danmakumaker to idle
+    t =   279.95s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   280.37s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   280.37s     Wait for com.koshin.danmakumaker to idle
+    t =   280.49s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   280.76s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   280.92s     Synthesize event
+    t =   281.44s     Wait for com.koshin.danmakumaker to idle
+    t =   281.46s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   282.00s Checking existence of `"emitter.pattern.toggle.2" Button`
+    t =   282.33s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   283.63s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   284.15s Waiting 5.0s for "emitter.pattern.2.rain" Button to exist
+    t =   285.17s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.2.rain" Button`
+    t =   285.17s         Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   285.54s         Capturing element debug description
+    t =   286.16s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.2.rain" Button`
+    t =   286.16s         Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   286.66s         Capturing element debug description
+    t =   287.18s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.2.rain" Button`
+    t =   287.18s         Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   287.67s         Capturing element debug description
+    t =   288.20s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.2.rain" Button`
+    t =   288.20s         Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   288.67s         Capturing element debug description
+    t =   289.16s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.pattern.2.rain" Button`
+    t =   289.16s         Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   289.41s         Capturing element debug description
+    t =   289.41s     Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   289.80s Collecting debug information to assist test failure triage
+    t =   289.80s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   290.11s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   290.50s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   290.50s     Wait for com.koshin.danmakumaker to idle
+    t =   290.51s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   290.65s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   290.91s     Synthesize event
+    t =   291.44s     Wait for com.koshin.danmakumaker to idle
+    t =   291.46s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   291.95s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   291.95s     Wait for com.koshin.danmakumaker to idle
+    t =   291.96s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   292.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   292.44s     Synthesize event
+    t =   293.03s     Wait for com.koshin.danmakumaker to idle
+    t =   293.03s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   293.77s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   293.77s     Wait for com.koshin.danmakumaker to idle
+    t =   293.79s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   293.99s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   294.86s     Synthesize event
+    t =   295.65s     Wait for com.koshin.danmakumaker to idle
+    t =   295.66s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   296.91s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   296.91s     Wait for com.koshin.danmakumaker to idle
+    t =   296.94s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   297.10s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   297.28s     Synthesize event
+    t =   297.81s     Wait for com.koshin.danmakumaker to idle
+    t =   297.83s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   299.60s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   299.60s     Wait for com.koshin.danmakumaker to idle
+    t =   299.70s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   300.10s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   301.73s     Synthesize event
+    t =   303.02s     Wait for com.koshin.danmakumaker to idle
+    t =   303.03s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   303.73s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   303.73s     Wait for com.koshin.danmakumaker to idle
+    t =   303.75s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   303.89s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   304.08s     Synthesize event
+    t =   304.59s     Wait for com.koshin.danmakumaker to idle
+    t =   304.59s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   306.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   306.28s     Wait for com.koshin.danmakumaker to idle
+    t =   306.33s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   306.53s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   306.75s     Synthesize event
+    t =   307.32s     Wait for com.koshin.danmakumaker to idle
+    t =   307.33s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   308.87s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   308.88s     Wait for com.koshin.danmakumaker to idle
+    t =   308.90s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   309.53s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   309.82s     Synthesize event
+    t =   310.38s     Wait for com.koshin.danmakumaker to idle
+    t =   310.38s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   311.95s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   311.95s     Wait for com.koshin.danmakumaker to idle
+    t =   312.01s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   312.52s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   313.06s     Synthesize event
+    t =   313.60s     Wait for com.koshin.danmakumaker to idle
+    t =   313.60s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   314.78s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   314.78s     Wait for com.koshin.danmakumaker to idle
+    t =   315.06s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   315.53s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   315.90s     Synthesize event
+    t =   316.50s     Wait for com.koshin.danmakumaker to idle
+    t =   316.52s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   317.94s Checking existence of `"emitter.pattern.2.rain" Button`
+    t =   320.49s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   322.70s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   323.25s Waiting 5.0s for "emitter.color.2.3" Button to exist
+    t =   324.26s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.2.3" Button`
+    t =   324.26s         Checking existence of `"emitter.color.2.3" Button`
+    t =   325.16s         Capturing element debug description
+    t =   325.26s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.2.3" Button`
+    t =   325.26s         Checking existence of `"emitter.color.2.3" Button`
+    t =   325.86s         Capturing element debug description
+    t =   326.28s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.2.3" Button`
+    t =   326.28s         Checking existence of `"emitter.color.2.3" Button`
+    t =   326.90s         Capturing element debug description
+    t =   327.32s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.2.3" Button`
+    t =   327.32s         Checking existence of `"emitter.color.2.3" Button`
+    t =   328.13s         Capturing element debug description
+    t =   328.26s     Checking `Expect predicate `existsNoRetry == 1` for object "emitter.color.2.3" Button`
+    t =   328.26s         Checking existence of `"emitter.color.2.3" Button`
+    t =   328.57s         Capturing element debug description
+    t =   328.57s     Checking existence of `"emitter.color.2.3" Button`
+    t =   329.18s Collecting debug information to assist test failure triage
+    t =   329.18s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   329.46s Checking existence of `"emitter.color.2.3" Button`
+    t =   330.02s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   330.03s     Wait for com.koshin.danmakumaker to idle
+    t =   330.03s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   330.12s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   330.27s     Synthesize event
+    t =   330.87s     Wait for com.koshin.danmakumaker to idle
+    t =   330.88s Checking existence of `"emitter.color.2.3" Button`
+    t =   331.52s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   331.52s     Wait for com.koshin.danmakumaker to idle
+    t =   331.53s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   331.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   331.84s     Synthesize event
+    t =   332.62s     Wait for com.koshin.danmakumaker to idle
+    t =   332.63s Checking existence of `"emitter.color.2.3" Button`
+    t =   333.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   333.28s     Wait for com.koshin.danmakumaker to idle
+    t =   333.29s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   333.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   333.57s     Synthesize event
+    t =   334.23s     Wait for com.koshin.danmakumaker to idle
+    t =   334.24s Checking existence of `"emitter.color.2.3" Button`
+    t =   334.62s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   334.62s     Wait for com.koshin.danmakumaker to idle
+    t =   334.62s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   334.70s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   334.95s     Synthesize event
+    t =   335.49s     Wait for com.koshin.danmakumaker to idle
+    t =   335.50s Checking existence of `"emitter.color.2.3" Button`
+    t =   336.13s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   336.13s     Wait for com.koshin.danmakumaker to idle
+    t =   336.13s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   336.26s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   336.38s     Synthesize event
+    t =   336.89s     Wait for com.koshin.danmakumaker to idle
+    t =   336.89s Checking existence of `"emitter.color.2.3" Button`
+    t =   337.33s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   337.33s     Wait for com.koshin.danmakumaker to idle
+    t =   337.33s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   337.42s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   337.54s     Synthesize event
+    t =   338.06s     Wait for com.koshin.danmakumaker to idle
+    t =   338.06s Checking existence of `"emitter.color.2.3" Button`
+    t =   338.47s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   338.47s     Wait for com.koshin.danmakumaker to idle
+    t =   338.50s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   338.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   338.70s     Synthesize event
+    t =   339.20s     Wait for com.koshin.danmakumaker to idle
+    t =   339.21s Checking existence of `"emitter.color.2.3" Button`
+    t =   339.70s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   339.70s     Wait for com.koshin.danmakumaker to idle
+    t =   339.70s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   339.81s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   339.95s     Synthesize event
+    t =   340.46s     Wait for com.koshin.danmakumaker to idle
+    t =   340.47s Checking existence of `"emitter.color.2.3" Button`
+    t =   341.11s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   341.11s     Wait for com.koshin.danmakumaker to idle
+    t =   341.12s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   341.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   341.46s     Synthesize event
+    t =   341.96s     Wait for com.koshin.danmakumaker to idle
+    t =   341.98s Checking existence of `"emitter.color.2.3" Button`
+    t =   342.81s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   342.81s     Wait for com.koshin.danmakumaker to idle
+    t =   342.83s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   342.98s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   343.23s     Synthesize event
+    t =   343.77s     Wait for com.koshin.danmakumaker to idle
+    t =   343.77s Checking existence of `"emitter.color.2.3" Button`
+    t =   344.70s Checking existence of `"emitter.color.2.3" Button`
+    t =   345.10s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   347.07s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   348.00s Waiting 5.0s for "editor.test" Button to exist
+    t =   349.01s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.test" Button`
+    t =   349.02s         Checking existence of `"editor.test" Button`
+    t =   349.54s         Capturing element debug description
+    t =   350.08s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.test" Button`
+    t =   350.08s         Checking existence of `"editor.test" Button`
+    t =   350.64s         Capturing element debug description
+    t =   351.06s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.test" Button`
+    t =   351.07s         Checking existence of `"editor.test" Button`
+    t =   351.48s         Capturing element debug description
+    t =   352.08s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.test" Button`
+    t =   352.08s         Checking existence of `"editor.test" Button`
+    t =   352.87s         Capturing element debug description
+    t =   353.01s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.test" Button`
+    t =   353.01s         Checking existence of `"editor.test" Button`
+    t =   353.31s         Capturing element debug description
+    t =   353.31s     Checking existence of `"editor.test" Button`
+    t =   354.13s Collecting debug information to assist test failure triage
+    t =   354.13s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   354.42s Checking existence of `"editor.test" Button`
+    t =   355.04s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   355.05s     Wait for com.koshin.danmakumaker to idle
+    t =   355.06s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   355.23s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   355.46s     Synthesize event
+    t =   356.08s     Wait for com.koshin.danmakumaker to idle
+    t =   356.11s Checking existence of `"editor.test" Button`
+    t =   356.85s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   356.85s     Wait for com.koshin.danmakumaker to idle
+    t =   356.86s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   356.99s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   357.10s     Synthesize event
+    t =   357.63s     Wait for com.koshin.danmakumaker to idle
+    t =   357.66s Checking existence of `"editor.test" Button`
+    t =   358.22s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   358.22s     Wait for com.koshin.danmakumaker to idle
+    t =   358.23s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   358.42s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   358.74s     Synthesize event
+    t =   359.62s     Wait for com.koshin.danmakumaker to idle
+    t =   359.62s Checking existence of `"editor.test" Button`
+    t =   360.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   360.28s     Wait for com.koshin.danmakumaker to idle
+    t =   360.31s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   360.46s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   360.66s     Synthesize event
+    t =   361.24s     Wait for com.koshin.danmakumaker to idle
+    t =   361.25s Checking existence of `"editor.test" Button`
+    t =   361.96s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   361.96s     Wait for com.koshin.danmakumaker to idle
+    t =   361.96s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   362.11s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   362.29s     Synthesize event
+    t =   362.94s     Wait for com.koshin.danmakumaker to idle
+    t =   362.96s Checking existence of `"editor.test" Button`
+    t =   363.73s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   363.73s     Wait for com.koshin.danmakumaker to idle
+    t =   363.74s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   364.06s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   364.65s     Synthesize event
+    t =   365.36s     Wait for com.koshin.danmakumaker to idle
+    t =   365.38s Checking existence of `"editor.test" Button`
+    t =   366.42s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   366.42s     Wait for com.koshin.danmakumaker to idle
+    t =   366.44s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   366.56s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   366.88s     Synthesize event
+    t =   367.47s     Wait for com.koshin.danmakumaker to idle
+    t =   367.48s Checking existence of `"editor.test" Button`
+    t =   368.47s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   368.47s     Wait for com.koshin.danmakumaker to idle
+    t =   368.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   368.70s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   368.98s     Synthesize event
+    t =   369.54s     Wait for com.koshin.danmakumaker to idle
+    t =   369.55s Checking existence of `"editor.test" Button`
+    t =   370.25s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   370.25s     Wait for com.koshin.danmakumaker to idle
+    t =   370.26s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   370.39s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   370.66s     Synthesize event
+    t =   371.23s     Wait for com.koshin.danmakumaker to idle
+    t =   371.26s Checking existence of `"editor.test" Button`
+    t =   371.98s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   371.98s     Wait for com.koshin.danmakumaker to idle
+    t =   371.99s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   372.11s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   372.27s     Synthesize event
+    t =   372.89s     Wait for com.koshin.danmakumaker to idle
+    t =   372.91s Checking existence of `"editor.test" Button`
+    t =   373.92s Checking existence of `"editor.test" Button`
+    t =   374.84s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   377.40s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   384.43s Waiting 45.0s for "result.headline" StaticText to exist
+    t =   385.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   385.52s         Checking existence of `"result.headline" StaticText`
+    t =   386.95s         Capturing element debug description
+    t =   387.46s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   387.46s         Checking existence of `"result.headline" StaticText`
+    t =   387.94s         Capturing element debug description
+    t =   388.46s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   388.46s         Checking existence of `"result.headline" StaticText`
+    t =   388.89s         Capturing element debug description
+    t =   389.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   389.52s         Checking existence of `"result.headline" StaticText`
+    t =   390.02s         Capturing element debug description
+    t =   390.45s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   390.46s         Checking existence of `"result.headline" StaticText`
+    t =   390.66s         Capturing element debug description
+    t =   391.49s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   391.49s         Checking existence of `"result.headline" StaticText`
+    t =   391.70s         Capturing element debug description
+    t =   392.44s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   392.44s         Checking existence of `"result.headline" StaticText`
+    t =   392.66s         Capturing element debug description
+    t =   393.50s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   393.51s         Checking existence of `"result.headline" StaticText`
+    t =   393.68s         Capturing element debug description
+    t =   394.53s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   394.54s         Checking existence of `"result.headline" StaticText`
+    t =   394.78s         Capturing element debug description
+    t =   395.49s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   395.49s         Checking existence of `"result.headline" StaticText`
+    t =   395.84s         Capturing element debug description
+    t =   396.48s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   396.48s         Checking existence of `"result.headline" StaticText`
+    t =   396.69s         Capturing element debug description
+    t =   397.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   397.54s         Checking existence of `"result.headline" StaticText`
+    t =   398.38s         Capturing element debug description
+    t =   398.48s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   398.48s         Checking existence of `"result.headline" StaticText`
+    t =   398.67s         Capturing element debug description
+    t =   399.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   399.52s         Checking existence of `"result.headline" StaticText`
+    t =   400.01s         Capturing element debug description
+    t =   400.53s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   400.53s         Checking existence of `"result.headline" StaticText`
+    t =   400.81s         Capturing element debug description
+    t =   401.53s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   401.53s         Checking existence of `"result.headline" StaticText`
+    t =   401.82s         Capturing element debug description
+    t =   402.45s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   402.45s         Checking existence of `"result.headline" StaticText`
+    t =   402.60s         Capturing element debug description
+    t =   403.52s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   403.52s         Checking existence of `"result.headline" StaticText`
+    t =   403.68s         Capturing element debug description
+    t =   404.50s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   404.50s         Checking existence of `"result.headline" StaticText`
+    t =   404.70s         Capturing element debug description
+    t =   405.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   405.54s         Checking existence of `"result.headline" StaticText`
+    t =   405.80s         Capturing element debug description
+    t =   406.50s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   406.50s         Checking existence of `"result.headline" StaticText`
+    t =   406.77s         Capturing element debug description
+    t =   407.47s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   407.47s         Checking existence of `"result.headline" StaticText`
+    t =   407.69s         Capturing element debug description
+    t =   408.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   408.54s         Checking existence of `"result.headline" StaticText`
+    t =   408.69s         Capturing element debug description
+    t =   409.46s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   409.46s         Checking existence of `"result.headline" StaticText`
+    t =   409.80s         Capturing element debug description
+    t =   410.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   410.55s         Checking existence of `"result.headline" StaticText`
+    t =   410.75s         Capturing element debug description
+    t =   411.47s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   411.47s         Checking existence of `"result.headline" StaticText`
+    t =   411.67s         Capturing element debug description
+    t =   412.48s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   412.48s         Checking existence of `"result.headline" StaticText`
+    t =   412.73s         Capturing element debug description
+    t =   413.47s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   413.47s         Checking existence of `"result.headline" StaticText`
+    t =   413.70s         Capturing element debug description
+    t =   414.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   414.55s         Checking existence of `"result.headline" StaticText`
+    t =   414.79s         Capturing element debug description
+    t =   415.53s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   415.53s         Checking existence of `"result.headline" StaticText`
+    t =   415.81s         Capturing element debug description
+    t =   416.54s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   416.54s         Checking existence of `"result.headline" StaticText`
+    t =   416.73s         Capturing element debug description
+    t =   417.46s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   417.47s         Checking existence of `"result.headline" StaticText`
+    t =   417.66s         Capturing element debug description
+    t =   418.49s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   418.49s         Checking existence of `"result.headline" StaticText`
+    t =   418.71s         Capturing element debug description
+    t =   419.45s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   419.45s         Checking existence of `"result.headline" StaticText`
+    t =   419.65s         Capturing element debug description
+    t =   420.49s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   420.52s         Checking existence of `"result.headline" StaticText`
+    t =   420.72s         Capturing element debug description
+    t =   421.48s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   421.48s         Checking existence of `"result.headline" StaticText`
+    t =   421.65s         Capturing element debug description
+    t =   422.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   422.51s         Checking existence of `"result.headline" StaticText`
+    t =   422.71s         Capturing element debug description
+    t =   423.45s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   423.46s         Checking existence of `"result.headline" StaticText`
+    t =   423.67s         Capturing element debug description
+    t =   424.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   424.51s         Checking existence of `"result.headline" StaticText`
+    t =   424.82s         Capturing element debug description
+    t =   425.47s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   425.48s         Checking existence of `"result.headline" StaticText`
+    t =   425.74s         Capturing element debug description
+    t =   426.49s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   426.49s         Checking existence of `"result.headline" StaticText`
+    t =   426.64s         Capturing element debug description
+    t =   427.48s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   427.48s         Checking existence of `"result.headline" StaticText`
+    t =   427.65s         Capturing element debug description
+    t =   428.51s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   428.52s         Checking existence of `"result.headline" StaticText`
+    t =   428.74s         Capturing element debug description
+    t =   429.46s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   429.46s         Checking existence of `"result.headline" StaticText`
+    t =   429.71s         Capturing element debug description
+    t =   429.72s     Checking existence of `"result.headline" StaticText`
+    t =   430.01s Collecting debug information to assist test failure triage
+    t =   430.01s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   430.38s Checking existence of `"result.headline" StaticText`
+    t =   432.88s Checking existence of `"editor.status.ok" StaticText`
+    t =   433.20s Checking existence of `"result.headline" StaticText`
+    t =   433.39s Waiting 5.0s for "result.retry" Button to exist
+    t =   434.47s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   434.47s         Checking existence of `"result.retry" Button`
+    t =   435.35s         Capturing element debug description
+    t =   435.45s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   435.45s         Checking existence of `"result.retry" Button`
+    t =   436.40s         Capturing element debug description
+    t =   437.42s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   437.43s         Checking existence of `"result.retry" Button`
+    t =   438.67s         Capturing element debug description
+    t =   438.67s     Checking existence of `"result.retry" Button`
+    t =   440.59s Collecting debug information to assist test failure triage
+    t =   440.59s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   440.91s Checking existence of `"result.retry" Button`
+    t =   441.47s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   441.47s     Wait for com.koshin.danmakumaker to idle
+    t =   441.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   441.64s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   441.89s     Synthesize event
+    t =   442.48s     Wait for com.koshin.danmakumaker to idle
+    t =   442.50s Checking existence of `"result.retry" Button`
+    t =   443.57s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   443.57s     Wait for com.koshin.danmakumaker to idle
+    t =   443.60s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   443.77s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   443.92s     Synthesize event
+    t =   444.45s     Wait for com.koshin.danmakumaker to idle
+    t =   444.46s Checking existence of `"result.retry" Button`
+    t =   445.05s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   445.05s     Wait for com.koshin.danmakumaker to idle
+    t =   445.06s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   445.17s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   445.47s     Synthesize event
+    t =   445.99s     Wait for com.koshin.danmakumaker to idle
+    t =   445.99s Checking existence of `"result.retry" Button`
+    t =   446.68s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   446.68s     Wait for com.koshin.danmakumaker to idle
+    t =   446.69s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   446.82s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   447.08s     Synthesize event
+    t =   447.65s     Wait for com.koshin.danmakumaker to idle
+    t =   447.67s Checking existence of `"result.retry" Button`
+    t =   448.59s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   448.59s     Wait for com.koshin.danmakumaker to idle
+    t =   448.60s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   448.73s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   448.96s     Synthesize event
+    t =   449.52s     Wait for com.koshin.danmakumaker to idle
+    t =   449.52s Checking existence of `"result.retry" Button`
+    t =   450.12s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   450.12s     Wait for com.koshin.danmakumaker to idle
+    t =   450.13s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   450.25s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   450.45s     Synthesize event
+    t =   450.97s     Wait for com.koshin.danmakumaker to idle
+    t =   450.98s Checking existence of `"result.retry" Button`
+    t =   451.71s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   451.71s     Wait for com.koshin.danmakumaker to idle
+    t =   451.77s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   451.99s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   452.17s     Synthesize event
+    t =   452.67s     Wait for com.koshin.danmakumaker to idle
+    t =   452.67s Checking existence of `"result.retry" Button`
+    t =   453.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   453.28s     Wait for com.koshin.danmakumaker to idle
+    t =   453.29s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   453.39s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   453.81s     Synthesize event
+    t =   454.43s     Wait for com.koshin.danmakumaker to idle
+    t =   454.44s Checking existence of `"result.retry" Button`
+    t =   455.04s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   455.04s     Wait for com.koshin.danmakumaker to idle
+    t =   455.05s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   455.14s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   455.29s     Synthesize event
+    t =   455.81s     Wait for com.koshin.danmakumaker to idle
+    t =   455.82s Checking existence of `"result.retry" Button`
+    t =   456.34s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   456.34s     Wait for com.koshin.danmakumaker to idle
+    t =   456.35s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   456.45s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   456.59s     Synthesize event
+    t =   457.13s     Wait for com.koshin.danmakumaker to idle
+    t =   457.14s Checking existence of `"result.retry" Button`
+    t =   457.77s Checking existence of `"result.retry" Button`
+    t =   458.31s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   460.00s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   466.93s Waiting 45.0s for "result.headline" StaticText to exist
+    t =   467.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   467.98s         Checking existence of `"result.headline" StaticText`
+    t =   468.44s         Capturing element debug description
+    t =   468.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   468.98s         Checking existence of `"result.headline" StaticText`
+    t =   469.24s         Capturing element debug description
+    t =   469.97s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   469.98s         Checking existence of `"result.headline" StaticText`
+    t =   470.33s         Capturing element debug description
+    t =   470.97s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   470.97s         Checking existence of `"result.headline" StaticText`
+    t =   471.14s         Capturing element debug description
+    t =   471.99s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   472.00s         Checking existence of `"result.headline" StaticText`
+    t =   472.61s         Capturing element debug description
+    t =   472.94s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   472.94s         Checking existence of `"result.headline" StaticText`
+    t =   473.18s         Capturing element debug description
+    t =   473.94s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   473.94s         Checking existence of `"result.headline" StaticText`
+    t =   474.19s         Capturing element debug description
+    t =   475.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   475.04s         Checking existence of `"result.headline" StaticText`
+    t =   475.40s         Capturing element debug description
+    t =   476.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   476.03s         Checking existence of `"result.headline" StaticText`
+    t =   476.43s         Capturing element debug description
+    t =   476.94s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   476.94s         Checking existence of `"result.headline" StaticText`
+    t =   477.24s         Capturing element debug description
+    t =   477.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   477.98s         Checking existence of `"result.headline" StaticText`
+    t =   479.33s         Capturing element debug description
+    t =   479.97s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   479.97s         Checking existence of `"result.headline" StaticText`
+    t =   480.64s         Capturing element debug description
+    t =   480.94s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   480.94s         Checking existence of `"result.headline" StaticText`
+    t =   481.37s         Capturing element debug description
+    t =   482.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   482.05s         Checking existence of `"result.headline" StaticText`
+    t =   483.71s         Capturing element debug description
+    t =   484.02s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   484.02s         Checking existence of `"result.headline" StaticText`
+    t =   484.76s         Capturing element debug description
+    t =   484.97s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   484.97s         Checking existence of `"result.headline" StaticText`
+    t =   485.45s         Capturing element debug description
+    t =   485.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   485.98s         Checking existence of `"result.headline" StaticText`
+    t =   486.39s         Capturing element debug description
+    t =   487.02s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   487.03s         Checking existence of `"result.headline" StaticText`
+    t =   487.63s         Capturing element debug description
+    t =   487.94s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   487.95s         Checking existence of `"result.headline" StaticText`
+    t =   488.26s         Capturing element debug description
+    t =   488.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   488.98s         Checking existence of `"result.headline" StaticText`
+    t =   489.87s         Capturing element debug description
+    t =   489.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   489.96s         Checking existence of `"result.headline" StaticText`
+    t =   490.27s         Capturing element debug description
+    t =   491.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   491.03s         Checking existence of `"result.headline" StaticText`
+    t =   491.37s         Capturing element debug description
+    t =   492.01s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   492.01s         Checking existence of `"result.headline" StaticText`
+    t =   492.27s         Capturing element debug description
+    t =   493.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   493.03s         Checking existence of `"result.headline" StaticText`
+    t =   493.43s         Capturing element debug description
+    t =   493.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   493.96s         Checking existence of `"result.headline" StaticText`
+    t =   494.24s         Capturing element debug description
+    t =   494.98s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   494.98s         Checking existence of `"result.headline" StaticText`
+    t =   495.18s         Capturing element debug description
+    t =   496.00s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   496.00s         Checking existence of `"result.headline" StaticText`
+    t =   496.33s         Capturing element debug description
+    t =   496.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   496.96s         Checking existence of `"result.headline" StaticText`
+    t =   497.26s         Capturing element debug description
+    t =   498.01s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   498.01s         Checking existence of `"result.headline" StaticText`
+    t =   498.34s         Capturing element debug description
+    t =   498.95s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   498.96s         Checking existence of `"result.headline" StaticText`
+    t =   499.51s         Capturing element debug description
+    t =   500.04s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   500.04s         Checking existence of `"result.headline" StaticText`
+    t =   500.50s         Capturing element debug description
+    t =   501.03s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   501.03s         Checking existence of `"result.headline" StaticText`
+    t =   501.40s         Capturing element debug description
+    t =   502.00s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   502.00s         Checking existence of `"result.headline" StaticText`
+    t =   502.40s         Capturing element debug description
+    t =   503.02s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   503.02s         Checking existence of `"result.headline" StaticText`
+    t =   503.39s         Capturing element debug description
+    t =   504.02s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   504.02s         Checking existence of `"result.headline" StaticText`
+    t =   504.31s         Capturing element debug description
+    t =   504.95s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   504.96s         Checking existence of `"result.headline" StaticText`
+    t =   505.14s         Capturing element debug description
+    t =   505.97s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   505.97s         Checking existence of `"result.headline" StaticText`
+    t =   506.48s         Capturing element debug description
+    t =   507.02s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   507.02s         Checking existence of `"result.headline" StaticText`
+    t =   507.51s         Capturing element debug description
+    t =   508.05s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   508.06s         Checking existence of `"result.headline" StaticText`
+    t =   508.85s         Capturing element debug description
+    t =   508.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   508.96s         Checking existence of `"result.headline" StaticText`
+    t =   509.29s         Capturing element debug description
+    t =   509.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   509.96s         Checking existence of `"result.headline" StaticText`
+    t =   510.53s         Capturing element debug description
+    t =   510.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   510.96s         Checking existence of `"result.headline" StaticText`
+    t =   511.35s         Capturing element debug description
+    t =   511.96s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   511.96s         Checking existence of `"result.headline" StaticText`
+    t =   512.24s         Capturing element debug description
+    t =   512.24s     Checking existence of `"result.headline" StaticText`
+    t =   512.49s Collecting debug information to assist test failure triage
+    t =   512.49s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   512.73s Checking existence of `"result.headline" StaticText`
+    t =   515.28s Checking existence of `"editor.status.ok" StaticText`
+    t =   515.70s Checking existence of `"result.headline" StaticText`
+    t =   516.13s Waiting 5.0s for "result.retry" Button to exist
+    t =   517.16s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   517.17s         Checking existence of `"result.retry" Button`
+    t =   517.94s         Capturing element debug description
+    t =   518.15s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   518.15s         Checking existence of `"result.retry" Button`
+    t =   518.74s         Capturing element debug description
+    t =   519.16s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   519.16s         Checking existence of `"result.retry" Button`
+    t =   519.80s         Capturing element debug description
+    t =   520.13s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   520.13s         Checking existence of `"result.retry" Button`
+    t =   521.02s         Capturing element debug description
+    t =   521.14s     Checking `Expect predicate `existsNoRetry == 1` for object "result.retry" Button`
+    t =   521.14s         Checking existence of `"result.retry" Button`
+    t =   521.43s         Capturing element debug description
+    t =   521.43s     Checking existence of `"result.retry" Button`
+    t =   522.11s Collecting debug information to assist test failure triage
+    t =   522.11s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   522.35s Checking existence of `"result.retry" Button`
+    t =   522.81s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   522.81s     Wait for com.koshin.danmakumaker to idle
+    t =   522.81s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   522.92s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   523.18s     Synthesize event
+    t =   523.78s     Wait for com.koshin.danmakumaker to idle
+    t =   523.78s Checking existence of `"result.retry" Button`
+    t =   524.68s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   524.68s     Wait for com.koshin.danmakumaker to idle
+    t =   524.69s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   524.79s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   524.91s     Synthesize event
+    t =   525.45s     Wait for com.koshin.danmakumaker to idle
+    t =   525.47s Checking existence of `"result.retry" Button`
+    t =   526.26s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   526.26s     Wait for com.koshin.danmakumaker to idle
+    t =   526.28s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   526.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   526.68s     Synthesize event
+    t =   527.23s     Wait for com.koshin.danmakumaker to idle
+    t =   527.26s Checking existence of `"result.retry" Button`
+    t =   528.07s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   528.07s     Wait for com.koshin.danmakumaker to idle
+    t =   528.08s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   528.28s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   528.44s     Synthesize event
+    t =   528.99s     Wait for com.koshin.danmakumaker to idle
+    t =   529.01s Checking existence of `"result.retry" Button`
+    t =   529.70s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   529.70s     Wait for com.koshin.danmakumaker to idle
+    t =   529.71s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   529.81s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   529.93s     Synthesize event
+    t =   530.48s     Wait for com.koshin.danmakumaker to idle
+    t =   530.49s Checking existence of `"result.retry" Button`
+    t =   531.82s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   531.82s     Wait for com.koshin.danmakumaker to idle
+    t =   531.87s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   532.02s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   532.18s     Synthesize event
+    t =   532.75s     Wait for com.koshin.danmakumaker to idle
+    t =   532.76s Checking existence of `"result.retry" Button`
+    t =   533.33s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   533.33s     Wait for com.koshin.danmakumaker to idle
+    t =   533.34s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   533.50s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   533.80s     Synthesize event
+    t =   534.34s     Wait for com.koshin.danmakumaker to idle
+    t =   534.41s Checking existence of `"result.retry" Button`
+    t =   535.41s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   535.41s     Wait for com.koshin.danmakumaker to idle
+    t =   535.43s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   535.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   536.01s     Synthesize event
+    t =   536.54s     Wait for com.koshin.danmakumaker to idle
+    t =   536.56s Checking existence of `"result.retry" Button`
+    t =   537.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   537.28s     Wait for com.koshin.danmakumaker to idle
+    t =   537.28s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   537.38s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   537.48s     Synthesize event
+    t =   538.01s     Wait for com.koshin.danmakumaker to idle
+    t =   538.02s Checking existence of `"result.retry" Button`
+    t =   538.58s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   538.58s     Wait for com.koshin.danmakumaker to idle
+    t =   538.61s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   538.72s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   538.86s     Synthesize event
+    t =   539.40s     Wait for com.koshin.danmakumaker to idle
+    t =   539.41s Checking existence of `"result.retry" Button`
+    t =   540.37s Checking existence of `"result.retry" Button`
+    t =   541.37s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   543.36s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   550.17s Waiting 45.0s for "result.headline" StaticText to exist
+    t =   551.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   551.23s         Checking existence of `"result.headline" StaticText`
+    t =   551.74s         Capturing element debug description
+    t =   552.17s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   552.17s         Checking existence of `"result.headline" StaticText`
+    t =   552.91s         Capturing element debug description
+    t =   553.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   553.23s         Checking existence of `"result.headline" StaticText`
+    t =   553.45s         Capturing element debug description
+    t =   554.20s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   554.20s         Checking existence of `"result.headline" StaticText`
+    t =   554.50s         Capturing element debug description
+    t =   555.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   555.23s         Checking existence of `"result.headline" StaticText`
+    t =   555.40s         Capturing element debug description
+    t =   556.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   556.24s         Checking existence of `"result.headline" StaticText`
+    t =   556.42s         Capturing element debug description
+    t =   557.18s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   557.18s         Checking existence of `"result.headline" StaticText`
+    t =   557.49s         Capturing element debug description
+    t =   558.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   558.23s         Checking existence of `"result.headline" StaticText`
+    t =   558.51s         Capturing element debug description
+    t =   559.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   559.25s         Checking existence of `"result.headline" StaticText`
+    t =   559.56s         Capturing element debug description
+    t =   560.18s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   560.19s         Checking existence of `"result.headline" StaticText`
+    t =   560.62s         Capturing element debug description
+    t =   561.27s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   561.27s         Checking existence of `"result.headline" StaticText`
+    t =   561.61s         Capturing element debug description
+    t =   562.25s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   562.25s         Checking existence of `"result.headline" StaticText`
+    t =   562.82s         Capturing element debug description
+    t =   563.25s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   563.25s         Checking existence of `"result.headline" StaticText`
+    t =   563.88s         Capturing element debug description
+    t =   564.22s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   564.22s         Checking existence of `"result.headline" StaticText`
+    t =   564.59s         Capturing element debug description
+    t =   565.22s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   565.22s         Checking existence of `"result.headline" StaticText`
+    t =   565.38s         Capturing element debug description
+    t =   566.21s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   566.21s         Checking existence of `"result.headline" StaticText`
+    t =   566.51s         Capturing element debug description
+    t =   567.25s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   567.25s         Checking existence of `"result.headline" StaticText`
+    t =   567.53s         Capturing element debug description
+    t =   568.27s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   568.27s         Checking existence of `"result.headline" StaticText`
+    t =   568.49s         Capturing element debug description
+    t =   569.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   569.26s         Checking existence of `"result.headline" StaticText`
+    t =   569.81s         Capturing element debug description
+    t =   570.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   570.23s         Checking existence of `"result.headline" StaticText`
+    t =   570.59s         Capturing element debug description
+    t =   571.25s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   571.26s         Checking existence of `"result.headline" StaticText`
+    t =   571.51s         Capturing element debug description
+    t =   572.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   572.26s         Checking existence of `"result.headline" StaticText`
+    t =   572.45s         Capturing element debug description
+    t =   573.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   573.24s         Checking existence of `"result.headline" StaticText`
+    t =   574.05s         Capturing element debug description
+    t =   574.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   574.26s         Checking existence of `"result.headline" StaticText`
+    t =   574.47s         Capturing element debug description
+    t =   575.22s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   575.22s         Checking existence of `"result.headline" StaticText`
+    t =   575.58s         Capturing element debug description
+    t =   576.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   576.24s         Checking existence of `"result.headline" StaticText`
+    t =   576.42s         Capturing element debug description
+    t =   577.19s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   577.19s         Checking existence of `"result.headline" StaticText`
+    t =   577.36s         Capturing element debug description
+    t =   578.21s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   578.21s         Checking existence of `"result.headline" StaticText`
+    t =   578.40s         Capturing element debug description
+    t =   579.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   579.26s         Checking existence of `"result.headline" StaticText`
+    t =   579.40s         Capturing element debug description
+    t =   580.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   580.24s         Checking existence of `"result.headline" StaticText`
+    t =   580.61s         Capturing element debug description
+    t =   581.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   581.27s         Checking existence of `"result.headline" StaticText`
+    t =   581.49s         Capturing element debug description
+    t =   582.24s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   582.24s         Checking existence of `"result.headline" StaticText`
+    t =   582.64s         Capturing element debug description
+    t =   583.19s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   583.19s         Checking existence of `"result.headline" StaticText`
+    t =   583.45s         Capturing element debug description
+    t =   584.19s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   584.20s         Checking existence of `"result.headline" StaticText`
+    t =   584.39s         Capturing element debug description
+    t =   585.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   585.23s         Checking existence of `"result.headline" StaticText`
+    t =   585.45s         Capturing element debug description
+    t =   586.20s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   586.20s         Checking existence of `"result.headline" StaticText`
+    t =   586.42s         Capturing element debug description
+    t =   587.26s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   587.26s         Checking existence of `"result.headline" StaticText`
+    t =   587.41s         Capturing element debug description
+    t =   588.21s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   588.22s         Checking existence of `"result.headline" StaticText`
+    t =   588.62s         Capturing element debug description
+    t =   589.23s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   589.24s         Checking existence of `"result.headline" StaticText`
+    t =   590.21s         Capturing element debug description
+    t =   591.19s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   591.19s         Checking existence of `"result.headline" StaticText`
+    t =   591.49s         Capturing element debug description
+    t =   592.21s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   592.21s         Checking existence of `"result.headline" StaticText`
+    t =   592.53s         Capturing element debug description
+    t =   593.25s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   593.25s         Checking existence of `"result.headline" StaticText`
+    t =   593.75s         Capturing element debug description
+    t =   594.21s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   594.21s         Checking existence of `"result.headline" StaticText`
+    t =   595.03s         Capturing element debug description
+    t =   595.20s     Checking `Expect predicate `existsNoRetry == 1` for object "result.headline" StaticText`
+    t =   595.20s         Checking existence of `"result.headline" StaticText`
+    t =   595.54s         Capturing element debug description
+    t =   595.54s     Checking existence of `"result.headline" StaticText`
+    t =   597.92s Collecting debug information to assist test failure triage
+    t =   597.92s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   598.28s Checking existence of `"result.headline" StaticText`
+    t =   601.25s Checking existence of `"editor.status.ok" StaticText`
+    t =   601.80s Checking existence of `"result.headline" StaticText`
+    t =   602.04s Waiting 5.0s for "result.back" Button to exist
+    t =   603.08s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   603.09s         Checking existence of `"result.back" Button`
+    t =   604.23s         Capturing element debug description
+    t =   605.09s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   605.09s         Checking existence of `"result.back" Button`
+    t =   606.39s         Capturing element debug description
+    t =   607.05s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   607.05s         Checking existence of `"result.back" Button`
+    t =   607.33s         Capturing element debug description
+    t =   607.34s     Checking existence of `"result.back" Button`
+    t =   607.94s Collecting debug information to assist test failure triage
+    t =   607.94s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   608.27s Checking existence of `"result.back" Button`
+    t =   608.75s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   608.75s     Wait for com.koshin.danmakumaker to idle
+    t =   608.77s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   609.12s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   609.33s     Synthesize event
+    t =   609.93s     Wait for com.koshin.danmakumaker to idle
+    t =   609.97s Checking existence of `"result.back" Button`
+    t =   610.50s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   610.50s     Wait for com.koshin.danmakumaker to idle
+    t =   610.50s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   610.66s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   610.91s     Synthesize event
+    t =   611.43s     Wait for com.koshin.danmakumaker to idle
+    t =   611.45s Checking existence of `"result.back" Button`
+    t =   611.96s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   611.96s     Wait for com.koshin.danmakumaker to idle
+    t =   611.96s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   612.07s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   612.25s     Synthesize event
+    t =   612.79s     Wait for com.koshin.danmakumaker to idle
+    t =   612.79s Checking existence of `"result.back" Button`
+    t =   613.33s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   613.33s     Wait for com.koshin.danmakumaker to idle
+    t =   613.33s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   613.68s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   613.97s     Synthesize event
+    t =   614.51s     Wait for com.koshin.danmakumaker to idle
+    t =   614.53s Checking existence of `"result.back" Button`
+    t =   615.32s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   615.32s     Wait for com.koshin.danmakumaker to idle
+    t =   615.33s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   615.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   615.59s     Synthesize event
+    t =   616.18s     Wait for com.koshin.danmakumaker to idle
+    t =   616.19s Checking existence of `"result.back" Button`
+    t =   616.85s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   616.85s     Wait for com.koshin.danmakumaker to idle
+    t =   616.85s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   617.00s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   617.17s     Synthesize event
+    t =   617.67s     Wait for com.koshin.danmakumaker to idle
+    t =   617.68s Checking existence of `"result.back" Button`
+    t =   618.41s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   618.42s     Wait for com.koshin.danmakumaker to idle
+    t =   618.44s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   618.56s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   618.66s     Synthesize event
+    t =   619.18s     Wait for com.koshin.danmakumaker to idle
+    t =   619.19s Checking existence of `"result.back" Button`
+    t =   619.80s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   619.80s     Wait for com.koshin.danmakumaker to idle
+    t =   619.80s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   619.91s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   620.15s     Synthesize event
+    t =   620.67s     Wait for com.koshin.danmakumaker to idle
+    t =   620.69s Checking existence of `"result.back" Button`
+    t =   621.15s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   621.15s     Wait for com.koshin.danmakumaker to idle
+    t =   621.16s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   621.26s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   621.38s     Synthesize event
+    t =   621.88s     Wait for com.koshin.danmakumaker to idle
+    t =   621.91s Checking existence of `"result.back" Button`
+    t =   623.07s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   623.07s     Wait for com.koshin.danmakumaker to idle
+    t =   623.11s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   623.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   623.67s     Synthesize event
+    t =   624.24s     Wait for com.koshin.danmakumaker to idle
+    t =   624.30s Checking existence of `"result.back" Button`
+    t =   625.21s Checking existence of `"result.back" Button`
+    t =   625.71s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   627.34s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   628.20s Waiting 5.0s for "editor.post" Button to exist
+    t =   629.26s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.post" Button`
+    t =   629.26s         Checking existence of `"editor.post" Button`
+    t =   630.00s         Capturing element debug description
+    t =   630.22s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.post" Button`
+    t =   630.22s         Checking existence of `"editor.post" Button`
+    t =   630.86s         Capturing element debug description
+    t =   631.25s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.post" Button`
+    t =   631.25s         Checking existence of `"editor.post" Button`
+    t =   632.06s         Capturing element debug description
+    t =   632.31s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.post" Button`
+    t =   632.34s         Checking existence of `"editor.post" Button`
+    t =   633.10s         Capturing element debug description
+    t =   633.20s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.post" Button`
+    t =   633.20s         Checking existence of `"editor.post" Button`
+    t =   633.52s         Capturing element debug description
+    t =   633.52s     Checking existence of `"editor.post" Button`
+    t =   633.97s Collecting debug information to assist test failure triage
+    t =   633.97s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   634.43s Checking existence of `"editor.post" Button`
+    t =   635.11s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   635.11s     Wait for com.koshin.danmakumaker to idle
+    t =   635.12s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   635.27s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   635.53s     Synthesize event
+    t =   636.04s     Wait for com.koshin.danmakumaker to idle
+    t =   636.05s Checking existence of `"editor.post" Button`
+    t =   636.72s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   636.72s     Wait for com.koshin.danmakumaker to idle
+    t =   636.78s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   636.94s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   637.08s     Synthesize event
+    t =   637.64s     Wait for com.koshin.danmakumaker to idle
+    t =   637.65s Checking existence of `"editor.post" Button`
+    t =   638.48s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   638.48s     Wait for com.koshin.danmakumaker to idle
+    t =   638.49s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   638.58s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   638.72s     Synthesize event
+    t =   639.26s     Wait for com.koshin.danmakumaker to idle
+    t =   639.27s Checking existence of `"editor.post" Button`
+    t =   639.68s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   639.68s     Wait for com.koshin.danmakumaker to idle
+    t =   639.69s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   639.80s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   640.00s     Synthesize event
+    t =   640.55s     Wait for com.koshin.danmakumaker to idle
+    t =   640.56s Checking existence of `"editor.post" Button`
+    t =   641.09s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   641.09s     Wait for com.koshin.danmakumaker to idle
+    t =   641.10s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   641.23s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   641.35s     Synthesize event
+    t =   641.86s     Wait for com.koshin.danmakumaker to idle
+    t =   641.87s Checking existence of `"editor.post" Button`
+    t =   642.27s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   642.27s     Wait for com.koshin.danmakumaker to idle
+    t =   642.28s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   642.36s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   642.47s     Synthesize event
+    t =   643.00s     Wait for com.koshin.danmakumaker to idle
+    t =   643.01s Checking existence of `"editor.post" Button`
+    t =   643.53s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   643.53s     Wait for com.koshin.danmakumaker to idle
+    t =   643.54s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   643.64s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   643.75s     Synthesize event
+    t =   644.31s     Wait for com.koshin.danmakumaker to idle
+    t =   644.32s Checking existence of `"editor.post" Button`
+    t =   644.82s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   644.82s     Wait for com.koshin.danmakumaker to idle
+    t =   644.82s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   644.92s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   645.06s     Synthesize event
+    t =   645.57s     Wait for com.koshin.danmakumaker to idle
+    t =   645.58s Checking existence of `"editor.post" Button`
+    t =   646.27s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   646.27s     Wait for com.koshin.danmakumaker to idle
+    t =   646.28s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   646.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   646.65s     Synthesize event
+    t =   647.16s     Wait for com.koshin.danmakumaker to idle
+    t =   647.17s Checking existence of `"editor.post" Button`
+    t =   647.56s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   647.56s     Wait for com.koshin.danmakumaker to idle
+    t =   647.57s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   647.65s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   647.75s     Synthesize event
+    t =   648.28s     Wait for com.koshin.danmakumaker to idle
+    t =   648.30s Checking existence of `"editor.post" Button`
+    t =   648.64s Checking existence of `"editor.post" Button`
+    t =   648.99s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   650.22s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   650.97s Waiting 3.0s for "publish.terms.accept" Button to exist
+    t =   652.02s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.terms.accept" Button`
+    t =   652.02s         Checking existence of `"publish.terms.accept" Button`
+    t =   652.56s         Capturing element debug description
+    t =   653.10s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.terms.accept" Button`
+    t =   653.11s         Checking existence of `"publish.terms.accept" Button`
+    t =   653.94s         Capturing element debug description
+    t =   653.97s     Checking existence of `"publish.terms.accept" Button`
+    t =   654.45s Collecting debug information to assist test failure triage
+    t =   654.45s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   655.01s Waiting 5.0s for "publish.submit" Button to exist
+    t =   656.08s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.submit" Button`
+    t =   656.08s         Checking existence of `"publish.submit" Button`
+    t =   656.67s         Capturing element debug description
+    t =   657.07s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.submit" Button`
+    t =   657.07s         Checking existence of `"publish.submit" Button`
+    t =   657.66s         Capturing element debug description
+    t =   658.04s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.submit" Button`
+    t =   658.51s         Checking existence of `"publish.submit" Button`
+    t =   659.81s         Capturing element debug description
+    t =   660.02s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.submit" Button`
+    t =   660.03s         Checking existence of `"publish.submit" Button`
+    t =   660.33s         Capturing element debug description
+    t =   660.33s     Checking existence of `"publish.submit" Button`
+    t =   660.99s Collecting debug information to assist test failure triage
+    t =   660.99s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   661.34s Checking existence of `"publish.submit" Button`
+    t =   661.76s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   661.76s     Wait for com.koshin.danmakumaker to idle
+    t =   661.77s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   661.86s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   661.98s     Synthesize event
+    t =   662.49s     Wait for com.koshin.danmakumaker to idle
+    t =   662.51s Checking existence of `"publish.submit" Button`
+    t =   663.02s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   663.02s     Wait for com.koshin.danmakumaker to idle
+    t =   663.03s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   663.14s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   663.24s     Synthesize event
+    t =   663.74s     Wait for com.koshin.danmakumaker to idle
+    t =   663.75s Checking existence of `"publish.submit" Button`
+    t =   664.38s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   664.38s     Wait for com.koshin.danmakumaker to idle
+    t =   664.39s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   664.51s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   664.69s     Synthesize event
+    t =   665.24s     Wait for com.koshin.danmakumaker to idle
+    t =   665.25s Checking existence of `"publish.submit" Button`
+    t =   665.69s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   665.69s     Wait for com.koshin.danmakumaker to idle
+    t =   665.70s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   665.81s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   666.01s     Synthesize event
+    t =   666.59s     Wait for com.koshin.danmakumaker to idle
+    t =   666.60s Checking existence of `"publish.submit" Button`
+    t =   667.46s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   667.46s     Wait for com.koshin.danmakumaker to idle
+    t =   667.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   667.66s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   667.80s     Synthesize event
+    t =   668.32s     Wait for com.koshin.danmakumaker to idle
+    t =   668.34s Checking existence of `"publish.submit" Button`
+    t =   668.87s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   668.87s     Wait for com.koshin.danmakumaker to idle
+    t =   668.88s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   669.00s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   669.16s     Synthesize event
+    t =   669.68s     Wait for com.koshin.danmakumaker to idle
+    t =   669.68s Checking existence of `"publish.submit" Button`
+    t =   670.41s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   670.41s     Wait for com.koshin.danmakumaker to idle
+    t =   670.41s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   670.49s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   670.81s     Synthesize event
+    t =   671.41s     Wait for com.koshin.danmakumaker to idle
+    t =   671.43s Checking existence of `"publish.submit" Button`
+    t =   672.08s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   672.08s     Wait for com.koshin.danmakumaker to idle
+    t =   672.09s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   672.27s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   672.46s     Synthesize event
+    t =   672.97s     Wait for com.koshin.danmakumaker to idle
+    t =   672.98s Checking existence of `"publish.submit" Button`
+    t =   673.94s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   673.94s     Wait for com.koshin.danmakumaker to idle
+    t =   673.95s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   674.10s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   674.32s     Synthesize event
+    t =   674.94s     Wait for com.koshin.danmakumaker to idle
+    t =   674.94s Checking existence of `"publish.submit" Button`
+    t =   675.66s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   675.66s     Wait for com.koshin.danmakumaker to idle
+    t =   675.67s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   675.80s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   676.03s     Synthesize event
+    t =   676.58s     Wait for com.koshin.danmakumaker to idle
+    t =   676.61s Checking existence of `"publish.submit" Button`
+    t =   677.73s Checking existence of `"publish.submit" Button`
+    t =   678.54s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   680.44s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   681.10s Waiting 30.0s for "publish.done.close" Button to exist
+    t =   682.18s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   682.18s         Checking existence of `"publish.done.close" Button`
+    t =   683.13s         Capturing element debug description
+    t =   684.17s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   684.17s         Checking existence of `"publish.done.close" Button`
+    t =   685.15s         Capturing element debug description
+    t =   686.12s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   686.12s         Checking existence of `"publish.done.close" Button`
+    t =   686.91s         Capturing element debug description
+    t =   687.11s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   687.11s         Checking existence of `"publish.done.close" Button`
+    t =   688.02s         Capturing element debug description
+    t =   688.12s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   688.12s         Checking existence of `"publish.done.close" Button`
+    t =   688.65s         Capturing element debug description
+    t =   689.16s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   689.17s         Checking existence of `"publish.done.close" Button`
+    t =   689.95s         Capturing element debug description
+    t =   690.16s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   690.16s         Checking existence of `"publish.done.close" Button`
+    t =   690.63s         Capturing element debug description
+    t =   691.14s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   691.14s         Checking existence of `"publish.done.close" Button`
+    t =   691.57s         Capturing element debug description
+    t =   692.18s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   692.18s         Checking existence of `"publish.done.close" Button`
+    t =   692.53s         Capturing element debug description
+    t =   693.16s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   693.16s         Checking existence of `"publish.done.close" Button`
+    t =   693.55s         Capturing element debug description
+    t =   694.16s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   694.16s         Checking existence of `"publish.done.close" Button`
+    t =   694.67s         Capturing element debug description
+    t =   695.17s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   695.17s         Checking existence of `"publish.done.close" Button`
+    t =   695.51s         Capturing element debug description
+    t =   696.13s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   696.13s         Checking existence of `"publish.done.close" Button`
+    t =   696.56s         Capturing element debug description
+    t =   697.18s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   697.18s         Checking existence of `"publish.done.close" Button`
+    t =   697.70s         Capturing element debug description
+    t =   698.13s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   698.13s         Checking existence of `"publish.done.close" Button`
+    t =   698.57s         Capturing element debug description
+    t =   699.11s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   699.11s         Checking existence of `"publish.done.close" Button`
+    t =   699.64s         Capturing element debug description
+    t =   700.16s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   700.16s         Checking existence of `"publish.done.close" Button`
+    t =   700.70s         Capturing element debug description
+    t =   701.12s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   701.12s         Checking existence of `"publish.done.close" Button`
+    t =   701.58s         Capturing element debug description
+    t =   702.19s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   702.19s         Checking existence of `"publish.done.close" Button`
+    t =   702.73s         Capturing element debug description
+    t =   703.14s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   703.15s         Checking existence of `"publish.done.close" Button`
+    t =   703.65s         Capturing element debug description
+    t =   704.17s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   704.17s         Checking existence of `"publish.done.close" Button`
+    t =   704.64s         Capturing element debug description
+    t =   705.17s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   705.17s         Checking existence of `"publish.done.close" Button`
+    t =   705.83s         Capturing element debug description
+    t =   706.14s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   706.14s         Checking existence of `"publish.done.close" Button`
+    t =   706.58s         Capturing element debug description
+    t =   707.15s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   707.15s         Checking existence of `"publish.done.close" Button`
+    t =   707.73s         Capturing element debug description
+    t =   708.14s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   708.14s         Checking existence of `"publish.done.close" Button`
+    t =   708.77s         Capturing element debug description
+    t =   709.18s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   709.18s         Checking existence of `"publish.done.close" Button`
+    t =   709.98s         Capturing element debug description
+    t =   710.19s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   710.19s         Checking existence of `"publish.done.close" Button`
+    t =   710.82s         Capturing element debug description
+    t =   711.11s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   711.12s         Checking existence of `"publish.done.close" Button`
+    t =   711.44s         Capturing element debug description
+    t =   711.44s     Checking existence of `"publish.done.close" Button`
+    t =   712.14s Collecting debug information to assist test failure triage
+    t =   712.14s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   712.43s Checking existence of `"publish.done.close" Button`
+    t =   717.24s Waiting 5.0s for "publish.done.close" Button to exist
+    t =   718.33s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   718.33s         Checking existence of `"publish.done.close" Button`
+    t =   718.90s         Capturing element debug description
+    t =   719.33s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   719.34s         Checking existence of `"publish.done.close" Button`
+    t =   719.75s         Capturing element debug description
+    t =   720.28s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   720.28s         Checking existence of `"publish.done.close" Button`
+    t =   720.98s         Capturing element debug description
+    t =   721.29s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   721.30s         Checking existence of `"publish.done.close" Button`
+    t =   721.78s         Capturing element debug description
+    t =   722.25s     Checking `Expect predicate `existsNoRetry == 1` for object "publish.done.close" Button`
+    t =   722.25s         Checking existence of `"publish.done.close" Button`
+    t =   722.56s         Capturing element debug description
+    t =   722.56s     Checking existence of `"publish.done.close" Button`
+    t =   723.08s Collecting debug information to assist test failure triage
+    t =   723.08s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   723.33s Checking existence of `"publish.done.close" Button`
+    t =   723.73s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   723.73s     Wait for com.koshin.danmakumaker to idle
+    t =   723.73s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   723.92s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   724.12s     Synthesize event
+    t =   724.66s     Wait for com.koshin.danmakumaker to idle
+    t =   724.68s Checking existence of `"publish.done.close" Button`
+    t =   725.21s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   725.21s     Wait for com.koshin.danmakumaker to idle
+    t =   725.23s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   725.31s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   725.42s     Synthesize event
+    t =   725.94s     Wait for com.koshin.danmakumaker to idle
+    t =   725.95s Checking existence of `"publish.done.close" Button`
+    t =   726.51s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   726.51s     Wait for com.koshin.danmakumaker to idle
+    t =   726.52s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   726.61s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   726.76s     Synthesize event
+    t =   727.30s     Wait for com.koshin.danmakumaker to idle
+    t =   727.40s Checking existence of `"publish.done.close" Button`
+    t =   727.94s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   727.94s     Wait for com.koshin.danmakumaker to idle
+    t =   727.95s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   728.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   728.35s     Synthesize event
+    t =   728.91s     Wait for com.koshin.danmakumaker to idle
+    t =   728.92s Checking existence of `"publish.done.close" Button`
+    t =   729.87s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   729.87s     Wait for com.koshin.danmakumaker to idle
+    t =   729.88s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   729.97s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   730.09s     Synthesize event
+    t =   730.60s     Wait for com.koshin.danmakumaker to idle
+    t =   730.61s Checking existence of `"publish.done.close" Button`
+    t =   731.10s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   731.10s     Wait for com.koshin.danmakumaker to idle
+    t =   731.11s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   731.25s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   731.38s     Synthesize event
+    t =   731.91s     Wait for com.koshin.danmakumaker to idle
+    t =   731.91s Checking existence of `"publish.done.close" Button`
+    t =   732.49s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   732.49s     Wait for com.koshin.danmakumaker to idle
+    t =   732.50s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   732.64s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   732.78s     Synthesize event
+    t =   733.35s     Wait for com.koshin.danmakumaker to idle
+    t =   733.37s Checking existence of `"publish.done.close" Button`
+    t =   733.86s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   733.86s     Wait for com.koshin.danmakumaker to idle
+    t =   733.87s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   733.96s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   734.09s     Synthesize event
+    t =   734.61s     Wait for com.koshin.danmakumaker to idle
+    t =   734.61s Checking existence of `"publish.done.close" Button`
+    t =   735.17s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   735.17s     Wait for com.koshin.danmakumaker to idle
+    t =   735.18s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   735.35s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   735.54s     Synthesize event
+    t =   736.09s     Wait for com.koshin.danmakumaker to idle
+    t =   736.20s Checking existence of `"publish.done.close" Button`
+    t =   736.75s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   736.75s     Wait for com.koshin.danmakumaker to idle
+    t =   736.76s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   736.95s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   737.12s     Synthesize event
+    t =   737.63s     Wait for com.koshin.danmakumaker to idle
+    t =   737.63s Checking existence of `"publish.done.close" Button`
+    t =   738.32s Checking existence of `"publish.done.close" Button`
+    t =   738.87s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   740.47s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   741.03s Waiting 5.0s for "editor.close" Button to exist
+    t =   742.10s     Checking `Expect predicate `existsNoRetry == 1` for object "editor.close" Button`
+    t =   742.11s         Checking existence of `"editor.close" Button`
+    t =   742.22s Checking existence of `"editor.close" Button`
+    t =   742.36s Find the "editor.close" Button
+    t =   742.50s Checking existence of `"editor.close" Button`
+    t =   742.56s Find the "editor.close" Button
+    t =   742.65s Tap "editor.close" Button
+    t =   742.65s     Wait for com.koshin.danmakumaker to idle
+    t =   742.67s     Find the "editor.close" Button
+    t =   742.76s     Check for interrupting elements affecting "editor.close" Button
+    t =   742.93s     Synthesize event
+    t =   743.34s     Wait for com.koshin.danmakumaker to idle
+    t =   745.40s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   745.40s     Wait for com.koshin.danmakumaker to idle
+    t =   745.41s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   745.44s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   745.49s     Synthesize event
+    t =   745.88s     Wait for com.koshin.danmakumaker to idle
+    t =   746.40s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   746.40s     Wait for com.koshin.danmakumaker to idle
+    t =   746.41s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   746.47s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   746.52s     Synthesize event
+    t =   746.94s     Wait for com.koshin.danmakumaker to idle
+    t =   747.43s Waiting 5.0s for "home.tab.world" Button to exist
+    t =   748.48s     Checking `Expect predicate `existsNoRetry == 1` for object "home.tab.world" Button`
+    t =   748.49s         Checking existence of `"home.tab.world" Button`
+    t =   748.58s Checking existence of `"home.tab.world" Button`
+    t =   748.69s Find the "home.tab.world" Button
+    t =   748.77s Checking existence of `"home.tab.world" Button`
+    t =   748.81s Find the "home.tab.world" Button
+    t =   748.89s Tap "home.tab.world" Button
+    t =   748.89s     Wait for com.koshin.danmakumaker to idle
+    t =   748.89s     Find the "home.tab.world" Button
+    t =   748.95s     Check for interrupting elements affecting "home.tab.world" Button
+    t =   749.01s     Synthesize event
+    t =   749.33s     Wait for com.koshin.danmakumaker to idle
+    t =   753.16s Waiting 5.0s for "home.sort.new" Button to exist
+    t =   754.20s     Checking `Expect predicate `existsNoRetry == 1` for object "home.sort.new" Button`
+    t =   754.20s         Checking existence of `"home.sort.new" Button`
+    t =   754.33s Checking existence of `"home.sort.new" Button`
+    t =   754.44s Find the "home.sort.new" Button
+    t =   754.61s Checking existence of `"home.sort.new" Button`
+    t =   754.79s Find the "home.sort.new" Button
+    t =   755.01s Tap "home.sort.new" Button
+    t =   755.01s     Wait for com.koshin.danmakumaker to idle
+    t =   755.02s     Find the "home.sort.new" Button
+    t =   755.22s     Check for interrupting elements affecting "home.sort.new" Button
+    t =   755.36s     Synthesize event
+    t =   755.70s     Wait for com.koshin.danmakumaker to idle
+    t =   761.25s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   761.25s     Wait for com.koshin.danmakumaker to idle
+    t =   761.25s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   761.34s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   761.46s     Synthesize event
+    t =   761.96s     Wait for com.koshin.danmakumaker to idle
+    t =   765.48s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   765.48s     Wait for com.koshin.danmakumaker to idle
+    t =   765.49s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   765.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   765.72s     Synthesize event
+    t =   766.22s     Wait for com.koshin.danmakumaker to idle
+    t =   768.00s Waiting 5.0s for "home.sort.popular" Button to exist
+    t =   769.03s     Checking `Expect predicate `existsNoRetry == 1` for object "home.sort.popular" Button`
+    t =   769.04s         Checking existence of `"home.sort.popular" Button`
+    t =   769.16s Checking existence of `"home.sort.popular" Button`
+    t =   769.40s Find the "home.sort.popular" Button
+    t =   769.59s Checking existence of `"home.sort.popular" Button`
+    t =   769.69s Find the "home.sort.popular" Button
+    t =   769.83s Tap "home.sort.popular" Button
+    t =   769.83s     Wait for com.koshin.danmakumaker to idle
+    t =   769.83s     Find the "home.sort.popular" Button
+    t =   769.95s     Check for interrupting elements affecting "home.sort.popular" Button
+    t =   770.07s     Synthesize event
+    t =   770.41s     Wait for com.koshin.danmakumaker to idle
+    t =   773.92s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   773.92s     Wait for com.koshin.danmakumaker to idle
+    t =   773.92s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   774.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   774.14s     Synthesize event
+    t =   774.64s     Wait for com.koshin.danmakumaker to idle
+    t =   777.45s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   777.45s     Wait for com.koshin.danmakumaker to idle
+    t =   777.46s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   777.61s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   777.75s     Synthesize event
+    t =   778.26s     Wait for com.koshin.danmakumaker to idle
+    t =   780.07s Waiting 5.0s for "home.sort.new" Button to exist
+    t =   781.13s     Checking `Expect predicate `existsNoRetry == 1` for object "home.sort.new" Button`
+    t =   781.13s         Checking existence of `"home.sort.new" Button`
+    t =   781.47s Checking existence of `"home.sort.new" Button`
+    t =   781.59s Find the "home.sort.new" Button
+    t =   781.92s Checking existence of `"home.sort.new" Button`
+    t =   782.13s Find the "home.sort.new" Button
+    t =   782.26s Tap "home.sort.new" Button
+    t =   782.26s     Wait for com.koshin.danmakumaker to idle
+    t =   782.26s     Find the "home.sort.new" Button
+    t =   782.38s     Check for interrupting elements affecting "home.sort.new" Button
+    t =   782.55s     Synthesize event
+    t =   782.90s     Wait for com.koshin.danmakumaker to idle
+    t =   785.97s Waiting 5.0s for Button (First Match) to exist
+    t =   787.01s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   787.01s         Checking existence of `Button (First Match)`
+    t =   787.51s         Capturing element debug description
+    t =   788.02s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   788.02s         Checking existence of `Button (First Match)`
+    t =   788.32s         Capturing element debug description
+    t =   789.05s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   789.05s         Checking existence of `Button (First Match)`
+    t =   789.40s         Capturing element debug description
+    t =   790.01s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   790.01s         Checking existence of `Button (First Match)`
+    t =   790.30s         Capturing element debug description
+    t =   790.98s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   790.99s         Checking existence of `Button (First Match)`
+    t =   791.30s         Capturing element debug description
+    t =   791.30s     Checking existence of `Button (First Match)`
+    t =   791.81s Collecting debug information to assist test failure triage
+    t =   791.81s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   792.02s Checking existence of `Button (First Match)`
+    t =   792.49s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   792.49s     Wait for com.koshin.danmakumaker to idle
+    t =   792.49s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   792.59s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   792.78s     Synthesize event
+    t =   793.30s     Wait for com.koshin.danmakumaker to idle
+    t =   794.05s Checking existence of `Button (First Match)`
+    t =   794.82s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   794.83s     Wait for com.koshin.danmakumaker to idle
+    t =   794.83s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   794.91s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   795.00s     Synthesize event
+    t =   795.50s     Wait for com.koshin.danmakumaker to idle
+    t =   795.97s Checking existence of `Button (First Match)`
+    t =   796.74s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   796.74s     Wait for com.koshin.danmakumaker to idle
+    t =   796.75s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   796.93s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   797.04s     Synthesize event
+    t =   797.54s     Wait for com.koshin.danmakumaker to idle
+    t =   798.00s Checking existence of `Button (First Match)`
+    t =   798.76s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   798.76s     Wait for com.koshin.danmakumaker to idle
+    t =   798.77s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   798.83s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   798.90s     Synthesize event
+    t =   799.41s     Wait for com.koshin.danmakumaker to idle
+    t =   799.85s Checking existence of `Button (First Match)`
+    t =   800.60s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   800.60s     Wait for com.koshin.danmakumaker to idle
+    t =   800.61s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   800.71s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   800.79s     Synthesize event
+    t =   801.30s     Wait for com.koshin.danmakumaker to idle
+    t =   801.76s Checking existence of `Button (First Match)`
+    t =   802.40s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   802.40s     Wait for com.koshin.danmakumaker to idle
+    t =   802.41s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   802.53s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   802.62s     Synthesize event
+    t =   803.11s     Wait for com.koshin.danmakumaker to idle
+    t =   803.58s Checking existence of `Button (First Match)`
+    t =   804.70s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   804.70s     Wait for com.koshin.danmakumaker to idle
+    t =   804.97s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   805.06s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   805.17s     Synthesize event
+    t =   805.66s     Wait for com.koshin.danmakumaker to idle
+    t =   806.12s Checking existence of `Button (First Match)`
+    t =   806.76s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   806.76s     Wait for com.koshin.danmakumaker to idle
+    t =   806.77s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   806.84s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   806.96s     Synthesize event
+    t =   807.46s     Wait for com.koshin.danmakumaker to idle
+    t =   807.93s Checking existence of `Button (First Match)`
+    t =   808.65s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   808.65s     Wait for com.koshin.danmakumaker to idle
+    t =   808.66s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   808.74s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   808.84s     Synthesize event
+    t =   809.33s     Wait for com.koshin.danmakumaker to idle
+    t =   809.79s Checking existence of `Button (First Match)`
+    t =   810.47s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   810.47s     Wait for com.koshin.danmakumaker to idle
+    t =   810.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   810.57s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   810.66s     Synthesize event
+    t =   811.16s     Wait for com.koshin.danmakumaker to idle
+    t =   811.63s Checking existence of `Button (First Match)`
+    t =   812.57s Checking existence of `Button (First Match)`
+    t =   812.95s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   813.52s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   816.85s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   816.85s     Wait for com.koshin.danmakumaker to idle
+    t =   816.86s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   817.03s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   817.15s     Synthesize event
+    t =   817.65s     Wait for com.koshin.danmakumaker to idle
+    t =   820.65s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   820.65s     Wait for com.koshin.danmakumaker to idle
+    t =   820.66s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   820.73s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   820.86s     Synthesize event
+    t =   821.36s     Wait for com.koshin.danmakumaker to idle
+    t =   823.13s Waiting 5.0s for "detail.play" Button to exist
+    t =   824.16s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   824.16s         Checking existence of `"detail.play" Button`
+    t =   824.51s         Capturing element debug description
+    t =   825.15s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   825.15s         Checking existence of `"detail.play" Button`
+    t =   825.43s         Capturing element debug description
+    t =   826.16s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   826.16s         Checking existence of `"detail.play" Button`
+    t =   826.63s         Capturing element debug description
+    t =   827.14s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   827.15s         Checking existence of `"detail.play" Button`
+    t =   827.71s         Capturing element debug description
+    t =   828.13s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   828.13s         Checking existence of `"detail.play" Button`
+    t =   828.44s         Capturing element debug description
+    t =   828.44s     Checking existence of `"detail.play" Button`
+    t =   828.95s Collecting debug information to assist test failure triage
+    t =   828.95s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   829.16s Checking existence of `"detail.play" Button`
+    t =   829.72s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   829.72s     Wait for com.koshin.danmakumaker to idle
+    t =   829.72s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   829.81s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   829.92s     Synthesize event
+    t =   830.44s     Wait for com.koshin.danmakumaker to idle
+    t =   831.21s Checking existence of `"detail.play" Button`
+    t =   832.12s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   832.12s     Wait for com.koshin.danmakumaker to idle
+    t =   832.12s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   832.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   832.35s     Synthesize event
+    t =   832.88s     Wait for com.koshin.danmakumaker to idle
+    t =   833.34s Checking existence of `"detail.play" Button`
+    t =   834.20s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   834.20s     Wait for com.koshin.danmakumaker to idle
+    t =   834.20s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   834.30s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   834.58s     Synthesize event
+    t =   835.12s     Wait for com.koshin.danmakumaker to idle
+    t =   835.57s Checking existence of `"detail.play" Button`
+    t =   836.96s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   836.96s     Wait for com.koshin.danmakumaker to idle
+    t =   837.17s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   837.28s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   837.42s     Synthesize event
+    t =   837.95s     Wait for com.koshin.danmakumaker to idle
+    t =   838.40s Checking existence of `"detail.play" Button`
+    t =   839.25s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   839.25s     Wait for com.koshin.danmakumaker to idle
+    t =   839.25s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   839.31s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   839.44s     Synthesize event
+    t =   839.95s     Wait for com.koshin.danmakumaker to idle
+    t =   840.39s Checking existence of `"detail.play" Button`
+    t =   841.25s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   841.25s     Wait for com.koshin.danmakumaker to idle
+    t =   841.26s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   841.35s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   841.47s     Synthesize event
+    t =   841.97s     Wait for com.koshin.danmakumaker to idle
+    t =   842.42s Checking existence of `"detail.play" Button`
+    t =   843.22s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   843.22s     Wait for com.koshin.danmakumaker to idle
+    t =   843.22s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   843.33s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   843.42s     Synthesize event
+    t =   843.93s     Wait for com.koshin.danmakumaker to idle
+    t =   844.40s Checking existence of `"detail.play" Button`
+    t =   845.03s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   845.03s     Wait for com.koshin.danmakumaker to idle
+    t =   845.04s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   845.12s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   845.24s     Synthesize event
+    t =   845.75s     Wait for com.koshin.danmakumaker to idle
+    t =   846.20s Checking existence of `"detail.play" Button`
+    t =   846.98s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   846.98s     Wait for com.koshin.danmakumaker to idle
+    t =   846.98s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   847.09s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   847.20s     Synthesize event
+    t =   847.70s     Wait for com.koshin.danmakumaker to idle
+    t =   848.16s Checking existence of `"detail.play" Button`
+    t =   849.16s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   849.16s     Wait for com.koshin.danmakumaker to idle
+    t =   849.17s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   849.28s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   849.38s     Synthesize event
+    t =   849.92s     Wait for com.koshin.danmakumaker to idle
+    t =   850.38s Checking existence of `"detail.play" Button`
+    t =   851.20s Checking existence of `"detail.play" Button`
+    t =   851.61s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   852.18s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   861.55s Waiting 2.0s for "play.quit" Button to exist
+    t =   862.58s     Checking `Expect predicate `existsNoRetry == 1` for object "play.quit" Button`
+    t =   862.58s         Checking existence of `"play.quit" Button`
+    t =   862.98s         Capturing element debug description
+    t =   863.56s     Checking `Expect predicate `existsNoRetry == 1` for object "play.quit" Button`
+    t =   863.56s         Checking existence of `"play.quit" Button`
+    t =   863.88s         Capturing element debug description
+    t =   863.88s     Checking existence of `"play.quit" Button`
+    t =   865.25s Collecting debug information to assist test failure triage
+    t =   865.25s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   865.52s Checking existence of `"play.quit" Button`
+    t =   866.04s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   866.04s     Wait for com.koshin.danmakumaker to idle
+    t =   866.09s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   866.21s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   866.38s     Synthesize event
+    t =   866.89s     Wait for com.koshin.danmakumaker to idle
+    t =   867.35s Checking existence of `"play.quit" Button`
+    t =   868.28s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   868.28s     Wait for com.koshin.danmakumaker to idle
+    t =   868.28s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   868.35s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   868.45s     Synthesize event
+    t =   868.95s     Wait for com.koshin.danmakumaker to idle
+    t =   869.40s Checking existence of `"play.quit" Button`
+    t =   870.13s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   870.13s     Wait for com.koshin.danmakumaker to idle
+    t =   870.13s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   870.20s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   870.29s     Synthesize event
+    t =   870.79s     Wait for com.koshin.danmakumaker to idle
+    t =   871.24s Checking existence of `"play.quit" Button`
+    t =   871.87s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   871.87s     Wait for com.koshin.danmakumaker to idle
+    t =   871.87s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   871.93s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   872.00s     Synthesize event
+    t =   872.49s     Wait for com.koshin.danmakumaker to idle
+    t =   872.94s Checking existence of `"play.quit" Button`
+    t =   873.59s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   873.59s     Wait for com.koshin.danmakumaker to idle
+    t =   873.60s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   873.67s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   873.77s     Synthesize event
+    t =   874.27s     Wait for com.koshin.danmakumaker to idle
+    t =   874.74s Checking existence of `"play.quit" Button`
+    t =   875.65s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   875.65s     Wait for com.koshin.danmakumaker to idle
+    t =   875.66s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   875.74s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   875.83s     Synthesize event
+    t =   876.34s     Wait for com.koshin.danmakumaker to idle
+    t =   876.79s Checking existence of `"play.quit" Button`
+    t =   877.63s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   877.63s     Wait for com.koshin.danmakumaker to idle
+    t =   877.64s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   877.73s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   877.81s     Synthesize event
+    t =   878.33s     Wait for com.koshin.danmakumaker to idle
+    t =   878.77s Checking existence of `"play.quit" Button`
+    t =   879.73s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   879.73s     Wait for com.koshin.danmakumaker to idle
+    t =   879.74s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   879.88s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   880.02s     Synthesize event
+    t =   880.55s     Wait for com.koshin.danmakumaker to idle
+    t =   881.01s Checking existence of `"play.quit" Button`
+    t =   882.02s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   882.02s     Wait for com.koshin.danmakumaker to idle
+    t =   882.02s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   882.21s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   882.35s     Synthesize event
+    t =   882.89s     Wait for com.koshin.danmakumaker to idle
+    t =   883.35s Checking existence of `"play.quit" Button`
+    t =   884.06s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   884.06s     Wait for com.koshin.danmakumaker to idle
+    t =   884.07s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   884.14s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   884.22s     Synthesize event
+    t =   884.71s     Wait for com.koshin.danmakumaker to idle
+    t =   885.16s Checking existence of `"play.quit" Button`
+    t =   886.01s Checking existence of `"play.quit" Button`
+    t =   886.39s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   887.10s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   887.79s Waiting 5.0s for "result.back" Button to exist
+    t =   888.82s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   888.82s         Checking existence of `"result.back" Button`
+    t =   889.27s         Capturing element debug description
+    t =   889.80s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   889.80s         Checking existence of `"result.back" Button`
+    t =   890.14s         Capturing element debug description
+    t =   890.86s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   890.86s         Checking existence of `"result.back" Button`
+    t =   891.17s         Capturing element debug description
+    t =   891.79s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   891.79s         Checking existence of `"result.back" Button`
+    t =   892.20s         Capturing element debug description
+    t =   892.79s     Checking `Expect predicate `existsNoRetry == 1` for object "result.back" Button`
+    t =   892.80s         Checking existence of `"result.back" Button`
+    t =   893.10s         Capturing element debug description
+    t =   893.10s     Checking existence of `"result.back" Button`
+    t =   893.68s Collecting debug information to assist test failure triage
+    t =   893.68s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   893.86s Checking existence of `"result.back" Button`
+    t =   894.30s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   894.30s     Wait for com.koshin.danmakumaker to idle
+    t =   894.30s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   894.42s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   894.52s     Synthesize event
+    t =   895.04s     Wait for com.koshin.danmakumaker to idle
+    t =   895.49s Checking existence of `"result.back" Button`
+    t =   896.29s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   896.30s     Wait for com.koshin.danmakumaker to idle
+    t =   896.30s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   896.40s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   896.48s     Synthesize event
+    t =   896.98s     Wait for com.koshin.danmakumaker to idle
+    t =   897.43s Checking existence of `"result.back" Button`
+    t =   898.08s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   898.08s     Wait for com.koshin.danmakumaker to idle
+    t =   898.08s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   898.13s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   898.21s     Synthesize event
+    t =   898.70s     Wait for com.koshin.danmakumaker to idle
+    t =   899.15s Checking existence of `"result.back" Button`
+    t =   899.95s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   899.95s     Wait for com.koshin.danmakumaker to idle
+    t =   899.95s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   900.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   900.14s     Synthesize event
+    t =   900.64s     Wait for com.koshin.danmakumaker to idle
+    t =   901.10s Checking existence of `"result.back" Button`
+    t =   901.81s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   901.81s     Wait for com.koshin.danmakumaker to idle
+    t =   901.82s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   901.92s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   902.04s     Synthesize event
+    t =   902.54s     Wait for com.koshin.danmakumaker to idle
+    t =   902.99s Checking existence of `"result.back" Button`
+    t =   903.93s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   903.93s     Wait for com.koshin.danmakumaker to idle
+    t =   903.94s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   904.05s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   904.19s     Synthesize event
+    t =   904.69s     Wait for com.koshin.danmakumaker to idle
+    t =   905.16s Checking existence of `"result.back" Button`
+    t =   905.83s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   905.83s     Wait for com.koshin.danmakumaker to idle
+    t =   905.83s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   905.91s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   905.98s     Synthesize event
+    t =   906.47s     Wait for com.koshin.danmakumaker to idle
+    t =   906.93s Checking existence of `"result.back" Button`
+    t =   907.57s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   907.57s     Wait for com.koshin.danmakumaker to idle
+    t =   907.57s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   907.64s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   907.70s     Synthesize event
+    t =   908.19s     Wait for com.koshin.danmakumaker to idle
+    t =   908.66s Checking existence of `"result.back" Button`
+    t =   909.26s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   909.26s     Wait for com.koshin.danmakumaker to idle
+    t =   909.27s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   909.33s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   909.40s     Synthesize event
+    t =   909.89s     Wait for com.koshin.danmakumaker to idle
+    t =   910.36s Checking existence of `"result.back" Button`
+    t =   911.05s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   911.05s     Wait for com.koshin.danmakumaker to idle
+    t =   911.06s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   911.13s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   911.23s     Synthesize event
+    t =   911.73s     Wait for com.koshin.danmakumaker to idle
+    t =   912.17s Checking existence of `"result.back" Button`
+    t =   912.94s Checking existence of `"result.back" Button`
+    t =   913.36s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   913.76s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   914.28s Waiting 5.0s for "detail.close" Button to exist
+    t =   915.30s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =   915.30s         Checking existence of `"detail.close" Button`
+    t =   915.51s         Capturing element debug description
+    t =   916.32s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =   916.32s         Checking existence of `"detail.close" Button`
+    t =   916.49s         Capturing element debug description
+    t =   917.29s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =   917.29s         Checking existence of `"detail.close" Button`
+    t =   917.49s         Capturing element debug description
+    t =   918.32s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =   918.32s         Checking existence of `"detail.close" Button`
+    t =   918.58s         Capturing element debug description
+    t =   919.28s     Checking existence of `"detail.close" Button`
+    t =   919.55s Collecting debug information to assist test failure triage
+    t =   919.55s     Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   919.79s Checking existence of `"detail.close" Button`
+    t =   920.11s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   920.11s     Wait for com.koshin.danmakumaker to idle
+    t =   920.12s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   920.20s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   920.31s     Synthesize event
+    t =   920.85s     Wait for com.koshin.danmakumaker to idle
+    t =   921.31s Checking existence of `"detail.close" Button`
+    t =   921.80s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   921.80s     Wait for com.koshin.danmakumaker to idle
+    t =   921.81s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   921.93s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   922.01s     Synthesize event
+    t =   922.50s     Wait for com.koshin.danmakumaker to idle
+    t =   922.96s Checking existence of `"detail.close" Button`
+    t =   923.45s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   923.46s     Wait for com.koshin.danmakumaker to idle
+    t =   923.46s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   923.63s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   923.75s     Synthesize event
+    t =   924.25s     Wait for com.koshin.danmakumaker to idle
+    t =   924.70s Checking existence of `"detail.close" Button`
+    t =   925.43s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   925.43s     Wait for com.koshin.danmakumaker to idle
+    t =   925.43s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   925.50s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   925.58s     Synthesize event
+    t =   926.08s     Wait for com.koshin.danmakumaker to idle
+    t =   926.54s Checking existence of `"detail.close" Button`
+    t =   927.09s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   927.09s     Wait for com.koshin.danmakumaker to idle
+    t =   927.09s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   927.14s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   927.20s     Synthesize event
+    t =   927.70s     Wait for com.koshin.danmakumaker to idle
+    t =   928.15s Checking existence of `"detail.close" Button`
+    t =   928.71s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   928.71s     Wait for com.koshin.danmakumaker to idle
+    t =   928.72s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   928.86s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   928.94s     Synthesize event
+    t =   929.43s     Wait for com.koshin.danmakumaker to idle
+    t =   929.89s Checking existence of `"detail.close" Button`
+    t =   930.52s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   930.53s     Wait for com.koshin.danmakumaker to idle
+    t =   930.53s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   930.60s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   930.70s     Synthesize event
+    t =   931.19s     Wait for com.koshin.danmakumaker to idle
+    t =   931.65s Checking existence of `"detail.close" Button`
+    t =   932.29s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   932.29s     Wait for com.koshin.danmakumaker to idle
+    t =   932.29s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   932.36s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   932.45s     Synthesize event
+    t =   932.95s     Wait for com.koshin.danmakumaker to idle
+    t =   933.40s Checking existence of `"detail.close" Button`
+    t =   933.97s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   933.97s     Wait for com.koshin.danmakumaker to idle
+    t =   933.98s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   934.13s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   934.23s     Synthesize event
+    t =   934.74s     Wait for com.koshin.danmakumaker to idle
+    t =   935.19s Checking existence of `"detail.close" Button`
+    t =   935.78s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   935.78s     Wait for com.koshin.danmakumaker to idle
+    t =   935.78s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   935.86s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   935.98s     Synthesize event
+    t =   936.47s     Wait for com.koshin.danmakumaker to idle
+    t =   936.92s Checking existence of `"detail.close" Button`
+    t =   937.60s Checking existence of `"detail.close" Button`
+    t =   937.97s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   938.61s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   939.49s Waiting 5.0s for "home.sort.popular" Button to exist
+    t =   940.50s     Checking `Expect predicate `existsNoRetry == 1` for object "home.sort.popular" Button`
+    t =   940.50s         Checking existence of `"home.sort.popular" Button`
+    t =   940.70s Checking existence of `"home.sort.popular" Button`
+    t =   940.79s Find the "home.sort.popular" Button
+    t =   940.96s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   940.96s     Wait for com.koshin.danmakumaker to idle
+    t =   940.96s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   941.04s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   941.17s     Synthesize event
+    t =   941.66s     Wait for com.koshin.danmakumaker to idle
+    t =   942.12s Checking existence of `"home.sort.popular" Button`
+    t =   942.38s Find the "home.sort.popular" Button
+    t =   942.74s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   942.74s     Wait for com.koshin.danmakumaker to idle
+    t =   942.74s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   942.84s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   942.96s     Synthesize event
+    t =   943.46s     Wait for com.koshin.danmakumaker to idle
+    t =   943.91s Checking existence of `"home.sort.popular" Button`
+    t =   944.11s Find the "home.sort.popular" Button
+    t =   944.29s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   944.30s     Wait for com.koshin.danmakumaker to idle
+    t =   944.31s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   944.43s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   944.59s     Synthesize event
+    t =   945.07s     Wait for com.koshin.danmakumaker to idle
+    t =   945.55s Checking existence of `"home.sort.popular" Button`
+    t =   946.05s Find the "home.sort.popular" Button
+    t =   946.77s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   946.78s     Wait for com.koshin.danmakumaker to idle
+    t =   946.95s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   947.37s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   947.59s     Synthesize event
+    t =   948.12s     Wait for com.koshin.danmakumaker to idle
+    t =   948.58s Checking existence of `"home.sort.popular" Button`
+    t =   949.09s Find the "home.sort.popular" Button
+    t =   949.41s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   949.41s     Wait for com.koshin.danmakumaker to idle
+    t =   949.42s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   949.48s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   949.64s     Synthesize event
+    t =   950.15s     Wait for com.koshin.danmakumaker to idle
+    t =   950.61s Checking existence of `"home.sort.popular" Button`
+    t =   951.10s Find the "home.sort.popular" Button
+    t =   951.45s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   951.46s     Wait for com.koshin.danmakumaker to idle
+    t =   951.48s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   951.59s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   951.75s     Synthesize event
+    t =   952.26s     Wait for com.koshin.danmakumaker to idle
+    t =   952.71s Checking existence of `"home.sort.popular" Button`
+    t =   953.17s Find the "home.sort.popular" Button
+    t =   953.51s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   953.51s     Wait for com.koshin.danmakumaker to idle
+    t =   953.52s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   953.64s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   953.77s     Synthesize event
+    t =   954.28s     Wait for com.koshin.danmakumaker to idle
+    t =   954.73s Checking existence of `"home.sort.popular" Button`
+    t =   955.14s Find the "home.sort.popular" Button
+    t =   955.52s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   955.52s     Wait for com.koshin.danmakumaker to idle
+    t =   955.53s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   955.61s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   955.72s     Synthesize event
+    t =   956.25s     Wait for com.koshin.danmakumaker to idle
+    t =   956.70s Checking existence of `"home.sort.popular" Button`
+    t =   956.85s Find the "home.sort.popular" Button
+    t =   957.11s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   957.11s     Wait for com.koshin.danmakumaker to idle
+    t =   957.12s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   957.26s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   957.41s     Synthesize event
+    t =   957.91s     Wait for com.koshin.danmakumaker to idle
+    t =   958.37s Checking existence of `"home.sort.popular" Button`
+    t =   958.58s Find the "home.sort.popular" Button
+    t =   958.84s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =   958.84s     Wait for com.koshin.danmakumaker to idle
+    t =   958.85s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   958.94s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   959.10s     Synthesize event
+    t =   959.60s     Wait for com.koshin.danmakumaker to idle
+    t =   960.06s Checking existence of `"home.sort.popular" Button`
+    t =   960.27s Find the "home.sort.popular" Button
+    t =   960.58s Checking existence of `"home.sort.popular" Button`
+    t =   960.80s Find the "home.sort.popular" Button
+    t =   960.95s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   961.60s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =   962.41s Waiting 5.0s for Button (First Match) to exist
+    t =   963.43s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =   963.43s         Checking existence of `Button (First Match)`
+    t =   963.54s Checking existence of `Button (First Match)`
+    t =   963.60s Find the Button (First Match)
+    t =   963.73s Checking existence of `"ねじれ銀河、耐久、30秒耐える · by Sora、2,104、391、342、38、19%、クリア率" Button`
+    t =   963.84s Find the "ねじれ銀河、耐久、30秒耐える · by Sora、2,104、391、342、38、19%、クリア率" Button
+    t =   963.95s Tap "ねじれ銀河、耐久、30秒耐える · by Sora、2,104、391、342、38、19%、クリア率" Button
+    t =   963.95s     Wait for com.koshin.danmakumaker to idle
+    t =   963.96s     Find the "ねじれ銀河、耐久、30秒耐える · by Sora、2,104、391、342、38、19%、クリア率" Button
+    t =   964.09s     Check for interrupting elements affecting "ねじれ銀河、耐久、30秒耐える · by Sora、2,104、391、342、38、19%、クリア率" Button
+    t =   964.21s     Synthesize event
+    t =   964.53s     Wait for com.koshin.danmakumaker to idle
+    t =   968.83s Waiting 5.0s for "detail.play" Button to exist
+    t =   969.85s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =   969.85s         Checking existence of `"detail.play" Button`
+    t =   970.40s Checking existence of `"detail.play" Button`
+    t =   970.74s Find the "detail.play" Button
+    t =   971.06s Checking existence of `"detail.play" Button`
+    t =   971.38s Find the "detail.play" Button
+    t =   971.74s Tap "detail.play" Button
+    t =   971.74s     Wait for com.koshin.danmakumaker to idle
+    t =   971.74s     Find the "detail.play" Button
+    t =   972.03s     Check for interrupting elements affecting "detail.play" Button
+    t =   972.20s     Synthesize event
+    t =   972.54s     Wait for com.koshin.danmakumaker to idle
+    t =   987.52s Waiting 2.0s for "play.quit" Button to exist
+    t =   988.59s     Checking `Expect predicate `existsNoRetry == 1` for object "play.quit" Button`
+    t =   988.60s         Checking existence of `"play.quit" Button`
+    t =   988.79s Checking existence of `"play.quit" Button`
+    t =   988.86s Find the "play.quit" Button
+    t =   989.06s Checking existence of `"play.quit" Button`
+    t =   989.12s Find the "play.quit" Button
+    t =   989.21s Tap "play.quit" Button
+    t =   989.21s     Wait for com.koshin.danmakumaker to idle
+    t =   989.22s     Find the "play.quit" Button
+    t =   989.28s     Check for interrupting elements affecting "play.quit" Button
+    t =   989.65s     Synthesize event
+    t =   990.03s     Wait for com.koshin.danmakumaker to idle
+    t =   992.43s Waiting 5.0s for "detail.close" Button to exist
+    t =   993.46s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =   993.47s         Checking existence of `"detail.close" Button`
+    t =   993.63s Checking existence of `"detail.close" Button`
+    t =   993.77s Find the "detail.close" Button
+    t =   993.88s Checking existence of `"detail.close" Button`
+    t =   993.97s Find the "detail.close" Button
+    t =   994.11s Tap "detail.close" Button
+    t =   994.11s     Wait for com.koshin.danmakumaker to idle
+    t =   994.12s     Find the "detail.close" Button
+    t =   994.21s     Check for interrupting elements affecting "detail.close" Button
+    t =   994.34s     Synthesize event
+    t =   994.66s     Wait for com.koshin.danmakumaker to idle
+    t =   997.15s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =   997.16s     Wait for com.koshin.danmakumaker to idle
+    t =   997.16s     Find the Target Application 'com.koshin.danmakumaker'
+    t =   997.24s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =   997.33s     Synthesize event
+    t =   997.73s     Wait for com.koshin.danmakumaker to idle
+    t =   999.39s Waiting 5.0s for Button (First Match) to exist
+    t =  1000.44s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =  1000.44s         Checking existence of `Button (First Match)`
+    t =  1000.68s Checking existence of `Button (First Match)`
+    t =  1000.88s Find the Button (First Match)
+    t =  1001.38s Checking existence of `"ピンクの悪夢、ボス、HP300・制限60秒 · by Mika、980、141、187、21、14%、クリア率" Button`
+    t =  1001.58s Find the "ピンクの悪夢、ボス、HP300・制限60秒 · by Mika、980、141、187、21、14%、クリア率" Button
+    t =  1001.82s Tap "ピンクの悪夢、ボス、HP300・制限60秒 · by Mika、980、141、187、21、14%、クリア率" Button
+    t =  1001.82s     Wait for com.koshin.danmakumaker to idle
+    t =  1001.82s     Find the "ピンクの悪夢、ボス、HP300・制限60秒 · by Mika、980、141、187、21、14%、クリア率" Button
+    t =  1001.97s     Check for interrupting elements affecting "ピンクの悪夢、ボス、HP300・制限60秒 · by Mika、980、141、187、21、14%、クリア率" Button
+    t =  1002.09s     Synthesize event
+    t =  1002.40s     Wait for com.koshin.danmakumaker to idle
+    t =  1005.71s Waiting 5.0s for "detail.play" Button to exist
+    t =  1006.74s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.play" Button`
+    t =  1006.74s         Checking existence of `"detail.play" Button`
+    t =  1007.05s Checking existence of `"detail.play" Button`
+    t =  1007.28s Find the "detail.play" Button
+    t =  1007.55s Checking existence of `"detail.play" Button`
+    t =  1007.80s Find the "detail.play" Button
+    t =  1008.08s Tap "detail.play" Button
+    t =  1008.08s     Wait for com.koshin.danmakumaker to idle
+    t =  1008.08s     Find the "detail.play" Button
+    t =  1008.33s     Check for interrupting elements affecting "detail.play" Button
+    t =  1008.46s     Synthesize event
+    t =  1008.89s     Wait for com.koshin.danmakumaker to idle
+    t =  1023.72s Waiting 2.0s for "play.quit" Button to exist
+    t =  1024.74s     Checking `Expect predicate `existsNoRetry == 1` for object "play.quit" Button`
+    t =  1024.74s         Checking existence of `"play.quit" Button`
+    t =  1024.80s Checking existence of `"play.quit" Button`
+    t =  1024.83s Find the "play.quit" Button
+    t =  1024.92s Checking existence of `"play.quit" Button`
+    t =  1025.02s Find the "play.quit" Button
+    t =  1025.14s Tap "play.quit" Button
+    t =  1025.14s     Wait for com.koshin.danmakumaker to idle
+    t =  1025.20s     Find the "play.quit" Button
+    t =  1025.26s     Check for interrupting elements affecting "play.quit" Button
+    t =  1025.54s     Synthesize event
+    t =  1025.90s     Wait for com.koshin.danmakumaker to idle
+    t =  1028.32s Waiting 5.0s for "detail.close" Button to exist
+    t =  1029.37s     Checking `Expect predicate `existsNoRetry == 1` for object "detail.close" Button`
+    t =  1029.37s         Checking existence of `"detail.close" Button`
+    t =  1029.47s Checking existence of `"detail.close" Button`
+    t =  1029.65s Find the "detail.close" Button
+    t =  1029.91s Checking existence of `"detail.close" Button`
+    t =  1030.06s Find the "detail.close" Button
+    t =  1030.23s Tap "detail.close" Button
+    t =  1030.24s     Wait for com.koshin.danmakumaker to idle
+    t =  1030.24s     Find the "detail.close" Button
+    t =  1030.35s     Check for interrupting elements affecting "detail.close" Button
+    t =  1030.46s     Synthesize event
+    t =  1030.77s     Wait for com.koshin.danmakumaker to idle
+    t =  1033.26s Swipe down Target Application 'com.koshin.danmakumaker'
+    t =  1033.26s     Wait for com.koshin.danmakumaker to idle
+    t =  1033.26s     Find the Target Application 'com.koshin.danmakumaker'
+    t =  1033.37s     Check for interrupting elements affecting "弾幕メーカー" Application
+    t =  1033.50s     Synthesize event
+    t =  1033.90s     Wait for com.koshin.danmakumaker to idle
+    t =  1035.42s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =  1036.06s Requesting snapshot of accessibility hierarchy for app with pid 18281
+    t =  1036.37s Tear Down
+Test Case '-[DanmakuAppUITests.AdRecordingUITests testRecordAd]' passed (1038.493 seconds).
+Test Suite 'AdRecordingUITests' passed at 2026-11-08 01:48:18.069.
+	 Executed 1 test, with 0 failures (0 unexpected) in 1038.493 (1038.497) seconds
+Test Suite 'DanmakuAppUITests.xctest' passed at 2026-11-08 01:48:18.070.
+	 Executed 1 test, with 0 failures (0 unexpected) in 1038.493 (1038.498) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 01:48:18.070.
+	 Executed 1 test, with 0 failures (0 unexpected) in 1038.493 (1038.500) seconds
+2026-11-08 01:48:22.134 xcodebuild[13992:45393] [MT] IDETestOperationsObserverDebug: 1095.637 elapsed -- Testing started completed.
+2026-11-08 01:48:22.135 xcodebuild[13992:45393] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-08 01:48:22.135 xcodebuild[13992:45393] [MT] IDETestOperationsObserverDebug: 1095.637 sec, +1095.636 sec -- end
 
 Test session results, code coverage, and logs:
-	/Users/runner/work/_temp/dd/Logs/Test/Test-DanmakuApp-2026.11.08_01-15-44-+0000.xcresult
+	/Users/runner/work/_temp/dd/Logs/Test/Test-DanmakuApp-2026.11.08_01-29-52-+0000.xcresult
 
-Failing tests:
-	AdRecordingUITests.testRecordAd()
-	AdRecordingUITests.testRecordAd()
-
-** TEST EXECUTE FAILED **
+** TEST EXECUTE SUCCEEDED **
 
 Testing started
-test exit 65
+test exit 0

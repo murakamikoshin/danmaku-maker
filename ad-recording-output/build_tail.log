@@ -1,63 +1,63 @@
-    
-
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/SampleStages.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/CommentService.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/SettingsView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/CommentViews.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+    cd /Users/runner/work/danmaku-maker/danmaku-maker
+    
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/CommentViews.swift:59:22: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+                    .onChange(of: text) { v in if v.count > CommentService.maxLength { text = String(v.prefix(CommentService.maxLength)) } }
+                     ^
+
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/CosmeticsStore.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/ShareText.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/CustomImageStore.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/ShopEffects.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DailyRewardView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
-
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/ShopView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
-    cd /Users/runner/work/danmaku-maker/danmaku-maker
-    
-/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/ShopView.swift:80:14: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
-            .onChange(of: purchases.celebration) { product in
-             ^
-/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/ShopView.swift:527:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
-        .onChange(of: item) { newItem in
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DailyRewardView.swift:35:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: scenePhase) { if $0 == .active { rewards.refreshDay() } }
          ^
-/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/ShopView.swift:725:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
-        .onChange(of: scenePhase) { if $0 == .active { adPatterns.refreshDay() } }
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DailyRewardView.swift:182:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: scenePhase) { if $0 == .active { rewards.refreshDay() } }
          ^
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Game/Skin.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DanmakuApp.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DanmakuApp.swift:47:18: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+                .onChange(of: auth.uid) { uid in
+                 ^
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/DanmakuApp.swift:55:18: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+                .onChange(of: scenePhase) { phase in
+                 ^
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Game/SpriteFactory.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EditorModel.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EditorModel.swift:213:55: warning: main actor-isolated static property 'shared' can not be referenced from a nonisolated context; this is an error in the Swift 6 language mode
+    init(entry: SavedStage, store: LocalStageStore = .shared) {
+                                                      ^
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/LocalStageStore.swift:41:16: note: static property declared here
+    static let shared = LocalStageStore()
+               ^
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/StageBackup.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EditorView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EditorView.swift:129:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: model.draft) { _ in model.save() }
+         ^
+/Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EditorView.swift:226:18: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+                .onChange(of: text.wrappedValue) { v in if v.count > limit { text.wrappedValue = String(v.prefix(limit)) } }
+                 ^
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/StageDetailView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
-    cd /Users/runner/work/danmaku-maker/danmaku-maker
-    
-
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Services/StageRepository.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
-    cd /Users/runner/work/danmaku-maker/danmaku-maker
-    
-
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/StoreView.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
-    cd /Users/runner/work/danmaku-maker/danmaku-maker
-    
-
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/WorldViewModel.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
-    cd /Users/runner/work/danmaku-maker/danmaku-maker
-    
-
-SwiftCompile normal arm64 /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuApp/Editor/EmitterCard.swift (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
@@ -217,9 +217,9 @@ SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/Danmaku
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
-SwiftCompile normal arm64 Compiling\ ScreenshotUITests.swift /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftCompile normal arm64 Compiling\ AdRecordingUITests.swift /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
@@ -231,13 +231,13 @@ SwiftDriver\ Compilation\ Requirements DanmakuAppUITests normal arm64 com.apple.
 
 SwiftDriverJobDiscovery normal arm64 Compiling EditorFlowUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
 
-SwiftCompile normal arm64 Compiling\ AdRecordingUITests.swift /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftCompile normal arm64 Compiling\ ScreenshotUITests.swift /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
 
-SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftCompile normal arm64 /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuAppUITests/ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     
 
-SwiftDriverJobDiscovery normal arm64 Compiling ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftDriverJobDiscovery normal arm64 Compiling AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
 
 SwiftMergeGeneratedHeaders /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DerivedSources/DanmakuAppUITests-Swift.h /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests-Swift.h (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
@@ -259,7 +259,7 @@ Copy /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuApp
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests.swiftsourceinfo /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
 
-SwiftDriverJobDiscovery normal arm64 Compiling AdRecordingUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
+SwiftDriverJobDiscovery normal arm64 Compiling ScreenshotUITests.swift (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
 
 SwiftDriver\ Compilation DanmakuAppUITests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
@@ -286,21 +286,21 @@ Ld /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker
 
 CopySwiftLibs /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
-    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/DanmakuMaker.debug.dylib --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Frameworks --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/PlugIns --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/SystemExtensions --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.8g7cxe/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/DanmakuMaker.debug.dylib --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Frameworks --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/PlugIns --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/SystemExtensions --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.YzEoJm/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
 Ignoring --strip-bitcode because --sign was not passed
 
 ExtractAppIntentsMetadata (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
-    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.8g7cxe/Metal.xctoolchain --module-name DanmakuMaker --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.koshin.danmakumaker --output /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/DanmakuMaker --dependency-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker.SwiftFileList --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DanmakuMaker.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DanmakuMaker.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-11-08 01:12:52.764 appintentsmetadataprocessor[30802:82124] Starting appintentsmetadataprocessor export
-2026-11-08 01:12:52.770 appintentsmetadataprocessor[30802:82124] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.YzEoJm/Metal.xctoolchain --module-name DanmakuMaker --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.koshin.danmakumaker --output /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/DanmakuMaker --dependency-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker.SwiftFileList --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DanmakuMaker.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DanmakuMaker.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/Objects-normal/arm64/DanmakuMaker.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-11-08 01:25:33.111 appintentsmetadataprocessor[11762:36813] Starting appintentsmetadataprocessor export
+2026-11-08 01:25:33.114 appintentsmetadataprocessor[11762:36813] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 AppIntentsSSUTraining (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Info.plist --temp-dir-path /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/ssu --bundle-id com.koshin.danmakumaker --product-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app --extracted-metadata-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Metadata.appintents --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuApp.build/DanmakuMaker.DependencyMetadataFileList --source-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app/Info.plist --archive-ssu-assets
-2026-11-08 01:12:52.807 appintentsnltrainingprocessor[30805:82135] Parsing options for appintentsnltrainingprocessor
-2026-11-08 01:12:52.807 appintentsnltrainingprocessor[30805:82135] Starting AppIntents SSU YAML Generation
-2026-11-08 01:12:52.810 appintentsnltrainingprocessor[30805:82135] No AppShortcuts found - Skipping.
+2026-11-08 01:25:33.154 appintentsnltrainingprocessor[11763:36814] Parsing options for appintentsnltrainingprocessor
+2026-11-08 01:25:33.155 appintentsnltrainingprocessor[11763:36814] Starting AppIntents SSU YAML Generation
+2026-11-08 01:25:33.157 appintentsnltrainingprocessor[11763:36814] No AppShortcuts found - Skipping.
 
 RegisterExecutionPolicyException /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuMaker.app (in target 'DanmakuApp' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
@@ -324,21 +324,21 @@ Ld /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUI
 
 CopySwiftLibs /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
-    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/DanmakuAppUITests --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Frameworks --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/PlugIns --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/SystemExtensions --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.8g7cxe/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/DanmakuAppUITests --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Frameworks --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/PlugIns --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/SystemExtensions --scan-folder /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.YzEoJm/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
 Ignoring --strip-bitcode because --sign was not passed
 
 ExtractAppIntentsMetadata (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
-    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.8g7cxe/Metal.xctoolchain --module-name DanmakuAppUITests --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.koshin.DanmakuAppUITests --output /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/DanmakuAppUITests --dependency-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests.SwiftFileList --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DanmakuAppUITests.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DanmakuAppUITests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-11-08 01:12:53.148 appintentsmetadataprocessor[30817:82181] Starting appintentsmetadataprocessor export
-2026-11-08 01:12:53.149 appintentsmetadataprocessor[30817:82181] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.YzEoJm/Metal.xctoolchain --module-name DanmakuAppUITests --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.koshin.DanmakuAppUITests --output /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/DanmakuAppUITests --dependency-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests.SwiftFileList --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DanmakuAppUITests.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DanmakuAppUITests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/Objects-normal/arm64/DanmakuAppUITests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-11-08 01:25:33.451 appintentsmetadataprocessor[11771:36833] Starting appintentsmetadataprocessor export
+2026-11-08 01:25:33.452 appintentsmetadataprocessor[11771:36833] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 AppIntentsSSUTraining (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
     /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Info.plist --temp-dir-path /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/ssu --bundle-id com.koshin.DanmakuAppUITests --product-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest --extracted-metadata-path /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Metadata.appintents --metadata-file-list /Users/runner/work/_temp/dd/Build/Intermediates.noindex/DanmakuMaker.build/Debug-iphonesimulator/DanmakuAppUITests.build/DanmakuAppUITests.DependencyMetadataFileList --source-file /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app/PlugIns/DanmakuAppUITests.xctest/Info.plist --archive-ssu-assets
-2026-11-08 01:12:53.168 appintentsnltrainingprocessor[30818:82182] Parsing options for appintentsnltrainingprocessor
-2026-11-08 01:12:53.169 appintentsnltrainingprocessor[30818:82182] Starting AppIntents SSU YAML Generation
-2026-11-08 01:12:53.169 appintentsnltrainingprocessor[30818:82182] No AppShortcuts found - Skipping.
+2026-11-08 01:25:33.469 appintentsnltrainingprocessor[11772:36834] Parsing options for appintentsnltrainingprocessor
+2026-11-08 01:25:33.470 appintentsnltrainingprocessor[11772:36834] Starting AppIntents SSU YAML Generation
+2026-11-08 01:25:33.470 appintentsnltrainingprocessor[11772:36834] No AppShortcuts found - Skipping.
 
 MkDir /Users/runner/work/_temp/dd/Build/Products/Debug-iphonesimulator/DanmakuAppUITests-Runner.app (in target 'DanmakuAppUITests' from project 'DanmakuMaker')
     cd /Users/runner/work/danmaku-maker/danmaku-maker
