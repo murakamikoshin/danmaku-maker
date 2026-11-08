@@ -97,7 +97,7 @@ final class AdRecordingUITests: XCTestCase {
 
         // テストプレイ(自動操縦で本当によける。無敵ではない)
         var cleared = false
-        for attempt in 0..<3 {
+        for attempt in 0..<2 {
             if attempt == 0 { tap(btn("editor.test"), "test", pause: 0) } else { tap(btn("result.retry"), "retry\(attempt)") }
             mark("testplay.start")
             sleep(6); shot("06_testplay_\(attempt)")
@@ -156,19 +156,6 @@ final class AdRecordingUITests: XCTestCase {
         if !tap(btn("play.quit"), "quitMine", timeout: 2, pause: 2) { tap(btn("result.back"), "backMine", pause: 2) }
         tap(btn("detail.close"), "detailCloseMine", pause: 2)
 
-        // 世界のステージ(ほかの人が作ったもの)を遊ぶ
-        tap(btn("home.sort.popular"), "sortPopular2", pause: 3)
-        for (i, name) in ["ねじれ銀河", "ピンクの悪夢"].enumerated() {
-            let r = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", name)).firstMatch
-            tap(r, "worldRow\(i)", pause: 3)
-            mark("worlddetail\(i)"); shot("19_worlddetail_\(i)")
-            tap(btn("detail.play"), "worldPlay\(i)", pause: 0)
-            mark("worldplay\(i) \(name)"); sleep(5); shot("20_worldplay_\(i)a"); sleep(9); shot("20_worldplay_\(i)b")
-            mark("worldplay\(i).end")
-            if !tap(btn("play.quit"), "worldQuit\(i)", timeout: 2, pause: 2) { tap(btn("result.back"), "worldBack\(i)", pause: 2) }
-            tap(btn("detail.close"), "worldDetailClose\(i)", pause: 2)
-            app.swipeDown(velocity: .fast); sleep(1)
-        }
         mark("end")
         dump("end")
     }
