@@ -34,7 +34,7 @@ struct SwipeHomeView: View {
             case .starting, .transition: ProgressView().tint(.white).scaleEffect(1.4)
             case .go, .playing: PlayHUD(model: model, filter: { start(author: model.currentAuthorUid, name: model.clipAuthor) }, exitFilter: { model.backToTitle() })
             case .cleared, .failed: PlayHUD(model: model, filter: {}, exitFilter: {}, showSwipeHint: model.phase == .cleared)
-            case .over: SwipeResultView(model: model, service: service, again: { start(author: model.filterAuthor, name: model.filterAuthorName) }, quit: { model.backToTitle() },
+            case .over: SwipeResultView(model: model, service: service, again: { start(author: model.filterAuthor, name: model.filterAuthorName) }, quit: { model.backToTitle(); breakAd() },
                                    ranking: { showRanking = true }, retry: { Task { await model.submit() } }, openStamina: { showStamina = true })
             }
             if let toast = model.toast {
@@ -48,7 +48,7 @@ struct SwipeHomeView: View {
             if let key = model.errorKey, model.phase == .title { Text(LocalizedStringKey(key)).font(.system(size: 13, weight: .bold)).padding(10).background(Capsule().fill(Color.red.opacity(0.85))).foregroundStyle(.white).padding(.top, 8) }
         }
         .sheet(isPresented: $showStamina) { StaminaSheet(service: service, close: { showStamina = false }) }
-        .sheet(isPresented: $showRanking) { SwipeRankingView(service: service) }
+        .sheet(isPresented: $showRanking, onDismiss: { breakAd() }) { SwipeRankingView(service: service) }
         .task { await service.refresh() }
         .onChange(of: scenePhase) { p in if p == .active { Task { await service.refresh() } } }   // 回復した分を、戻ってきたときに反映する
         .onAppear {
@@ -57,8 +57,17 @@ struct SwipeHomeView: View {
             if ProcessInfo.processInfo.arguments.contains("-swipe-stamina-sheet") { showStamina = true }
             #endif
         }
-        .onChange(of: model.phase) { p in if p == .title || p == .over { SwipeAudio.shared.stop() } }
+        .onChange(of: model.phase) { p in
+            if p == .title || p == .over { SwipeAudio.shared.stop() }
+            if p == .over { ads.countPlay() }   // 全画面広告の間隔の数え方に、スワイプ弾幕の1プレイも入れる
+        }
         .onChange(of: cosmetics.effectsOn) { _ in makeScene() }
+    }
+
+    /// 区切りの良いところ(やめる・ランキングを閉じる)で、条件がそろっていれば全画面広告を出す。広告削除の購入者には出さない
+    private func breakAd() {
+        guard !purchases.isPremium else { return }
+        Task { try? await Task.sleep(nanoseconds: 600_000_000); await ads.showInterstitialIfDue() }   // 画面が閉じ終わってから
     }
 
     private func makeScene() {
