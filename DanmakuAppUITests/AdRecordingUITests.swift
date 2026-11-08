@@ -130,9 +130,10 @@ final class AdRecordingUITests: XCTestCase {
         for attempt in 0..<3 {
             if attempt == 0 { tapHere(test, "test") } else { tap(btn("result.retry"), "retry\(attempt)") }
             mark("testplay.start")
-            sleep(6); shot("06_testplay_\(attempt)")
+            // プレイ中は問い合わせない(画面の問い合わせが重く、その間の描画が収録から落ちる)。ステージは20秒+準備1.2秒
+            sleep(23)
             let headline = app.staticTexts["result.headline"]
-            _ = headline.waitForExistence(timeout: 45)
+            _ = headline.waitForExistence(timeout: 20)
             let label = headline.exists ? headline.label : "none"
             mark("testplay.result \(label)")
             shot("07_result_\(attempt)")
