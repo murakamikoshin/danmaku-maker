@@ -11,7 +11,7 @@
 [33m[1m⚠  emulators:[22m[39m The Emulator UI is not starting because none of the running emulators have a UI component.
 [36m[1mi  functions:[22m[39m Watching "/Users/runner/work/danmaku-maker/danmaku-maker/firebase/functions" for Cloud Functions...
 [32m[1m✔  functions:[22m[39m Using node@22 from host.
-Serving at port 8245
+Serving at port 8853
 
 [32m[1m✔  functions:[22m[39m Loaded functions definitions from source: claimBossTicket, deleteAccount, deleteComment, deleteStage, grantExtraPost, myStages, ogImage, postComment, publishStage, refreshTrendingScores, reportComment, reportStage, searchStages, sharePage, submitResults, submitScore, toggleLike.
 [32m[1m✔  functions[asia-northeast1-claimBossTicket]:[22m[39m [1mhttp[22m function initialized (http://127.0.0.1:5001/demo-danmaku/asia-northeast1/claimBossTicket).
@@ -52,12 +52,3 @@ Serving at port 8245
 
 Issues? Report them at [4m[1mhttps://github.com/firebase/firebase-tools/issues[22m[24m and attach the *-debug.log files.
  
-[36m[1mi  functions:[22m[39m Beginning execution of "asia-northeast1-myStages"
-[90m> [39m {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
-[36m[1mi  functions:[22m[39m Finished "asia-northeast1-myStages" in 323.901833ms
-[36m[1mi  functions:[22m[39m Beginning execution of "asia-northeast1-submitResults"
-[90m> [39m {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
-[36m[1mi  functions:[22m[39m Finished "asia-northeast1-submitResults" in 1097.392ms
-[36m[1mi  functions:[22m[39m Beginning execution of "asia-northeast1-submitResults"
-[90m> [39m {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
-[36m[1mi  functions:[22m[39m Finished "asia-northeast1-submitResults" in 923.759833ms
