@@ -78,6 +78,31 @@ final class AdRecordingUITests: XCTestCase {
         return true
     }
 
+    /// リストの一番下まで送る(テストプレイ・投稿ボタンは最後にある)。ボタンの位置が2回続けて動かなければ、止まった(=一番下)とみなす
+    @discardableResult
+    private func scrollToBottom(until e: XCUIElement) -> CGRect? {
+        var last: CGRect?
+        for _ in 0..<16 {
+            app.swipeUp(velocity: .fast)
+            usleep(800_000)
+            if let f = frameOf(e) {
+                if let l = last, abs(l.minY - f.minY) < 2 { return f }
+                last = f
+            }
+        }
+        return frameOf(e)
+    }
+
+    /// 位置が分かっている部品を、その場で押す(スクロールしない)
+    @discardableResult
+    private func tapHere(_ e: XCUIElement, _ label: String, pause: UInt32 = 0) -> Bool {
+        guard let f = frameOf(e), f.midY < app.frame.height * 0.985 else { mark("MISSING \(label)"); shot("missing_\(label)"); return false }
+        mark(String(format: "tap %@ @%.4f,%.4f", label, f.midX / app.frame.width, f.midY / app.frame.height))
+        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.midX, dy: f.midY)).tap()
+        if pause > 0 { sleep(pause) }
+        return true
+    }
+
     private func btn(_ id: String) -> XCUIElement { app.buttons[id].firstMatch }
 
     func testRecordAd() throws {
@@ -93,47 +118,48 @@ final class AdRecordingUITests: XCTestCase {
         tap(btn("emitter.pattern.toggle.0"), "patternToggle0", band: 0.38...0.96, pause: 1)
         shot("03_pattern_tiles")
         tap(btn("emitter.pattern.0.swirl"), "pattern0.swirl", band: 0.38...0.96, pause: 2)
-        tap(btn("editor.add"), "add1", band: 0.38...0.96, pause: 2)
-        reveal(app.otherElements["emitter.card.1"].firstMatch, band: 0.38...0.96)
-        tap(btn("emitter.color.1.2"), "color1", band: 0.38...0.96, pause: 2)
+        tap(btn("editor.add"), "add1", band: 0.38...0.96, pause: 3)
         shot("04_editor_two")
-        tap(btn("editor.add"), "add2", band: 0.38...0.96, pause: 1)
-        tap(btn("emitter.pattern.toggle.2"), "patternToggle2", band: 0.38...0.96, pause: 1)
-        tap(btn("emitter.pattern.2.rain"), "pattern2.rain", band: 0.38...0.96, pause: 1)
-        tap(btn("emitter.color.2.3"), "color2", band: 0.38...0.96, pause: 2)
-        shot("05_editor_three")
 
-        // テストプレイ(自動操縦で本当によける。無敵ではない)
+        // テストプレイ(自動操縦で本当によける。無敵ではない)。ボタンは一番下
+        let test = btn("editor.test")
+        let tf = scrollToBottom(until: test)
+        mark("bottom \(tf.map { String(format: "%.3f", $0.midY / app.frame.height) } ?? "none")")
+        sleep(2); shot("05_editor_bottom")
         var cleared = false
-        for attempt in 0..<2 {
-            if attempt == 0 { tap(btn("editor.test"), "test", pause: 0) } else { tap(btn("result.retry"), "retry\(attempt)") }
+        for attempt in 0..<3 {
+            if attempt == 0 { tapHere(test, "test") } else { tap(btn("result.retry"), "retry\(attempt)") }
             mark("testplay.start")
             sleep(6); shot("06_testplay_\(attempt)")
             let headline = app.staticTexts["result.headline"]
             _ = headline.waitForExistence(timeout: 45)
-            mark("testplay.result \(headline.exists ? headline.label : "none")")
+            let label = headline.exists ? headline.label : "none"
+            mark("testplay.result \(label)")
             shot("07_result_\(attempt)")
             sleep(2)
-            if app.staticTexts["editor.status.ok"].exists { cleared = true }
-            if headline.exists && !headline.label.contains("被弾") && !headline.label.contains("時間切れ") { cleared = true; break }
+            if headline.exists && !label.contains("被弾") && !label.contains("時間切れ") { cleared = true; break }
         }
         mark("cleared \(cleared)")
-        tap(btn("result.back"), "back", pause: 2)
+        tap(btn("result.back"), "back", pause: 3)
         shot("08_editor_verified")
 
-        // 投稿
-        tap(btn("editor.post"), "post", pause: 2)
+        // 投稿(ボタンはテストプレイの隣。戻ってもスクロール位置はそのまま)
+        let post = btn("editor.post")
+        if frameOf(post) == nil { scrollToBottom(until: post) }
+        tapHere(post, "post", pause: 3)
         mark("publish"); shot("09_publish")
         let accept = btn("publish.terms.accept")
-        if accept.waitForExistence(timeout: 3) { tap(accept, "terms", pause: 2) }
+        if accept.waitForExistence(timeout: 4) { tapHere(accept, "terms", pause: 3) }
         shot("10_publish_ready")
-        tap(btn("publish.submit"), "submit", pause: 0)
+        let submit = btn("publish.submit")
+        _ = submit.waitForExistence(timeout: 10)
+        tapHere(submit, "submit")
         let done = btn("publish.done.close")
-        _ = done.waitForExistence(timeout: 30)
+        _ = done.waitForExistence(timeout: 40)
         mark("published \(done.exists)")
         sleep(1); shot("11_published")
-        sleep(3)
-        tap(done, "doneClose", pause: 2)
+        sleep(4)
+        tapHere(done, "doneClose", pause: 2)
         tap(btn("editor.close"), "editorClose", pause: 2)
 
         // 世界のステージ
