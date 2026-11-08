@@ -24,7 +24,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     private var playsSinceAd = 0
     private var lastAdAt = Date()
     static let playsBetweenInterstitials = 2
-    static let minSecondsBetweenAds: TimeInterval = 120
+    static let minSecondsBetweenAds: TimeInterval = 60
     /// 広告 SDK を開始できたか。開始できるまでは、アプリが前面に戻るたびにやり直す
     private var sdkStarted = false
     private var starting = false
@@ -103,6 +103,14 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         }
         ad?.fullScreenContentDelegate = self
         interstitial = ad
+    }
+
+    /// 「もう一度」を押した回数。画面を出入りしても数え直さない(戻って入り直す抜け道をふさぐ)。3回ごとに true
+    private var retries = 0
+    func countRetryIsDue() -> Bool {
+        retries += 1
+        if retries >= 3 { retries = 0; return true }
+        return false
     }
 
     /// 結果画面が出たとき(テストプレイ以外)に数える

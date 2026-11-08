@@ -15,6 +15,7 @@ struct SwipeHomeView: View {
     @State private var showStamina = false
     @State private var showRanking = false
     @State private var busy = false
+    @State private var runsSinceAd = 0
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var cosmetics = CosmeticsStore.shared
 
@@ -64,8 +65,6 @@ struct SwipeHomeView: View {
         let sc = SwipeScene(model: model, effects: cosmetics.effectsOn)
         sc.onAdvance = {
             Task { @MainActor in
-                // 15 本クリアするごとに全画面広告（クリアの後の切り替えの前だけ。広告削除の購入者には出さない）
-                if model.phase == .cleared, model.clipsPlayed > 0, model.clipsPlayed % 15 == 0, !purchases.isPremium { await ads.showInterstitialNow() }
                 await model.advanceAfterResult()
             }
         }
@@ -75,8 +74,14 @@ struct SwipeHomeView: View {
     private func start(author: String?, name: String = "") {
         guard !busy else { return }
         busy = true
+        // 結果画面から「もう一度」を2回押すごとに、全画面広告を挟む(広告削除の購入者には出さない)
+        let fromResult = model.phase == .over
         model.displayName = DisplayNameStore.shared.publicName   // 名前の出し方の設定に従う(ユーザー名がなければ匿名)
         Task {
+            if fromResult, !purchases.isPremium {
+                runsSinceAd += 1
+                if runsSinceAd >= 2 { runsSinceAd = 0; await ads.showInterstitialNow() }
+            }
             await model.begin(author: author, authorName: name, blocked: Set(blocks.blocked.keys), myUid: auth.uid)
             busy = false
             if model.errorKey == "swipe.error.stamina" { await service.refresh(); showStamina = true; model.clearError() }

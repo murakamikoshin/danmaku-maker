@@ -201,6 +201,9 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
     }
     return stageCache.get(id) ?? null;
   }, decoded);
+  // 提出の記録を残す(アプリの計算とサーバーの計算がずれたときに、原因を追えるように)。クリップの数が合わないのは、サーバーが先に被弾などで終わった印
+  const summary = { sent: clips.length, played: result.clipsPlayed, cleared: result.clipsCleared, bestStreak: result.bestStreak, endedByHit: result.endedByHit, invalid: result.invalid ?? null, ids: result.clipIDs.slice(-3) };
+  if (result.invalid || result.clipsPlayed < clips.length) logger.warn("swipe-submit-mismatch", summary); else logger.info("swipe-submit", summary);
   if (result.invalid) {
     if (result.invalid === "pool-exhausted" && result.clipsPlayed > 0) { /* 全部遊び切った: ここまでの点数でよい */ } else throw new HttpsError("invalid-argument", result.invalid);
   }
@@ -226,16 +229,17 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
     const a = d.handle?.a, n = d.handle?.n;
     if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) throw new HttpsError("invalid-argument", "handle");
     const dn = validateDisplayName(d.name);
-    if (!dn.ok) throw new HttpsError("invalid-argument", "display-name");
+    // 名前が使えないとき(長すぎ・NGワード)は、提出を失敗させず、匿名の名前で載せる
+    const shownName = dn.ok ? dn.name : undefined;
     ranked = true;
     const key = rankingKey(result.score);
     const ref = db().doc(`swipeScores/${uid}`);
     improved = await db().runTransaction(async (tx) => {
       const cur = await tx.get(ref);
       const curKey = cur.get("key") as string | undefined;
-      const look = { a, n, num: handleNumber(uid), name: dn.name ?? FieldValue.delete() };
+      const look = { a, n, num: handleNumber(uid), name: shownName ?? FieldValue.delete() };
       if (curKey !== undefined && curKey >= key) { tx.update(ref, look); return false; }
-      tx.set(ref, { uid, key, score: result.score.toString(), bestStreak: result.bestStreak, clips: result.clipsCleared, a, n, num: handleNumber(uid), ...(dn.name ? { name: dn.name } : {}), createdAt: FieldValue.serverTimestamp() });
+      tx.set(ref, { uid, key, score: result.score.toString(), bestStreak: result.bestStreak, clips: result.clipsCleared, a, n, num: handleNumber(uid), ...(shownName ? { name: shownName } : {}), createdAt: FieldValue.serverTimestamp() });
       return true;
     });
   }

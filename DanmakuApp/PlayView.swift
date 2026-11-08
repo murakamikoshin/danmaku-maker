@@ -129,9 +129,6 @@ struct PlayView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @State private var showStore = false
-    /// 「もう一度」を続けた回数。3回目ごとに全画面広告を挟む(やめて戻る広告とは別に数える)
-    @State private var retriesSinceAd = 0
-    static let retriesBetweenAds = 3
 
     init(stage: Stage, title: String, isTest: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
          onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
@@ -164,7 +161,7 @@ struct PlayView: View {
                     if let r = model.result {
                         ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
-                                   back: { Task { retriesSinceAd = 0; await adBreak(); onExit() } })
+                                   back: { Task { await adBreak(); onExit() } })
                     }
                 }
                 .frame(maxHeight: .infinity)
@@ -275,11 +272,7 @@ struct PlayView: View {
     /// 「もう一度」。広告削除の購入者・テストプレイ以外は、続けて3回押すごとに全画面広告を出してから始める
     private func retryWithAdBreak() async {
         if !isTest, !purchases.isPremium {
-            retriesSinceAd += 1
-            if retriesSinceAd >= Self.retriesBetweenAds {
-                retriesSinceAd = 0
-                await ads.showInterstitialNow()
-            }
+            if ads.countRetryIsDue() { await ads.showInterstitialNow() }
         }
         model.restart(); onStart?()
     }
