@@ -34,7 +34,7 @@ final class AdRecordingUITests: XCTestCase {
     /// 画面を少しだけスクロールする(大きく飛ばないように、指でゆっくりなぞる)。up=true で下の内容を出す
     private func nudge(up: Bool) {
         // 標準のスワイプを、速さを抑えて使う(座標を押してなぞる方式は、スクロールにならなかった)
-        if up { app.swipeUp(velocity: XCUIGestureVelocity(500)) } else { app.swipeDown(velocity: XCUIGestureVelocity(500)) }
+        if up { app.swipeUp(velocity: XCUIGestureVelocity(260)) } else { app.swipeDown(velocity: XCUIGestureVelocity(260)) }
         usleep(400_000)
     }
 
@@ -54,7 +54,9 @@ final class AdRecordingUITests: XCTestCase {
             if band.contains(y) { return true }
             nudge(up: y > band.upperBound); n += 1
         }
-        return band.contains(e.frame.midY / app.frame.height)
+        // 帯からわずかに外れても、画面の中に見えていれば押してよい(スワイプが行き過ぎて往復するのを防ぐ)
+        let y = e.frame.midY / app.frame.height
+        return y > band.lowerBound - 0.04 && y < 0.975
     }
 
     @discardableResult
@@ -79,18 +81,18 @@ final class AdRecordingUITests: XCTestCase {
         tap(btn("home.create"), "create", pause: 3)
         mark("editor"); shot("02_editor")
         sleep(2)
-        tap(btn("emitter.color.0.1"), "color0", band: 0.42...0.93, pause: 2)
-        tap(btn("emitter.pattern.toggle.0"), "patternToggle0", band: 0.42...0.93, pause: 1)
+        tap(btn("emitter.color.0.1"), "color0", band: 0.38...0.96, pause: 2)
+        tap(btn("emitter.pattern.toggle.0"), "patternToggle0", band: 0.38...0.96, pause: 1)
         shot("03_pattern_tiles")
-        tap(btn("emitter.pattern.0.swirl"), "pattern0.swirl", band: 0.42...0.93, pause: 2)
-        tap(btn("editor.add"), "add1", band: 0.42...0.93, pause: 2)
-        reveal(app.otherElements["emitter.card.1"].firstMatch, band: 0.42...0.93)
-        tap(btn("emitter.color.1.2"), "color1", band: 0.42...0.93, pause: 2)
+        tap(btn("emitter.pattern.0.swirl"), "pattern0.swirl", band: 0.38...0.96, pause: 2)
+        tap(btn("editor.add"), "add1", band: 0.38...0.96, pause: 2)
+        reveal(app.otherElements["emitter.card.1"].firstMatch, band: 0.38...0.96)
+        tap(btn("emitter.color.1.2"), "color1", band: 0.38...0.96, pause: 2)
         shot("04_editor_two")
-        tap(btn("editor.add"), "add2", band: 0.42...0.93, pause: 1)
-        tap(btn("emitter.pattern.toggle.2"), "patternToggle2", band: 0.42...0.93, pause: 1)
-        tap(btn("emitter.pattern.2.rain"), "pattern2.rain", band: 0.42...0.93, pause: 1)
-        tap(btn("emitter.color.2.3"), "color2", band: 0.42...0.93, pause: 2)
+        tap(btn("editor.add"), "add2", band: 0.38...0.96, pause: 1)
+        tap(btn("emitter.pattern.toggle.2"), "patternToggle2", band: 0.38...0.96, pause: 1)
+        tap(btn("emitter.pattern.2.rain"), "pattern2.rain", band: 0.38...0.96, pause: 1)
+        tap(btn("emitter.color.2.3"), "color2", band: 0.38...0.96, pause: 2)
         shot("05_editor_three")
 
         // テストプレイ(自動操縦で本当によける。無敵ではない)
