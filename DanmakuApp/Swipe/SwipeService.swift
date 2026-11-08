@@ -26,6 +26,13 @@ struct SwipeClipRecord {
     var go: [Move] = []
     var moves: [Move] = []
     var skipped = false
+    /// 途中経過(アプリとサーバーの計算がずれたとき、最初にずれた場所を探す用。点数には使わない)
+    var gaugeAtStart = 0
+    var grazes = 0
+    var bombSteps: [Int] = []
+    var checkpoints: [Int] = []
+    var endStep = 0
+    var scoreAtEnd = ""
 }
 
 struct SwipeSubmitResult {
@@ -135,7 +142,8 @@ final class SwipeService: ObservableObject {
 
     func submit(runId: String, clips: [SwipeClipRecord], handle: PlayerHandle, name: String?) async throws -> SwipeSubmitResult {
         let payload: [[String: Any]] = clips.map {
-            ["go": $0.go.isEmpty ? "" : Replay(moves: $0.go).encoded(), "moves": $0.moves.isEmpty ? "" : Replay(moves: $0.moves).encoded(), "skipped": $0.skipped]
+            ["go": $0.go.isEmpty ? "" : Replay(moves: $0.go).encoded(), "moves": $0.moves.isEmpty ? "" : Replay(moves: $0.moves).encoded(), "skipped": $0.skipped,
+             "diag": ["g0": $0.gaugeAtStart, "grazes": $0.grazes, "bombs": $0.bombSteps, "cp": $0.checkpoints, "end": $0.endStep, "score": $0.scoreAtEnd] as [String: Any]]
         }
         var body: [String: Any] = ["runId": runId, "clips": payload, "handle": ["a": handle.a, "n": handle.n]]
         if let name { body["name"] = name }

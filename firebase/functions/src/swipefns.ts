@@ -150,7 +150,28 @@ export async function checkMissingClips(maxStages: number): Promise<number> {
 }
 
 // ---------- 1 プレイの提出 ----------
-interface ClipIn { go: string; moves: string; skipped: boolean }
+interface ClipIn { go: string; moves: string; skipped: boolean; diag?: { grazes: number; bombs: number[]; cp: number[]; end: number; g0: number; score: string } }
+
+/** アプリが送ってきた途中経過(任意)。形が合わなければ捨てる。ずれた場所を探すためだけに使い、点数には影響しない */
+function parseDiag(v: unknown): ClipIn["diag"] {
+  const d = v as { grazes?: unknown; bombs?: unknown; cp?: unknown; end?: unknown; g0?: unknown; score?: unknown } | null | undefined;
+  if (!d || typeof d !== "object") return undefined;
+  const ints = (a: unknown, max: number) => Array.isArray(a) && a.length <= max && a.every((x) => Number.isInteger(x));
+  if (!Number.isInteger(d.grazes) || !Number.isInteger(d.end) || !Number.isInteger(d.g0) || !ints(d.bombs, 100) || !ints(d.cp, 20) || typeof d.score !== "string" || d.score.length > 400) return undefined;
+  return { grazes: d.grazes as number, bombs: d.bombs as number[], cp: d.cp as number[], end: d.end as number, g0: d.g0 as number, score: d.score };
+}
+
+/** サーバーの計算とアプリの申告を比べて、最初にずれた場所を返す(ずれがなければ null) */
+function firstDiff(clips: ClipIn[], result: { diag: { grazes: number; bombs: number[]; cp: number[]; end: number; g0: number }[]; scoreAfterEachClip: string[] }): Record<string, unknown> | null {
+  for (let i = 0; i < Math.min(clips.length, result.diag.length); i++) {
+    const c = clips[i]!.diag, s = result.diag[i]!;
+    if (!c) return { clip: i, field: "no-diag" };
+    const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+    const checks: [string, unknown, unknown][] = [["g0", c.g0, s.g0], ["grazes", c.grazes, s.grazes], ["bombs", c.bombs, s.bombs], ["end", c.end, s.end], ["cp", c.cp.slice(0, s.cp.length), s.cp], ["score", c.score, result.scoreAfterEachClip[i]]];
+    for (const [field, app, server] of checks) if (!same(app, server)) return { clip: i, field, app, server };
+  }
+  return null;
+}
 
 function parseClips(raw: unknown): ClipIn[] {
   if (!Array.isArray(raw) || raw.length > MAX_CLIPS) throw new HttpsError("invalid-argument", "clips");
@@ -158,7 +179,7 @@ function parseClips(raw: unknown): ClipIn[] {
     const k = c as { go?: unknown; moves?: unknown; skipped?: unknown };
     const ok = (v: unknown) => typeof v === "string" && v.length <= 20_000 && (v === "" || /^[A-Za-z0-9+/]+={0,2}$/.test(v));
     if (!ok(k.go) || !ok(k.moves) || typeof k.skipped !== "boolean") throw new HttpsError("invalid-argument", "clip");
-    return { go: k.go as string, moves: k.moves as string, skipped: k.skipped };
+    return { go: k.go as string, moves: k.moves as string, skipped: k.skipped, diag: parseDiag((c as { diag?: unknown }).diag) };
   });
 }
 
@@ -204,7 +225,8 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
   // 提出の記録を残す(アプリの計算とサーバーの計算がずれたときに、原因を追えるように)。クリップの数が合わないのは、サーバーが先に被弾などで終わった印
   const summary = { sent: clips.length, played: result.clipsPlayed, cleared: result.clipsCleared, bestStreak: result.bestStreak, endedByHit: result.endedByHit, invalid: result.invalid ?? null, ids: result.clipIDs.slice(-3) };
   if (result.invalid || result.clipsPlayed < clips.length) {
-    logger.warn("swipe-submit-mismatch", summary);
+    const diff = firstDiff(clips, result);
+    logger.warn("swipe-submit-mismatch", { ...summary, firstDiff: diff });
     // 原因を後から再現できるよう、送られた記録をそのまま残す(失敗しても提出は続ける)。Firestore の 1 文書は約 1MB までなので、収まる分だけ
     try {
       const kept: ClipIn[] = [];
@@ -216,7 +238,7 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
       }
       await db().doc(`swipeMismatches/${d.runId}`).set({
         uid, runId: d.runId, seed: run.seed, poolVersion: run.poolVersion, author: author ?? null,
-        sent: clips.length, kept: kept.length, summary, clipIDs: result.clipIDs, clipOutcomes: result.clipOutcomes,
+        sent: clips.length, kept: kept.length, summary, firstDiff: diff, serverDiag: result.diag, appDiag: clips.map((c) => c.diag ?? null), clipIDs: result.clipIDs, clipOutcomes: result.clipOutcomes,
         scoreAfterEachClip: result.scoreAfterEachClip, clips: kept, createdAt: FieldValue.serverTimestamp(),
       });
     } catch (e) { logger.error("swipe-mismatch-save-failed", { message: String(e) }); }

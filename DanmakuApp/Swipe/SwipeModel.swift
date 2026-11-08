@@ -107,6 +107,7 @@ final class SwipeModel: ObservableObject {
         player = SwipeClipPlayer(stage: clip.stage, at: clip.at, scoring: &sc)
         scoring = sc
         current = SwipeClipRecord()
+        current.gaugeAtStart = scoring.gauge
         playStep = 0; goStepsDone = 0
         phase = .go
         startPrefetch(after: records.count + 1, streak: scoring.streak + 1)
@@ -141,6 +142,10 @@ final class SwipeModel: ObservableObject {
         let ev = player!.advance(move, scoring: &sc)
         current.moves.append(move)
         playStep = player!.step
+        current.grazes += ev.grazes.count
+        if ev.bomb != nil { current.bombSteps.append(player!.step) }
+        if player!.step % 120 == 0 { current.checkpoints.append(Int(player!.sim.result.bulletHashCoarse)) }
+        if ev.end != nil { current.endStep = player!.step; current.scoreAtEnd = sc.score.description }
         if !ev.grazes.isEmpty || ev.bomb != nil || ev.end != nil || sc.combo != scoring.combo { objectWillChange.send() }
         scoring = sc
         switch ev.end {

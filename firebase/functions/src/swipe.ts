@@ -195,9 +195,11 @@ export function pickFeed(pool: FeedEntry[], seed: number, index: number, streak:
 export interface ClipInput { go: ArrayLike<number>; goCount: number; moves: ArrayLike<number>; moveCount: number; skipped: boolean }
 export interface RunResult {
   score: bigint; streak: number; bestStreak: number; clipsPlayed: number; clipsCleared: number; clipIDs: string[];
-  scoreAfterEachClip: string[]; clipOutcomes: ClipEnd[]; bombs: number; grazes: number; endedByHit: boolean; abandoned: boolean; invalid: string | null;
+  scoreAfterEachClip: string[]; clipOutcomes: ClipEnd[]; diag: ClipDiag[]; bombs: number; grazes: number; endedByHit: boolean; abandoned: boolean; invalid: string | null;
 }
 export type ClipSource = (id: string) => { stage: SimStage; at: number } | null;
+/** 1 クリップの途中経過(アプリと突き合わせて、ずれた場所を探す用) */
+export interface ClipDiag { grazes: number; bombs: number[]; cp: number[]; end: number; g0: number }
 export type ClipEnd = "cleared" | "hit" | "skipped" | "abandoned";
 
 export function playRun(seed: number, pool: FeedEntry[], excluded: Set<string>, source: ClipSource, clips: ClipInput[]): RunResult {
@@ -213,7 +215,7 @@ export async function playRunAsync(seed: number, pool: FeedEntry[], excluded: Se
 
 /** 流れるクリップの ID を順に返し、そのステージを受け取りながら計算を進める */
 function* playRunSteps(seed: number, pool: FeedEntry[], excluded: Set<string>, clips: ClipInput[]): Generator<string, RunResult, { stage: SimStage; at: number } | null | undefined> {
-  const r: RunResult = { score: 0n, streak: 0, bestStreak: 0, clipsPlayed: 0, clipsCleared: 0, clipIDs: [], scoreAfterEachClip: [], clipOutcomes: [], bombs: 0, grazes: 0, endedByHit: false, abandoned: false, invalid: null };
+  const r: RunResult = { score: 0n, streak: 0, bestStreak: 0, clipsPlayed: 0, clipsCleared: 0, clipIDs: [], scoreAfterEachClip: [], clipOutcomes: [], diag: [], bombs: 0, grazes: 0, endedByHit: false, abandoned: false, invalid: null };
   const sc = new SwipeScoring();
   const used = new Set<string>();
   for (let index = 0; index < clips.length; index++) {
@@ -245,21 +247,25 @@ function playClip(stage: SimStage, at: number, input: ClipInput, sc: SwipeScorin
   sc.beginClip();
   for (let i = 0; i < Math.min(input.goCount, GO_STEPS); i++) sim.nudgePlayer(input.go[i * 2]!, input.go[i * 2 + 1]!);
   const count = Math.min(input.moveCount, PLAY_STEPS);
+  const diag: ClipDiag = { grazes: 0, bombs: [], cp: [], end: 0, g0: sc.gauge };
+  r.diag.push(diag);
   for (let n = 1; n <= PLAY_STEPS; n++) {
     if (n > count) {
       if (input.skipped) { sc.skip(); return "skipped"; }
       return "abandoned";
     }
     sim.step(input.moves[(n - 1) * 2]!, input.moves[(n - 1) * 2 + 1]!);
-    for (let g = 0; g < sim.grazedThisStep.length; g++) { sc.graze(n); r.grazes += 1; }
+    for (let g = 0; g < sim.grazedThisStep.length; g++) { sc.graze(n); r.grazes += 1; diag.grazes += 1; }
     const hit = sim.outcome === "hit";
     if (sc.endStep(n, coinBullets(sim.bullets), hit)) {
       sim.clearBullets();
       sim.giveShield(120);
       r.bombs += 1;
+      diag.bombs.push(n);
     }
-    if (hit) { sc.hit(); return "hit"; }
-    if (n === PLAY_STEPS || sim.outcome === "cleared") { sc.clear(coinBullets(sim.bullets)); return "cleared"; }
+    if (n % 120 === 0) diag.cp.push(sim.result().bulletHashCoarse);
+    if (hit) { diag.end = n; sc.hit(); return "hit"; }
+    if (n === PLAY_STEPS || sim.outcome === "cleared") { diag.end = n; sc.clear(coinBullets(sim.bullets)); return "cleared"; }
   }
   return "cleared";
 }
