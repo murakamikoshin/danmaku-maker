@@ -42,6 +42,7 @@ struct EditorView: View {
                 Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(Palette.bullets[4])).labelStyle(.titleAndIcon)
             }
+            ScrollViewReader { adProxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
                     GameTabs(items: [(false, "editor.simple"), (true, "editor.advanced")], selection: $advanced, idPrefix: "editor.level")
@@ -119,10 +120,23 @@ struct EditorView: View {
                     if !model.isPublished, !model.isVerified {
                         Text("editor.hint.unlisted").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    Color.clear.frame(height: 1).id("ad.editor.bottom")
                 }
                 .padding(16).padding(.bottom, 80)
             }
             .scrollDismissesKeyboard(.interactively)
+            #if DEBUG
+            // 広告収録用(ci/ad-recording ブランチだけ): テストから押すと、エディタを一番下まで送る見えないボタン
+            .overlay(alignment: .bottomTrailing) {
+                if ProcessInfo.processInfo.arguments.contains("-ad-autopilot") {
+                    Button { withAnimation(.easeInOut(duration: 0.6)) { adProxy.scrollTo("ad.editor.bottom", anchor: .bottom) } } label: {
+                        Color.white.opacity(0.011).frame(width: 30, height: 30)
+                    }
+                    .accessibilityIdentifier("ad.scrollBottom")
+                }
+            }
+            #endif
+            }
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .preferredColorScheme(.dark)

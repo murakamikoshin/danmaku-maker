@@ -144,7 +144,15 @@ final class AdRecordingUITests: XCTestCase {
 
         // テストプレイ(自動操縦で本当によける。無敵ではない)。ボタンは一番下
         let test = btn("editor.test")
-        let tf = scrollToBottom(until: test)
+        var tf = scrollToBottom(until: test)
+        if tf == nil || tf!.midY > app.frame.height * 0.97 {
+            // 保険: アプリ側の見えないボタンで、一番下まで送る(指の操作に頼らない)
+            mark("fallback scrollBottom")
+            let sb = btn("ad.scrollBottom")
+            if let f = frameOf(sb) { app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.midX, dy: f.midY)).tap() }
+            sleep(2)
+            tf = frameOf(test)
+        }
         mark("bottom \(tf.map { String(format: "%.3f", $0.midY / app.frame.height) } ?? "none")")
         sleep(2); shot("05_editor_bottom")
         var cleared = false
@@ -167,7 +175,11 @@ final class AdRecordingUITests: XCTestCase {
 
         // 投稿(ボタンはテストプレイの隣。戻ってもスクロール位置はそのまま)
         let post = btn("editor.post")
-        if frameOf(post) == nil { scrollToBottom(until: post) }
+        if frameOf(post) == nil {
+            let sb = btn("ad.scrollBottom")
+            if let f = frameOf(sb) { app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.midX, dy: f.midY)).tap(); sleep(2) }
+            if frameOf(post) == nil { scrollToBottom(until: post) }
+        }
         tapHere(post, "post", pause: 3)
         mark("publish"); shot("09_publish")
         let accept = btn("publish.terms.accept")
