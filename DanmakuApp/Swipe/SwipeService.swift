@@ -10,6 +10,8 @@ struct StaminaInfo: Equatable {
     var drinks = 0
     var unlimited = false
     var adRefillUsed = false
+    /// サーバーから受け取った値か(まだなら、満タンに見せない)
+    var known = false
     static let max = 5
 }
 
@@ -80,6 +82,7 @@ final class SwipeService: ObservableObject {
         s.drinks = int("drinks")
         s.unlimited = (d["unlimited"] as? Bool) ?? false
         s.adRefillUsed = (d["adRefillUsed"] as? Bool) ?? false
+        s.known = true
         stamina = s
         loaded = true
     }

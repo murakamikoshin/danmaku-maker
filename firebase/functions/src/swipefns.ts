@@ -95,22 +95,11 @@ async function loadPool(version: string): Promise<FeedEntry[]> {
   return snap.docs.flatMap((d) => (d.get("entries") as FeedEntry[]) ?? []);
 }
 
-/** 公開中で、ボットでクリアできると確かめたクリップを、毎日まとめる。古い版は 2 つ前まで残す */
+/** ボットでクリアできると確かめたランダム生成のクリップを、毎日まとめる。古い版は 2 つ前まで残す */
 export async function buildPool(): Promise<{ version: string; count: number }> {
+  // スワイプ弾幕は、ランダム生成のステージだけを流す(世界のステージは混ぜない)。
+  // 生成のステージは、ボットで実際にクリアできると確かめたものだけなので、避ける隙間がない場面は出ない
   const entries: FeedEntry[] = [];
-  let last: string | undefined;
-  for (;;) {
-    let q = db().collection("stages").where("status", "==", "published").where("clip.ok", "==", true).orderBy(FieldPath.documentId()).limit(500);
-    if (last) q = q.startAfter(last);
-    const snap = await q.get();
-    for (const d of snap.docs) {
-      const plays = (d.get("clipPlays") as number | undefined) ?? 0, clears = (d.get("clipClears") as number | undefined) ?? 0;
-      const est = (d.get("clip.est") as number | undefined) ?? 0.5;
-      entries.push({ id: d.id, d: plays >= 10 ? Math.round((1000 * clears) / plays) : Math.round(est * 1000), author: d.get("authorUid") as string });
-    }
-    if (snap.size < 500) break;
-    last = snap.docs[snap.size - 1]!.id;
-  }
   // ボットでクリアできると確かめたランダム生成ステージ(アプリにも同じ生成のしかたが入っている)
   for (const [seed, hard, d] of GEN_SEEDS) entries.push({ id: genId(seed, hard), d, author: GEN_AUTHOR });
   if (entries.length === 0) return { version: "", count: 0 };

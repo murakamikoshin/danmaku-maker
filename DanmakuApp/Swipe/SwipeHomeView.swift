@@ -15,6 +15,7 @@ struct SwipeHomeView: View {
     @State private var showStamina = false
     @State private var showRanking = false
     @State private var busy = false
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var cosmetics = CosmeticsStore.shared
 
     init() {
@@ -48,6 +49,7 @@ struct SwipeHomeView: View {
         .sheet(isPresented: $showStamina) { StaminaSheet(service: service, close: { showStamina = false }) }
         .sheet(isPresented: $showRanking) { SwipeRankingView(service: service) }
         .task { await service.refresh() }
+        .onChange(of: scenePhase) { p in if p == .active { Task { await service.refresh() } } }   // 回復した分を、戻ってきたときに反映する
         .onAppear {
             makeScene()
             #if DEBUG
@@ -77,7 +79,7 @@ struct SwipeHomeView: View {
         Task {
             await model.begin(author: author, authorName: name, blocked: Set(blocks.blocked.keys), myUid: auth.uid)
             busy = false
-            if model.errorKey == "swipe.error.stamina" { showStamina = true; model.clearError() }
+            if model.errorKey == "swipe.error.stamina" { await service.refresh(); showStamina = true; model.clearError() }
             if model.phase != .title { makeScene() }
         }
     }
@@ -132,7 +134,11 @@ struct StaminaBar: View {
     let info: StaminaInfo
     var body: some View {
         VStack(spacing: 4) {
-            if info.unlimited {
+            if !info.known {
+                // サーバーの値を受け取るまでは、満タンに見せない
+                HStack(spacing: 4) { ForEach(0..<StaminaInfo.max, id: \.self) { _ in Image(systemName: "bolt.fill").foregroundStyle(Color.white.opacity(0.18)) } }
+                Text("…").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.dim))
+            } else if info.unlimited {
                 Text("swipe.stamina.unlimited").font(.system(size: 13, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold))
             } else {
                 HStack(spacing: 4) {

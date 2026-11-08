@@ -105,7 +105,14 @@ enum RankingService {
     /// 記録の表示(ボス戦は秒、ダメージ勝負はダメージ)
     static func format(_ value: Int, mode: Mode) -> String {
         if !byTime(mode) { return value.formatted() }
-        return String(format: "%.2f", Double(value) * DanmakuConfig.step) + L("unit.s")
+        return clearSecondsText(ticks: value) + L("unit.s")
+    }
+
+    /// クリアまでの秒数の表示(小数2桁)。記録のステップ数には開始前の「よーい」(readySeconds)の分も入っているので、引いて見せる。
+    /// 結果画面とランキングは、必ずこれで表示をそろえる(順位の比べ方は、ステップ数のままで変わらない)
+    static func clearSecondsText(ticks: Int) -> String {
+        let ready = Int((DanmakuConfig.readySeconds / DanmakuConfig.step).rounded())
+        return String(format: "%.2f", Double(max(0, ticks - ready)) * DanmakuConfig.step)
     }
 
     /// 操作記録(リプレイ)を送る。サーバーが再生して、本当にクリアできているか確かめてから載せる

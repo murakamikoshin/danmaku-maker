@@ -129,6 +129,9 @@ struct PlayView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @State private var showStore = false
+    /// 「もう一度」を続けた回数。3回目ごとに全画面広告を挟む(やめて戻る広告とは別に数える)
+    @State private var retriesSinceAd = 0
+    static let retriesBetweenAds = 3
 
     init(stage: Stage, title: String, isTest: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
          onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
@@ -160,8 +163,8 @@ struct PlayView: View {
                 .overlay {
                     if let r = model.result {
                         ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
-                                   retry: { model.restart(); onStart?() },   // もう一度は、広告なしで何回でも(広告は、やめて戻るときだけ)
-                                   back: { Task { await adBreak(); onExit() } })
+                                   retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
+                                   back: { Task { retriesSinceAd = 0; await adBreak(); onExit() } })
                     }
                 }
                 .frame(maxHeight: .infinity)
@@ -269,6 +272,18 @@ struct PlayView: View {
         await ads.showInterstitialIfDue()
     }
 
+    /// 「もう一度」。広告削除の購入者・テストプレイ以外は、続けて3回押すごとに全画面広告を出してから始める
+    private func retryWithAdBreak() async {
+        if !isTest, !purchases.isPremium {
+            retriesSinceAd += 1
+            if retriesSinceAd >= Self.retriesBetweenAds {
+                retriesSinceAd = 0
+                await ads.showInterstitialNow()
+            }
+        }
+        model.restart(); onStart?()
+    }
+
     private func revive() async {
         if purchases.isPremium { model.revive(free: true); return }
         if await ads.showRewarded() { model.revive(free: false) }
@@ -318,7 +333,7 @@ struct ResultView: View {
         switch result.outcome {
         case .cleared:
             if result.isDamage { return L("result.msg.damage") }
-            return result.isBoss ? String(format: L("result.msg.boss"), timeText)
+            return result.isBoss ? String(format: L("result.msg.boss"), RankingService.clearSecondsText(ticks: result.ticks))   // ランキングの記録と同じ表示
                                  : String(format: L("result.msg.survive"), result.duration)
         case .timeUp: return String(format: L("result.msg.timeup"), result.hp)
         default: return String(format: L("result.msg.hit"), timeText)
