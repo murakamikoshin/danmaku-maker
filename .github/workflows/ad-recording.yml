@@ -86,6 +86,12 @@ jobs:
           kill -INT $REC; wait $REC
           tail -30 "$OUT/test.log"
           cat "$OUT/marks.txt" || true
+      - name: Crash reports
+        if: always()
+        run: |
+          mkdir -p "$OUT/crash"
+          find ~/Library/Logs/DiagnosticReports -name "*anmaku*" -mmin -90 -exec cp {} "$OUT/crash/" \; 2>/dev/null || true
+          ls "$OUT/crash"
       - name: Compress video
         if: always()
         run: |

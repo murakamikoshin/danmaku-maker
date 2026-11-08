@@ -15,9 +15,10 @@ enum Backend {
         let args = ProcessInfo.processInfo.arguments
         if args.contains("-use-emulator") {
             // エミュレーター用のダミー設定（ホストは `-emulator-host <host>`、既定は localhost）
-            let options = FirebaseOptions(googleAppID: "1:1234567890:ios:abcdef", gcmSenderID: "1234567890")
+            let options = FirebaseOptions(googleAppID: "1:1234567890:ios:0123456789abcdef", gcmSenderID: "1234567890")
             options.projectID = "demo-danmaku"
-            options.apiKey = "demo-key"
+            // 形式だけ本物に合わせたダミー(Messaging が使う Installations は、形式が違うと起動時に例外で落ちる)
+            options.apiKey = "AIzaSyD00000000000000000000000000000000"
             FirebaseApp.configure(options: options)
             let host = args.firstIndex(of: "-emulator-host").flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil } ?? "localhost"
             Auth.auth().useEmulator(withHost: host, port: 9099)
