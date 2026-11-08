@@ -33,9 +33,9 @@ final class AdRecordingUITests: XCTestCase {
 
     /// 画面を少しだけスクロールする(大きく飛ばないように、指でゆっくりなぞる)。up=true で下の内容を出す
     private func nudge(up: Bool) {
-        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.72 : 0.38))
-        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.38 : 0.72))
-        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .slow, thenHoldForDuration: 0.15)
+        // 標準のスワイプを、速さを抑えて使う(座標を押してなぞる方式は、スクロールにならなかった)
+        if up { app.swipeUp(velocity: XCUIGestureVelocity(500)) } else { app.swipeDown(velocity: XCUIGestureVelocity(500)) }
+        usleep(400_000)
     }
 
     /// 部品が画面の見える帯(縦の割合)に入るまで、少しずつスクロールする。
@@ -82,7 +82,7 @@ final class AdRecordingUITests: XCTestCase {
         tap(btn("emitter.color.0.1"), "color0", band: 0.42...0.93, pause: 2)
         tap(btn("emitter.pattern.toggle.0"), "patternToggle0", band: 0.42...0.93, pause: 1)
         shot("03_pattern_tiles")
-        tap(btn("emitter.pattern.0.spiral"), "pattern0.spiral", band: 0.42...0.93, pause: 2)
+        tap(btn("emitter.pattern.0.swirl"), "pattern0.swirl", band: 0.42...0.93, pause: 2)
         tap(btn("editor.add"), "add1", band: 0.42...0.93, pause: 2)
         reveal(app.otherElements["emitter.card.1"].firstMatch, band: 0.42...0.93)
         tap(btn("emitter.color.1.2"), "color1", band: 0.42...0.93, pause: 2)
