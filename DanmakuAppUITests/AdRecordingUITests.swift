@@ -41,7 +41,7 @@ final class AdRecordingUITests: XCTestCase {
     /// 部品が画面の見える帯(縦の割合)に入るまで、少しずつスクロールする。
     /// エディタは上にプレビューが固定で出ているので、帯をその下にする(isHittable は固定ヘッダーの下だと false になるので使わない)
     @discardableResult
-    private func reveal(_ e: XCUIElement, band: ClosedRange<CGFloat> = 0.12...0.93, timeout: Double = 4) -> Bool {
+    private func reveal(_ e: XCUIElement, band: ClosedRange<CGFloat> = 0.03...0.96, timeout: Double = 4) -> Bool {
         var n = 0
         if !e.waitForExistence(timeout: timeout) {
             // LazyVStack の中は、画面に近づくまで作られない
@@ -58,7 +58,7 @@ final class AdRecordingUITests: XCTestCase {
     }
 
     @discardableResult
-    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, band: ClosedRange<CGFloat> = 0.12...0.93, pause: UInt32 = 0) -> Bool {
+    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, band: ClosedRange<CGFloat> = 0.03...0.96, pause: UInt32 = 0) -> Bool {
         guard reveal(e, band: band, timeout: timeout) else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
         usleep(300_000)
         let f = e.frame, a = app.frame
