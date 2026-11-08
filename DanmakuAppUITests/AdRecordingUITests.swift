@@ -31,9 +31,19 @@ final class AdRecordingUITests: XCTestCase {
         try? app.debugDescription.write(toFile: "\(dir)/tree_\(name).txt", atomically: true, encoding: .utf8)
     }
 
-    /// 画面を少しだけスクロールする(大きく飛ばないように、指でゆっくりなぞる)。up=true で下の内容を出す
+    /// 画面の左端の余白から、縦になぞってスクロールする。
+    /// 真ん中から始めると、エディタのスライダーが指を受け取ってしまい、スクロールにならない
+    private var dragX: CGFloat = 0.025
+
+    private func drag(up: Bool, fast: Bool) {
+        let x = dragX
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: up ? 0.80 : 0.30))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: up ? 0.30 : 0.80))
+        from.press(forDuration: 0.02, thenDragTo: to, withVelocity: fast ? .fast : XCUIGestureVelocity(700), thenHoldForDuration: 0)
+    }
+
+    /// 少しだけスクロールする(発射台の追加までは、この標準スワイプで成功している)
     private func nudge(up: Bool) {
-        // 標準のスワイプを、速さを抑えて使う(座標を押してなぞる方式は、スクロールにならなかった)
         if up { app.swipeUp(velocity: XCUIGestureVelocity(260)) } else { app.swipeDown(velocity: XCUIGestureVelocity(260)) }
         usleep(400_000)
     }
@@ -78,15 +88,26 @@ final class AdRecordingUITests: XCTestCase {
         return true
     }
 
-    /// リストの一番下まで送る(テストプレイ・投稿ボタンは最後にある)。ボタンの位置が2回続けて動かなければ、止まった(=一番下)とみなす
+    /// リストの一番下まで送る(テストプレイ・投稿ボタンは最後にある)。ボタンの位置が2回続けて動かなければ、止まった(=一番下)とみなす。
+    /// 毎回、目印(画面上の部品)が動いたかを測り、動かなければ指を置く場所を変える(左端 → 右端 → 中央)
     @discardableResult
     private func scrollToBottom(until e: XCUIElement) -> CGRect? {
+        let xs: [CGFloat] = [0.025, 0.975, 0.5]
+        var k = 0
         var last: CGRect?
-        for _ in 0..<16 {
-            app.swipeUp(velocity: .fast)
-            usleep(800_000)
+        for i in 0..<18 {
+            let probe = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "発射台")).firstMatch
+            let before = frameOf(probe)?.minY
+            dragX = xs[k]
+            drag(up: true, fast: true)
+            usleep(900_000)
+            let after = frameOf(probe)?.minY
+            if let b = before, let a = after, abs(a - b) < 1, frameOf(e) == nil {
+                mark("scroll did not move at x=\(xs[k]) (step \(i))")
+                k = (k + 1) % xs.count
+            }
             if let f = frameOf(e) {
-                if let l = last, abs(l.minY - f.minY) < 2 { return f }
+                if let l = last, abs(l.minY - f.minY) < 2 { mark("bottom reached with x=\(xs[k])"); return f }
                 last = f
             }
         }
