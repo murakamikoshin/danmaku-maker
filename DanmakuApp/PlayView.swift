@@ -408,6 +408,7 @@ struct ResultView: View {
                                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2)))
                         }
                         .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("result.back")
                     }
                 }
                 .padding(20)

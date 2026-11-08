@@ -377,6 +377,39 @@ final class GameScene: SKScene {
         return Move(dx: take(&pending.x), dy: take(&pending.y))
     }
 
+    #if DEBUG
+    /// 広告収録用(ci/ad-recording ブランチだけ): 弾をよけて自動で動く。動きは指の操作と同じ Move なので、リプレイもそのまま正しい
+    static let autopilot = ProcessInfo.processInfo.arguments.contains("-ad-autopilot")
+
+    private func autopilotMove() -> Move {
+        let p = sim.player
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
+        let tx = sim.isBoss ? sim.bossPosition.x : W / 2 + 60 * sin(max(0, sim.t) * 1.1)
+        let tgt = Point(x: tx, y: H * 0.78)
+        let steps: [Int] = [-10, -5, 0, 5, 10]
+        let look: [(Double, Double)] = [(0, 1), (0.1, 0.8), (0.2, 0.6), (0.32, 0.4)]
+        let bs = sim.bullets
+        var best = (Double.infinity, 0, 0)
+        for ax in steps {
+            for ay in steps {
+                let x = min(max(p.x + Double(ax) * Move.unit, 8), W - 8)
+                let y = min(max(p.y + Double(ay) * Move.unit, 60), H - 10)
+                var s = ((x - tgt.x) * (x - tgt.x) + (y - tgt.y) * (y - tgt.y)) * 0.0006
+                for b in bs {
+                    for (tau, w) in look {
+                        let dx = x - (b.x + b.vx * tau), dy = y - (b.y + b.vy * tau)
+                        let q = dx * dx + dy * dy
+                        if q < 4900 { s += 4000 * w / (q + 20) }
+                        if q < 64 { s += 1e6 }
+                    }
+                }
+                if s < best.0 { best = (s, ax, ay) }
+            }
+        }
+        return Move(dx: Int8(best.1), dy: Int8(best.2))
+    }
+    #endif
+
     // MARK: ループ
 
     override func update(_ currentTime: TimeInterval) {
@@ -386,7 +419,10 @@ final class GameScene: SKScene {
             accumulator += dt
             while accumulator >= DanmakuConfig.step && sim.outcome == .playing {
                 accumulator -= DanmakuConfig.step
-                let m = takeMove()
+                var m = takeMove()
+                #if DEBUG
+                if GameScene.autopilot { m = autopilotMove() }
+                #endif
                 moves.append(m)
                 sim.step(m)
             }

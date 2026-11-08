@@ -22,6 +22,18 @@ final class AuthService: ObservableObject {
                 self?.isMember = user.map { !$0.isAnonymous } ?? false
             }
         }
+        #if DEBUG
+        // 広告収録用(ci/ad-recording ブランチだけ): エミュレーターで、Apple ではなくメールのアカウントでログインして投稿できるようにする
+        if ProcessInfo.processInfo.arguments.contains("-ad-member") && ProcessInfo.processInfo.arguments.contains("-use-emulator") {
+            Task {
+                let mail = "ad-recording@example.com", pass = "ad-recording-pass"
+                if (try? await Auth.auth().signIn(withEmail: mail, password: pass)) == nil {
+                    _ = try? await Auth.auth().createUser(withEmail: mail, password: pass)
+                }
+            }
+            return
+        }
+        #endif
         if Auth.auth().currentUser == nil {
             Task { try? await Auth.auth().signInAnonymously() }
         }

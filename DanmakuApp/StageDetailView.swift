@@ -25,6 +25,7 @@ struct StageDetailView: View {
         VStack(spacing: 0) {
             ScreenHeader(title: "detail.title") {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") { dismiss() }
+                    .accessibilityIdentifier("detail.close")
             } trailing: { Color.clear.frame(width: 38, height: 38) }
 
             ScrollView {

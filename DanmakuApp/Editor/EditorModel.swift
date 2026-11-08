@@ -216,6 +216,13 @@ final class EditorModel: ObservableObject {
         var d = entry.draft
         // 作者名は全ステージ共通
         if !AuthorName.current.isEmpty { d.authorName = AuthorName.current }
+        #if DEBUG
+        // 広告収録用(ci/ad-recording ブランチだけ): 新しいステージの名前と作者名を、起動引数で入れておく
+        let args = ProcessInfo.processInfo.arguments
+        func arg(_ k: String) -> String? { args.firstIndex(of: k).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil } }
+        if d.name.isEmpty, let n = arg("-ad-name") { d.name = n }
+        if d.authorName.isEmpty, let a = arg("-ad-author") { d.authorName = a }
+        #endif
         draft = d
         baseline = d
     }

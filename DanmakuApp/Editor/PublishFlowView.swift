@@ -29,6 +29,7 @@ struct PublishFlowView: View {
             ScreenHeader(title: "publish.title") {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") { dismiss() }
                     .opacity(phase == .publishing ? 0.3 : 1).disabled(phase == .publishing)
+                    .accessibilityIdentifier("publish.close")
             } trailing: { Color.clear.frame(width: 38, height: 38) }
             ScrollView {
                 VStack(spacing: 16) {
@@ -173,6 +174,7 @@ struct PublishFlowView: View {
                 Link(destination: url) { Chip(title: L("detail.share.x"), selected: false) }
             }
             Button { gameTap(); dismiss() } label: { Text("editor.close").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(.secondary) }
+                .accessibilityIdentifier("publish.done.close")
         }
     }
 
