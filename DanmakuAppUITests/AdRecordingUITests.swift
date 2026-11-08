@@ -133,7 +133,23 @@ final class AdRecordingUITests: XCTestCase {
         app.swipeUp(velocity: .slow); sleep(2); shot("17_detail_scrolled")
         app.swipeDown(velocity: .slow); sleep(1)
         tap(btn("detail.play"), "detailPlay", pause: 0)
-        mark("worldplay"); sleep(10); shot("18_worldplay")
+        mark("myplay"); sleep(8); shot("18_myplay")
+        if !tap(btn("play.quit"), "quitMine", timeout: 2, pause: 2) { tap(btn("result.back"), "backMine", pause: 2) }
+        tap(btn("detail.close"), "detailCloseMine", pause: 2)
+
+        // 世界のステージ(ほかの人が作ったもの)を遊ぶ
+        tap(btn("home.sort.popular"), "sortPopular2", pause: 3)
+        for (i, name) in ["ねじれ銀河", "ピンクの悪夢"].enumerated() {
+            let r = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", name)).firstMatch
+            tap(r, "worldRow\(i)", pause: 3)
+            mark("worlddetail\(i)"); shot("19_worlddetail_\(i)")
+            tap(btn("detail.play"), "worldPlay\(i)", pause: 0)
+            mark("worldplay\(i) \(name)"); sleep(5); shot("20_worldplay_\(i)a"); sleep(9); shot("20_worldplay_\(i)b")
+            mark("worldplay\(i).end")
+            if !tap(btn("play.quit"), "worldQuit\(i)", timeout: 2, pause: 2) { tap(btn("result.back"), "worldBack\(i)", pause: 2) }
+            tap(btn("detail.close"), "worldDetailClose\(i)", pause: 2)
+            app.swipeDown(velocity: .fast); sleep(1)
+        }
         mark("end")
         dump("end")
     }
