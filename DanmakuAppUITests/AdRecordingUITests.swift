@@ -58,7 +58,7 @@ final class AdRecordingUITests: XCTestCase {
     }
 
     @discardableResult
-    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, pause: UInt32 = 0, band: ClosedRange<CGFloat> = 0.12...0.93) -> Bool {
+    private func tap(_ e: XCUIElement, _ label: String, timeout: Double = 5, band: ClosedRange<CGFloat> = 0.12...0.93, pause: UInt32 = 0) -> Bool {
         guard reveal(e, band: band, timeout: timeout) else { mark("MISSING \(label)"); dump(label); shot("missing_\(label)"); return false }
         usleep(300_000)
         let f = e.frame, a = app.frame

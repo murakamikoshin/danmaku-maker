@@ -99,7 +99,7 @@ jobs:
         if: always()
         run: |
           if [ -f "$OUT/rec.mov" ]; then
-            ffmpeg -y -loglevel error -i "$OUT/rec.mov" -vf "scale=1080:-2" -c:v libx264 -crf 20 -preset veryfast -pix_fmt yuv420p -r 30 -an "$OUT/rec.mp4"
+            ffmpeg -y -loglevel error -i "$OUT/rec.mov" -vf "scale=1080:-2" -c:v libx264 -crf 24 -preset veryfast -pix_fmt yuv420p -r 30 -an "$OUT/rec.mp4"
             ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT/rec.mov" > "$OUT/rec_duration.txt"
             rm "$OUT/rec.mov"
           fi
