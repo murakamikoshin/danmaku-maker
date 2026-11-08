@@ -84,6 +84,7 @@ service cloud.firestore {
     match /swipeScores/{uid} { allow read: if signedIn(); allow write: if false; }
     match /swipeRuns/{id} { allow read, write: if false; }
     match /swipeEvents/{id} { allow read, write: if false; }
+    match /swipeMismatches/{id} { allow read, write: if false; }
 
     match /{document=**} { allow read, write: if false; }
   }

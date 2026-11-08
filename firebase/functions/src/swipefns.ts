@@ -203,7 +203,24 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
   }, decoded);
   // 提出の記録を残す(アプリの計算とサーバーの計算がずれたときに、原因を追えるように)。クリップの数が合わないのは、サーバーが先に被弾などで終わった印
   const summary = { sent: clips.length, played: result.clipsPlayed, cleared: result.clipsCleared, bestStreak: result.bestStreak, endedByHit: result.endedByHit, invalid: result.invalid ?? null, ids: result.clipIDs.slice(-3) };
-  if (result.invalid || result.clipsPlayed < clips.length) logger.warn("swipe-submit-mismatch", summary); else logger.info("swipe-submit", summary);
+  if (result.invalid || result.clipsPlayed < clips.length) {
+    logger.warn("swipe-submit-mismatch", summary);
+    // 原因を後から再現できるよう、送られた記録をそのまま残す(失敗しても提出は続ける)。Firestore の 1 文書は約 1MB までなので、収まる分だけ
+    try {
+      const kept: ClipIn[] = [];
+      let size = 0;
+      for (const c of clips) {
+        size += c.go.length + c.moves.length + 40;
+        if (size > 800_000) break;
+        kept.push(c);
+      }
+      await db().doc(`swipeMismatches/${d.runId}`).set({
+        uid, runId: d.runId, seed: run.seed, poolVersion: run.poolVersion, author: author ?? null,
+        sent: clips.length, kept: kept.length, summary, clipIDs: result.clipIDs, clipOutcomes: result.clipOutcomes,
+        scoreAfterEachClip: result.scoreAfterEachClip, clips: kept, createdAt: FieldValue.serverTimestamp(),
+      });
+    } catch (e) { logger.error("swipe-mismatch-save-failed", { message: String(e) }); }
+  } else logger.info("swipe-submit", summary);
   if (result.invalid) {
     if (result.invalid === "pool-exhausted" && result.clipsPlayed > 0) { /* 全部遊び切った: ここまでの点数でよい */ } else throw new HttpsError("invalid-argument", result.invalid);
   }
