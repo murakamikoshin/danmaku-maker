@@ -1,192 +1,192 @@
-Optional(Attributes: Application, 0x109467310, pid: 18281, label: '弾幕メーカー'
+Optional(Attributes: Application, 0x10b3ff6c0, pid: 17074, label: '弾幕メーカー'
 Element subtree:
- →Application, 0x109467310, pid: 18281, label: '弾幕メーカー'
-    Window (Main), 0x10942f420, {{0.0, 0.0}, {440.0, 956.0}}
-      Other, 0x10949e900, {{0.0, 0.0}, {440.0, 956.0}}
-        Other, 0x1094b77a0, {{0.0, 0.0}, {440.0, 956.0}}
-          Other, 0x10949f100, {{0.0, 0.0}, {440.0, 956.0}}
-            Other, 0x1094a09a0, {{0.0, 0.0}, {440.0, 956.0}}
-              StaticText, 0x1094d23d0, {{16.0, 80.0}, {151.7, 32.3}}, label: '弾幕メーカー'
-              Button, 0x1094dbac0, {{283.8, 73.2}, {140.7, 36.0}}, identifier: 'home.create', label: 'ステージを作る'
-                Image, 0x1094dd380, {{300.0, 85.7}, {11.3, 11.3}}, identifier: 'plus', label: '追加'
-                StaticText, 0x109455410, {{318.0, 82.7}, {92.0, 17.0}}, label: 'ステージを作る'
-              ScrollView, 0x1044c1410, {{0.0, 118.3}, {440.0, 837.7}}
-                Other, 0x1044df710, {{0.0, 118.3}, {440.0, 427.7}}
-                  StaticText, 0x1044d2450, {{92.0, 143.2}, {98.3, 18.0}}, label: '毎日のごほうび'
-                  Image, 0x1044e0790, {{64.0, 171.7}, {11.0, 9.7}}, identifier: 'wind', label: 'そよ風'
-                  StaticText, 0x1044d0fb0, {{92.0, 163.2}, {86.3, 14.3}}, label: '#1 軌跡 (ドット)'
-                  Button, 0x1044e8440, {{276.0, 144.7}, {136.0, 31.7}}, identifier: 'home.daily.claim', label: '広告を見てもらう', Disabled
-                    Image, 0x1044dd2b0, {{289.7, 153.7}, {15.3, 12.7}}, identifier: 'play.rectangle.fill', label: 'スライドショー', Disabled
-                    StaticText, 0x1044e58e0, {{289.7, 152.5}, {110.3, 15.7}}, label: '広告を見てもらう', Disabled
-                  Image, 0x1044d38f0, {{32.0, 226.0}, {16.3, 16.7}}, identifier: 'magnifyingglass', label: '検索'
-                  TextField, 0x1044deab0, {{58.3, 223.3}, {351.7, 22.0}}, placeholderValue: 'ステージ名 または ID（5文字）'
-                  Button, 0x1094edee0, {{57.2, 283.3}, {56.3, 18.0}}, identifier: 'home.tab.samples', label: 'サンプル'
-                  Button, 0x109492230, {{154.7, 274.3}, {130.7, 36.0}}, identifier: 'home.tab.mine', label: 'マイステージ', Selected
-                  Button, 0x109457ec0, {{305.5, 283.3}, {98.3, 18.0}}, identifier: 'home.tab.world', label: '世界のステージ'
-                  StaticText, 0x109445330, {{20.0, 328.3}, {101.3, 21.7}}, label: 'マイステージ'
-                  StaticText, 0x109444f10, {{20.0, 360.0}, {394.7, 28.7}}, label: '作ったステージは、自動で保存されます。投稿しなくても、いつでも遊べて、直せます。'
-                  Button, 0x10948c0c0, {{16.0, 398.7}, {408.0, 81.3}}, label: '星くずの渦、耐久、20秒耐える、未クリア、8分 33秒'
-                    StaticText, 0x10948e3c0, {{86.0, 410.7}, {75.0, 19.3}}, label: '星くずの渦'
-                    StaticText, 0x1094345b0, {{94.0, 436.0}, {19.0, 12.0}}, label: '耐久'
-                    StaticText, 0x1094349d0, {{127.0, 435.3}, {57.0, 13.3}}, label: '20秒耐える'
-                    StaticText, 0x1094c00e0, {{93.0, 455.0}, {37.7, 12.0}}, label: '未クリア'
-                    StaticText, 0x109445750, {{143.7, 455.0}, {43.7, 12.0}}, label: '8分 33秒'
-                    Image, 0x1094fb720, {{399.7, 432.7}, {12.0, 13.3}}, identifier: 'play.fill', label: '再生'
-                  Button, 0x109429850, {{20.0, 491.0}, {128.0, 30.3}}, label: '編集'
-                    Image, 0x1094446d0, {{63.0, 500.3}, {11.3, 11.3}}, identifier: 'pencil', label: '編集'
-                    StaticText, 0x109454a20, {{63.0, 499.0}, {43.3, 14.3}}, label: '編集'
-                  Button, 0x10948bca0, {{156.0, 490.7}, {128.0, 31.0}}, label: 'URLで送る'
-                    Image, 0x109498be0, {{179.3, 499.7}, {13.0, 13.0}}, identifier: 'paperplane.fill', label: '送信'
-                    StaticText, 0x1094442b0, {{179.3, 499.1}, {82.3, 14.3}}, label: 'URLで送る'
-                  Button, 0x1094c2380, {{292.0, 490.0}, {128.0, 32.0}}, label: '削除'
-                    Image, 0x1094c1b40, {{334.7, 499.0}, {12.3, 14.0}}, identifier: 'trash', label: 'ゴミ箱'
-                    StaticText, 0x109457260, {{334.7, 499.0}, {43.8, 15.1}}, label: '削除'
-                Other, 0x1094bf8a0, {{407.0, 146.3}, {30.0, 714.3}}, label: '垂直スクロールバー, 1ページ', value: 0%
-                  Other, 0x1094b9750, {{434.0, 149.3}, {3.0, 159.0}}
-                Other, 0x10945af50, {{407.0, 146.3}, {30.0, 714.3}}, label: '垂直スクロールバー, 1ページ', value: 0%
-                  Other, 0x1094b9330, {{434.0, 149.3}, {3.0, 159.0}}
-              Button, 0x109429da0, {{0.0, 868.7}, {146.7, 51.3}}, identifier: 'tab.play', label: 'あそぶ', Selected
-              Button, 0x10942e120, {{146.7, 868.7}, {146.7, 51.3}}, identifier: 'tab.shop', label: 'ショップ'
-              Button, 0x109456600, {{293.3, 868.7}, {146.7, 51.3}}, identifier: 'tab.settings', label: 'せってい'
-      Other, 0x1094bfcc0, {{0.0, 0.0}, {440.0, 956.0}}
-        Other, 0x1094bed10, {{0.0, 0.0}, {440.0, 956.0}}
-          Other, 0x1094c6520, {{0.0, 0.0}, {440.0, 956.0}}
-            Button, 0x10945bea0, {{15.5, 69.5}, {39.0, 39.0}}, identifier: 'editor.close', label: '閉じる'
-            Button, 0x1094c11c0, {{283.0, 82.3}, {63.0, 13.3}}, identifier: 'editor.revert', label: '元に戻す'
-              Image, 0x109444af0, {{284.3, 83.3}, {11.0, 11.0}}, identifier: 'arrow.uturn.backward', label: '取り消す'
-              StaticText, 0x1094c6100, {{283.0, 82.3}, {63.0, 13.3}}, label: '元に戻す'
-            Image, 0x10942bd20, {{355.0, 84.0}, {13.0, 9.0}}, identifier: 'checkmark.icloud.fill', label: 'checkmark.icloud.fill', Selected
-            StaticText, 0x10940bc60, {{355.0, 83.0}, {69.0, 12.0}}, label: '自動で保存'
-            StaticText, 0x10942b900, {{182.5, 77.0}, {75.0, 24.0}}, label: 'エディタ'
-            ScrollView, 0x109453ba0, {{0.0, 114.0}, {440.0, 842.0}}
-              Other, 0x1094b8f10, {{0.0, -2081.0}, {440.0, 4429.0}}
-                Other, 0x109443850, {{15.5, -927.8}, {409.0, 2411.8}}
-                  Other, 0x109443e90, {{15.5, -927.8}, {409.0, 1675.7}}, identifier: 'emitter.card.0'
-                    StaticText, 0x109458b20, {{60.0, -909.0}, {57.0, 19.3}}, label: '発射台 1'
-                    Button, 0x1094ee300, {{313.0, -910.3}, {22.0, 22.0}}, identifier: 'emitter.collapse.0', label: '上に移動'
-                    Button, 0x10940b840, {{345.0, -913.3}, {65.0, 28.0}}, identifier: 'emitter.delete.0', label: '削除'
-                      Image, 0x1094be8f0, {{356.0, -906.3}, {12.3, 14.0}}, identifier: 'trash.fill', label: 'ゴミ箱'
-                      StaticText, 0x1094f11c0, {{356.0, -906.3}, {44.0, 15.1}}, label: '削除'
-                    StaticText, 0x1094fd210, {{30.0, -865.6}, {45.0, 14.3}}, label: 'パターン'
-                    Button, 0x10948e710, {{336.7, -871.3}, {73.3, 25.7}}, identifier: 'emitter.pattern.toggle.0', label: '渦巻き'
-                      StaticText, 0x109430b10, {{346.7, -866.3}, {36.7, 15.7}}, label: '渦巻き'
-                      Image, 0x1094954e0, {{388.7, -861.7}, {10.0, 6.0}}, identifier: 'chevron.up', label: '上に移動'
-                    Other, 0x10949d840, {{0.0, 0.0}, {0.0, 0.0}}
-                    StaticText, 0x109448e70, {{30.0, -460.6}, {123.7, 14.3}}, label: '広告で手に入るパターン'
-                    Other, 0x10948c400, {{29.5, 84.7}, {189.5, 69.5}}
-                      Button, 0x109433950, {{29.5, 84.7}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.rapidFan', label: '連射扇'
-                        StaticText, 0x10949dc60, {{60.3, 135.7}, {28.3, 12.0}}, label: '連射扇'
-                        Image, 0x10945b370, {{109.0, 88.7}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x109436d00, {{126.5, 84.7}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.lightRain', label: '光の雨'
-                        StaticText, 0x109436e20, {{157.3, 135.7}, {28.3, 12.0}}, label: '光の雨'
-                        Image, 0x1094fccf0, {{206.0, 88.7}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                    StaticText, 0x1094fce10, {{30.0, 165.7}, {65.7, 14.3}}, label: '弾幕パック2'
-                    Other, 0x109466ef0, {{29.5, 186.0}, {383.5, 219.5}}
-                      Button, 0x109467010, {{29.5, 186.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.mine', label: '地雷'
-                        StaticText, 0x10944f6f0, {{65.0, 237.0}, {19.0, 12.0}}, label: '地雷'
-                        Image, 0x10944f810, {{109.0, 190.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x109468bd0, {{126.5, 186.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.meteor', label: '隕石'
-                        StaticText, 0x109468cf0, {{162.0, 237.0}, {19.0, 12.0}}, label: '隕石'
-                        Image, 0x1094fd850, {{206.0, 190.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1094fd970, {{223.5, 186.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.gridLaser', label: '格子レーザー'
-                        StaticText, 0x1094fda90, {{240.3, 237.0}, {56.3, 12.0}}, label: '格子レーザー'
-                        Image, 0x1094fde70, {{303.0, 190.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1094fdf90, {{320.5, 186.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.sweepLaser', label: 'なぎ払いレーザー'
-                        StaticText, 0x1094fe0b0, {{328.0, 237.0}, {75.0, 12.0}}, label: 'なぎ払いレーザー'
-                        Image, 0x1094fe1d0, {{400.0, 190.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1094fe2f0, {{29.5, 261.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.giantOrb', label: '巨大弾'
-                        StaticText, 0x1043fa000, {{60.3, 312.0}, {28.3, 12.0}}, label: '巨大弾'
-                        Image, 0x1043e8740, {{109.0, 265.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1043d20d0, {{126.5, 261.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.bubble', label: '膨らむ泡'
-                        StaticText, 0x1043fd340, {{152.7, 312.0}, {37.7, 12.0}}, label: '膨らむ泡'
-                        Image, 0x1095059f0, {{206.0, 265.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1043f1b10, {{223.5, 261.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.gravity', label: '重力弾'
-                        StaticText, 0x1043f0150, {{254.3, 312.0}, {28.3, 12.0}}, label: '重力弾'
-                        Image, 0x1043d7930, {{303.0, 265.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1043ffa90, {{320.5, 261.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.orbit', label: '衛星'
-                        StaticText, 0x1094d1d70, {{356.0, 312.0}, {19.0, 12.0}}, label: '衛星'
-                        Image, 0x1043fade0, {{400.0, 265.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1043b1e40, {{29.5, 336.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.snake', label: 'スネーク'
-                        StaticText, 0x109540bc0, {{55.7, 387.0}, {37.7, 12.0}}, label: 'スネーク'
-                        Image, 0x1043f27b0, {{109.0, 340.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1043f33f0, {{126.5, 336.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.shatterRing', label: '破裂の輪'
-                        StaticText, 0x10407a570, {{152.7, 387.0}, {37.7, 12.0}}, label: '破裂の輪'
-                        Image, 0x1040b17f0, {{206.0, 340.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                      Button, 0x1040b0d60, {{223.5, 336.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.homingRing', label: '追尾の輪'
-                        StaticText, 0x1043f04b0, {{249.7, 387.0}, {37.7, 12.0}}, label: '追尾の輪'
-                        Image, 0x1094d1e90, {{303.0, 340.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
-                    StaticText, 0x1094d1fb0, {{30.0, 419.1}, {34.0, 14.3}}, label: '弾の色'
-                    Button, 0x1040af870, {{26.0, 435.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.0', label: '色1'
-                    Button, 0x1040af1a0, {{65.7, 431.0}, {46.6, 46.6}}, identifier: 'emitter.color.0.1', label: '色2', Selected
-                    Button, 0x10409ec20, {{114.0, 435.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.2', label: '色3'
-                    Button, 0x1094ff590, {{158.0, 435.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.3', label: '色4'
-                    Button, 0x1094ff6b0, {{202.0, 435.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.4', label: '色5'
-                    StaticText, 0x1094ff7d0, {{30.0, 491.2}, {34.0, 14.3}}, label: '横位置'
-                    Other, 0x1094ff8f0, {{122.0, 483.3}, {216.0, 30.0}}, value: 0.5
-                    StaticText, 0x1094ffa10, {{366.8, 491.2}, {22.3, 14.3}}, label: '50%'
-                    StaticText, 0x1094ffb30, {{30.0, 535.2}, {34.0, 14.3}}, label: '縦位置'
-                    Other, 0x1094ffc50, {{122.0, 527.3}, {216.0, 30.0}}, value: 0.2
-                    StaticText, 0x1094ffd70, {{366.8, 535.2}, {22.3, 14.3}}, label: '20%'
-                    StaticText, 0x1094ffe90, {{30.0, 579.2}, {45.0, 14.3}}, label: '発射間隔'
-                    Other, 0x1094892f0, {{122.0, 571.3}, {216.0, 30.0}}, value: 0.9000000000000001
-                    StaticText, 0x109489410, {{359.3, 579.2}, {37.3, 14.3}}, label: '0.90s'
-                    StaticText, 0x109489530, {{30.0, 623.2}, {22.7, 14.3}}, label: '弾数'
-                    Other, 0x109489650, {{122.0, 615.3}, {216.0, 30.0}}, value: 3.0
-                    StaticText, 0x1094898c0, {{374.2, 623.2}, {7.7, 14.3}}, label: '3'
-                    StaticText, 0x1094899e0, {{30.0, 667.2}, {45.0, 14.3}}, label: '弾の速さ'
-                    Other, 0x109489b00, {{122.0, 659.3}, {216.0, 30.0}}, value: 1.8
-                    StaticText, 0x109489c20, {{363.0, 667.2}, {30.0, 14.3}}, label: '1.80'
-                    StaticText, 0x109489d40, {{30.0, 711.2}, {56.3, 14.3}}, label: '全体の向き'
-                    Other, 0x109489e60, {{122.0, 703.3}, {216.0, 30.0}}, value: 0.0
-                    StaticText, 0x109489f80, {{370.5, 711.2}, {15.0, 14.3}}, label: '0°'
-                  Other, 0x109494ea0, {{15.5, 994.8}, {409.0, 425.0}}, identifier: 'emitter.card.1'
-                    StaticText, 0x109494fc0, {{60.0, 1013.8}, {59.0, 19.3}}, label: '発射台 2'
-                    Button, 0x1094950e0, {{313.0, 1012.3}, {22.0, 22.0}}, identifier: 'emitter.collapse.1', label: '上に移動'
-                    Button, 0x10948a370, {{345.0, 1009.3}, {65.0, 28.0}}, identifier: 'emitter.delete.1', label: '削除'
-                      Image, 0x10948a490, {{356.0, 1016.3}, {12.3, 14.0}}, identifier: 'trash.fill', label: 'ゴミ箱'
-                      StaticText, 0x10948a5b0, {{356.0, 1016.3}, {44.0, 15.1}}, label: '削除'
-                    StaticText, 0x10948a6d0, {{30.0, 1057.1}, {45.0, 14.3}}, label: 'パターン'
-                    Button, 0x1043d4610, {{349.0, 1051.3}, {61.0, 25.7}}, identifier: 'emitter.pattern.toggle.1', label: '放射'
-                      StaticText, 0x10948a7f0, {{359.0, 1056.3}, {24.3, 15.7}}, label: '放射'
-                      Image, 0x1094fc4b0, {{388.7, 1061.0}, {10.0, 6.0}}, identifier: 'chevron.down', label: '下に移動'
-                    StaticText, 0x1094fc5d0, {{30.0, 1091.1}, {34.0, 14.3}}, label: '弾の色'
-                    Button, 0x1094fc6f0, {{21.7, 1103.0}, {46.6, 46.6}}, identifier: 'emitter.color.1.0', label: '色1', Selected
-                    Button, 0x1094fc810, {{70.0, 1107.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.1', label: '色2'
-                    Button, 0x1094fc930, {{114.0, 1107.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.2', label: '色3'
-                    Button, 0x1043f14f0, {{158.0, 1107.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.3', label: '色4'
-                    Button, 0x1043e6b90, {{202.0, 1107.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.4', label: '色5'
-                    StaticText, 0x1094fca50, {{30.0, 1163.3}, {34.0, 14.3}}, label: '横位置'
-                    Other, 0x1094381b0, {{122.0, 1155.3}, {216.0, 30.0}}, value: 0.5
-                    StaticText, 0x1043e93c0, {{366.8, 1163.3}, {22.3, 14.3}}, label: '50%'
-                    StaticText, 0x1094382d0, {{30.0, 1207.3}, {34.0, 14.3}}, label: '縦位置'
-                    Other, 0x1094383f0, {{122.0, 1199.3}, {216.0, 30.0}}, value: 0.2
-                    StaticText, 0x109438510, {{366.8, 1207.3}, {22.3, 14.3}}, label: '20%'
-                    StaticText, 0x109438630, {{30.0, 1251.3}, {45.0, 14.3}}, label: '発射間隔'
-                    Other, 0x1040b0630, {{122.0, 1243.3}, {216.0, 30.0}}, value: 1.0
-                    StaticText, 0x1040b09d0, {{359.3, 1251.3}, {37.3, 14.3}}, label: '1.00s'
-                    StaticText, 0x10409e520, {{30.0, 1295.3}, {22.7, 14.3}}, label: '弾数'
-                    Other, 0x1040b3020, {{122.0, 1287.3}, {216.0, 30.0}}, value: 16.0
-                    StaticText, 0x1040b1460, {{370.5, 1295.3}, {15.0, 14.3}}, label: '16'
-                    StaticText, 0x1040b10e0, {{30.0, 1339.3}, {45.0, 14.3}}, label: '弾の速さ'
-                    Other, 0x1040b1b70, {{122.0, 1331.3}, {216.0, 30.0}}, value: 2.0
-                    StaticText, 0x1040b25a0, {{363.0, 1339.3}, {30.0, 14.3}}, label: '2.00'
-                    StaticText, 0x1040b2910, {{30.0, 1383.3}, {56.3, 14.3}}, label: '全体の向き'
-                    Other, 0x1040b3da0, {{122.0, 1375.3}, {216.0, 30.0}}, value: 0.0
-                    StaticText, 0x1040b2c90, {{370.5, 1383.3}, {15.0, 14.3}}, label: '0°'
-                  Button, 0x10407f770, {{16.0, 1433.3}, {408.0, 50.7}}, identifier: 'editor.add', label: '発射台を追加'
-                    Image, 0x10407dbf0, {{161.0, 1448.7}, {20.0, 20.0}}, identifier: 'plus.circle.fill', label: '追加'
-                    StaticText, 0x1040a4e60, {{190.7, 1449.0}, {90.0, 19.3}}, label: '発射台を追加'
-                  StaticText, 0x104089f70, {{111.0, 124.0}, {218.0, 200.0}}
-                  StaticText, 0x10408baa0, {{111.0, 771.3}, {218.0, 200.0}}
-              Other, 0x104078df0, {{407.0, 142.0}, {30.0, 752.0}}, label: '垂直スクロールバー, 6ページ', value: 61%
-                Other, 0x1040a39c0, {{434.0, 593.7}, {3.0, 172.3}}
-              Other, 0x1040ae760, {{407.0, 142.0}, {30.0, 752.0}}, label: '垂直スクロールバー, 6ページ', value: 61%
-                Other, 0x1040a4ad0, {{434.0, 593.7}, {3.0, 172.3}}
+ →Application, 0x10b3ff6c0, pid: 17074, label: '弾幕メーカー'
+    Window (Main), 0x10b3a8320, {{0.0, 0.0}, {440.0, 956.0}}
+      Other, 0x10b3c3290, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x10b3e78a0, {{0.0, 0.0}, {440.0, 956.0}}
+          Other, 0x10b3ad990, {{0.0, 0.0}, {440.0, 956.0}}
+            Other, 0x10b70aa00, {{0.0, 0.0}, {440.0, 956.0}}
+              StaticText, 0x10b721b10, {{16.0, 80.0}, {151.7, 32.3}}, label: '弾幕メーカー'
+              Button, 0x10b714ac0, {{283.8, 73.2}, {140.7, 36.0}}, identifier: 'home.create', label: 'ステージを作る'
+                Image, 0x10b70bdc0, {{300.0, 85.7}, {11.3, 11.3}}, identifier: 'plus', label: '追加'
+                StaticText, 0x10b70d450, {{318.0, 82.7}, {92.0, 17.0}}, label: 'ステージを作る'
+              ScrollView, 0x10b7222c0, {{0.0, 118.3}, {440.0, 837.7}}
+                Other, 0x10b70b0d0, {{0.0, 118.3}, {440.0, 427.7}}
+                  StaticText, 0x10b7235c0, {{92.0, 143.2}, {98.3, 18.0}}, label: '毎日のごほうび'
+                  Image, 0x10b719fd0, {{64.0, 171.7}, {11.0, 9.7}}, identifier: 'wind', label: 'そよ風'
+                  StaticText, 0x10b71a0f0, {{92.0, 163.2}, {86.3, 14.3}}, label: '#1 軌跡 (ドット)'
+                  Button, 0x10b71a210, {{276.0, 144.7}, {136.0, 31.7}}, identifier: 'home.daily.claim', label: '広告を見てもらう', Disabled
+                    Image, 0x10b71a330, {{289.7, 153.7}, {15.3, 12.7}}, identifier: 'play.rectangle.fill', label: 'スライドショー', Disabled
+                    StaticText, 0x10b71a450, {{289.7, 152.5}, {110.3, 15.7}}, label: '広告を見てもらう', Disabled
+                  Image, 0x10b71a570, {{32.0, 226.0}, {16.3, 16.7}}, identifier: 'magnifyingglass', label: '検索'
+                  TextField, 0x10b71a690, {{58.3, 223.3}, {351.7, 22.0}}, placeholderValue: 'ステージ名 または ID（5文字）'
+                  Button, 0x10b71a7b0, {{57.2, 283.3}, {56.3, 18.0}}, identifier: 'home.tab.samples', label: 'サンプル'
+                  Button, 0x10b71a8d0, {{154.7, 274.3}, {130.7, 36.0}}, identifier: 'home.tab.mine', label: 'マイステージ', Selected
+                  Button, 0x10b71a9f0, {{305.5, 283.3}, {98.3, 18.0}}, identifier: 'home.tab.world', label: '世界のステージ'
+                  StaticText, 0x10b71ab10, {{20.0, 328.3}, {101.3, 21.7}}, label: 'マイステージ'
+                  StaticText, 0x10b577e70, {{20.0, 360.0}, {394.7, 28.7}}, label: '作ったステージは、自動で保存されます。投稿しなくても、いつでも遊べて、直せます。'
+                  Button, 0x10b56d000, {{16.0, 398.7}, {408.0, 81.3}}, label: '星くずの渦、耐久、20秒耐える、未クリア、12分 13秒'
+                    StaticText, 0x10b5ae490, {{86.0, 410.7}, {75.0, 19.3}}, label: '星くずの渦'
+                    StaticText, 0x10b5b38e0, {{94.0, 436.0}, {19.0, 12.0}}, label: '耐久'
+                    StaticText, 0x10b5836c0, {{127.0, 435.3}, {57.0, 13.3}}, label: '20秒耐える'
+                    StaticText, 0x10b62e070, {{93.0, 455.0}, {37.7, 12.0}}, label: '未クリア'
+                    StaticText, 0x10b71ac30, {{143.7, 455.0}, {46.3, 12.0}}, label: '12分 14秒'
+                    Image, 0x10b71ad50, {{399.7, 432.7}, {12.0, 13.3}}, identifier: 'play.fill', label: '再生'
+                  Button, 0x10b71ae70, {{20.0, 491.0}, {128.0, 30.3}}, label: '編集'
+                    Image, 0x10b71af90, {{63.0, 500.3}, {11.3, 11.3}}, identifier: 'pencil', label: '編集'
+                    StaticText, 0x10b71b0b0, {{63.0, 499.0}, {43.3, 14.3}}, label: '編集'
+                  Button, 0x10b71b1d0, {{156.0, 490.7}, {128.0, 31.0}}, label: 'URLで送る'
+                    Image, 0x10b71b2f0, {{179.3, 499.7}, {13.0, 13.0}}, identifier: 'paperplane.fill', label: '送信'
+                    StaticText, 0x10b71b410, {{179.3, 499.1}, {82.3, 14.3}}, label: 'URLで送る'
+                  Button, 0x10b71b530, {{292.0, 490.0}, {128.0, 32.0}}, label: '削除'
+                    Image, 0x10b71b650, {{334.7, 499.0}, {12.3, 14.0}}, identifier: 'trash', label: 'ゴミ箱'
+                    StaticText, 0x10b71b770, {{334.7, 499.0}, {43.8, 15.1}}, label: '削除'
+                Other, 0x10b71b890, {{407.0, 146.3}, {30.0, 714.3}}, label: '垂直スクロールバー, 1ページ', value: 0%
+                  Other, 0x10b71b9b0, {{434.0, 149.3}, {3.0, 159.0}}
+                Other, 0x10b62a700, {{407.0, 146.3}, {30.0, 714.3}}, label: '垂直スクロールバー, 1ページ', value: 0%
+                  Other, 0x10b64d770, {{434.0, 149.3}, {3.0, 159.0}}
+              Button, 0x10b64fa00, {{0.0, 868.7}, {146.7, 51.3}}, identifier: 'tab.play', label: 'あそぶ', Selected
+              Button, 0x10b64df70, {{146.7, 868.7}, {146.7, 51.3}}, identifier: 'tab.shop', label: 'ショップ'
+              Button, 0x10b650a70, {{293.3, 868.7}, {146.7, 51.3}}, identifier: 'tab.settings', label: 'せってい'
+      Other, 0x10b6525f0, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x10b652710, {{0.0, 0.0}, {440.0, 956.0}}
+          Other, 0x10b652830, {{0.0, 0.0}, {440.0, 956.0}}
+            Button, 0x10b652950, {{15.5, 69.5}, {39.0, 39.0}}, identifier: 'editor.close', label: '閉じる'
+            Button, 0x10b652a70, {{283.0, 82.3}, {63.0, 13.3}}, identifier: 'editor.revert', label: '元に戻す'
+              Image, 0x10b652b90, {{284.3, 83.3}, {11.0, 11.0}}, identifier: 'arrow.uturn.backward', label: '取り消す'
+              StaticText, 0x10b652cb0, {{283.0, 82.3}, {63.0, 13.3}}, label: '元に戻す'
+            Image, 0x10b652dd0, {{355.0, 84.0}, {13.0, 9.0}}, identifier: 'checkmark.icloud.fill', label: 'checkmark.icloud.fill', Selected
+            StaticText, 0x10b652ef0, {{355.0, 83.0}, {69.0, 12.0}}, label: '自動で保存'
+            StaticText, 0x10b653010, {{182.5, 77.0}, {75.0, 24.0}}, label: 'エディタ'
+            ScrollView, 0x10b653130, {{0.0, 114.0}, {440.0, 842.0}}
+              Other, 0x10b653250, {{0.0, -2091.0}, {440.0, 4448.0}}
+                Other, 0x10b653370, {{15.5, -937.8}, {409.0, 2411.8}}
+                  Other, 0x10b653490, {{15.5, 984.8}, {409.0, 425.0}}, identifier: 'emitter.card.1'
+                    StaticText, 0x10b6535b0, {{60.0, 1003.8}, {59.0, 19.3}}, label: '発射台 2'
+                    Button, 0x10b6536d0, {{313.0, 1002.3}, {22.0, 22.0}}, identifier: 'emitter.collapse.1', label: '上に移動'
+                    Button, 0x10b6537f0, {{345.0, 999.3}, {65.0, 28.0}}, identifier: 'emitter.delete.1', label: '削除'
+                      Image, 0x10b653910, {{356.0, 1006.3}, {12.3, 14.0}}, identifier: 'trash.fill', label: 'ゴミ箱'
+                      StaticText, 0x10b653a30, {{356.0, 1006.3}, {44.0, 15.1}}, label: '削除'
+                    StaticText, 0x11701f110, {{30.0, 1047.1}, {45.0, 14.3}}, label: 'パターン'
+                    Button, 0x10b59d600, {{349.0, 1041.3}, {61.0, 25.7}}, identifier: 'emitter.pattern.toggle.1', label: '放射'
+                      StaticText, 0x10b59cf80, {{359.0, 1046.3}, {24.3, 15.7}}, label: '放射'
+                      Image, 0x10b5ae7d0, {{388.7, 1051.0}, {10.0, 6.0}}, identifier: 'chevron.down', label: '下に移動'
+                    StaticText, 0x10b71bad0, {{30.0, 1081.1}, {34.0, 14.3}}, label: '弾の色'
+                    Button, 0x10b71bbf0, {{21.7, 1093.0}, {46.6, 46.6}}, identifier: 'emitter.color.1.0', label: '色1', Selected
+                    Button, 0x10b5ad2e0, {{70.0, 1097.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.1', label: '色2'
+                    Button, 0x10b59d3a0, {{114.0, 1097.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.2', label: '色3'
+                    Button, 0x10b5b2e80, {{158.0, 1097.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.3', label: '色4'
+                    Button, 0x10b5b2fa0, {{202.0, 1097.3}, {38.0, 38.0}}, identifier: 'emitter.color.1.4', label: '色5'
+                    StaticText, 0x10b5b30c0, {{30.0, 1153.3}, {34.0, 14.3}}, label: '横位置'
+                    Other, 0x10b5dfa60, {{122.0, 1145.3}, {216.0, 30.0}}, value: 0.5
+                    StaticText, 0x10b5dfb80, {{366.8, 1153.3}, {22.3, 14.3}}, label: '50%'
+                    StaticText, 0x10b5dfca0, {{30.0, 1197.3}, {34.0, 14.3}}, label: '縦位置'
+                    Other, 0x10b5dfdc0, {{122.0, 1189.3}, {216.0, 30.0}}, value: 0.2
+                    StaticText, 0x10b5dfee0, {{366.8, 1197.3}, {22.3, 14.3}}, label: '20%'
+                    StaticText, 0x10b5e0000, {{30.0, 1241.3}, {45.0, 14.3}}, label: '発射間隔'
+                    Other, 0x10b71bd10, {{122.0, 1233.3}, {216.0, 30.0}}, value: 1.0
+                    StaticText, 0x10b71be30, {{359.3, 1241.3}, {37.3, 14.3}}, label: '1.00s'
+                    StaticText, 0x10b71bf50, {{30.0, 1285.3}, {22.7, 14.3}}, label: '弾数'
+                    Other, 0x10b5e0120, {{122.0, 1277.3}, {216.0, 30.0}}, value: 16.0
+                    StaticText, 0x10b71c070, {{370.5, 1285.3}, {15.0, 14.3}}, label: '16'
+                    StaticText, 0x10b7203b0, {{30.0, 1329.3}, {45.0, 14.3}}, label: '弾の速さ'
+                    Other, 0x10b653b50, {{122.0, 1321.3}, {216.0, 30.0}}, value: 2.0
+                    StaticText, 0x10b5e0240, {{363.0, 1329.3}, {30.0, 14.3}}, label: '2.00'
+                    StaticText, 0x10b5e0360, {{30.0, 1373.3}, {56.3, 14.3}}, label: '全体の向き'
+                    Other, 0x10b5e05d0, {{122.0, 1365.3}, {216.0, 30.0}}, value: 0.0
+                    StaticText, 0x10b7204d0, {{370.5, 1373.3}, {15.0, 14.3}}, label: '0°'
+                  Button, 0x10b5e08f0, {{16.0, 1423.3}, {408.0, 50.7}}, identifier: 'editor.add', label: '発射台を追加'
+                    Image, 0x10b653c70, {{161.0, 1438.7}, {20.0, 20.0}}, identifier: 'plus.circle.fill', label: '追加'
+                    StaticText, 0x10b653d90, {{190.7, 1439.0}, {90.0, 19.3}}, label: '発射台を追加'
+                  Other, 0x10b653eb0, {{15.5, -937.8}, {409.0, 1675.7}}, identifier: 'emitter.card.0'
+                    StaticText, 0x10b653fd0, {{60.0, -919.0}, {57.0, 19.3}}, label: '発射台 1'
+                    Button, 0x10b6540f0, {{313.0, -920.3}, {22.0, 22.0}}, identifier: 'emitter.collapse.0', label: '上に移動'
+                    Button, 0x10b654210, {{345.0, -923.3}, {65.0, 28.0}}, identifier: 'emitter.delete.0', label: '削除'
+                      Image, 0x10b7205f0, {{356.0, -916.3}, {12.3, 14.0}}, identifier: 'trash.fill', label: 'ゴミ箱'
+                      StaticText, 0x10b720710, {{356.0, -916.3}, {44.0, 15.1}}, label: '削除'
+                    StaticText, 0x10b720830, {{30.0, -875.6}, {45.0, 14.3}}, label: 'パターン'
+                    Button, 0x10b720950, {{336.7, -881.3}, {73.3, 25.7}}, identifier: 'emitter.pattern.toggle.0', label: '渦巻き'
+                      StaticText, 0x10b720a70, {{346.7, -876.3}, {36.7, 15.7}}, label: '渦巻き'
+                      Image, 0x10b720b90, {{388.7, -871.7}, {10.0, 6.0}}, identifier: 'chevron.up', label: '上に移動'
+                    Other, 0x10b720cb0, {{0.0, 0.0}, {0.0, 0.0}}
+                    StaticText, 0x10b720dd0, {{30.0, -470.6}, {123.7, 14.3}}, label: '広告で手に入るパターン'
+                    Other, 0x10b720ef0, {{29.5, 74.7}, {189.5, 69.5}}
+                      Button, 0x10b721010, {{29.5, 74.7}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.rapidFan', label: '連射扇'
+                        StaticText, 0x10b721130, {{60.3, 125.7}, {28.3, 12.0}}, label: '連射扇'
+                        Image, 0x10b721250, {{109.0, 78.7}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b721370, {{126.5, 74.7}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.lightRain', label: '光の雨'
+                        StaticText, 0x10b721490, {{157.3, 125.7}, {28.3, 12.0}}, label: '光の雨'
+                        Image, 0x10b5e0a10, {{206.0, 78.7}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                    StaticText, 0x10b5e0b30, {{30.0, 155.7}, {65.7, 14.3}}, label: '弾幕パック2'
+                    Other, 0x10b5e0c50, {{29.5, 176.0}, {383.5, 219.5}}
+                      Button, 0x10b5e0d70, {{29.5, 176.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.mine', label: '地雷'
+                        StaticText, 0x10b5e0e90, {{65.0, 227.0}, {19.0, 12.0}}, label: '地雷'
+                        Image, 0x10b5e0fb0, {{109.0, 180.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b5e10d0, {{126.5, 176.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.meteor', label: '隕石'
+                        StaticText, 0x10b7215b0, {{162.0, 227.0}, {19.0, 12.0}}, label: '隕石'
+                        Image, 0x10b7216d0, {{206.0, 180.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b7217f0, {{223.5, 176.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.gridLaser', label: '格子レーザー'
+                        StaticText, 0x10b721910, {{240.3, 227.0}, {56.3, 12.0}}, label: '格子レーザー'
+                        Image, 0x10b7074c0, {{303.0, 180.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b7075e0, {{320.5, 176.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.sweepLaser', label: 'なぎ払いレーザー'
+                        StaticText, 0x10b707700, {{328.0, 227.0}, {75.0, 12.0}}, label: 'なぎ払いレーザー'
+                        Image, 0x10b707820, {{400.0, 180.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b707940, {{29.5, 251.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.giantOrb', label: '巨大弾'
+                        StaticText, 0x10b707a60, {{60.3, 302.0}, {28.3, 12.0}}, label: '巨大弾'
+                        Image, 0x10b707b80, {{109.0, 255.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b707ca0, {{126.5, 251.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.bubble', label: '膨らむ泡'
+                        StaticText, 0x10b707dc0, {{152.7, 302.0}, {37.7, 12.0}}, label: '膨らむ泡'
+                        Image, 0x10b707ee0, {{206.0, 255.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b708000, {{223.5, 251.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.gravity', label: '重力弾'
+                        StaticText, 0x10b708120, {{254.3, 302.0}, {28.3, 12.0}}, label: '重力弾'
+                        Image, 0x10b708240, {{303.0, 255.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b708360, {{320.5, 251.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.orbit', label: '衛星'
+                        StaticText, 0x10b708480, {{356.0, 302.0}, {19.0, 12.0}}, label: '衛星'
+                        Image, 0x10b7085a0, {{400.0, 255.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b7086c0, {{29.5, 326.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.snake', label: 'スネーク'
+                        StaticText, 0x10b7239e0, {{55.7, 377.0}, {37.7, 12.0}}, label: 'スネーク'
+                        Image, 0x10b723b00, {{109.0, 330.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b723c20, {{126.5, 326.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.shatterRing', label: '破裂の輪'
+                        StaticText, 0x10b723d40, {{152.7, 377.0}, {37.7, 12.0}}, label: '破裂の輪'
+                        Image, 0x10b723e60, {{206.0, 330.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                      Button, 0x10b723f80, {{223.5, 326.0}, {92.5, 69.5}}, identifier: 'emitter.pattern.0.homingRing', label: '追尾の輪'
+                        StaticText, 0x10b7240a0, {{249.7, 377.0}, {37.7, 12.0}}, label: '追尾の輪'
+                        Image, 0x10b7241c0, {{303.0, 330.0}, {7.7, 10.3}}, identifier: 'lock.fill', label: 'ロック'
+                    StaticText, 0x10b7242e0, {{30.0, 409.1}, {34.0, 14.3}}, label: '弾の色'
+                    Button, 0x10b724400, {{26.0, 425.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.0', label: '色1'
+                    Button, 0x10b724520, {{65.7, 421.0}, {46.6, 46.6}}, identifier: 'emitter.color.0.1', label: '色2', Selected
+                    Button, 0x10b724640, {{114.0, 425.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.2', label: '色3'
+                    Button, 0x10b724760, {{158.0, 425.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.3', label: '色4'
+                    Button, 0x10b724880, {{202.0, 425.3}, {38.0, 38.0}}, identifier: 'emitter.color.0.4', label: '色5'
+                    StaticText, 0x10b7249a0, {{30.0, 481.2}, {34.0, 14.3}}, label: '横位置'
+                    Other, 0x10b724ac0, {{122.0, 473.3}, {216.0, 30.0}}, value: 0.5
+                    StaticText, 0x10b724be0, {{366.8, 481.2}, {22.3, 14.3}}, label: '50%'
+                    StaticText, 0x10b724d00, {{30.0, 525.2}, {34.0, 14.3}}, label: '縦位置'
+                    Other, 0x10b724e20, {{122.0, 517.3}, {216.0, 30.0}}, value: 0.2
+                    StaticText, 0x10b724f40, {{366.8, 525.2}, {22.3, 14.3}}, label: '20%'
+                    StaticText, 0x10b725060, {{30.0, 569.2}, {45.0, 14.3}}, label: '発射間隔'
+                    Other, 0x10b725180, {{122.0, 561.3}, {216.0, 30.0}}, value: 0.12
+                    StaticText, 0x10b7252a0, {{359.3, 569.2}, {37.3, 14.3}}, label: '0.12s'
+                    StaticText, 0x10b7253c0, {{30.0, 613.2}, {22.7, 14.3}}, label: '弾数'
+                    Other, 0x10b7254e0, {{122.0, 605.3}, {216.0, 30.0}}, value: 3.0
+                    StaticText, 0x10b725750, {{374.2, 613.2}, {7.7, 14.3}}, label: '3'
+                    StaticText, 0x10b725870, {{30.0, 657.2}, {45.0, 14.3}}, label: '弾の速さ'
+                    Other, 0x10b725990, {{122.0, 649.3}, {216.0, 30.0}}, value: 1.8
+                    StaticText, 0x10b725ab0, {{363.0, 657.2}, {30.0, 14.3}}, label: '1.80'
+                    StaticText, 0x10b725bd0, {{30.0, 701.2}, {56.3, 14.3}}, label: '全体の向き'
+                    Other, 0x10b725cf0, {{122.0, 693.3}, {216.0, 30.0}}, value: -15.0
+                    StaticText, 0x10b725e10, {{363.0, 701.2}, {30.0, 14.3}}, label: '-15°'
+                  StaticText, 0x10b726130, {{111.0, 124.0}, {218.0, 200.0}}
+                  StaticText, 0x10b726250, {{111.0, 761.3}, {218.0, 200.0}}
+              Other, 0x10b726370, {{407.0, 142.0}, {30.0, 752.0}}, label: '垂直スクロールバー, 6ページ', value: 61%
+                Other, 0x10b726490, {{434.0, 658.3}, {3.0, 196.0}}
+              Other, 0x10b7265b0, {{407.0, 142.0}, {30.0, 752.0}}, label: '垂直スクロールバー, 6ページ', value: 61%
+                Other, 0x10b7266d0, {{434.0, 658.3}, {3.0, 196.0}}
 Path to element:
- →Application, 0x109467310, pid: 18281, label: '弾幕メーカー'
+ →Application, 0x10b3ff6c0, pid: 17074, label: '弾幕メーカー'
 Query chain:
  →Find: Target Application 'com.koshin.danmakumaker'
   Output: {
-    Application, 0x104080f90, pid: 18281, label: '弾幕メーカー'
+    Application, 0x10b5e3680, pid: 17074, label: '弾幕メーカー'
   }
 )
