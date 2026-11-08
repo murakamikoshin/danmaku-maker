@@ -58,10 +58,10 @@ jobs:
       - name: Build for testing
         run: |
           set -o pipefail
-          # 最適化ありのリリース設定でビルドする(デバッグ設定だと描画が間に合わず、収録が1秒11コマ程度になった)。
-          # 収録用の仕掛けは #if DEBUG の中なので、DEBUG の印だけ付ける
-          xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Release \
-            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=DEBUG" \
+          # デバッグ設定のまま、コードの最適化だけをオンにする(最適化なしだと描画が間に合わず、収録が1秒11コマ程度になった)。
+          # 印(DEBUG / SWIFT_PACKAGE)は触らない。上書きすると Firebase のパッケージが組めなくなる
+          xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Debug \
+            SWIFT_OPTIMIZATION_LEVEL=-O GCC_OPTIMIZATION_LEVEL=s \
             -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=-" DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
             > "$OUT/build.log" 2>&1 || { grep -E "error:" "$OUT/build.log" | head -60; tail -40 "$OUT/build.log"; exit 1; }
