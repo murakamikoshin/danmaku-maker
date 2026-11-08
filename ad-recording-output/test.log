@@ -1,0 +1,99 @@
+Command line invocation:
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project DanmakuMaker.xcodeproj -scheme DanmakuApp -destination "platform=iOS Simulator,id=78974B82-8A98-4B1E-B8FD-2C4852E3B705" -derivedDataPath /Users/runner/work/_temp/dd "-only-testing:DanmakuAppUITests/AdRecordingUITests"
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  GoogleUserMessagingPlatform: https://github.com/googleads/swift-package-manager-google-user-messaging-platform @ 2.3.0
+  GTMSessionFetcher: https://github.com/google/gtm-session-fetcher.git @ 4.5.0
+  GoogleDataTransport: https://github.com/google/GoogleDataTransport.git @ 10.1.1
+  Promises: https://github.com/google/promises.git @ 2.4.1
+  DanmakuCore: /Users/runner/work/danmaku-maker/danmaku-maker/DanmakuCore
+  gRPC: https://github.com/google/grpc-binary.git @ 1.65.1
+  RevenueCat: https://github.com/RevenueCat/purchases-ios-spm @ 5.69.0
+  SwiftProtobuf: https://github.com/apple/swift-protobuf.git @ 1.29.0
+  abseil: https://github.com/google/abseil-cpp-binary.git @ 1.2024011602.0
+  nanopb: https://github.com/firebase/nanopb.git @ 2.30910.1
+  leveldb: https://github.com/firebase/leveldb.git @ 1.22.5
+  Firebase: https://github.com/firebase/firebase-ios-sdk @ 11.6.0
+  InteropForGoogle: https://github.com/google/interop-ios-for-google-sdks.git @ 100.0.0
+  GoogleUtilities: https://github.com/google/GoogleUtilities.git @ 8.1.5
+  GoogleMobileAds: https://github.com/googleads/swift-package-manager-google-mobile-ads @ 11.2.0
+  AppCheck: https://github.com/google/app-check.git @ 11.2.0
+  GoogleAppMeasurement: https://github.com/google/GoogleAppMeasurement.git @ 11.4.0
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, arch:arm64, id:78974B82-8A98-4B1E-B8FD-2C4852E3B705, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:x86_64, id:78974B82-8A98-4B1E-B8FD-2C4852E3B705, OS:26.2, name:iPhone 17 Pro Max }
+2026-11-08 01:16:23.044017+0000 DanmakuAppUITests-Runner[35479:96680] [Default] Running tests...
+Test Suite 'Selected tests' started at 2026-11-08 01:16:29.071.
+Test Suite 'DanmakuAppUITests.xctest' started at 2026-11-08 01:16:29.072.
+Test Suite 'AdRecordingUITests' started at 2026-11-08 01:16:29.072.
+Test Case '-[DanmakuAppUITests.AdRecordingUITests testRecordAd]' started.
+    t =     0.00s Start Test at 2026-11-08 01:16:29.073
+    t =     0.16s Set Up
+    t =     0.18s Open com.koshin.danmakumaker
+    t =     0.19s     Launch com.koshin.danmakumaker
+2026-11-08 01:16:30.860 xcodebuild[33106:90004] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-11-08 01:16:30.860 xcodebuild[33106:90004] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =    15.70s         Setting up automation session
+    t =    75.74s         Wait for com.koshin.danmakumaker to idle
+    t =    82.30s Waiting 5.0s for "home.create" Button to exist
+    t =    83.35s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    83.36s         Checking existence of `"home.create" Button`
+    t =    83.36s         Capturing element debug description
+    t =    84.40s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    84.40s         Checking existence of `"home.create" Button`
+    t =    84.40s         Capturing element debug description
+    t =    85.38s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    85.38s         Checking existence of `"home.create" Button`
+    t =    85.38s         Capturing element debug description
+    t =    86.31s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    86.31s         Checking existence of `"home.create" Button`
+    t =    86.31s         Capturing element debug description
+    t =    87.31s     Checking `Expect predicate `existsNoRetry == 1` for object "home.create" Button`
+    t =    87.32s         Checking existence of `"home.create" Button`
+    t =    87.32s         Capturing element debug description
+    t =    87.32s     Checking existence of `"home.create" Button`
+    t =    88.33s     Checking existence of `"home.create" Button` (retry 1)
+    t =    89.34s     Checking existence of `"home.create" Button` (retry 2)
+    t =    89.34s Collecting debug information to assist test failure triage
+    t =    89.34s Checking existence of `"home.create" Button`
+    t =    90.36s Checking existence of `"home.create" Button` (retry 1)
+    t =    91.37s Checking existence of `"home.create" Button` (retry 2)
+    t =    91.38s Swipe up Target Application 'com.koshin.danmakumaker'
+    t =    91.38s     Wait for com.koshin.danmakumaker to idle
+    t =    91.39s     Find the Target Application 'com.koshin.danmakumaker'
+    t =    92.40s     Retrying `Swipe up Target Application 'com.koshin.danmakumaker'` (attempt #2)
+    t =    92.40s         Wait for com.koshin.danmakumaker to idle
+    t =    92.40s         Find the Target Application 'com.koshin.danmakumaker'
+    t =    93.41s     Retrying `Swipe up Target Application 'com.koshin.danmakumaker'` (attempt #3)
+    t =    93.41s         Wait for com.koshin.danmakumaker to idle
+    t =    93.41s         Find the Target Application 'com.koshin.danmakumaker'
+<unknown>:0: error: -[DanmakuAppUITests.AdRecordingUITests testRecordAd] : Failed to application com.koshin.danmakumaker is not running
+    t =    93.50s Tear Down
+    t =    93.71s Checking for crash reports corresponding to unexpected termination of com.koshin.danmakumaker
+<unknown>:0: error: -[DanmakuAppUITests.AdRecordingUITests testRecordAd] : com.koshin.danmakumaker crashed in <external symbol>
+Test Case '-[DanmakuAppUITests.AdRecordingUITests testRecordAd]' failed (94.196 seconds).
+Test Suite 'AdRecordingUITests' failed at 2026-11-08 01:18:03.269.
+	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.198) seconds
+Test Suite 'DanmakuAppUITests.xctest' failed at 2026-11-08 01:18:03.270.
+	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.198) seconds
+Test Suite 'Selected tests' failed at 2026-11-08 01:18:03.270.
+	 Executed 1 test, with 2 failures (0 unexpected) in 94.196 (94.200) seconds
+2026-11-08 01:18:30.092 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 156.829 elapsed -- Testing started completed.
+2026-11-08 01:18:30.093 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-08 01:18:30.093 xcodebuild[33106:90004] [MT] IDETestOperationsObserverDebug: 156.829 sec, +156.829 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/runner/work/_temp/dd/Logs/Test/Test-DanmakuApp-2026.11.08_01-15-44-+0000.xcresult
+
+Failing tests:
+	AdRecordingUITests.testRecordAd()
+	AdRecordingUITests.testRecordAd()
+
+** TEST EXECUTE FAILED **
+
+Testing started
+test exit 65
