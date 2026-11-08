@@ -66,6 +66,8 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         starting = true
         defer { starting = false }
         await requestTracking()
+        // ATT の結果が出たので、広告の効果計測(AppsFlyer)を始めてよい
+        AttributionService.shared.trackingDecided()
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
             GADMobileAds.sharedInstance().start { _ in c.resume() }
         }

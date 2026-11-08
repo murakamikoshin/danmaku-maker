@@ -42,6 +42,8 @@ struct DanmakuApp: App {
                     await purchases.refresh()
                     // 広告削除の購入者には、同意画面も広告も出さない
                     if !purchases.isPremium && !Self.adsDisabledForScreenshots { await ads.start() }
+                    // 広告を出さない人には ATT を出さないので、計測はここで始める(出した人は ads.start の中で始まる)
+                    else { AttributionService.shared.trackingDecided() }
                     await ResultsQueue.shared.flush()
                 }
                 .onChange(of: auth.uid) { uid in
