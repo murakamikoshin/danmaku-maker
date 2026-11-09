@@ -851,8 +851,6 @@ struct ModeIcon: View {
 /// ステージのカード(一覧の1行)。モードの色で縁が光る
 struct StageCardShell<Content: View>: View {
     let mode: Mode
-    /// 左のアイコンの代わりに出すもの(世界のステージの動くプレビューなど)。nil ならクリア条件のアイコン
-    var thumbnail: AnyView? = nil
     @ViewBuilder var content: Content
 
     private var tint: Color {
@@ -866,7 +864,7 @@ struct StageCardShell<Content: View>: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let thumbnail { thumbnail } else { ModeIcon(mode: mode) }
+            ModeIcon(mode: mode)
             content
         }
         .padding(12)
