@@ -255,8 +255,11 @@ struct HomeView: View {
             }
             let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) }
             ForEach(visible) { s in
-                Button { if Date() > ignoreTapUntil { gameTap(); detail = s } } label: { RemoteRow(stage: s, onHold: holdChanged) }
-                    .buttonStyle(BounceButtonStyle())
+                // Button ではなくタップで開く(長押しのジェスチャーと Button のタップがぶつかって、タップが効かなくなるため)
+                RemoteRow(stage: s, onHold: holdChanged)
+                    .contentShape(Rectangle())
+                    .onTapGesture { if Date() > ignoreTapUntil { gameTap(); detail = s } }
+                    .accessibilityAddTraits(.isButton)
                     // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
                     .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
             }
