@@ -212,3 +212,208 @@ extension GraphicsContext {
         }
     }
 }
+
+// MARK: - 世界のステージ一覧の、動くミニプレビューと、流れるタイトル
+
+/// 一覧がスクロール中か。スクロール中は、プレビューとタイトルの動きを止める
+private struct ListScrollingKey: EnvironmentKey { static let defaultValue = false }
+
+extension EnvironmentValues {
+    var listScrolling: Bool {
+        get { self[ListScrollingKey.self] }
+        set { self[ListScrollingKey.self] = newValue }
+    }
+}
+
+extension View {
+    /// スクロール中かを binding に書く(iOS 18 以降。17 ではスクロール中も止めない)
+    @ViewBuilder func trackListScrolling(_ scrolling: Binding<Bool>) -> some View {
+        if #available(iOS 18.0, *) {
+            self.onScrollPhaseChange { _, phase in
+                if scrolling.wrappedValue != phase.isScrolling { scrolling.wrappedValue = phase.isScrolling }
+            }
+        } else {
+            self
+        }
+    }
+}
+
+/// ミニプレビューの計算。ステージの最初の数秒だけを、ゲーム本体と同じ計算で、くり返し流す。
+/// ボスの段階が変わる・覚醒する・次の場面へ進むところは見せない(サプライズを守る)ので、そこで最初に戻る
+final class MiniStageEngine {
+    let stage: Stage
+    private(set) var sim: Simulation
+    /// くり返す長さ(秒)。ステージの長さの 30% まで(4〜8秒)
+    let window: Double
+    private var last: Date?
+    private var carry = 0.0
+
+    init(stage: Stage) {
+        self.stage = stage
+        sim = MiniStageEngine.fresh(stage)
+        let d = Double(stage.durationSec)
+        window = d > 0 ? min(8, max(4, d * 0.3)) : 8
+    }
+
+    private static func fresh(_ stage: Stage) -> Simulation {
+        var s = Simulation(stage: stage)
+        s.invincible = true
+        // READY の間は飛ばして、すぐ弾が出るところから見せる
+        while s.t < 0 && s.outcome == .playing { s.step(.zero) }
+        return s
+    }
+
+    func restart() {
+        sim = MiniStageEngine.fresh(stage)
+        last = nil
+        carry = 0
+    }
+
+    /// 止める(次に動かしたとき、止まっていた時間は進めない)
+    func pause() { last = nil }
+
+    func advance(to now: Date) {
+        let dt = min(0.1, last.map { now.timeIntervalSince($0) } ?? 0)
+        last = now
+        carry += dt
+        let step = DanmakuConfig.step
+        while carry >= step {
+            carry -= step
+            // 見えない自機を、1秒ごとに左右へゆっくり動かす(自機狙いの弾が向きを変えるように)
+            let dx: Int8 = (sim.tick / 120) % 2 == 0 ? 2 : -2
+            sim.step(Move(dx: dx, dy: 0))
+            if sim.outcome != .playing || sim.waveIndex > 0 || sim.phase > 1 || sim.t >= window {
+                restart()
+                last = now
+                return
+            }
+        }
+    }
+}
+
+/// 世界のステージ一覧の左に出す、動く小さなプレビュー(自機・当たり判定なし。弾は大きめに描く)。
+/// 画面の上側(360×360)を切り取って見せる
+struct StageMiniPreview: View {
+    let stage: Stage
+    /// 動かすか(画面に映っていて、スクロール中でない)
+    let playing: Bool
+    /// 画面に映っているか(映らなくなったら、最初に戻す)
+    let visible: Bool
+    var size: CGFloat = 56
+
+    private final class Holder { var engine: MiniStageEngine? }
+    @State private var holder = Holder()
+
+    var body: some View {
+        let skin = Skin.of(stage.lookBullets)
+        let bg = Skin.of(stage.lookBackground).background
+        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !playing)) { timeline in
+            Canvas { ctx, sz in
+                if holder.engine?.stage != stage { holder.engine = MiniStageEngine(stage: stage) }
+                guard let engine = holder.engine else { return }
+                if playing { engine.advance(to: timeline.date) } else { engine.pause() }
+                let s = sz.width / DanmakuConfig.width
+                Self.draw(&ctx, sim: engine.sim, skin: skin, scale: s, time: timeline.date.timeIntervalSinceReferenceDate)
+            }
+        }
+        .frame(width: size, height: size)
+        .background(Color(bg))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 1))
+        .onChange(of: visible) { v in if !v { holder.engine?.restart() } }
+        .accessibilityHidden(true)
+    }
+
+    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, scale s: CGFloat, time: Double) {
+        if sim.isBoss {
+            let p = sim.bossPosition
+            let c = CGPoint(x: CGFloat(p.x) * s, y: CGFloat(p.y) * s)
+            if let ch = sim.bossCharacter, let art = BossSprites.art(ch, awakened: false) {
+                let w = art.size.width * s * 1.3, h = art.size.height * s * 1.3
+                ctx.draw(Image(uiImage: art.still).interpolation(.none), in: CGRect(x: c.x - w / 2, y: c.y - h / 2, width: w, height: h))
+            } else {
+                let side = EnemyArt.bossPoints(size: sim.bossSizeIndex) * s * 1.3
+                ctx.draw(Image(uiImage: EnemyArt.bossImage(look: sim.bossLookIndex, size: sim.bossSizeIndex, flash: false)),
+                         in: CGRect(x: c.x - side / 2, y: c.y - side / 2, width: side, height: side))
+            }
+        }
+        let colors = skin.bulletColors
+        for b in sim.bullets {
+            let color = Color(colors[min(max(b.color, 0), colors.count - 1)])
+            if b.isBeam { ctx.drawBeam(b, color: color, scale: s); continue }
+            if b.isBlast { ctx.drawBlast(b, color: color, scale: s, time: time); continue }
+            // 小さい枠でもつぶれないよう、実際より大きめに描く
+            let base: CGFloat = b.isGiant ? CGFloat(DanmakuConfig.giantDrawRadius) : CGFloat(max(4, b.radius + 2))
+            let r = max(1.8, base * s * 1.6)
+            ctx.fill(Path(ellipseIn: CGRect(x: CGFloat(b.x) * s - r, y: CGFloat(b.y) * s - r, width: r * 2, height: r * 2)), with: .color(color))
+        }
+    }
+}
+
+/// 1行に収まらないタイトルを、横に流して最後まで見せる。
+/// 先頭で2秒止まる → 一定の速さで末尾まで流れる → 末尾で1秒止まる → 先頭へパッと戻る、をくり返す。
+/// 速さはタイトルの長さによらず同じ。収まるタイトルは動かさない
+struct MarqueeTitle: View {
+    let text: String
+    let font: Font
+    /// 動かすか(画面に映っていて、スクロール中でない)
+    let playing: Bool
+    /// 画面に映っているか(映らなくなったら、先頭に戻す)
+    let visible: Bool
+
+    static let speed: CGFloat = 30
+    static let holdStart = 2.0
+    static let holdEnd = 1.0
+
+    private final class Clock {
+        var elapsed = 0.0
+        var last: Date?
+        func tick(_ now: Date, running: Bool) -> Double {
+            if running { elapsed += min(0.1, last.map { now.timeIntervalSince($0) } ?? 0); last = now } else { last = nil }
+            return elapsed
+        }
+        func reset() { elapsed = 0; last = nil }
+    }
+
+    private struct TextWidthKey: PreferenceKey {
+        static let defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+    }
+    private struct BoxWidthKey: PreferenceKey {
+        static let defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+    }
+
+    @State private var textWidth: CGFloat = 0
+    @State private var boxWidth: CGFloat = 0
+    @State private var clock = Clock()
+
+    var body: some View {
+        let overflow = max(0, textWidth - boxWidth)
+        let moving = playing && overflow > 0.5
+        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: !moving)) { timeline in
+            Text(text).font(font).lineLimit(1).fixedSize()
+                .background(GeometryReader { g in Color.clear.preference(key: TextWidthKey.self, value: g.size.width) })
+                .offset(x: -Self.offset(elapsed: clock.tick(timeline.date, running: moving), overflow: overflow))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(GeometryReader { g in Color.clear.preference(key: BoxWidthKey.self, value: g.size.width) })
+        .clipped()
+        .onPreferenceChange(TextWidthKey.self) { textWidth = $0 }
+        .onPreferenceChange(BoxWidthKey.self) { boxWidth = $0 }
+        .onChange(of: visible) { v in if !v { clock.reset() } }
+        .onChange(of: text) { _ in clock.reset() }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(text))
+    }
+
+    /// 経過時間から、左へずらす量を出す
+    static func offset(elapsed: Double, overflow: CGFloat) -> CGFloat {
+        guard overflow > 0.5 else { return 0 }
+        let travel = Double(overflow / speed)
+        let cycle = holdStart + travel + holdEnd
+        let e = elapsed.truncatingRemainder(dividingBy: cycle)
+        if e < holdStart { return 0 }
+        return min(overflow, CGFloat(e - holdStart) * speed)
+    }
+}
