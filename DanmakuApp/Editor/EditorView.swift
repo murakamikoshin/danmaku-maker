@@ -243,6 +243,8 @@ private struct TimingPanel: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                     BossMoveCards(move: $model.draft.bossMove)
+                    Text("editor.boss.position").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    BossPositionPad(x: $model.draft.bossX, y: $model.draft.bossY)
                 }
             }
             if model.draft.mode == .boss {
@@ -901,6 +903,11 @@ private struct WaveCard: View {
                 if BossCharacter.of(look: wave.bossLook ?? 0) == nil {
                     Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                     BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
+                    if advanced {
+                        Text("editor.boss.position").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        BossPositionPad(x: Binding(get: { wave.bossX }, set: { model.draft.waves[i].bossX = $0 }),
+                                        y: Binding(get: { wave.bossY }, set: { model.draft.waves[i].bossY = $0 }))
+                    }
                 }
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
                           range: 100...1000, step: 50) { String(Int($0)) }

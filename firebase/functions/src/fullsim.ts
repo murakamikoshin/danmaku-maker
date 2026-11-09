@@ -83,6 +83,12 @@ export function bossPoint(move: number, rawT: number): { x: number; y: number } 
       const s = u * u * (3 - 2 * u);
       return { x: W * (a[0] + (b[0] - a[0]) * s), y: H * (a[1] + (b[1] - a[1]) * s) };
     }
+    case 7: return { x: W * 0.5 + 85 * Math.cos(t * 0.7), y: H * 0.2 - 45 * Math.sin(t * 0.7) };
+    case 8: return { x: W * 0.5 - 115 * Math.sin(t * 0.6), y: H * 0.2 + 40 * Math.sin(t * 1.2) };
+    case 9: case 10: {
+      const bm = BOSS_MOVES[Math.min(Math.max(move, 0), 10) - 8]!;
+      return { x: W * (0.5 - bm.a * Math.sin(t * bm.w)), y: H * 0.18 };
+    }
     default: {
       const bm = BOSS_MOVES[Math.min(Math.max(move, 0), 2)]!;
       return { x: W * (0.5 + bm.a * Math.sin(t * bm.w)), y: H * 0.18 };
@@ -110,17 +116,19 @@ export interface SimStage {
   bossSize?: number | null;
   bossLook?: number | null;
   awaken?: number | null;
+  bossX?: number | null;
+  bossY?: number | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number }
 const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -188,7 +196,26 @@ interface Bullet {
 }
 interface Shot { x: number; y: number; vx: number; damage: number }
 
+/** 左右反転(線対称)。アプリの Bullet.mirrorX と同じ */
+function mirrorBullet(b: Bullet) {
+  b.x = W - b.x; b.vx = -b.vx;
+  switch (b.script) {
+    case BEAM_SCRIPT: case BOOMERANG_SCRIPT: case WEAVE_SCRIPT: case ZIGZAG_SCRIPT: b.turn = -b.turn; break;
+    case SHARD_SCRIPT: case RING_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
+    default: break;
+  }
+  if (b.follow) b.follow.ox = W - b.follow.ox;
+}
+
+/** 弾を出す。mir === 1 のときは、左右を反転した世界で撃って、出た弾を反転して戻す(アプリの Emit.emit と同じ) */
 function emit(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[], awakened = false, salt = 0) {
+  if (m.mir !== 1) { emitCore(m, k, cx, cy, px, py, rng, out, awakened, salt); return; }
+  const before = out.length;
+  emitCore(m, k, W - cx, cy, W - px, py, rng, out, awakened, salt);
+  for (let j = before; j < out.length; j++) mirrorBullet(out[j]!);
+}
+
+function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: Bullet[], awakened = false, salt = 0) {
   const sp = m.v * 60;
   const n = Math.max(1, m.c);
   const deg = Math.PI / 180;
@@ -415,7 +442,10 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     const waveT = t - waveStart;
     const angel = sp.look === FALLEN_ANGEL_LOOK;
     const wt = Math.max(0, waveT);
-    const bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
+    let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
+    if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
+      bp = { x: Math.min(Math.max(bp.x + sp.homeDX, 24), W - 24), y: Math.min(Math.max(bp.y + sp.homeDY, 24), H * 0.5) };
+    }
     const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : bp.x;
     const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : bp.y;
     const bossRadius = angel ? FALLEN_ANGEL_RADIUS : BOSS_RADII[Math.min(Math.max(sp.size, 0), 2)]!;

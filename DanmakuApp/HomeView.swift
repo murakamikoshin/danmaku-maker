@@ -299,28 +299,9 @@ struct HomeView: View {
 
     /// クリア条件の絞り込み: 見出しと、今の条件を出すプルダウン。絞り込み中は色をつけて目立たせる
     private var modeFilter: some View {
-        let current = Self.modeOptions.first { $0.0 == world.mode }?.1 ?? "world.filter.all"
-        let active = world.mode != nil
-        return HStack(spacing: 10) {
+        return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.filter.title", "flag.checkered")
-            Spacer(minLength: 8)
-            Menu {
-                Picker(selection: $world.mode) {
-                    ForEach(Self.modeOptions, id: \.1) { option in
-                        Text(LocalizedStringKey(option.1)).tag(option.0)
-                    }
-                } label: { EmptyView() }
-            } label: {
-                HStack(spacing: 6) {
-                    Text(LocalizedStringKey(current)).font(.system(size: 14, weight: .heavy, design: .rounded)).lineLimit(1)
-                    Image(systemName: "chevron.down").font(.system(size: 11, weight: .heavy))
-                }
-                .foregroundStyle(active ? Color.white : Color(Palette.text))
-                .padding(.vertical, 8).padding(.horizontal, 14)
-                .background(active ? AnyShapeStyle(GameStyle.accent) : AnyShapeStyle(Color.white.opacity(0.08)), in: Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(active ? 0.65 : 0.2)))
-            }
-            .accessibilityIdentifier("home.mode")
+            ChipGrid(items: Self.modeOptions.map { ($0.0, L($0.1)) }, selection: $world.mode, idPrefix: "home.mode", minimum: 70)
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
         .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))

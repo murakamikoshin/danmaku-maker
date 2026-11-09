@@ -1,8 +1,8 @@
 import { validatePath } from "./custompath.js";
 import { containsNgWord } from "./ngwords/index.js";
 
-/** ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ(Swift の Simulation.bossMoveCount と同じ) */
-export const BOSS_MOVE_COUNT = 7;
+/** ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ 7=円(逆) 8=8の字(逆) 9=横ゆっくり(逆) 10=横はやい(逆)(Swift の Simulation.bossMoveCount と同じ) */
+export const BOSS_MOVE_COUNT = 11;
 
 export const WAVE_DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [30, 60, 90, 120, 180] } as const;
 export const MAX_WAVES = 6;
@@ -31,6 +31,8 @@ export interface Emitter {
   path?: number[];
   /** 弾の見た目(1=くの字 2=丸。未指定=パターンの標準)。見た目だけ */
   sh?: 1 | 2;
+  /** 左右反転(線対称)。1 のときだけ入れる */
+  mir?: 1;
 }
 
 export interface Wave {
@@ -50,9 +52,15 @@ export interface Wave {
   mookLook?: number;
   /** 覚醒する段階(2 か 3)。ボスの場面だけ */
   awaken?: number;
+  /** ボスの位置(動きの中心。x は 0.2〜0.8、y は 0.1〜0.3、0.05 刻み。標準=x 0.5, y 0.2 は入れない) */
+  bossX?: number;
+  bossY?: number;
 }
 
 export interface Stage {
+  /** ボスの位置(動きの中心)。標準は入れない */
+  bossX?: number;
+  bossY?: number;
   name: string;
   authorName: string;
   mode: Mode;
@@ -107,6 +115,15 @@ function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: t
   return { ok: true, v: n === std ? undefined : n };
 }
 
+/** ボスの位置の指定(0.05 刻み)。範囲外・刻み違いは null。標準の位置と同じなら undefined(入れない) */
+function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean; v?: number } {
+  if (v === undefined || v === null) return { ok: true };
+  if (typeof v !== "number" || !Number.isFinite(v) || v < lo - 1e-9 || v > hi + 1e-9) return { ok: false };
+  const r = Math.round(v * 20) / 20;
+  if (Math.abs(r - v) > 1e-6) return { ok: false };
+  return Math.abs(r - std) < 1e-6 ? { ok: true } : { ok: true, v: r };
+}
+
 /** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使)。アプリの BossCharacter.maxLook と同じ */
 export const BOSS_LOOK_MAX = 5;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
@@ -151,7 +168,8 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
     const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
-    if ([x, y, s, e, i, c, v, r, k, ph, fp, ang, sh].some((n) => n === null)) return { ok: false, error: "emitter-range" };
+    const mir = int(item.mir ?? 0, 0, 1);
+    if ([x, y, s, e, i, c, v, r, k, ph, fp, ang, sh, mir].some((n) => n === null)) return { ok: false, error: "emitter-range" };
     // 回せないパターン(雨・横切り・隅・掃射)に角度は付けられない
     if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
     // 描いた軌道は、custom のときだけ付き、custom には必ず付く
@@ -161,7 +179,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}) });
   }
   return { ok: true, list };
 }
@@ -204,6 +222,8 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
     const wMookLook = optInt(w.mookLook, 0, 4, 0);
     const wAwaken = optInt(w.awaken, 2, 3, null);
+    const wHx = homeVal(w.bossX, 0.2, 0.8, 0.5), wHy = homeVal(w.bossY, 0.1, 0.3, 0.2);
+    if (!wHx.ok || !wHy.ok || ((wHx.v !== undefined || wHy.v !== undefined) && (kind !== "boss" || ((wBossLook as { v?: number }).v ?? 0) >= BOSS_CHARACTER_MIN))) return { ok: false, error: "wave-look" };
     if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok || !wAwaken.ok) return { ok: false, error: "wave-look" };
     if (wAwaken.v !== undefined && kind !== "boss") return { ok: false, error: "wave-look" };
     // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
@@ -216,7 +236,8 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
       ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}),
       ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}),
-      ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}) });
+      ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}),
+      ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}) });
   }
   return { ok: true, list, total: total + INTERMISSION_BUDGET * (list.length - 1) };
 }
@@ -322,6 +343,8 @@ export function validatePublish(input: unknown): Validated {
   const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
   const bMookLook = optInt(input.mookLook, 0, 4, 0);
   const bAwaken = optInt(input.awaken, 2, 3, null);
+  const bHx = homeVal(input.bossX, 0.2, 0.8, 0.5), bHy = homeVal(input.bossY, 0.1, 0.3, 0.2);
+  if (!bHx.ok || !bHy.ok || ((bHx.v !== undefined || bHy.v !== undefined) && ((mode !== "boss" && mode !== "damage") || ((bBossLook as { v?: number }).v ?? 0) >= BOSS_CHARACTER_MIN))) return { ok: false, error: "look" };
   if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok || !bAwaken.ok) return { ok: false, error: "look" };
   if (bAwaken.v !== undefined && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
   // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
@@ -378,6 +401,7 @@ export function validatePublish(input: unknown): Validated {
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),
+      ...(bHx.v !== undefined ? { bossX: bHx.v } : {}), ...(bHy.v !== undefined ? { bossY: bHy.v } : {}),
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
       ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}) },
   };

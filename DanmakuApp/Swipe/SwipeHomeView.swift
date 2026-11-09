@@ -395,77 +395,120 @@ struct SwipeRankingView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            List {
-                // 今月 / 累計 の切り替え
-                Section {
-                    Picker("", selection: $monthly) {
-                        Text("swipe.rank.month").tag(true)
-                        Text("swipe.rank.all").tag(false)
-                    }.pickerStyle(.segmented)
+        ZStack {
+            Color(Palette.background).ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 12) {
+                    header
+                    GameTabs(items: [(true, "swipe.rank.month"), (false, "swipe.rank.all")], selection: $monthly, idPrefix: "swipe.rank.tab")
                     if monthly, let m = data.month, let end = data.endsAt {
                         Text(String(format: L("swipe.rank.period"), monthLabel(m), remaining(end)))
-                            .font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.7))
                     }
-                }
-                // 名前の出し方(匿名 / ユーザー名)と、称号。変えたあとのプレイから反映される
-                Section {
-                    Button { editingName = true } label: {
-                        HStack {
-                            Label("handle.title", systemImage: "person.crop.circle")
-                            Spacer()
-                            Text(names.publicName ?? L("handle.mode.anon")).font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).lineLimit(1)
-                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
-                        }
-                    }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
-                    Button { showTitles = true } label: {
-                        HStack {
-                            Label("title.button", systemImage: "rosette")
-                            Spacer()
-                            if let t = titles.selected { TitleChip(id: t, size: 11) } else { Text("title.none").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary) }
-                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
-                        }
-                    }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
-                    .accessibilityIdentifier("swipe.titles")
-                }
-                if let r = data.myRank, let s = data.myScore {
-                    Section {
-                        HStack { Text(String(format: L("swipe.rank.mine"), r)).font(.system(size: 14, weight: .black)); Spacer()
-                            Text(ScoreFormat.short(s, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }
-                        if monthly, let total = data.total { Text(String(format: L("swipe.rank.total"), total)).font(.system(size: 12)).foregroundStyle(.secondary)
-                            if let goal = goalText(rank: r, total: total) { Text(goal).font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.cyan)) } }
+                    // 名前の出し方(匿名 / ユーザー名)と、称号。変えたあとのプレイから反映される
+                    HStack(spacing: 10) {
+                        tile(icon: "person.crop.circle", title: "handle.title") {
+                            Text(names.publicName ?? L("handle.mode.anon")).lineLimit(1)
+                        } action: { editingName = true }
+                        tile(icon: "rosette", title: "title.button") {
+                            if let t = titles.selected { TitleChip(id: t, size: 11) } else { Text("title.none") }
+                        } action: { showTitles = true }
+                        .accessibilityIdentifier("swipe.titles")
                     }
+                    if let r = data.myRank, let s = data.myScore { mine(rank: r, score: s) }
+                    VStack(spacing: 6) {
+                        ForEach(data.rows) { row in rankRow(row) }
+                    }
+                    Text(monthly ? "swipe.rank.footer.month" : "swipe.rank.footer")
+                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.55)).multilineTextAlignment(.center)
+                    if loading { ProgressView().tint(Color(Palette.pink)).padding(.vertical, 8) }
+                    if failed { Text("swipe.error.network").font(.footnote).foregroundStyle(.secondary) }
                 }
-                Section {
-                    ForEach(data.rows) { row in rankRow(row) }
-                } footer: { Text(monthly ? "swipe.rank.footer.month" : "swipe.rank.footer") }
-                if loading { ProgressView().frame(maxWidth: .infinity) }
-                if failed { Text("swipe.error.network").foregroundStyle(.secondary) }
+                .padding(.horizontal, 16).padding(.bottom, 28).padding(.top, 8)
             }
-            .navigationTitle("swipe.ranking").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("swipe.close") { dismiss() } } }
         }
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $editingName) { HandleSheet() }
         .sheet(isPresented: $showTitles) { TitlePickerView() }
         .task { await titles.load(uid: auth.uid) }
         .task(id: monthly) { await load() }
     }
 
-    /// 1 行: 順位・(王冠|メダル)と名前・名前の下に称号の札と連続本数・点数
-    private func rankRow(_ row: SwipeRankRow) -> some View {
-        HStack(spacing: 10) {
-            Text("\(row.rank)").font(.system(size: 14, weight: .black, design: .rounded)).frame(width: 34, alignment: .trailing)
-                .foregroundStyle(row.rank <= 3 ? Color(uiColor: SwipePalette.gold) : .white)
-            VStack(alignment: .leading, spacing: 2) {
-                BadgedName(name: row.name, badge: row.badge, size: 13)
+    private var header: some View {
+        HStack {
+            Text("swipe.ranking").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(
+                LinearGradient(colors: [.white, Color(uiColor: SwipePalette.gold)], startPoint: .top, endPoint: .bottom))
+            Spacer()
+            Button { gameTap(); dismiss() } label: {
+                Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
+                    .frame(width: 36, height: 36).background(Color.white.opacity(0.12), in: Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.2)))
+            }
+            .buttonStyle(BounceButtonStyle())
+            .accessibilityLabel(Text("swipe.close"))
+        }
+    }
+
+    private func tile<V: View>(icon: String, title: LocalizedStringKey, @ViewBuilder value: () -> V, action: @escaping () -> Void) -> some View {
+        Button { gameTap(); action() } label: {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    if let t = row.title { TitleChip(id: t, size: 9) }
-                    Text(String(format: L("swipe.rank.streak"), row.bestStreak)).font(.system(size: 10)).foregroundStyle(.secondary)
+                    Image(systemName: icon).font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                    Text(title).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.7))
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.4))
+                }
+                value().font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            }
+            .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+            .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+        }
+        .buttonStyle(BounceButtonStyle())
+    }
+
+    private func mine(rank: Int, score: BigScore) -> some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text(String(format: L("swipe.rank.mine"), rank)).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Spacer()
+                Text(ScoreFormat.short(score, SwipePalette.scoreStyle)).font(.system(size: 17, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold))
+            }
+            if monthly, let total = data.total {
+                HStack {
+                    Text(String(format: L("swipe.rank.total"), total)).font(.system(size: 12, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.65))
+                    Spacer()
+                    if let goal = goalText(rank: rank, total: total) { Text(goal).font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan)) }
                 }
             }
-            Spacer()
-            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold))
-        }.listRowBackground(row.mine ? Color(uiColor: SwipePalette.pink).opacity(0.18) : nil)
+        }
+        .padding(14)
+        .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.28), Color(Palette.pink).opacity(0.10)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(Palette.pink).opacity(0.6), lineWidth: 1.2))
+    }
+
+    /// 1 行: 順位・(王冠|メダル)と名前・名前の下に称号の札と連続本数・点数
+    private func rankRow(_ row: SwipeRankRow) -> some View {
+        let top = CrownStyle.color(row.rank)
+        return HStack(spacing: 10) {
+            ZStack {
+                Circle().fill((top ?? Color.white).opacity(top == nil ? 0.08 : 0.22))
+                Text("\(row.rank)").font(.system(size: row.rank >= 100 ? 11 : 14, weight: .black, design: .rounded)).minimumScaleFactor(0.6)
+                    .foregroundStyle(top ?? Color(Palette.text))
+            }.frame(width: 34, height: 34)
+            VStack(alignment: .leading, spacing: 2) {
+                BadgedName(name: row.name, badge: row.badge, size: 14)
+                HStack(spacing: 6) {
+                    if let t = row.title { TitleChip(id: t, size: 9) }
+                    Text(String(format: L("swipe.rank.streak"), row.bestStreak)).font(.system(size: 10, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.55))
+                }
+            }
+            Spacer(minLength: 4)
+            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold)).lineLimit(1).minimumScaleFactor(0.6)
+        }
+        .padding(.vertical, 8).padding(.horizontal, 10)
+        .background((row.mine ? Color(Palette.pink).opacity(0.2) : (top?.opacity(0.10) ?? Color.white.opacity(0.05))), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(row.mine ? Color(Palette.pink).opacity(0.6) : (top?.opacity(0.45) ?? GameStyle.edge)))
     }
 
     private func load() async {

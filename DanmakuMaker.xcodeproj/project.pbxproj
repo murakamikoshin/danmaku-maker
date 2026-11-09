@@ -84,6 +84,7 @@
 		CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */ = {isa = PBXBuildFile; fileRef = E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */; };
 		D06B87FBA6FC1D1D54206E05 /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C491E753AF70E1D5511B48 /* CommentService.swift */; };
 		D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0719981841E39DB1D9E6C6AB /* FirebaseFirestore */; };
+		D3ABB662271871355FFEBA58 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F68837435E863CE44BB6217 /* FeedbackView.swift */; };
 		D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8479A886EF2B4CF44742DC /* SampleStages.swift */; };
 		DB8245559AA794D35992DF01 /* DailyRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEDF0B0A7D3F0B6DB776BA4 /* DailyRewardView.swift */; };
 		DD5A4F46808AE530C121BA06 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE38DC60AFF43856F6B97CF /* AudioManager.swift */; };
@@ -141,6 +142,7 @@
 		4294749978334F0841FCB790 /* DanmakuAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DanmakuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		4BB7DF7FE9B74CEEDCAC0BA6 /* bgm_bright.caf */ = {isa = PBXFileReference; path = bgm_bright.caf; sourceTree = "<group>"; };
+		4F68837435E863CE44BB6217 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
 		4F83BED46E19BBDDDCE011EE /* Skin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skin.swift; sourceTree = "<group>"; };
 		50F9BB1B9ADCDC084D4AABDE /* SwipeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeModel.swift; sourceTree = "<group>"; };
 		615128478ED419DE71F36B5D /* SwipeScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeScene.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				CAEDF0B0A7D3F0B6DB776BA4 /* DailyRewardView.swift */,
 				AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */,
 				CBED3045376B6993745B32B4 /* DanmakuApp.swift */,
+				4F68837435E863CE44BB6217 /* FeedbackView.swift */,
 				E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */,
 				999CC41D43E16FE0C7135EDD /* HomeView.swift */,
 				72F3CDCA55F3D4734044C80B /* Info.plist */,
@@ -593,6 +596,7 @@
 				CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */,
 				E62D3F0A0B6B17305FBF647B /* EmitterPreview.swift in Sources */,
 				3B98C5054EB5F1C20E340941 /* EnemyArt.swift in Sources */,
+				D3ABB662271871355FFEBA58 /* FeedbackView.swift in Sources */,
 				9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */,
 				4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */,
 				F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */,

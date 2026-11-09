@@ -123,14 +123,31 @@ struct PatternMakerView: View {
 
     // MARK: 設定と保存
 
+    /// ゲーム風の「文字  −  ＋」の行(標準のステッパーの代わり)
+    private func stepRow(_ text: String, minus: @escaping () -> Void, plus: @escaping () -> Void, canMinus: Bool, canPlus: Bool) -> some View {
+        HStack(spacing: 10) {
+            Text(text).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Spacer()
+            ForEach([(false, "minus"), (true, "plus")], id: \.1) { item in
+                let enabled = item.0 ? canPlus : canMinus
+                Button { gameTap(); (item.0 ? plus : minus)() } label: {
+                    Image(systemName: item.1).font(.system(size: 15, weight: .heavy)).foregroundStyle(.white)
+                        .frame(width: 38, height: 38).background(GameStyle.accent, in: Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 1))
+                }
+                .buttonStyle(BounceButtonStyle()).opacity(enabled ? 1 : 0.35).disabled(!enabled)
+            }
+        }
+    }
+
     private var controls: some View {
         GamePanel(title: "maker.settings") {
-            Stepper(value: $copies, in: CustomPattern.copiesRange) {
-                Text(String(format: L("maker.copies"), copies)).font(.system(size: 14, weight: .bold, design: .rounded))
-            }
-            Stepper(value: $speed, in: 1...4, step: 0.5) {
-                Text(String(format: L("maker.speed"), speed)).font(.system(size: 14, weight: .bold, design: .rounded))
-            }
+            stepRow(String(format: L("maker.copies"), copies),
+                    minus: { if copies > CustomPattern.copiesRange.lowerBound { copies -= 1 } }, plus: { if copies < CustomPattern.copiesRange.upperBound { copies += 1 } },
+                    canMinus: copies > CustomPattern.copiesRange.lowerBound, canPlus: copies < CustomPattern.copiesRange.upperBound)
+            stepRow(String(format: L("maker.speed"), speed),
+                    minus: { if speed > 1 { speed -= 0.5 } }, plus: { if speed < 4 { speed += 0.5 } },
+                    canMinus: speed > 1, canPlus: speed < 4)
             TextField("", text: $name, prompt: Text("maker.name.placeholder"))
                 .textFieldStyle(.plain)
                 .font(.system(size: 16, weight: .semibold, design: .rounded))

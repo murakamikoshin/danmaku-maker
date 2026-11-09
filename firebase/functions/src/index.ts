@@ -7,6 +7,8 @@ import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-fu
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
+import nodemailer from "nodemailer";
+import { submitFeedback } from "./feedback.js";
 import { runMonthlyAward, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
@@ -523,7 +525,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {
@@ -582,6 +584,19 @@ export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, as
 export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period));
 /** 称号を付ける(null で外す)。持っている称号だけ */
 export const setTitle = onCall(async (req) => setTitleFn(db, requireAny(req), req.data?.id ?? null));
+/**
+ * 「要望を送る」。内容は feedback に残し、送信設定(環境変数 FEEDBACK_SMTP_URL と FEEDBACK_FROM)があればメールも転送する。
+ * 設定がなくても、要望は失われない
+ */
+export const sendFeedback = onCall(async (req) => {
+  const uid = requireAny(req);
+  const url = process.env.FEEDBACK_SMTP_URL;
+  const from = process.env.FEEDBACK_FROM;
+  const mailer = url && from
+    ? { send: async (to: string[], subject: string, text: string) => { await nodemailer.createTransport(url).sendMail({ from, to, subject, text }); } }
+    : null;
+  return submitFeedback(db, uid, req.data, Date.now(), mailer);
+});
 /** 毎月 1 日 0:05(日本時間)に、終わった月の順位から、月間の称号・王冠・メダルを配る */
 export const swipeMonthlyAward = onSchedule({ schedule: "5 0 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "512MiB" }, async () => {
   await runMonthlyAward(db, Date.now());

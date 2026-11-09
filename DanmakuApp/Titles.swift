@@ -234,53 +234,82 @@ struct TitlePickerView: View {
     @State private var failed = false
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section("title.section.score") {
-                    ForEach(TitleID.scoreIDs, id: \.self) { id in
-                        if service.owned.contains(id) {
-                            row(id)
-                        } else {
-                            HStack {
-                                Text(TitleID.text(id) ?? "").foregroundStyle(.secondary)
-                                Spacer()
-                                Text(String(format: L("title.need"), ScoreFormat.short(BigScore(TitleID.scoreMin[id] ?? "0") ?? .zero, SwipePalette.scoreStyle)))
-                                    .font(.system(size: 11)).foregroundStyle(.secondary)
-                                Image(systemName: "lock.fill").font(.system(size: 11)).foregroundStyle(.secondary)
+        ZStack {
+            Color(Palette.background).ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("title.button").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(
+                            LinearGradient(colors: [.white, Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
+                        Spacer()
+                        Button { gameTap(); dismiss() } label: {
+                            Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
+                                .frame(width: 36, height: 36).background(Color.white.opacity(0.12), in: Circle())
+                                .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                        }
+                        .buttonStyle(BounceButtonStyle())
+                        .accessibilityLabel(Text("swipe.close"))
+                    }
+                    GamePanel(title: "title.section.score", tint: Color(Palette.gold)) {
+                        VStack(spacing: 8) {
+                            ForEach(TitleID.scoreIDs, id: \.self) { id in
+                                if service.owned.contains(id) {
+                                    row(id)
+                                } else {
+                                    HStack {
+                                        Text(TitleID.text(id) ?? "").font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.45))
+                                        Spacer()
+                                        Text(String(format: L("title.need"), ScoreFormat.short(BigScore(TitleID.scoreMin[id] ?? "0") ?? .zero, SwipePalette.scoreStyle)))
+                                            .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                                        Image(systemName: "lock.fill").font(.system(size: 11)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                                    }
+                                    .padding(.vertical, 10).padding(.horizontal, 12)
+                                    .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+                                }
                             }
                         }
                     }
-                }
-                let monthly = TitleID.monthSorted(service.owned)
-                Section {
-                    if monthly.isEmpty {
-                        Text("title.month.empty").font(.footnote).foregroundStyle(.secondary)
-                    } else {
-                        ForEach(monthly, id: \.self) { row($0) }
+                    let monthly = TitleID.monthSorted(service.owned)
+                    GamePanel(title: "title.section.month", tint: Color(Palette.pink)) {
+                        if monthly.isEmpty {
+                            Text("title.month.empty").font(.footnote).foregroundStyle(Color(Palette.text).opacity(0.6))
+                        } else {
+                            VStack(spacing: 8) { ForEach(monthly, id: \.self) { row($0) } }
+                        }
+                        Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
                     }
-                } header: { Text("title.section.month") } footer: { Text("title.month.footer") }
-                Section {
-                    Button { pick(nil) } label: {
-                        HStack { Text("title.none"); Spacer(); if service.selected == nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) } }
-                    }.foregroundStyle(.primary)
+                    Button { gameTap(); pick(nil) } label: {
+                        HStack {
+                            Text("title.none").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Spacer()
+                            if service.selected == nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+                        }
+                        .padding(14).background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(service.selected == nil ? Color(Palette.pink) : GameStyle.edge, lineWidth: service.selected == nil ? 2 : 1))
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    if failed { Text("swipe.error.network").font(.footnote).foregroundStyle(.secondary) }
                 }
-                if failed { Text("swipe.error.network").foregroundStyle(.secondary) }
+                .padding(.horizontal, 16).padding(.bottom, 28).padding(.top, 8)
             }
-            .navigationTitle("title.button").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("swipe.close") { dismiss() } } }
         }
+        .preferredColorScheme(.dark)
         .task { await service.load(uid: auth.uid) }
     }
 
     private func row(_ id: String) -> some View {
-        Button { pick(id) } label: {
+        let on = service.selected == id
+        return Button { gameTap(); pick(id) } label: {
             HStack {
                 TitleChip(id: id, size: 13)
                 Spacer()
-                if service.selected == id { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
             }
+            .padding(.vertical, 10).padding(.horizontal, 12)
+            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color(Palette.pink) : GameStyle.edge, lineWidth: on ? 1.5 : 1))
         }
-        .foregroundStyle(.primary)
+        .buttonStyle(BounceButtonStyle())
         .accessibilityIdentifier("title.row.\(id)")
     }
 

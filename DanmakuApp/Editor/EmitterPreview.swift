@@ -170,7 +170,7 @@ extension GraphicsContext {
 extension GraphicsContext {
     /// 弾を1つ描く(エディタの見本・ショップの見本で同じ)。種類ごとに形を変える:
     /// ビームは光線、爆風は予告の円→衝撃、ブーメランは回る🪃、地雷は止まると点滅、巨大弾・膨らむ泡は当たる広さに合わせた大きさ
-    func drawBullet(_ b: Bullet, images: [UIImage], boomerangs: [UIImage], colors: [UIColor], scale s: CGFloat = 1, time: Double, custom: UIImage? = nil) {
+    func drawBullet(_ b: Bullet, images: [UIImage], boomerangs: [UIImage], colors: [UIColor], scale s: CGFloat = 1, time: Double, custom: UIImage? = nil, sizeBoost: CGFloat = 1) {
         let i = min(max(b.color, 0), colors.count - 1)
         let color = Color(colors[i])
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
@@ -180,11 +180,12 @@ extension GraphicsContext {
             var g = self
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(time * 14))
-            g.draw(Image(uiImage: boomerangs[min(i, boomerangs.count - 1)]), in: CGRect(x: -8 * s, y: -8 * s, width: 16 * s, height: 16 * s))
+            g.draw(Image(uiImage: boomerangs[min(i, boomerangs.count - 1)]), in: CGRect(x: -8 * s * sizeBoost, y: -8 * s * sizeBoost, width: 16 * s * sizeBoost, height: 16 * s * sizeBoost))
             return
         }
         let r: CGFloat = b.isGiant ? DanmakuConfig.giantDrawRadius : max(6, b.radius + 4)
-        let rect = CGRect(x: c.x - r * s, y: c.y - r * s, width: r * 2 * s, height: r * 2 * s)
+        let rr = max(r * s * sizeBoost, 1.8)
+        let rect = CGRect(x: c.x - rr, y: c.y - rr, width: rr * 2, height: rr * 2)
         var g = self
         if b.mineStopped {
             // 止まった地雷: 爆発が近いほど速く点滅し、爆風の届く範囲を薄く見せる
@@ -376,7 +377,7 @@ struct StageMiniPreview: View {
                 guard let engine = holder.engine else { return }
                 if playing { engine.advance(to: timeline.date) } else { engine.pause() }
                 let s = sz.width / DanmakuConfig.width
-                Self.draw(&ctx, sim: engine.sim, skin: skin, scale: s, boost: boost, time: timeline.date.timeIntervalSinceReferenceDate)
+                Self.draw(&ctx, sim: engine.sim, skin: skin, theme: stage.lookBullets, scale: s, boost: boost, time: timeline.date.timeIntervalSinceReferenceDate)
             }
         }
         .frame(width: size, height: size)
@@ -387,7 +388,7 @@ struct StageMiniPreview: View {
         .accessibilityHidden(true)
     }
 
-    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, scale s: CGFloat, boost: CGFloat, time: Double) {
+    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, theme: Theme, scale s: CGFloat, boost: CGFloat, time: Double) {
         if sim.isBoss {
             let p = sim.bossPosition
             let c = CGPoint(x: CGFloat(p.x) * s, y: CGFloat(p.y) * s)
@@ -401,14 +402,10 @@ struct StageMiniPreview: View {
             }
         }
         let colors = skin.bulletColors
+        // ゲーム本体と同じ弾の絵(白い芯・テーマごとの形)を使う。小さい枠でもつぶれないよう、少し大きめに描く
+        let images = SpriteFactory.bulletImages(theme), boomerangs = SpriteFactory.boomerangImages(theme)
         for b in sim.bullets {
-            let color = Color(colors[min(max(b.color, 0), colors.count - 1)])
-            if b.isBeam { ctx.drawBeam(b, color: color, scale: s); continue }
-            if b.isBlast { ctx.drawBlast(b, color: color, scale: s, time: time); continue }
-            // 小さい枠でもつぶれないよう、実際より大きめに描く
-            let base: CGFloat = b.isGiant ? CGFloat(DanmakuConfig.giantDrawRadius) : CGFloat(max(4, b.radius + 2))
-            let r = max(1.8, base * s * boost)
-            ctx.fill(Path(ellipseIn: CGRect(x: CGFloat(b.x) * s - r, y: CGFloat(b.y) * s - r, width: r * 2, height: r * 2)), with: .color(color))
+            ctx.drawBullet(b, images: images, boomerangs: boomerangs, colors: colors, scale: s, time: time, sizeBoost: boost)
         }
     }
 }

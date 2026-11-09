@@ -168,6 +168,19 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("boss-slow-interval", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 5, emitters: [
             Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 12, c: 20, v: 1.5, r: 6, k: 0, ph: 1),
             Emitter(t: .homing, x: 0.5, y: 0.2, s: 0, e: 60, i: 5, c: 3, v: 1.6, r: 45, k: 2, ph: 0)], lifeMode: .lives, lifeCount: 4).sanitized()))
+        // 逆向きの動き(円・8の字・横ゆっくり・横はやい)
+        for mv in 7...10 {
+            stages.append(("boss-move\(mv)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: mv, emitters: emitters([.ring, .aim, .spiral, .homing], boss: true), lifeMode: .hp, lifeCount: 10).sanitized()))
+        }
+
+        // 左右反転(線対称)とボスの位置の指定
+        stages.append(("mirror-mix", Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 4, emitters: [
+            Emitter(t: .spiral, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.2, c: 10, v: 1.8, r: 14, k: 1, ph: 0, mir: 1),
+            Emitter(t: .aim, x: 0.5, y: 0.2, s: 0, e: 60, i: 2, c: 5, v: 2, r: 40, k: 2, ph: 0, mir: 1),
+            Emitter(t: .swirl, x: 0.3, y: 0.2, s: 0, e: 60, i: 1.5, c: 8, v: 1.6, r: 10, k: 3, ph: 0, p: 1, mir: 1),
+            Emitter(t: .boomerang, x: 0.7, y: 0.25, s: 0, e: 60, i: 2.5, c: 6, v: 1.7, r: 12, k: 4, ph: 0, p: 1, mir: 1)], lifeMode: .hp, lifeCount: 10).sanitized()))
+        stages.append(("boss-home", Stage(name: "h", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 5, emitters: emitters([.ring, .aim, .spiral], boss: true), lifeMode: .hp, lifeCount: 10, bossX: 0.75, bossY: 0.3).sanitized()))
+        stages.append(("damage-home", Stage(name: "h", mode: .damage, durationSec: 60, bossMove: 2, emitters: emitters([.aim, .flower], boss: true), lifeMode: .hp, lifeCount: 12, bossX: 0.25, bossY: 0.1).sanitized()))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

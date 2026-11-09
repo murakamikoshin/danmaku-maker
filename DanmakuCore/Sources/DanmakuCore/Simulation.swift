@@ -57,8 +57,20 @@ public struct Bullet: Equatable, Sendable {
     static let featherDecay = (0.93 as Double).squareRoot()
 
     public var isRing: Bool { script == Bullet.ringScript }
-    /// 「くの字」(ブーメランの形)で描くか。標準ではブーメランの弾だけ。発射台で、丸・くの字を選べる
-    public var drawsAsBoomerang: Bool { look == 1 || (script == Bullet.boomerangScript && look != 2) }
+
+    /// 画面の左右を反転する(発射の線対称)。向きの符号を持つ動き(カーブ・蛇行・光線のなぎ払い・回る破片/輪)は、回る向きも反対にする
+    mutating func mirrorX() {
+        let w = DanmakuConfig.width
+        x = w - x; vx = -vx
+        switch script {
+        case Bullet.beamScript, Bullet.boomerangScript, Bullet.weaveScript, Bullet.zigzagScript: turn = -turn
+        case Bullet.shardScript, Bullet.ringScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
+        default: break
+        }
+        if follow != nil { follow!.ox = w - follow!.ox }
+    }
+    /// 「くの字」で描くか。標準はどのパターンも丸。発射台で、くの字を選べる
+    public var drawsAsBoomerang: Bool { look == 1 }
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -355,7 +367,21 @@ public enum Outcome: Equatable, Sendable {
 public enum Emit {
     /// 試作の `emit` と同じ。弾数は 1600 で頭打ち（乱数は上限でも消費する）
     /// awakened は、ボスが覚醒した状態か(堕天使の技が強くなる)。salt は、ステージごとに決まる数(失楽園の抜け道を決める)
+    /// 弾を出す。mir == 1 のときは、画面の左右を反転した世界で撃って、出た弾を左右反転して戻す
+    /// (自機を狙う弾は、本物の自機に向かう。回る向き・カーブの向きは反対になる)
     public static func emit(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
+                     rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool = false, salt: UInt32 = 0) {
+        guard m.mir == 1 else {
+            emitCore(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
+            return
+        }
+        let w = DanmakuConfig.width
+        let before = out.count
+        emitCore(m, shot: k, cx: w - cx, cy: cy, px: w - px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
+        for j in before..<out.count { out[j].mirrorX() }
+    }
+
+    static func emitCore(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                      rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool = false, salt: UInt32 = 0) {
         let sp = m.v * 60
         let n = max(1, m.c)
@@ -570,7 +596,7 @@ public struct Simulation {
     static let bossMoves: [(a: Double, w: Double)] = [(0, 0), (0.25, 0.6), (0.32, 1.3)]
 
     /// ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ(決まった場所へすっと移る)
-    public static let bossMoveCount = 7
+    public static let bossMoveCount = 11
 
     /// ワープの移動先(画面の幅・高さに対する割合)。4 秒ごとに次の場所へ、最後の 0.6 秒でなめらかに移る
     static let warpPoints: [(x: Double, y: Double)] = [(0.5, 0.18), (0.22, 0.26), (0.78, 0.16), (0.35, 0.12), (0.68, 0.30), (0.5, 0.22)]
@@ -594,6 +620,12 @@ public struct Simulation {
             let u = (f - warpHold) / (warpPeriod - warpHold)
             let s = u * u * (3 - 2 * u)
             return Point(x: W * (a.x + (b.x - a.x) * s), y: H * (a.y + (b.y - a.y) * s))
+        // 逆向き: 円・8の字・横ゆっくり・横はやい を、反対まわり・反対側から始める
+        case 7: return Point(x: W * 0.5 + 85 * cos(t * 0.7), y: H * 0.2 - 45 * sin(t * 0.7))
+        case 8: return Point(x: W * 0.5 - 115 * sin(t * 0.6), y: H * 0.2 + 40 * sin(t * 1.2))
+        case let m where m == 9 || m == 10:
+            let mv = bossMoves[m - 8]
+            return Point(x: W * (0.5 - mv.a * sin(t * mv.w)), y: H * 0.18)
         case let m:
             let mv = bossMoves[m]
             return Point(x: W * (0.5 + mv.a * sin(t * mv.w)), y: H * 0.18)
@@ -718,7 +750,10 @@ public struct Simulation {
 
     public var bossPosition: Point {
         if let c = spec.character { return c.position(waveT: waveT) }
-        return Simulation.bossPoint(move: spec.move, t: waveT)
+        let p = Simulation.bossPoint(move: spec.move, t: waveT)
+        if spec.homeDX == 0 && spec.homeDY == 0 { return p }
+        // ボスの位置の指定: 動きの中心をずらす。画面の外に出ないよう、端で止める
+        return Point(x: min(max(p.x + spec.homeDX, 24), DanmakuConfig.width - 24), y: min(max(p.y + spec.homeDY, 24), DanmakuConfig.height * 0.5))
     }
 
     private func phaseOf() -> Int {

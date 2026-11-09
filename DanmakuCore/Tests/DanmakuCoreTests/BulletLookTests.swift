@@ -39,9 +39,20 @@ final class BulletLookTests: XCTestCase {
     }
 
     func testDefaultShapeKeepsPatternLook() {
+        // 渦巻きは標準で丸
         var sim = Simulation(stage: stage(sh: nil, pattern: .swirl))
         while sim.t < 1 && sim.outcome == .playing { sim.step(.zero) }
-        XCTAssertTrue(sim.bullets.allSatisfy { $0.look == 0 && $0.drawsAsBoomerang == ($0.script == Bullet.boomerangScript) })
+        XCTAssertFalse(sim.bullets.isEmpty)
+        XCTAssertTrue(sim.bullets.allSatisfy { !$0.drawsAsBoomerang })
+        // ブーメランも標準は丸(くの字は選んだときだけ)
+        var b = Simulation(stage: stage(sh: nil, pattern: .boomerang))
+        while b.t < 1 && b.outcome == .playing { b.step(.zero) }
+        XCTAssertFalse(b.bullets.isEmpty)
+        XCTAssertTrue(b.bullets.allSatisfy { !$0.drawsAsBoomerang })
+        // 渦巻きでも、くの字を選べる
+        var h = Simulation(stage: stage(sh: 1, pattern: .swirl))
+        while h.t < 1 && h.outcome == .playing { h.step(.zero) }
+        XCTAssertTrue(h.bullets.allSatisfy { $0.drawsAsBoomerang })
     }
 
     /// 見た目の指定は、弾の数・位置・当たり判定に影響しない(丸にしても、同じ弾が同じ場所に出る)

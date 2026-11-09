@@ -3,13 +3,13 @@ import XCTest
 
 final class SanitizeTests: XCTestCase {
     func testClampsAndRounds() {
-        let wild = Stage(name: String(repeating: "あ", count: 40), mode: .boss, durationSec: 77, bossHp: 9999, bossMove: 9,
+        let wild = Stage(name: String(repeating: "あ", count: 40), mode: .boss, durationSec: 77, bossHp: 9999, bossMove: 99,
             emitters: (0..<12).map { _ in em(.ring, x: 3, y: 2, s: -5, e: 999, i: 0, c: 99, v: 99, r: 500, k: 9, ph: 9) })
         let s = wild.sanitized()
         XCTAssertEqual(s.name.count, 20)
         XCTAssertEqual(s.durationSec, 60)
         XCTAssertEqual(s.bossHp, 1000)
-        XCTAssertEqual(s.bossMove, Simulation.bossMoveCount - 1)   // 範囲を超えた動きは、いちばん最後の種類に丸める(いまは 0〜6)
+        XCTAssertEqual(s.bossMove, Simulation.bossMoveCount - 1)   // 範囲を超えた動きは、いちばん最後の種類に丸める(いまは 0〜10)
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 6, emitters: []).sanitized().bossMove, 6)
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 3, emitters: []).sanitized().bossMove, 3)
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: -4, emitters: []).sanitized().bossMove, 0)

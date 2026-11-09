@@ -58,6 +58,9 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var bossLook: Int?
     var mooks: Int?
     var mookLook: Int?
+    /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
+    var bossX: Double?
+    var bossY: Double?
     /// 覚醒する段階(2 か 3)。nil は覚醒しない
     var awaken: Int?
     var emitters: [Emitter]
@@ -72,7 +75,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var wave: Wave {
         Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
              emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
-             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil)
+             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil,
+             bossX: kind == .boss ? bossX : nil, bossY: kind == .boss ? bossY : nil)
     }
 
     var durations: [Int] { kind == .boss ? Wave.bossDurations : Wave.surviveDurations }
@@ -133,6 +137,9 @@ struct Draft: Codable, Equatable {
     var bossLook = 0
     var mooks: Int?
     var mookLook = 0
+    /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
+    var bossX: Double?
+    var bossY: Double?
     /// 覚醒する段階(2 か 3)。nil は覚醒しない
     var awaken: Int?
 
@@ -140,7 +147,7 @@ struct Draft: Codable, Equatable {
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -170,6 +177,8 @@ struct Draft: Codable, Equatable {
         mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
         mookLook = try c.decodeIfPresent(Int.self, forKey: .mookLook) ?? 0
         awaken = try c.decodeIfPresent(Int.self, forKey: .awaken)
+        bossX = try c.decodeIfPresent(Double.self, forKey: .bossX)
+        bossY = try c.decodeIfPresent(Double.self, forKey: .bossY)
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
     }
 
@@ -188,7 +197,8 @@ struct Draft: Codable, Equatable {
               bossDefeat: mode == .boss ? bossDefeat : nil,
               bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
               shot: shot, rewardFx: rewardFx, awaken: awaken,
-              previewStart: previewStart > 0 ? previewStart : nil, noPreview: noPreview ? true : nil).sanitized()
+              previewStart: previewStart > 0 ? previewStart : nil, noPreview: noPreview ? true : nil,
+              bossX: bossX, bossY: bossY).sanitized()
     }
 
     /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)

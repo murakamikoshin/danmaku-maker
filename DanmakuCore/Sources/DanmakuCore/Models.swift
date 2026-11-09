@@ -194,12 +194,16 @@ public struct Wave: Codable, Equatable, Sendable {
     public var mookLook: Int?
     /// 覚醒する段階(2 か 3)。その段階になると、ボスが覚醒の演出とともに姿を変える。nil は覚醒しない。ボスの場面だけ
     public var awaken: Int?
+    /// ボスの位置(動きの中心。画面の幅・高さに対する割合。x は 0.2〜0.8、y は 0.1〜0.3)。nil は標準(x=0.5, y=0.2)
+    public var bossX: Double?
+    public var bossY: Double?
 
     public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil,
-                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, awaken: Int? = nil) {
+                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, awaken: Int? = nil, bossX: Double? = nil, bossY: Double? = nil) {
         self.kind = kind; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove; self.emitters = emitters; self.warning = warning; self.defeat = defeat
         self.bossSize = bossSize; self.mooks = mooks; self.bossLook = bossLook; self.mookLook = mookLook; self.awaken = awaken
+        self.bossX = bossX; self.bossY = bossY
     }
 
     /// 生き残りの発射台は、開始が制限時間より前で、終わりが開始より後でないと、サーバーが受け付けない。同じ決まりに揃える
@@ -238,6 +242,13 @@ public struct Wave: Codable, Equatable, Sendable {
     }
 
     /// 覚醒する段階(2 か 3)。それ以外は覚醒しない
+    /// ボスの位置の指定を、範囲内の 0.05 刻みに丸める。標準の位置と同じなら保存しない(nil)
+    static func sanitizedHome(_ v: Double?, _ lo: Double, _ hi: Double, _ standard: Double) -> Double? {
+        guard let v, v.isFinite else { return nil }
+        let r = (min(hi, max(lo, v)) * 20).rounded() / 20
+        return abs(r - standard) < 0.001 ? nil : r
+    }
+
     static func sanitizedAwaken(_ v: Int?) -> Int? {
         guard let v, BossCharacter.awakenPhases.contains(v) else { return nil }
         return v
@@ -291,13 +302,15 @@ public struct Wave: Codable, Equatable, Sendable {
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil)
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil)
         }
         return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
                     bossSize: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedSize(bossSize) : nil, mooks: Wave.sanitizedMooks(mooks),
                     bossLook: look, mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
-                    awaken: isBoss ? Wave.sanitizedAwaken(awaken) : nil)
+                    awaken: isBoss ? Wave.sanitizedAwaken(awaken) : nil,
+                    bossX: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
+                    bossY: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
     }
 }
 
@@ -311,6 +324,7 @@ public enum LifeMode: String, Codable, CaseIterable, Sendable {
 
 /// 発射台。キー名は SPEC 7章（試作のステージ形式）と同じ
 public struct Emitter: Codable, Equatable, Sendable {
+
     public var t: Pattern
     public var x: Double
     public var y: Double
@@ -330,13 +344,16 @@ public struct Emitter: Codable, Equatable, Sendable {
     public var path: [Double]?
     /// 弾の見た目(見た目だけ。当たる範囲や動きは変わらない): nil はパターンの標準、1 は「くの字」(ブーメランの形)、2 は丸
     public var sh: Int?
+    /// 左右反転(線対称): 1 で、発射位置・弾の向き・回る向きを、画面の左右で反転して撃つ。nil は反転しない
+    public var mir: Int?
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil, mir: Int? = nil) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
         self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
         self.path = path
         self.sh = sh
+        self.mir = mir
     }
 
     /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
@@ -349,7 +366,7 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh, mir }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -362,6 +379,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         if a != 0 { try c.encode(a, forKey: .a) }
         if let path { try c.encode(path, forKey: .path) }
         if let sh, sh == 1 || sh == 2 { try c.encode(sh, forKey: .sh) }
+        if mir == 1 { try c.encode(1, forKey: .mir) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -381,6 +399,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         a = try d.decodeIfPresent(Int.self, forKey: .a) ?? 0
         path = (try? d.decodeIfPresent([Double].self, forKey: .path)) ?? nil
         sh = (try? d.decodeIfPresent(Int.self, forKey: .sh)).flatMap { $0 == 1 || $0 == 2 ? $0 : nil }
+        mir = (try? d.decodeIfPresent(Int.self, forKey: .mir)).flatMap { $0 == 1 ? 1 : nil }
     }
 }
 
@@ -401,6 +420,9 @@ struct WaveSpec {
     var mookLook = 0
     /// 覚醒する段階(nil は覚醒しない)
     var awaken: Int?
+    /// ボスの位置のずらし量(px。標準の位置からの差)
+    var homeDX = 0.0
+    var homeDY = 0.0
     /// 専用の絵・動き・当たり判定を持つボス(nil は図形のボス)
     var character: BossCharacter? { BossCharacter.of(look: look) }
 }
@@ -427,6 +449,9 @@ public struct Stage: Codable, Equatable, Sendable {
     public var bossDefeat: Int?
     /// ボスの大きさ(0=小 1=中 2=大)。nil は中。当たる範囲も変わる
     public var bossSize: Int?
+    /// ボスの位置(動きの中心。画面に対する割合。x は 0.2〜0.8、y は 0.1〜0.3)。nil は標準(x=0.5, y=0.2)
+    public var bossX: Double?
+    public var bossY: Double?
     /// 発射点に、小さな敵(雑魚)の姿を出す大きさ(0=小 1=中 2=大)。nil は出さない。見た目だけ
     public var mooks: Int?
     public var bossLook: Int?
@@ -485,7 +510,7 @@ public struct Stage: Codable, Equatable, Sendable {
                 themeBullets: Theme? = nil, themeBackground: Theme? = nil, themeShip: Theme? = nil,
                 hideMarkers: Bool? = nil, waves: [Wave]? = nil, bossWarning: Bool? = nil, bossDefeat: Int? = nil,
                 bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil, rewardFx: [Int]? = nil, awaken: Int? = nil,
-                previewStart: Int? = nil, noPreview: Bool? = nil) {
+                previewStart: Int? = nil, noPreview: Bool? = nil, bossX: Double? = nil, bossY: Double? = nil) {
         self.name = name; self.mode = mode; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove
         self.emitters = emitters; self.formatVersion = formatVersion
@@ -499,21 +524,24 @@ public struct Stage: Codable, Equatable, Sendable {
         self.rewardFx = rewardFx
         self.awaken = awaken
         self.previewStart = previewStart; self.noPreview = noPreview
+        self.bossX = bossX; self.bossY = bossY
     }
 
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
-        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview
+        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
     }
+
+    static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
 
     /// シミュレーションが使う場面の一覧。連戦以外は、これまでのステージ全体を「場面1つ」として扱う
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, awaken: w.awaken)
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height))
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, awaken: awaken)]
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height))]
     }
 
     /// 連戦のとき、最後まで通しての所要時間の上限(秒)。場面の合計と、切り替えの時間
@@ -572,6 +600,8 @@ public struct Stage: Codable, Equatable, Sendable {
         awaken = try d.decodeIfPresent(Int.self, forKey: .awaken)
         previewStart = try d.decodeIfPresent(Int.self, forKey: .previewStart)
         noPreview = try d.decodeIfPresent(Bool.self, forKey: .noPreview)
+        bossX = try d.decodeIfPresent(Double.self, forKey: .bossX)
+        bossY = try d.decodeIfPresent(Double.self, forKey: .bossY)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -581,6 +611,8 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encode(durationSec, forKey: .durationSec)
         try c.encodeIfPresent(bossHp, forKey: .bossHp)
         try c.encodeIfPresent(bossMove, forKey: .bossMove)
+        try c.encodeIfPresent(bossX, forKey: .bossX)
+        try c.encodeIfPresent(bossY, forKey: .bossY)
         try c.encode(emitters, forKey: .emitters)
         try c.encode(formatVersion, forKey: .formatVersion)
         try c.encodeIfPresent(lifeMode, forKey: .lifeMode)
@@ -667,7 +699,7 @@ public struct Stage: Codable, Equatable, Sendable {
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil)
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil)
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount
@@ -692,6 +724,8 @@ public struct Stage: Codable, Equatable, Sendable {
                      shot: shot == .standard ? nil : shot,
                      rewardFx: Reward.sanitizedFx(rewardFx),
                      awaken: isBossMode ? Wave.sanitizedAwaken(awaken) : nil,
-                     previewStart: pStart, noPreview: noPreview == true ? true : nil)
+                     previewStart: pStart, noPreview: noPreview == true ? true : nil,
+                     bossX: (isBossMode && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
+                     bossY: (isBossMode && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
     }
 }

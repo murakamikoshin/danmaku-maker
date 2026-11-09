@@ -115,6 +115,14 @@ struct EmitterCard: View {
                              selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
                              idPrefix: "emitter.shape.\(index)", minimum: 80)
                 }
+                // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ
+                HStack {
+                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
+                    Text("editor.mirror").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    Spacer()
+                    GameToggle(isOn: Binding(get: { emitter.mir == 1 }, set: { emitter.mir = $0 ? 1 : nil }))
+                }
+                .accessibilityIdentifier("emitter.mirror.\(index)")
                 if isBoss {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)

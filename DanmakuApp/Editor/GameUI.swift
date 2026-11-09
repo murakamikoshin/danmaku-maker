@@ -295,15 +295,37 @@ struct BossMoveCards: View {
     @Binding var move: Int
     /// 見本の速さ(ゲームの 1.6 倍。短い枠で動きが分かるように)
     private static let demoSpeed = 1.6
+    /// 逆向きの動き(7〜10)と、もとの動き。向きがある動き(横ゆっくり・横はやい・円・8の字)だけ、逆向きにできる
+    private static let reversePairs: [Int: Int] = [1: 9, 2: 10, 4: 7, 5: 8]
+    private var base: Int { Self.reversePairs.first { $0.value == move }?.key ?? move }
+    private var reversed: Bool { move >= 7 }
+    private var canReverse: Bool { Self.reversePairs[base] != nil }
 
     var body: some View {
+        VStack(spacing: 10) {
+            grid
+            if canReverse {
+                HStack {
+                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
+                    Text("editor.boss.reverse").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    Spacer()
+                    GameToggle(isOn: Binding(get: { reversed }, set: { move = $0 ? (Self.reversePairs[base] ?? base) : base }))
+                }
+                .accessibilityIdentifier("editor.boss.reverse")
+            }
+        }
+    }
+
+    private func shown(_ i: Int) -> Int { (reversed ? Self.reversePairs[i] : nil) ?? i }
+
+    private var grid: some View {
         // 7 種類を 4 列の表にする(小さい枠のまま、1 画面に収まる)
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
-            ForEach(0..<Simulation.bossMoveCount, id: \.self) { i in
-                let selected = move == i
+            ForEach(0..<7, id: \.self) { i in
+                let selected = base == i
                 Button {
                     gameTap()
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { move = i }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { move = (reversed ? Self.reversePairs[i] : nil) ?? i }
                 } label: {
                     VStack(spacing: 4) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
@@ -317,11 +339,11 @@ struct BossMoveCards: View {
                                 var track = Path()
                                 var first = true
                                 for k in 0...120 {
-                                    let q = at(Simulation.bossPoint(move: i, t: Double(k) * 0.2))
+                                    let q = at(Simulation.bossPoint(move: shown(i), t: Double(k) * 0.2))
                                     if first { track.move(to: q); first = false } else { track.addLine(to: q) }
                                 }
                                 ctx.stroke(track, with: .color(Color.white.opacity(0.18)), style: StrokeStyle(lineWidth: 2, dash: [3, 3]))
-                                let c = at(Simulation.bossPoint(move: i, t: t))
+                                let c = at(Simulation.bossPoint(move: shown(i), t: t))
                                 let rect = CGRect(x: c.x - 9, y: c.y - 9, width: 18, height: 18)
                                 ctx.fill(GameBossShape().path(in: rect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
                             }
@@ -340,6 +362,60 @@ struct BossMoveCards: View {
                 .accessibilityIdentifier("editor.boss.move.\(i)")
             }
         }
+    }
+}
+
+// MARK: ボスの位置
+
+/// ボスの動きの中心を決める小さな画面。ボスのアイコンをドラッグ(タップ)して置く。標準は真ん中の少し上
+struct BossPositionPad: View {
+    @Binding var x: Double?
+    @Binding var y: Double?
+    private static let xr = 0.2...0.8, yr = 0.1...0.3
+    private static let stdX = 0.5, stdY = 0.2
+    /// 画面の上半分(0〜0.5)を、横 240 の枠で見せる
+    private let w: CGFloat = 240
+    private var h: CGFloat { w * 0.5 * CGFloat(DanmakuConfig.height / DanmakuConfig.width) }
+
+    private var cx: Double { x ?? Self.stdX }
+    private var cy: Double { y ?? Self.stdY }
+    private var isStandard: Bool { x == nil && y == nil }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 12).fill(Color.black.opacity(0.35))
+                // 置ける範囲
+                RoundedRectangle(cornerRadius: 8).fill(Color(Palette.pink).opacity(0.10))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(Palette.pink).opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                    .frame(width: w * CGFloat(Self.xr.upperBound - Self.xr.lowerBound), height: h * CGFloat((Self.yr.upperBound - Self.yr.lowerBound) / 0.5))
+                    .offset(x: w * CGFloat(Self.xr.lowerBound), y: h * CGFloat(Self.yr.lowerBound / 0.5))
+                // 動きの道すじは出さない(動きは上のカードで選ぶ)。ここは「中心」だけ
+                GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true))
+                    .frame(width: 26, height: 26)
+                    .shadow(color: Color(Palette.pink).opacity(0.6), radius: 6)
+                    .offset(x: w * CGFloat(cx) - 13, y: h * CGFloat(cy / 0.5) - 13)
+            }
+            .frame(width: w, height: h)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0).onChanged { v in
+                let nx = min(max(Double(v.location.x / w), Self.xr.lowerBound), Self.xr.upperBound)
+                let ny = min(max(Double(v.location.y / h) * 0.5, Self.yr.lowerBound), Self.yr.upperBound)
+                let rx = (nx * 20).rounded() / 20, ry = (ny * 20).rounded() / 20
+                x = abs(rx - Self.stdX) < 0.001 ? nil : rx
+                y = abs(ry - Self.stdY) < 0.001 ? nil : ry
+            })
+            .accessibilityIdentifier("editor.boss.position")
+            Button { gameTap(); x = nil; y = nil } label: {
+                Text("editor.boss.position.reset").font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .foregroundStyle(isStandard ? Color(Palette.text).opacity(0.4) : Color(Palette.text))
+                    .padding(.vertical, 6).padding(.horizontal, 14)
+                    .background(Color.white.opacity(0.08), in: Capsule()).overlay(Capsule().stroke(GameStyle.edge))
+            }
+            .buttonStyle(BounceButtonStyle()).disabled(isStandard)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

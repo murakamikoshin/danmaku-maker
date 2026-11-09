@@ -90,6 +90,10 @@ service cloud.firestore {
     match /titleState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /publicProfiles/{uid} { allow read: if signedIn(); allow write: if false; }
 
+    // 要望(アプリの「要望を送る」)は、クライアントから一切触れない。書き込みは Cloud Functions だけ
+    match /feedback/{id} { allow read, write: if false; }
+    match /feedbackLimits/{id} { allow read, write: if false; }
+
     match /{document=**} { allow read, write: if false; }
   }
 }
