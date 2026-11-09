@@ -225,9 +225,36 @@ extension EnvironmentValues {
     }
 }
 
+private struct ScrollTopKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
+/// iOS 17 用: 中身の位置が動いている間を「スクロール中」とみなす(動きが 0.15 秒止まったら終わり)
+private struct ScrollProbe: ViewModifier {
+    @Binding var scrolling: Bool
+    @State private var settle: Task<Void, Never>?
+
+    func body(content: Content) -> some View {
+        content
+            .background(GeometryReader { g in
+                Color.clear.preference(key: ScrollTopKey.self, value: g.frame(in: .global).minY.rounded())
+            })
+            .onPreferenceChange(ScrollTopKey.self) { _ in
+                if !scrolling { scrolling = true }
+                settle?.cancel()
+                settle = Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 150_000_000)
+                    if !Task.isCancelled { scrolling = false }
+                }
+            }
+    }
+}
+
 extension View {
-    /// スクロール中かを binding に書く(iOS 18 以降。17 ではスクロール中も止めない)
+    /// ScrollView 本体に付ける(iOS 18 以降の標準の通知。`onScrollPhaseChange` は iOS 18 SDK=Xcode 16 以降でだけ存在する)
     @ViewBuilder func trackListScrolling(_ scrolling: Binding<Bool>) -> some View {
+        #if compiler(>=6.0)
         if #available(iOS 18.0, *) {
             self.onScrollPhaseChange { _, phase in
                 if scrolling.wrappedValue != phase.isScrolling { scrolling.wrappedValue = phase.isScrolling }
@@ -235,6 +262,18 @@ extension View {
         } else {
             self
         }
+        #else
+        self
+        #endif
+    }
+
+    /// ScrollView の中身に付ける(iOS 17 用。18 以降では何もしない)
+    @ViewBuilder func trackListScrollingFallback(_ scrolling: Binding<Bool>) -> some View {
+        #if compiler(>=6.0)
+        if #available(iOS 18.0, *) { self } else { self.modifier(ScrollProbe(scrolling: scrolling)) }
+        #else
+        self.modifier(ScrollProbe(scrolling: scrolling))
+        #endif
     }
 }
 
@@ -320,7 +359,7 @@ struct StageMiniPreview: View {
         .background(Color(bg))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 1))
-        .onChange(of: visible) { v in if !v { holder.engine?.restart() } }
+        .onChange(of: visible) { _, v in if !v { holder.engine?.restart() } }
         .accessibilityHidden(true)
     }
 
@@ -401,8 +440,8 @@ struct MarqueeTitle: View {
         .clipped()
         .onPreferenceChange(TextWidthKey.self) { textWidth = $0 }
         .onPreferenceChange(BoxWidthKey.self) { boxWidth = $0 }
-        .onChange(of: visible) { v in if !v { clock.reset() } }
-        .onChange(of: text) { _ in clock.reset() }
+        .onChange(of: visible) { _, v in if !v { clock.reset() } }
+        .onChange(of: text) { clock.reset() }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(text))
     }

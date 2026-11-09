@@ -61,6 +61,7 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 16).padding(.bottom, 24).padding(.top, 4)
+                .trackListScrollingFallback($listScrolling)
             }
             .refreshable { if tab == .world { await world.reload() } }
             .trackListScrolling($listScrolling)

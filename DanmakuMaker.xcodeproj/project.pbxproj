@@ -25,6 +25,7 @@
 		2AFD1CC65A31EF1FF80CECE9 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
 		2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */; };
 		2E1D7BA494A7D8D3E7C932FC /* StageBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5F25C818B20290A6230677 /* StageBackup.swift */; };
+		2FB6FA26E202620B814C6A93 /* bgm_swipe.caf in Resources */ = {isa = PBXBuildFile; fileRef = 1EB55E6B7227AB4BCFACF4BC /* bgm_swipe.caf */; };
 		348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */ = {isa = PBXBuildFile; fileRef = 61E6BCB8DCD4762D19C79CA3 /* bgm_mystery.caf */; };
 		39317BC2A8F7C8A1F769E7F1 /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */; };
 		39989238F961EAE880CDC817 /* EditorFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */; };
@@ -122,6 +123,7 @@
 		14C491E753AF70E1D5511B48 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
 		1813EF0CCD30071AF2F3CEAF /* SwipeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeAudio.swift; sourceTree = "<group>"; };
 		1BD184CEA2DD857CD5676F6A /* PostQuotaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostQuotaService.swift; sourceTree = "<group>"; };
+		1EB55E6B7227AB4BCFACF4BC /* bgm_swipe.caf */ = {isa = PBXFileReference; path = bgm_swipe.caf; sourceTree = "<group>"; };
 		22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishFlowView.swift; sourceTree = "<group>"; };
 		26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotUITests.swift; sourceTree = "<group>"; };
 		2F3E159DD0B6B045774CF307 /* OFL-DelaGothicOne.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-DelaGothicOne.txt"; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 				F432139D4D93210AE9BDE2F4 /* bgm_menu.caf */,
 				61E6BCB8DCD4762D19C79CA3 /* bgm_mystery.caf */,
 				FD3D2EA322BA8AD7A2883996 /* bgm_stage.caf */,
+				1EB55E6B7227AB4BCFACF4BC /* bgm_swipe.caf */,
 				E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */,
 				CE2E8AF4C2864B6CCE26CD02 /* se_clear.caf */,
 				D8A85042053FECBD69E454F3 /* se_fail.caf */,
@@ -534,6 +537,7 @@
 				F7C2FDF958DAEA96763CB3ED /* bgm_menu.caf in Resources */,
 				348CBFB5C450991CC190CEFD /* bgm_mystery.caf in Resources */,
 				19B9548383503BD2EE44B99A /* bgm_stage.caf in Resources */,
+				2FB6FA26E202620B814C6A93 /* bgm_swipe.caf in Resources */,
 				2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */,
 				E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
