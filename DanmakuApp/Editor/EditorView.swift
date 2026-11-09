@@ -64,6 +64,7 @@ struct EditorView: View {
                         BGMPanel(model: model)
                         LookPanel(model: model)
                         RewardFxPanel(model: model)
+                        WorldPreviewPanel(model: model)
                         if model.draft.mode != .sequence {
                             GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
@@ -635,6 +636,48 @@ private struct LookPanel: View {
         .buttonStyle(BounceButtonStyle())
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("editor.look.\(part.rawValue).\(t.rawValue)")
+    }
+}
+
+/// 世界のステージ一覧の動くプレビュー: 始める秒(長さの30%まで)と、見せない設定(ネタバレ防止)。見た目だけで、遊びには関わらない
+private struct WorldPreviewPanel: View {
+    @ObservedObject var model: EditorModel
+
+    var body: some View {
+        let stage = model.draft.stage
+        let maxStart = stage.maxPreviewStart
+        let start = min(model.draft.previewStart, maxStart)
+        GamePanel(title: "editor.preview", tint: Color(Palette.bullets[2])) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("editor.preview.off").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("editor.preview.off.note").font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    GameToggle(isOn: $model.draft.noPreview).accessibilityIdentifier("editor.preview.off.toggle")
+                }
+                if !model.draft.noPreview {
+                    HStack {
+                        Text("editor.preview.start").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Spacer()
+                        Text(String(format: L("editor.preview.seconds"), start)).font(.system(size: 15, weight: .heavy, design: .rounded)).monospacedDigit().foregroundStyle(Color(Palette.text))
+                    }
+                    if maxStart > 0 {
+                        GameSlider(value: Binding(get: { Double(start) }, set: { model.draft.previewStart = Int($0) }),
+                                   range: 0...Double(maxStart), step: 1)
+                            .accessibilityIdentifier("editor.preview.start.slider")
+                        Text(String(format: L("editor.preview.start.note"), maxStart)).font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        Text("editor.preview.start.short").font(.caption).foregroundStyle(.secondary)
+                    }
+                    // 世界のステージ一覧と同じ計算・速さで見せる
+                    HStack { Spacer()
+                        StageMiniPreview(stage: stage, playing: true, visible: true, size: 120, boost: 1.3)
+                        Spacer() }
+                }
+            }
+        }
     }
 }
 

@@ -282,28 +282,50 @@ extension View {
 final class MiniStageEngine {
     let stage: Stage
     private(set) var sim: Simulation
-    /// くり返す長さ(秒)。ステージの長さの 30% まで(4〜8秒)
-    let window: Double
+    /// 頭出しした状態(作者が決めた開始秒。ループで戻るのはここ)
+    private var origin: Simulation
+    /// くり返す終わりの時刻(秒)= 開始秒 + 4〜8秒(ステージの長さの30%)
+    private let endT: Double
     private var last: Date?
     private var carry = 0.0
 
     init(stage: Stage) {
         self.stage = stage
-        sim = MiniStageEngine.fresh(stage)
+        let o = MiniStageEngine.cued(stage)
+        origin = o
+        sim = o
         let d = Double(stage.durationSec)
-        window = d > 0 ? min(8, max(4, d * 0.3)) : 8
+        let window = d > 0 ? min(8, max(4, d * 0.3)) : 8
+        endT = o.t + window
     }
 
-    private static func fresh(_ stage: Stage) -> Simulation {
+    /// 1ティック進める(見えない自機を、1秒ごとに左右へゆっくり動かす。自機狙いの弾が向きを変えるように)
+    private static func tick(_ s: inout Simulation) {
+        let dx: Int8 = (s.tick / 120) % 2 == 0 ? 2 : -2
+        s.step(Move(dx: dx, dy: 0))
+    }
+
+    /// 場面・段階が変わった(見せてはいけない)か、終わったか
+    private static func crossed(_ s: Simulation) -> Bool { s.outcome != .playing || s.waveIndex > 0 || s.phase > 1 }
+
+    /// 最初から、作者が決めた開始秒まで進めた状態。READY の間は飛ばす。
+    /// 開始秒より前に、ボスの段階変化・覚醒・次の場面が来るときは、その直前で止める(サプライズを守る)
+    private static func cued(_ stage: Stage) -> Simulation {
         var s = Simulation(stage: stage)
         s.invincible = true
-        // READY の間は飛ばして、すぐ弾が出るところから見せる
         while s.t < 0 && s.outcome == .playing { s.step(.zero) }
+        let target = Double(stage.effectivePreviewStart)
+        while s.t < target {
+            var next = s
+            tick(&next)
+            if crossed(next) { break }
+            s = next
+        }
         return s
     }
 
     func restart() {
-        sim = MiniStageEngine.fresh(stage)
+        sim = origin
         last = nil
         carry = 0
     }
@@ -318,10 +340,8 @@ final class MiniStageEngine {
         let step = DanmakuConfig.step
         while carry >= step {
             carry -= step
-            // 見えない自機を、1秒ごとに左右へゆっくり動かす(自機狙いの弾が向きを変えるように)
-            let dx: Int8 = (sim.tick / 120) % 2 == 0 ? 2 : -2
-            sim.step(Move(dx: dx, dy: 0))
-            if sim.outcome != .playing || sim.waveIndex > 0 || sim.phase > 1 || sim.t >= window {
+            MiniStageEngine.tick(&sim)
+            if MiniStageEngine.crossed(sim) || sim.t >= endT {
                 restart()
                 last = now
                 return
@@ -339,6 +359,8 @@ struct StageMiniPreview: View {
     /// 画面に映っているか(映らなくなったら、最初に戻す)
     let visible: Bool
     var size: CGFloat = 56
+    /// 弾を実際より大きく描く倍率(小さい枠でもつぶれないように。大きく出すときは小さめ)
+    var boost: CGFloat = 1.6
 
     private final class Holder { var engine: MiniStageEngine? }
     @State private var holder = Holder()
@@ -352,18 +374,18 @@ struct StageMiniPreview: View {
                 guard let engine = holder.engine else { return }
                 if playing { engine.advance(to: timeline.date) } else { engine.pause() }
                 let s = sz.width / DanmakuConfig.width
-                Self.draw(&ctx, sim: engine.sim, skin: skin, scale: s, time: timeline.date.timeIntervalSinceReferenceDate)
+                Self.draw(&ctx, sim: engine.sim, skin: skin, scale: s, boost: boost, time: timeline.date.timeIntervalSinceReferenceDate)
             }
         }
         .frame(width: size, height: size)
         .background(Color(bg))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
+        .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
         .onChange(of: visible) { _, v in if !v { holder.engine?.restart() } }
         .accessibilityHidden(true)
     }
 
-    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, scale s: CGFloat, time: Double) {
+    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, scale s: CGFloat, boost: CGFloat, time: Double) {
         if sim.isBoss {
             let p = sim.bossPosition
             let c = CGPoint(x: CGFloat(p.x) * s, y: CGFloat(p.y) * s)
@@ -383,9 +405,49 @@ struct StageMiniPreview: View {
             if b.isBlast { ctx.drawBlast(b, color: color, scale: s, time: time); continue }
             // 小さい枠でもつぶれないよう、実際より大きめに描く
             let base: CGFloat = b.isGiant ? CGFloat(DanmakuConfig.giantDrawRadius) : CGFloat(max(4, b.radius + 2))
-            let r = max(1.8, base * s * 1.6)
+            let r = max(1.8, base * s * boost)
             ctx.fill(Path(ellipseIn: CGRect(x: CGFloat(b.x) * s - r, y: CGFloat(b.y) * s - r, width: r * 2, height: r * 2)), with: .color(color))
         }
+    }
+}
+
+/// 「プレビューなし」のステージの、一覧の左の枠(ネタバレ防止)。中身は見せない
+struct SpoilerTile: View {
+    var size: CGFloat = 56
+    var body: some View {
+        VStack(spacing: 2) {
+            Text("？？？").font(.system(size: size * 0.26, weight: .heavy, design: .rounded))
+            Text("world.preview.spoiler").font(.system(size: size * 0.13, weight: .bold, design: .rounded))
+                .lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
+        }
+        .foregroundStyle(.white.opacity(0.85))
+        .padding(.horizontal, 3)
+        .frame(width: size, height: size)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
+        .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("world.preview.spoiler"))
+    }
+}
+
+/// 一覧のセルを長押ししている間だけ出す、大きなプレビュー(指を離すと消える)
+struct StageHoldPreview: View {
+    let stage: RemoteStage
+    var body: some View {
+        let side = min(UIScreen.main.bounds.width - 48, 340)
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+            VStack(spacing: 12) {
+                StageMiniPreview(stage: stage.stage, playing: true, visible: true, size: side, boost: 1.15)
+                    .shadow(color: .black.opacity(0.5), radius: 16)
+                Text(stage.name).font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .lineLimit(2).multilineTextAlignment(.center).padding(.horizontal, 24)
+            }
+        }
+        .allowsHitTesting(false)
+        .transition(.opacity)
+        .accessibilityHidden(true)
     }
 }
 

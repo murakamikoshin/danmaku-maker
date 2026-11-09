@@ -365,6 +365,26 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     }
   });
 
+  it("一覧のプレビュー: 開始秒は長さの30%まで(切り捨て)。0と未指定は入れない。「見せない」と同時には指定できない", () => {
+    const a = validatePublish(good({ durationSec: 20, previewStart: 6 }));   // 20秒の30% = 6秒
+    expect(a.ok && a.stage.previewStart).toBe(6);
+    for (const v of [0, undefined, null]) {
+      const r = validatePublish(good({ durationSec: 20, previewStart: v }));
+      expect(r.ok && "previewStart" in r.stage).toBe(false);
+    }
+    const c = validatePublish(good({ durationSec: 10, previewStart: 3 }));   // 10秒の30% = 3秒
+    expect(c.ok && c.stage.previewStart).toBe(3);
+    for (const bad of [7, -1, 1.5, "3", NaN]) {
+      expect(validatePublish(good({ durationSec: 20, previewStart: bad }))).toEqual({ ok: false, error: "preview" });
+    }
+    const n = validatePublish(good({ noPreview: true }));
+    expect(n.ok && n.stage.noPreview).toBe(true);
+    const off = validatePublish(good({ noPreview: false }));
+    expect(off.ok && "noPreview" in off.stage).toBe(false);
+    expect(validatePublish(good({ noPreview: "yes" }))).toEqual({ ok: false, error: "preview" });
+    expect(validatePublish(good({ noPreview: true, previewStart: 3 }))).toEqual({ ok: false, error: "preview" });
+  });
+
   it("ボスの大きさ(小・大)と見た目を受け付け、標準(中・見た目0)は入れない", () => {
     const a = validatePublish(boss({ bossSize: 0, bossLook: 3, mooks: 2, mookLook: 4 }));
     expect(a.ok && [a.stage.bossSize, a.stage.bossLook, a.stage.mooks, a.stage.mookLook]).toEqual([0, 3, 2, 4]);

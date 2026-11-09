@@ -443,6 +443,23 @@ public struct Stage: Codable, Equatable, Sendable {
     public var lookBackground: Theme { themeBackground ?? .classic }
     public var lookShip: Theme { themeShip ?? .classic }
 
+    /// 世界のステージ一覧の動くプレビューを始める秒(作者が決める。見た目だけで、計算やランキングには関わらない)。nil は0秒から
+    public var previewStart: Int?
+    /// 一覧でプレビューを見せない(ネタバレ防止)。nil は、見せる
+    public var noPreview: Bool?
+    /// プレビューの開始秒に選べる最大(ステージの長さの30%まで。切り捨て)
+    public static func maxPreviewStart(durationSec: Int) -> Int { max(0, Int(Double(max(0, durationSec)) * 0.3)) }
+    /// 保存する開始秒(範囲に丸める。0 は標準なので保存しない)
+    static func sanitizedPreviewStart(_ v: Int?, durationSec: Int) -> Int? {
+        guard let v else { return nil }
+        let c = min(max(0, v), maxPreviewStart(durationSec: durationSec))
+        return c == 0 ? nil : c
+    }
+    public var maxPreviewStart: Int { Stage.maxPreviewStart(durationSec: durationSec) }
+    public var hidesPreview: Bool { noPreview == true }
+    /// 実際に使うプレビューの開始秒
+    public var effectivePreviewStart: Int { min(max(0, previewStart ?? 0), maxPreviewStart) }
+
     /// 選べる BGM の数
     public static let bgmCount = 5
 
@@ -457,7 +474,8 @@ public struct Stage: Codable, Equatable, Sendable {
                 lifeMode: LifeMode? = nil, lifeCount: Int? = nil, bgm: Int? = nil,
                 themeBullets: Theme? = nil, themeBackground: Theme? = nil, themeShip: Theme? = nil,
                 hideMarkers: Bool? = nil, waves: [Wave]? = nil, bossWarning: Bool? = nil, bossDefeat: Int? = nil,
-                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil, rewardFx: [Int]? = nil, awaken: Int? = nil) {
+                bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, shot: ShotType? = nil, rewardFx: [Int]? = nil, awaken: Int? = nil,
+                previewStart: Int? = nil, noPreview: Bool? = nil) {
         self.name = name; self.mode = mode; self.durationSec = durationSec
         self.bossHp = bossHp; self.bossMove = bossMove
         self.emitters = emitters; self.formatVersion = formatVersion
@@ -470,11 +488,12 @@ public struct Stage: Codable, Equatable, Sendable {
         self.bossSize = bossSize; self.mooks = mooks; self.bossLook = bossLook; self.mookLook = mookLook; self.shot = shot
         self.rewardFx = rewardFx
         self.awaken = awaken
+        self.previewStart = previewStart; self.noPreview = noPreview
     }
 
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
-        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken
+        case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview
     }
 
     /// シミュレーションが使う場面の一覧。連戦以外は、これまでのステージ全体を「場面1つ」として扱う
@@ -541,6 +560,8 @@ public struct Stage: Codable, Equatable, Sendable {
         shot = (try? d.decodeIfPresent(ShotType.self, forKey: .shot)) ?? nil
         rewardFx = (try? d.decodeIfPresent([Int].self, forKey: .rewardFx)) ?? nil
         awaken = try d.decodeIfPresent(Int.self, forKey: .awaken)
+        previewStart = try d.decodeIfPresent(Int.self, forKey: .previewStart)
+        noPreview = try d.decodeIfPresent(Bool.self, forKey: .noPreview)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -569,6 +590,8 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(shot, forKey: .shot)
         try c.encodeIfPresent(rewardFx, forKey: .rewardFx)
         try c.encodeIfPresent(awaken, forKey: .awaken)
+        try c.encodeIfPresent(previewStart, forKey: .previewStart)
+        try c.encodeIfPresent(noPreview, forKey: .noPreview)
     }
 
     public static let durations: [Mode: [Int]] = [
@@ -601,7 +624,9 @@ public struct Stage: Codable, Equatable, Sendable {
             let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
             let lm = effectiveLifeMode, lc = effectiveLifeCount
             let isDefaultLife = lm == .lives && lc == 1
-            return Stage(name: trimmed, mode: .sequence, durationSec: Stage.sequenceTotalSeconds(Array(ws)), bossHp: nil, bossMove: nil,
+            let seqDur = Stage.sequenceTotalSeconds(Array(ws))
+            let pStart = Stage.sanitizedPreviewStart(previewStart, durationSec: seqDur)
+            return Stage(name: trimmed, mode: .sequence, durationSec: seqDur, bossHp: nil, bossMove: nil,
                          emitters: [], formatVersion: DanmakuConfig.formatVersion,
                          lifeMode: isDefaultLife ? nil : lm, lifeCount: isDefaultLife ? nil : lc,
                          bgm: (bgm.map { (0..<Stage.bgmCount).contains($0) } ?? false) && bgm != 1 ? bgm : nil,
@@ -609,7 +634,8 @@ public struct Stage: Codable, Equatable, Sendable {
                          themeBackground: lookBackground == .classic ? nil : lookBackground,
                          themeShip: lookShip == .classic ? nil : lookShip,
                          hideMarkers: hideMarkers == true ? true : nil, waves: Array(ws), bossWarning: nil, bossDefeat: nil,
-                         bossSize: nil, mooks: nil, bossLook: nil, mookLook: nil, shot: shot == .standard ? nil : shot, rewardFx: Reward.sanitizedFx(rewardFx))
+                         bossSize: nil, mooks: nil, bossLook: nil, mookLook: nil, shot: shot == .standard ? nil : shot, rewardFx: Reward.sanitizedFx(rewardFx),
+                         previewStart: pStart, noPreview: noPreview == true ? true : nil)
         }
         let allowed = Stage.durations[mode]!
         // 選択肢にない値は、標準の長さに丸める(生き残りは20秒、ボス戦とダメージ勝負は60秒)
@@ -620,6 +646,7 @@ public struct Stage: Codable, Equatable, Sendable {
         let look = isBossMode ? Wave.sanitizedBossLook(bossLook) : nil
         let mv = isBossMode ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, 2).rounded())) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
+        let pStart = Stage.sanitizedPreviewStart(previewStart, durationSec: d)
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
@@ -653,6 +680,7 @@ public struct Stage: Codable, Equatable, Sendable {
                      mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
                      shot: shot == .standard ? nil : shot,
                      rewardFx: Reward.sanitizedFx(rewardFx),
-                     awaken: isBossMode ? Wave.sanitizedAwaken(awaken) : nil)
+                     awaken: isBossMode ? Wave.sanitizedAwaken(awaken) : nil,
+                     previewStart: pStart, noPreview: noPreview == true ? true : nil)
     }
 }

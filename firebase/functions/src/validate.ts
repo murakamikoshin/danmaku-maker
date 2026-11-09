@@ -83,6 +83,10 @@ export interface Stage {
   shot?: "spread" | "heavy";
   /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
   rewardFx?: number[];
+  /** 世界のステージ一覧のプレビューを始める秒(1〜長さの30%まで。0 は入れない)。見た目だけ */
+  previewStart?: number;
+  /** 一覧でプレビューを見せない(ネタバレ防止)。見た目だけ */
+  noPreview?: true;
 }
 
 /** 毎日のごほうび: 全部で365個、5種類(軌跡・火花・オーラ・爆発・称号)。ステージに付けられるのは称号を除く4種類 */
@@ -341,6 +345,20 @@ export function validatePublish(input: unknown): Validated {
     if (byKind.size > 0) rewardFx = [...byKind.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1]);
   }
 
+  // 一覧のプレビュー(見た目だけ)。開始秒は長さの30%まで(切り捨て)。「見せない」と開始秒は、同時に指定できない
+  let previewStart: number | undefined;
+  let noPreview: true | undefined;
+  if (input.noPreview !== undefined && input.noPreview !== null && input.noPreview !== false) {
+    if (input.noPreview !== true) return { ok: false, error: "preview" };
+    noPreview = true;
+  }
+  if (input.previewStart !== undefined && input.previewStart !== null) {
+    const maxStart = Math.floor(durationSec! * 0.3);
+    const ps = int(input.previewStart, 0, maxStart);
+    if (ps === null || noPreview) return { ok: false, error: "preview" };
+    if (ps > 0) previewStart = ps;
+  }
+
   // 「URLを知っている人だけ」の投稿(unlisted)は、クリア記録がなくてもよい。一覧には載らない
   const replay = input.unlisted === true ? null : input.clearReplay;
   if (replay !== null && (typeof replay !== "string" || replay.length < 8 || replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(replay))) {
@@ -354,7 +372,8 @@ export function validatePublish(input: unknown): Validated {
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),
-      ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}) },
+      ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
+      ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}) },
   };
 }
 

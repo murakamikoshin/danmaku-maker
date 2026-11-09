@@ -111,6 +111,9 @@ struct Draft: Codable, Equatable {
     var themeShip: Theme = .classic
     /// 発射位置の予告(点線)を出さない(生き残りだけ)
     var hideMarkers = false
+    /// 世界のステージ一覧のプレビュー: 開始秒(0 は最初から)と、見せない設定(ネタバレ防止)
+    var previewStart = 0
+    var noPreview = false
     /// じぶんの画像を使うか(この端末で遊ぶときだけ。投稿すると外れる)
     var customBoss = false
     var customBullet = false
@@ -137,7 +140,7 @@ struct Draft: Codable, Equatable {
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -152,6 +155,8 @@ struct Draft: Codable, Equatable {
         themeBackground = (try? c.decodeIfPresent(Theme.self, forKey: .themeBackground)) ?? .classic
         themeShip = (try? c.decodeIfPresent(Theme.self, forKey: .themeShip)) ?? .classic
         hideMarkers = try c.decodeIfPresent(Bool.self, forKey: .hideMarkers) ?? false
+        previewStart = try c.decodeIfPresent(Int.self, forKey: .previewStart) ?? 0
+        noPreview = try c.decodeIfPresent(Bool.self, forKey: .noPreview) ?? false
         customBoss = try c.decodeIfPresent(Bool.self, forKey: .customBoss) ?? false
         customBullet = try c.decodeIfPresent(Bool.self, forKey: .customBullet) ?? false
         customShip = try c.decodeIfPresent(Bool.self, forKey: .customShip) ?? false
@@ -182,7 +187,8 @@ struct Draft: Codable, Equatable {
               bossWarning: bossWarning ? true : nil,
               bossDefeat: mode == .boss ? bossDefeat : nil,
               bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
-              shot: shot, rewardFx: rewardFx, awaken: awaken).sanitized()
+              shot: shot, rewardFx: rewardFx, awaken: awaken,
+              previewStart: previewStart > 0 ? previewStart : nil, noPreview: noPreview ? true : nil).sanitized()
     }
 
     /// このステージで使う、じぶんの画像の設定(この端末で遊ぶときだけ)
