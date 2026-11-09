@@ -57,6 +57,17 @@ struct StageRepository {
                          reachedEnd: snap.documents.count < Self.pageSize)
     }
 
+    /// その作者の公開中のステージ(いいねの多い順、20件ずつ)。クリア条件(モード)でも絞れる
+    func fetchByAuthor(uid: String, mode: Mode? = nil, after cursor: DocumentSnapshot?) async throws -> StagePage {
+        var q: Query = Firestore.firestore().collection("stages").whereField("status", isEqualTo: "published").whereField("authorUid", isEqualTo: uid)
+        if let mode { q = q.whereField("mode", isEqualTo: mode.rawValue) }
+        q = q.order(by: "likes", descending: true)
+        if let cursor { q = q.start(afterDocument: cursor) }
+        let snap = try await q.limit(to: Self.pageSize).getDocuments()
+        return StagePage(stages: snap.documents.compactMap(Self.parse), cursor: snap.documents.last,
+                         reachedEnd: snap.documents.count < Self.pageSize)
+    }
+
     func find(id: String) async throws -> RemoteStage? {
         let snap = try await Firestore.firestore().document("stages/\(id)").getDocument()
         return Self.parse(snap)

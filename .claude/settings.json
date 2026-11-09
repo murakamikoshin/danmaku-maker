@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node /private/tmp/claude-501/-Users-murakami-Desktop-danmaku/08fd1953-c67c-4e03-881a-20fb55ac56f0/scratchpad/readmm.js:*)"
+    ]
+  }
+}

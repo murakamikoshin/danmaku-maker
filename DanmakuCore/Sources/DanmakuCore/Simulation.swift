@@ -35,6 +35,8 @@ public struct Bullet: Equatable, Sendable {
     public var fuse: Double = 0
     /// すでにかすった(1 発につき 1 回だけ数える。スワイプ弾幕の点数に使う。弾の動きや当たり判定には関わらない)
     public var grazed = false
+    /// 見た目だけ: 0 は標準、1 は「くの字」で描く、2 は丸で描く(発射台の sh から付く。動きや当たり判定には関わらない)
+    public var look: UInt8 = 0
     /// 堕天使の技だけが使う、予備の数値(羽・破片・閉じる輪。意味は印ごとに違う)
     public var u0: Double = 0
     public var u1: Double = 0
@@ -55,6 +57,8 @@ public struct Bullet: Equatable, Sendable {
     static let featherDecay = (0.93 as Double).squareRoot()
 
     public var isRing: Bool { script == Bullet.ringScript }
+    /// 「くの字」(ブーメランの形)で描くか。標準ではブーメランの弾だけ。発射台で、丸・くの字を選べる
+    public var drawsAsBoomerang: Bool { look == 1 || (script == Bullet.boomerangScript && look != 2) }
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -565,6 +569,37 @@ public struct Simulation {
 
     static let bossMoves: [(a: Double, w: Double)] = [(0, 0), (0.25, 0.6), (0.32, 1.3)]
 
+    /// ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ(決まった場所へすっと移る)
+    public static let bossMoveCount = 7
+
+    /// ワープの移動先(画面の幅・高さに対する割合)。4 秒ごとに次の場所へ、最後の 0.6 秒でなめらかに移る
+    static let warpPoints: [(x: Double, y: Double)] = [(0.5, 0.18), (0.22, 0.26), (0.78, 0.16), (0.35, 0.12), (0.68, 0.30), (0.5, 0.22)]
+    static let warpPeriod = 4.0
+    static let warpHold = 3.4
+
+    /// 動きの種類 move のボスの、場面が始まって t 秒後の位置。ゲームの計算も、エディタの見本も、サーバーの検証も、この式を使う
+    public static func bossPoint(move: Int, t rawT: Double) -> Point {
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
+        let t = max(0, rawT)
+        switch min(max(move, 0), bossMoveCount - 1) {
+        case 3: return Point(x: W * 0.5, y: H * (0.2 + 0.09 * sin(t * 0.9)))
+        case 4: return Point(x: W * 0.5 + 85 * cos(t * 0.7), y: H * 0.2 + 45 * sin(t * 0.7))
+        case 5: return Point(x: W * 0.5 + 115 * sin(t * 0.6), y: H * 0.2 + 40 * sin(t * 1.2))
+        case 6:
+            let k = (t / warpPeriod).rounded(.down)
+            let idx = Int(k) % warpPoints.count
+            let f = t - k * warpPeriod
+            let a = warpPoints[idx], b = warpPoints[(idx + 1) % warpPoints.count]
+            if f <= warpHold { return Point(x: W * a.x, y: H * a.y) }
+            let u = (f - warpHold) / (warpPeriod - warpHold)
+            let s = u * u * (3 - 2 * u)
+            return Point(x: W * (a.x + (b.x - a.x) * s), y: H * (a.y + (b.y - a.y) * s))
+        case let m:
+            let mv = bossMoves[m]
+            return Point(x: W * (0.5 + mv.a * sin(t * mv.w)), y: H * 0.18)
+        }
+    }
+
     /// shotType を省くと、ステージで決まっている撃ち方を使う(ふつうは、これ)
     public init(stage: Stage, shotType: ShotType? = nil) {
         self.init(stage: stage, seed: stage.seed, shotType: shotType ?? stage.shotType)
@@ -683,9 +718,7 @@ public struct Simulation {
 
     public var bossPosition: Point {
         if let c = spec.character { return c.position(waveT: waveT) }
-        let mv = Simulation.bossMoves[min(max(spec.move, 0), 2)]
-        return Point(x: DanmakuConfig.width * (0.5 + mv.a * sin(max(0, waveT) * mv.w)),
-                     y: DanmakuConfig.height * 0.18)
+        return Simulation.bossPoint(move: spec.move, t: waveT)
     }
 
     private func phaseOf() -> Int {
@@ -760,16 +793,20 @@ public struct Simulation {
                         // ボス戦でも、好きな場所から出せる(p == 1)。雨は、これまでどおり位置を使わない
                         let fx = m.firesFromPoint ? m.x * W : bp.x
                         let fy = m.firesFromPoint ? m.y * H : bp.y
+                        let before = bullets.count
                         Emit.emit(m, shot: shotCount[idx], cx: m.t == .rain ? 0 : fx, cy: fy,
                                   px: player.x, py: player.y, rng: &rng, into: &bullets, awakened: isAwakened, salt: salt)
+                        if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
                     }
                 } else {
                     let end = min(m.e, spec.limit)
                     while waveT >= next[idx] && next[idx] < end {
+                        let before = bullets.count
                         Emit.emit(m, shot: shotCount[idx], cx: m.x * W, cy: m.y * H,
                                   px: player.x, py: player.y, rng: &rng, into: &bullets)
+                        if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
                     }

@@ -293,11 +293,13 @@ struct ModeCards: View {
 
 struct BossMoveCards: View {
     @Binding var move: Int
-    private static let motions: [(a: Double, w: Double)] = [(0, 0), (0.25, 0.6), (0.32, 1.3)]
+    /// 見本の速さ(ゲームの 1.6 倍。短い枠で動きが分かるように)
+    private static let demoSpeed = 1.6
 
     var body: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<3, id: \.self) { i in
+        // 7 種類を 4 列の表にする(小さい枠のまま、1 画面に収まる)
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
+            ForEach(0..<Simulation.bossMoveCount, id: \.self) { i in
                 let selected = move == i
                 Button {
                     gameTap()
@@ -306,24 +308,31 @@ struct BossMoveCards: View {
                     VStack(spacing: 4) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
                             Canvas { ctx, size in
-                                let t = tl.date.timeIntervalSinceReferenceDate
-                                let m = BossMoveCards.motions[i]
-                                let cx = size.width * (0.5 + m.a * sin(t * m.w * 1.6))
-                                let rect = CGRect(x: cx - 12, y: size.height / 2 - 12, width: 24, height: 24)
-                                // 動く範囲の線
-                                let lo = size.width * (0.5 - m.a), hi = size.width * (0.5 + m.a)
-                                ctx.stroke(Path { p in p.move(to: CGPoint(x: lo, y: size.height / 2)); p.addLine(to: CGPoint(x: hi, y: size.height / 2)) },
-                                           with: .color(Color.white.opacity(0.18)), style: StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                                // ゲームと同じ式(Simulation.bossPoint)で、ボスの位置と動く道すじを描く
+                                let t = tl.date.timeIntervalSinceReferenceDate * Self.demoSpeed
+                                func at(_ p: Point) -> CGPoint {
+                                    CGPoint(x: size.width * p.x / DanmakuConfig.width,
+                                            y: size.height * min(max((p.y / DanmakuConfig.height - 0.05) / 0.4, 0.1), 0.9))
+                                }
+                                var track = Path()
+                                var first = true
+                                for k in 0...120 {
+                                    let q = at(Simulation.bossPoint(move: i, t: Double(k) * 0.2))
+                                    if first { track.move(to: q); first = false } else { track.addLine(to: q) }
+                                }
+                                ctx.stroke(track, with: .color(Color.white.opacity(0.18)), style: StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                                let c = at(Simulation.bossPoint(move: i, t: t))
+                                let rect = CGRect(x: c.x - 9, y: c.y - 9, width: 18, height: 18)
                                 ctx.fill(GameBossShape().path(in: rect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
                             }
                         }
-                        .frame(height: 34)
-                        Text(L("editor.boss.move.\(i)")).font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .frame(height: 40)
+                        Text(L("editor.boss.move.\(i)")).font(.system(size: 11, weight: .heavy, design: .rounded)).lineLimit(1).minimumScaleFactor(0.6)
                             .foregroundStyle(Color(Palette.text))
                     }
-                    .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 4)
-                    .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.2)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 14))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+                    .frame(maxWidth: .infinity).padding(.vertical, 6).padding(.horizontal, 3)
+                    .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.2)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
                     .shadow(color: selected ? Color(Palette.pink).opacity(0.45) : .clear, radius: 7)
                 }
                 .buttonStyle(BounceButtonStyle())

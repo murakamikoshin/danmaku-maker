@@ -280,17 +280,18 @@ public struct Wave: Codable, Equatable, Sendable {
         let d = allowed.contains(durationSec) ? durationSec : (isBoss ? 60 : 20)
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let look = isBoss ? Wave.sanitizedBossLook(bossLook) : nil
-        let mv = isBoss ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, 2).rounded())) : nil
+        let mv = isBoss ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded())) : nil
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
-                    i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),
+                    i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Int(clamp(Double(m.ph), 0, 3)) : 0,
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
-                    path: m.t == .custom ? PathData.sanitized(m.path) : nil)
+                    path: m.t == .custom ? PathData.sanitized(m.path) : nil,
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil)
         }
         return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
@@ -327,13 +328,20 @@ public struct Emitter: Codable, Equatable, Sendable {
     public var a: Int
     /// 弾幕作成モードで描いた軌道(t == .custom のときだけ)。発射位置を原点にした (x, y) を、PathData.step 秒ごとに並べたもの [x0, y0, x1, y1, ...]
     public var path: [Double]?
+    /// 弾の見た目(見た目だけ。当たる範囲や動きは変わらない): nil はパターンの標準、1 は「くの字」(ブーメランの形)、2 は丸
+    public var sh: Int?
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
         self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
         self.path = path
+        self.sh = sh
     }
+
+    /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
+    public static let minInterval = 0.05
+    public static let maxInterval = 15.0
 
     /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
     public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner].contains(t) }
@@ -341,7 +349,7 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -353,6 +361,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         if p != 0 { try c.encode(p, forKey: .p) }
         if a != 0 { try c.encode(a, forKey: .a) }
         if let path { try c.encode(path, forKey: .path) }
+        if let sh, sh == 1 || sh == 2 { try c.encode(sh, forKey: .sh) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -371,6 +380,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         p = try d.decodeIfPresent(Int.self, forKey: .p) ?? 0
         a = try d.decodeIfPresent(Int.self, forKey: .a) ?? 0
         path = (try? d.decodeIfPresent([Double].self, forKey: .path)) ?? nil
+        sh = (try? d.decodeIfPresent(Int.self, forKey: .sh)).flatMap { $0 == 1 || $0 == 2 ? $0 : nil }
     }
 }
 
@@ -644,19 +654,20 @@ public struct Stage: Codable, Equatable, Sendable {
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let isBossMode = mode == .boss || mode == .damage
         let look = isBossMode ? Wave.sanitizedBossLook(bossLook) : nil
-        let mv = isBossMode ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, 2).rounded())) : nil
+        let mv = isBossMode ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded())) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
         let pStart = Stage.sanitizedPreviewStart(previewStart, durationSec: d)
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
-                    i: r2(clamp(m.i, 0.05, 2)), c: Int(clamp(Double(m.c), 1, 36)),
+                    i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     k: Int(clamp(Double(m.k), 0, 4)), ph: Int(clamp(Double(m.ph), 0, 3)),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
-                    path: m.t == .custom ? PathData.sanitized(m.path) : nil)
+                    path: m.t == .custom ? PathData.sanitized(m.path) : nil,
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil)
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount

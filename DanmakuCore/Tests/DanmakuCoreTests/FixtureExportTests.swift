@@ -153,6 +153,22 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("angel-paradise", angel([(.angelParadise, 1.2, 23, 1.1, 29), (.angelFeather, 0.8, 5, 3.5, 0)], awaken: 3)))
         stages.append(("angel-damage-all", angel([(.angelTwin, 0.4, 3, 2.0, 8), (.angelHalo, 2.0, 18, 3.0, 0), (.angelParadise, 1.5, 20, 1.0, 0)], awaken: nil, mode: .damage)))
 
+        // ボスの新しい動き(上下・円・8の字・ワープ)と、15秒までの発射間隔・弾の形の指定(見た目だけ)。ここより前の並びは変えない
+        for mv in 3...6 {
+            stages.append(("boss-move\(mv)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 400, bossMove: mv, emitters: emitters([.ring, .aim, .spiral, .homing], boss: true), lifeMode: .hp, lifeCount: 10).sanitized()))
+        }
+        stages.append(("damage-move6", Stage(name: "d", mode: .damage, durationSec: 60, bossMove: 6, emitters: emitters([.aim, .flower], boss: true), lifeMode: .hp, lifeCount: 12).sanitized()))
+        stages.append(("seq-newmoves", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 15, waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 4, emitters: bossEm),
+            Wave(kind: .boss, durationSec: 30, bossHp: 100, bossMove: 6, emitters: bossEm)]).sanitized()))
+        stages.append(("survive-slow-interval", Stage(name: "s", mode: .survive, durationSec: 45, emitters: [
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 45, i: 15, c: 24, v: 1.5, r: 6, k: 1),
+            Emitter(t: .aim, x: 0.3, y: 0.2, s: 0, e: 45, i: 7.5, c: 7, v: 2, r: 30, k: 2, sh: 1),
+            Emitter(t: .swirl, x: 0.7, y: 0.15, s: 0, e: 45, i: 3.5, c: 6, v: 1.8, r: 13, k: 3, sh: 2)]).sanitized()))
+        stages.append(("boss-slow-interval", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 5, emitters: [
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 12, c: 20, v: 1.5, r: 6, k: 0, ph: 1),
+            Emitter(t: .homing, x: 0.5, y: 0.2, s: 0, e: 60, i: 5, c: 3, v: 1.6, r: 45, k: 2, ph: 0)], lifeMode: .lives, lifeCount: 4).sanitized()))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

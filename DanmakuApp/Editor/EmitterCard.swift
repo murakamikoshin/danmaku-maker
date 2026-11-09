@@ -1,6 +1,27 @@
 import SwiftUI
 import DanmakuCore
 
+/// 発射間隔のスライダーの目盛り。0.05〜2 秒は 0.05 秒きざみ(40 段)、2.5〜15 秒は 0.5 秒きざみ(26 段)。計算の値は秒のまま
+enum IntervalScale {
+    static let fineSteps = 40
+    static let maxIndex = fineSteps + 25   // 2.5 秒 〜 15 秒
+
+    static func seconds(_ index: Int) -> Double {
+        let i = min(max(index, 0), maxIndex)
+        let v = i < fineSteps ? Double(i + 1) * 0.05 : 2.0 + Double(i - fineSteps + 1) * 0.5
+        return (v * 100).rounded() / 100
+    }
+
+    /// 一番近い目盛り
+    static func index(_ s: Double) -> Int {
+        let v = min(max(s.isFinite ? s : 1, Emitter.minInterval), Emitter.maxInterval)
+        if v <= 2 { return min(fineSteps - 1, max(0, Int((v / 0.05).rounded()) - 1)) }
+        return min(maxIndex, fineSteps - 1 + Int(((v - 2.0) / 0.5).rounded()))
+    }
+
+    static func label(_ s: Double) -> String { s <= 2 ? String(format: "%.2fs", s) : String(format: "%.1fs", s) }
+}
+
 struct EmitterCard: View {
     let index: Int
     @Binding var emitter: Emitter
@@ -87,6 +108,13 @@ struct EmitterCard: View {
             }
 
             if advanced {
+                // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸。見た目だけ(当たる範囲は同じ)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.shape.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round"))],
+                             selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
+                             idPrefix: "emitter.shape.\(index)", minimum: 80)
+                }
                 if isBoss {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
@@ -114,7 +142,9 @@ struct EmitterCard: View {
                 SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
                 SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
             }
-            SliderRow(label: "editor.interval", value: $emitter.i, range: 0.05...2, step: 0.05) { String(format: "%.2fs", $0) }
+            // 間隔: 2 秒までは 0.05 秒きざみ(これまでと同じ)、それより先は 0.5 秒きざみで 15 秒まで(1本のスライダーのまま)
+            SliderRow(label: "editor.interval", value: Binding(get: { Double(IntervalScale.index(emitter.i)) }, set: { emitter.i = IntervalScale.seconds(Int($0)) }),
+                      range: 0...Double(IntervalScale.maxIndex), step: 1) { IntervalScale.label(IntervalScale.seconds(Int($0))) }
             SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
             SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
             SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),

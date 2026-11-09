@@ -353,6 +353,23 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ shot: "laser" }))).toEqual({ ok: false, error: "shot" });
   });
 
+  it("発射間隔は15秒まで(以前は2秒まで)。弾の形(くの字=1・丸=2)は見た目だけで、標準(未指定・0)は入れない", () => {
+    const at = (o: object) => validatePublish(good({ emitters: [em(o)] }));
+    const slow = at({ i: 15 });
+    expect(slow.ok && slow.stage.emitters[0]!.i).toBe(15);
+    expect(at({ i: 2.5 }).ok).toBe(true);
+    for (const bad of [15.01, 16, 0.04, 0]) expect(at({ i: bad })).toEqual({ ok: false, error: "emitter-range" });
+    const hook = at({ sh: 1 });
+    expect(hook.ok && hook.stage.emitters[0]!.sh).toBe(1);
+    const round = at({ sh: 2 });
+    expect(round.ok && round.stage.emitters[0]!.sh).toBe(2);
+    for (const none of [0, undefined, null]) {
+      const r = at({ sh: none });
+      expect(r.ok && "sh" in r.stage.emitters[0]!).toBe(false);
+    }
+    for (const bad of [3, -1, 1.5, "1"]) expect(at({ sh: bad })).toEqual({ ok: false, error: "emitter-range" });
+  });
+
   it("毎日のごほうびの演出は、種類ごとに1つまで受け付け、種類の順に並べる。称号・範囲外・重複は拒否", () => {
     const a = validatePublish(good({ rewardFx: [13, 6] }));   // オーラ(13)・火花(6)
     expect(a.ok && a.stage.rewardFx).toEqual([6, 13]);

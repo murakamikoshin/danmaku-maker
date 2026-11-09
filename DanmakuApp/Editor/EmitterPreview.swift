@@ -23,7 +23,9 @@ final class PreviewEngine {
         let cx = atBoss ? (home?.x ?? 180) : m.x * DanmakuConfig.width
         let cy = atBoss ? (home?.y ?? DanmakuConfig.height * 0.18) : m.y * DanmakuConfig.height
         while t >= next {
+            let before = bullets.count
             Emit.emit(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, rng: &rng, into: &bullets)
+            if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
             shot += 1
             next += max(0.05, m.i)
         }
@@ -174,7 +176,7 @@ extension GraphicsContext {
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
         if b.isBlast { drawBlast(b, color: color, scale: s, time: time); return }
         let c = CGPoint(x: b.x * s, y: b.y * s)
-        if b.script == Bullet.boomerangScript {
+        if b.drawsAsBoomerang {
             var g = self
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(time * 14))

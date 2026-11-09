@@ -2,7 +2,7 @@ import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
-import { PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
+import { BOSS_MOVE_COUNT, PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
  * ゲーム計算の完全版(アプリの DanmakuCore.Simulation の移植)。ランキングの記録を、
@@ -64,6 +64,31 @@ const BOSS_RADII = [17, 24, 34] as const;
 const FALLEN_ANGEL_LOOK = 5;
 const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
+/** ボスの動き(Swift の Simulation.bossPoint と同じ式) */
+const WARP_POINTS = [[0.5, 0.18], [0.22, 0.26], [0.78, 0.16], [0.35, 0.12], [0.68, 0.30], [0.5, 0.22]] as const;
+const WARP_PERIOD = 4, WARP_HOLD = 3.4;
+export function bossPoint(move: number, rawT: number): { x: number; y: number } {
+  const t = Math.max(0, rawT);
+  switch (Math.min(Math.max(move, 0), BOSS_MOVE_COUNT - 1)) {
+    case 3: return { x: W * 0.5, y: H * (0.2 + 0.09 * Math.sin(t * 0.9)) };
+    case 4: return { x: W * 0.5 + 85 * Math.cos(t * 0.7), y: H * 0.2 + 45 * Math.sin(t * 0.7) };
+    case 5: return { x: W * 0.5 + 115 * Math.sin(t * 0.6), y: H * 0.2 + 40 * Math.sin(t * 1.2) };
+    case 6: {
+      const k = Math.floor(t / WARP_PERIOD);
+      const idx = k % WARP_POINTS.length;
+      const f = t - k * WARP_PERIOD;
+      const a = WARP_POINTS[idx]!, b = WARP_POINTS[(idx + 1) % WARP_POINTS.length]!;
+      if (f <= WARP_HOLD) return { x: W * a[0], y: H * a[1] };
+      const u = (f - WARP_HOLD) / (WARP_PERIOD - WARP_HOLD);
+      const s = u * u * (3 - 2 * u);
+      return { x: W * (a[0] + (b[0] - a[0]) * s), y: H * (a[1] + (b[1] - a[1]) * s) };
+    }
+    default: {
+      const bm = BOSS_MOVES[Math.min(Math.max(move, 0), 2)]!;
+      return { x: W * (0.5 + bm.a * Math.sin(t * bm.w)), y: H * 0.18 };
+    }
+  }
+}
 
 export type ShotType = "standard" | "spread" | "heavy";
 const SHOTS: Record<ShotType, { interval: number; volley: { dx: number; vx: number; damage: number }[] }> = {
@@ -388,11 +413,11 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const bm = BOSS_MOVES[sp.move] ?? BOSS_MOVES[0];
     const angel = sp.look === FALLEN_ANGEL_LOOK;
     const wt = Math.max(0, waveT);
-    const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : W * (0.5 + bm.a * Math.sin(wt * bm.w));
-    const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : H * 0.18;
+    const bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
+    const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : bp.x;
+    const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : bp.y;
     const bossRadius = angel ? FALLEN_ANGEL_RADIUS : BOSS_RADII[Math.min(Math.max(sp.size, 0), 2)]!;
     if (sp.boss) {
       const ph = phaseOf(waveT);

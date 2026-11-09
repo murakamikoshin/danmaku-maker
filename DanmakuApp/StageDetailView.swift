@@ -3,6 +3,8 @@ import SwiftUI
 
 struct StageDetailView: View {
     @State var remote: RemoteStage
+    /// 「この作者のステージを見る」を押したとき(世界のステージ一覧を、その作者だけに絞る)。nil ならボタンを出さない
+    var onShowAuthor: ((RemoteStage) -> Void)? = nil
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
     @Environment(\.dismiss) private var dismiss
@@ -91,7 +93,19 @@ struct StageDetailView: View {
                     }
                     Text(remote.name).font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("by \(remote.authorName)").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        BadgedName(name: "by \(remote.authorName)", badge: ProfileBadgeStore.shared.badge(remote.authorUid), size: 12, weight: .semibold, baseColor: .secondary, inlineChip: true)
+                        if let onShowAuthor {
+                            Button { gameTap(); onShowAuthor(remote) } label: {
+                                Label("detail.author.more", systemImage: "person.crop.rectangle.stack").labelStyle(.titleAndIcon)
+                                    .font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(Color(Palette.gold).opacity(0.14), in: Capsule())
+                            }
+                            .buttonStyle(BounceButtonStyle())
+                            .accessibilityIdentifier("detail.author.more")
+                        }
+                    }
                 }
             }
             HStack(spacing: 10) {

@@ -1,6 +1,9 @@
 import { validatePath } from "./custompath.js";
 import { containsNgWord } from "./ngwords/index.js";
 
+/** ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ(Swift の Simulation.bossMoveCount と同じ) */
+export const BOSS_MOVE_COUNT = 7;
+
 export const WAVE_DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [30, 60, 90, 120, 180] } as const;
 export const MAX_WAVES = 6;
 export const INTERMISSION_BUDGET = 2;
@@ -26,13 +29,15 @@ export interface Emitter {
   a?: number;
   /** 弾幕作成モードで描いた軌道(t が custom のときだけ) */
   path?: number[];
+  /** 弾の見た目(1=くの字 2=丸。未指定=パターンの標準)。見た目だけ */
+  sh?: 1 | 2;
 }
 
 export interface Wave {
   kind: WaveKind;
   durationSec: number;
   bossHp: number | null;
-  bossMove: 0 | 1 | 2 | null;
+  bossMove: number | null;
   emitters: Emitter[];
   warning?: true;
   defeat?: number;
@@ -53,7 +58,7 @@ export interface Stage {
   mode: Mode;
   durationSec: number;
   bossHp: number | null;
-  bossMove: 0 | 1 | 2 | null;
+  bossMove: number | null;
   emitters: Emitter[];
   formatVersion: 1;
   /** 自機の耐久。標準(ライフ1)のときは入れない */
@@ -141,11 +146,12 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
   for (const item of raw) {
     if (!isObj(item) || !(PATTERNS as readonly unknown[]).includes(item.t)) return { ok: false, error: "emitter-pattern" };
     const x = num(item.x, 0, 1), y = num(item.y, 0, 0.6), s = num(item.s, 0, 180), e = num(item.e, 0, 180);
-    const i = num(item.i, 0.05, 2), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
+    const i = num(item.i, 0.05, 15), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
     const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 3);
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
-    if ([x, y, s, e, i, c, v, r, k, ph, fp, ang].some((n) => n === null)) return { ok: false, error: "emitter-range" };
+    const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
+    if ([x, y, s, e, i, c, v, r, k, ph, fp, ang, sh].some((n) => n === null)) return { ok: false, error: "emitter-range" };
     // 回せないパターン(雨・横切り・隅・掃射)に角度は付けられない
     if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
     // 描いた軌道は、custom のときだけ付き、custom には必ず付く
@@ -155,7 +161,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}) });
   }
   return { ok: true, list };
 }
@@ -170,13 +176,13 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const kind: WaveKind = w.kind;
     const d = int(w.durationSec, 1, 600);
     if (d === null || !(WAVE_DURATIONS[kind] as readonly number[]).includes(d)) return { ok: false, error: "wave-duration" };
-    let bossHp: number | null = null, bossMove: 0 | 1 | 2 | null = null;
+    let bossHp: number | null = null, bossMove: number | null = null;
     if (kind === "boss") {
       bossHp = int(w.bossHp, 100, 1000);
       if (bossHp === null || bossHp % 50 !== 0) return { ok: false, error: "wave-boss-hp" };
-      const mv = int(w.bossMove, 0, 2);
+      const mv = int(w.bossMove, 0, BOSS_MOVE_COUNT - 1);
       if (mv === null) return { ok: false, error: "wave-boss-move" };
-      bossMove = mv as 0 | 1 | 2;
+      bossMove = mv;
     } else if ((w.bossHp ?? null) !== null || (w.bossMove ?? null) !== null) {
       return { ok: false, error: "wave-boss-hp" };
     }
@@ -241,15 +247,15 @@ export function validatePublish(input: unknown): Validated {
   } else if (durationSec === null || !(DURATIONS[mode] as readonly number[]).includes(durationSec)) return { ok: false, error: "duration" };
 
   let bossHp: number | null = null;
-  let bossMove: 0 | 1 | 2 | null = null;
+  let bossMove: number | null = null;
   if (mode === "boss") {
     bossHp = int(input.bossHp, 100, 1000);
     if (bossHp === null || bossHp % 50 !== 0) return { ok: false, error: "boss-hp" };
   }
   if (mode === "boss" || mode === "damage") {
-    const mv = int(input.bossMove, 0, 2);
+    const mv = int(input.bossMove, 0, BOSS_MOVE_COUNT - 1);
     if (mv === null) return { ok: false, error: "boss-move" };
-    bossMove = mv as 0 | 1 | 2;
+    bossMove = mv;
   }
 
   // 自機の耐久(未指定はライフ1)。標準と同じ指定は入れない(アプリの丸め方と同じ)

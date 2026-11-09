@@ -2,6 +2,9 @@ import DanmakuCore
 import FirebaseFirestore
 import Foundation
 
+/// 作者での絞り込み
+struct AuthorFilter: Equatable { let uid: String; let name: String }
+
 @MainActor
 final class WorldViewModel: ObservableObject {
     @Published private(set) var stages: [RemoteStage] = []
@@ -14,6 +17,8 @@ final class WorldViewModel: ObservableObject {
     /// ステージ名の検索語。空なら、一覧(並べ替え)を出す
     @Published var query = ""
     @Published private(set) var searching = false
+    /// 作者で絞り込んでいるとき(その人の公開ステージだけを出す)
+    @Published var author: AuthorFilter?
 
     private var cursor: DocumentSnapshot?
     private let repo = StageRepository()
@@ -25,7 +30,8 @@ final class WorldViewModel: ObservableObject {
         isLoading = false
         cursor = nil; reachedEnd = false; stages = []; failed = false
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        searching = !q.isEmpty
+        // 作者で絞り込んでいるときは、そちらを優先する(ステージ名の検索は使わない)
+        searching = author == nil && !q.isEmpty
         if searching { await runSearch(q) } else { await loadMore() }
     }
 
@@ -55,7 +61,9 @@ final class WorldViewModel: ObservableObject {
         defer { if gen == generation { isLoading = false } }
         do {
             for _ in 0..<10 {
-                let page = try await repo.fetch(sort, mode: mode, after: cursor)
+                let page: StagePage
+                if let a = author { page = try await repo.fetchByAuthor(uid: a.uid, mode: mode, after: cursor) }
+                else { page = try await repo.fetch(sort, mode: mode, after: cursor) }
                 guard gen == generation else { return }
                 let added = page.stages.filter { s in !stages.contains { $0.id == s.id } }
                 stages += added

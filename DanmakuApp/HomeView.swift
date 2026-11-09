@@ -111,7 +111,7 @@ struct HomeView: View {
             Button("common.cancel", role: .cancel) {}
         } message: { Text(deletingEntry?.publishedID != nil ? "mystage.delete.world.message" : "mystage.delete.message") }
         .alert("mystage.delete.failed", isPresented: $worldDeleteFailed) { Button("OK", role: .cancel) {} }
-        .sheet(item: $detail) { StageDetailView(remote: $0) }
+        .sheet(item: $detail) { s in StageDetailView(remote: s, onShowAuthor: { showAuthor($0) }) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
         #endif
@@ -211,7 +211,27 @@ struct HomeView: View {
         }
     }
 
+    /// この作者のステージだけを、世界のステージ一覧に出す(詳細画面は閉じる)
+    private func showAuthor(_ s: RemoteStage) {
+        detail = nil
+        query = ""; world.query = ""
+        world.author = AuthorFilter(uid: s.authorUid, name: s.authorName)
+        tab = .world
+        Task { await world.reload() }
+    }
+
     @ViewBuilder private var worldList: some View {
+        if let a = world.author {
+            // 作者で絞り込み中(解除すると、ふつうの一覧に戻る)
+            HStack {
+                Label(String(format: L("world.author.filter"), a.name), systemImage: "person.crop.rectangle.stack")
+                    .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                Spacer()
+                Button { gameTap(); world.author = nil; Task { await world.reload() } } label: { Chip(title: L("world.author.clear"), selected: false) }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("home.author.clear")
+            }
+        }
         if world.searching {
             HStack {
                 Label(String(format: L("world.search.result"), world.query), systemImage: "magnifyingglass")
