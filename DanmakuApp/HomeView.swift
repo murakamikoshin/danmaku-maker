@@ -422,6 +422,7 @@ struct RemoteRow: View {
     var onHold: ((RemoteStage?) -> Void)? = nil
     @GestureState private var holding = false
     @Environment(\.listScrolling) private var scrolling
+    @ObservedObject private var badges = ProfileBadgeStore.shared
     /// 画面に映っているか(一覧は LazyVStack なので、映ったとき・外れたときに変わる)
     @State private var visible = false
     var body: some View {
@@ -436,7 +437,11 @@ struct RemoteRow: View {
                     .foregroundStyle(Color(Palette.text))
                 HStack(spacing: 6) {
                     ModeBadge(mode: stage.stage.mode)
-                    Text("\(detailText(stage.stage)) · by \(stage.authorName)").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                    // 作者の名前の横に、称号と王冠(あれば)
+                    HStack(spacing: 0) {
+                        Text("\(detailText(stage.stage)) · by ").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1).layoutPriority(1)
+                        BadgedName(name: stage.authorName, badge: badges.badge(stage.authorUid), size: 11, weight: .semibold, baseColor: .secondary, inlineChip: true)
+                    }
                 }
                 HStack(spacing: 12) {
                     Label("\(stage.plays)", systemImage: "gamecontroller")
@@ -452,7 +457,7 @@ struct RemoteRow: View {
                 Text("world.clearrate").font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary)
             }
         }
-        .onAppear { visible = true }
+        .onAppear { visible = true; badges.request([stage.authorUid]) }
         .onDisappear { visible = false }
         // 長押しの間だけ、大きく再生する(「プレビューなし」のステージは出さない)
         .simultaneousGesture(

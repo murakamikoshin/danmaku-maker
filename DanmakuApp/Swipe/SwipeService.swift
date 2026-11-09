@@ -41,6 +41,8 @@ struct SwipeSubmitResult {
     var bestStreak = 0
     var ranked = false
     var improved = false
+    /// このプレイで新しくもらった称号(スコア達成)
+    var newTitles: [String] = []
 }
 
 struct SwipeRankRow: Identifiable {
@@ -50,6 +52,21 @@ struct SwipeRankRow: Identifiable {
     let score: BigScore
     let bestStreak: Int
     let name: String
+    var title: String?
+    var crown = 0
+    var medal = false
+    var badge: ProfileBadge { ProfileBadge(title: title, crown: crown, medal: medal) }
+}
+
+/// ランキングの取得結果(今月か累計か)
+struct SwipeRanking {
+    var rows: [SwipeRankRow] = []
+    var myRank: Int?
+    var myScore: BigScore?
+    /// 今月のとき: 月の ID(例 2026-11)・終わる時刻・参加人数
+    var month: String?
+    var endsAt: Date?
+    var total: Int?
 }
 
 enum SwipeError: Error, Equatable {
@@ -154,17 +171,27 @@ final class SwipeService: ObservableObject {
         r.bestStreak = (d["bestStreak"] as? NSNumber)?.intValue ?? 0
         r.ranked = (d["ranked"] as? Bool) ?? false
         r.improved = (d["improved"] as? Bool) ?? false
+        r.newTitles = ((d["newTitles"] as? [String]) ?? []).filter(TitleID.isValid)
         return r
     }
 
-    func ranking() async throws -> (rows: [SwipeRankRow], myRank: Int?, myScore: BigScore?) {
-        let d = try await call("swipeRanking")
+    /// ランキング。monthly が true なら今月(日本時間の毎月 1 日 0:00 にリセット)、false なら累計
+    func ranking(monthly: Bool) async throws -> SwipeRanking {
+        let d = try await call("swipeRanking", monthly ? ["period": "month"] : [:])
         let rows = (d["rows"] as? [[String: Any]] ?? []).enumerated().map { i, r -> SwipeRankRow in
             let name = (r["name"] as? String) ?? PlayerHandle.name(a: (r["a"] as? NSNumber)?.intValue ?? 0, n: (r["n"] as? NSNumber)?.intValue ?? 0, num: (r["num"] as? NSNumber)?.intValue ?? 0)
             return SwipeRankRow(id: i, rank: (r["rank"] as? NSNumber)?.intValue ?? i + 1, mine: (r["mine"] as? Bool) ?? false,
-                                score: BigScore((r["score"] as? String) ?? "0") ?? .zero, bestStreak: (r["bestStreak"] as? NSNumber)?.intValue ?? 0, name: name)
+                                score: BigScore((r["score"] as? String) ?? "0") ?? .zero, bestStreak: (r["bestStreak"] as? NSNumber)?.intValue ?? 0, name: name,
+                                title: (r["title"] as? String).flatMap { TitleID.isValid($0) ? $0 : nil },
+                                crown: (r["crown"] as? NSNumber)?.intValue ?? 0, medal: (r["medal"] as? Bool) ?? false)
         }
         let my = d["my"] as? [String: Any]
-        return (rows, (my?["rank"] as? NSNumber)?.intValue, (my?["score"] as? String).flatMap { BigScore($0) })
+        var out = SwipeRanking(rows: rows, myRank: (my?["rank"] as? NSNumber)?.intValue, myScore: (my?["score"] as? String).flatMap { BigScore($0) })
+        if monthly {
+            out.month = d["month"] as? String
+            out.endsAt = (d["endsAt"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue / 1000) }
+            out.total = (d["total"] as? NSNumber)?.intValue
+        }
+        return out
     }
 }

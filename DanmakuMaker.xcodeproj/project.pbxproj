@@ -68,6 +68,7 @@
 		AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */; };
 		AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED3045376B6993745B32B4 /* DanmakuApp.swift */; };
 		B259B87E13614269D15389E9 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
+		B29625A7B420E5FBB2C70E33 /* Titles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19084243662110CA130C11E5 /* Titles.swift */; };
 		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
 		B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DE776EFBE3A43B7196CBB2 /* CommentViews.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
@@ -122,6 +123,7 @@
 		14207E44305C80AA77BB6252 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
 		14C491E753AF70E1D5511B48 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
 		1813EF0CCD30071AF2F3CEAF /* SwipeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeAudio.swift; sourceTree = "<group>"; };
+		19084243662110CA130C11E5 /* Titles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Titles.swift; sourceTree = "<group>"; };
 		1BD184CEA2DD857CD5676F6A /* PostQuotaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostQuotaService.swift; sourceTree = "<group>"; };
 		1EB55E6B7227AB4BCFACF4BC /* bgm_swipe.caf */ = {isa = PBXFileReference; path = bgm_swipe.caf; sourceTree = "<group>"; };
 		22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishFlowView.swift; sourceTree = "<group>"; };
@@ -364,6 +366,7 @@
 				E76AAB990CF55410F75C347D /* ShopView.swift */,
 				102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */,
 				95160D2A88138F6429741ED2 /* StoreView.swift */,
+				19084243662110CA130C11E5 /* Titles.swift */,
 				4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */,
 				99A389FD256B46C647F04C63 /* Editor */,
 				CD8CFC363DC68F19E88DF9D0 /* Game */,
@@ -627,6 +630,7 @@
 				97115F5C7296259FE7662EC2 /* SwipePalette.swift in Sources */,
 				00A1FC5C7565FEC4B320110E /* SwipeScene.swift in Sources */,
 				6FC2842093BC35D3483AEA1B /* SwipeService.swift in Sources */,
+				B29625A7B420E5FBB2C70E33 /* Titles.swift in Sources */,
 				9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

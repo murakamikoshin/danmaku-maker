@@ -190,6 +190,11 @@ final class SwipeModel: ObservableObject {
         defer { submitting = false }
         do {
             result = try await service.submit(runId: run.runId, clips: records, handle: handles.handle, name: displayName)
+            // 新しくもらった称号を、持っている一覧に入れて知らせる
+            if let ids = result?.newTitles, !ids.isEmpty {
+                TitleService.shared.gained(ids)
+                if let best = ids.last, let t = TitleID.text(best) { toast = String(format: L("title.get"), t) }
+            }
         } catch {
             submitError = true
         }

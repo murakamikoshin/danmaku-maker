@@ -383,19 +383,32 @@ private struct StaminaSheet: View {
 
 struct SwipeRankingView: View {
     @ObservedObject var service: SwipeService
-    @State private var rows: [SwipeRankRow] = []
-    @State private var myRank: Int?
-    @State private var myScore: BigScore?
+    @State private var data = SwipeRanking()
+    @State private var monthly = true
     @State private var loading = true
     @State private var failed = false
     @State private var editingName = false
+    @State private var showTitles = false
     @ObservedObject private var names = DisplayNameStore.shared
+    @ObservedObject private var titles = TitleService.shared
+    @EnvironmentObject private var auth: AuthService
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             List {
-                // 名前の出し方(匿名 / ユーザー名)。変えたあとのプレイから反映される
+                // 今月 / 累計 の切り替え
+                Section {
+                    Picker("", selection: $monthly) {
+                        Text("swipe.rank.month").tag(true)
+                        Text("swipe.rank.all").tag(false)
+                    }.pickerStyle(.segmented)
+                    if monthly, let m = data.month, let end = data.endsAt {
+                        Text(String(format: L("swipe.rank.period"), monthLabel(m), remaining(end)))
+                            .font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    }
+                }
+                // 名前の出し方(匿名 / ユーザー名)と、称号。変えたあとのプレイから反映される
                 Section {
                     Button { editingName = true } label: {
                         HStack {
@@ -405,25 +418,27 @@ struct SwipeRankingView: View {
                             Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
                     }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                    Button { showTitles = true } label: {
+                        HStack {
+                            Label("title.button", systemImage: "rosette")
+                            Spacer()
+                            if let t = titles.selected { TitleChip(id: t, size: 11) } else { Text("title.none").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary) }
+                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
+                        }
+                    }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                    .accessibilityIdentifier("swipe.titles")
                 }
-                if let r = myRank, let s = myScore {
-                    Section { HStack { Text(String(format: L("swipe.rank.mine"), r)).font(.system(size: 14, weight: .black)); Spacer()
-                        Text(ScoreFormat.short(s, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)) } }
+                if let r = data.myRank, let s = data.myScore {
+                    Section {
+                        HStack { Text(String(format: L("swipe.rank.mine"), r)).font(.system(size: 14, weight: .black)); Spacer()
+                            Text(ScoreFormat.short(s, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }
+                        if monthly, let total = data.total { Text(String(format: L("swipe.rank.total"), total)).font(.system(size: 12)).foregroundStyle(.secondary)
+                            if let goal = goalText(rank: r, total: total) { Text(goal).font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.cyan)) } }
+                    }
                 }
                 Section {
-                    ForEach(rows) { row in
-                        HStack(spacing: 10) {
-                            Text("\(row.rank)").font(.system(size: 14, weight: .black, design: .rounded)).frame(width: 34, alignment: .trailing)
-                                .foregroundStyle(row.rank <= 3 ? Color(uiColor: SwipePalette.gold) : .white)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(row.name).font(.system(size: 13, weight: .bold)).lineLimit(1)
-                                Text(String(format: L("swipe.rank.streak"), row.bestStreak)).font(.system(size: 10)).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold))
-                        }.listRowBackground(row.mine ? Color(uiColor: SwipePalette.pink).opacity(0.18) : nil)
-                    }
-                } footer: { Text("swipe.rank.footer") }
+                    ForEach(data.rows) { row in rankRow(row) }
+                } footer: { Text(monthly ? "swipe.rank.footer.month" : "swipe.rank.footer") }
                 if loading { ProgressView().frame(maxWidth: .infinity) }
                 if failed { Text("swipe.error.network").foregroundStyle(.secondary) }
             }
@@ -431,9 +446,52 @@ struct SwipeRankingView: View {
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("swipe.close") { dismiss() } } }
         }
         .sheet(isPresented: $editingName) { HandleSheet() }
-        .task {
-            do { let r = try await service.ranking(); rows = r.rows; myRank = r.myRank; myScore = r.myScore } catch { failed = true }
-            loading = false
+        .sheet(isPresented: $showTitles) { TitlePickerView() }
+        .task { await titles.load(uid: auth.uid) }
+        .task(id: monthly) { await load() }
+    }
+
+    /// 1 行: 順位・(王冠|メダル)と名前・名前の下に称号の札と連続本数・点数
+    private func rankRow(_ row: SwipeRankRow) -> some View {
+        HStack(spacing: 10) {
+            Text("\(row.rank)").font(.system(size: 14, weight: .black, design: .rounded)).frame(width: 34, alignment: .trailing)
+                .foregroundStyle(row.rank <= 3 ? Color(uiColor: SwipePalette.gold) : .white)
+            VStack(alignment: .leading, spacing: 2) {
+                BadgedName(name: row.name, badge: row.badge, size: 13)
+                HStack(spacing: 6) {
+                    if let t = row.title { TitleChip(id: t, size: 9) }
+                    Text(String(format: L("swipe.rank.streak"), row.bestStreak)).font(.system(size: 10)).foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 14, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold))
+        }.listRowBackground(row.mine ? Color(uiColor: SwipePalette.pink).opacity(0.18) : nil)
+    }
+
+    private func load() async {
+        loading = true; failed = false
+        do { data = try await service.ranking(monthly: monthly) } catch { failed = true }
+        loading = false
+    }
+
+    private func monthLabel(_ id: String) -> String {
+        let p = id.split(separator: "-")
+        guard p.count == 2, let y = Int(p[0]), let m = Int(p[1]) else { return id }
+        return String(format: L("swipe.rank.monthlabel"), y, m)
+    }
+
+    private func remaining(_ end: Date) -> String {
+        let s = max(0, Int(end.timeIntervalSinceNow))
+        let d = s / 86400, h = (s % 86400) / 3600
+        return d > 0 ? String(format: L("swipe.rank.left.days"), d, h) : String(format: L("swipe.rank.left.hours"), h, (s % 3600) / 60)
+    }
+
+    /// 次の目標(上位 50% → 10% → 1%)まで、あと何位か
+    private func goalText(rank: Int, total: Int) -> String? {
+        for p in [50, 10, 1] {
+            let limit = Int((Double(total) * Double(p) / 100).rounded(.up))
+            if rank > limit { return String(format: L("swipe.rank.goal"), p, rank - limit) }
         }
+        return nil
     }
 }

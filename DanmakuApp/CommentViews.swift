@@ -5,6 +5,7 @@ struct CommentsSection: View {
     let stageID: String
     let authorUid: String
     @EnvironmentObject private var auth: AuthService
+    @ObservedObject private var badges = ProfileBadgeStore.shared
     @EnvironmentObject private var blocks: BlockStore
     @ObservedObject private var handles = HandleStore.shared
     @ObservedObject private var names = DisplayNameStore.shared
@@ -81,7 +82,7 @@ struct CommentsSection: View {
         let mine = c.uid == auth.uid
         return VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                Text(c.displayName).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                BadgedName(name: c.displayName, badge: badges.badge(c.uid), size: 12, weight: .heavy, baseColor: Color(Palette.gold), inlineChip: true)
                 if c.uid == authorUid {
                     Text("comment.author").font(.system(size: 9, weight: .heavy)).foregroundStyle(.white)
                         .padding(.horizontal, 6).padding(.vertical, 1).background(Color(Palette.pink), in: Capsule())
@@ -109,7 +110,7 @@ struct CommentsSection: View {
 
     private func load() async {
         loading = true; failed = false
-        do { comments = try await CommentService.list(stageID: stageID) } catch { failed = true }
+        do { comments = try await CommentService.list(stageID: stageID); badges.request(comments.map(\.uid)) } catch { failed = true }
         loading = false
     }
 
