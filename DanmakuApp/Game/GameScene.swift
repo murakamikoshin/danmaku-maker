@@ -28,6 +28,9 @@ final class GameScene: SKScene {
     private let boomerangTextures: [SKTexture]
     private let shipNode: SKSpriteNode
     private let bossNode: SKSpriteNode
+    /// ボスの動きの演出(見た目だけ): 前のフレームの位置と、残像を出す間引き用の数
+    private var lastBossPoint: CGPoint?
+    private var ghostTick = 0
     private var bossTexture: SKTexture
     private var bossFlashTexture: SKTexture
     private var customBossTextures: (SKTexture, SKTexture)?
@@ -259,6 +262,27 @@ final class GameScene: SKScene {
     }
 
     /// 覚醒の演出(見た目だけ)。覚醒する段階に入った瞬間から1.2秒: 白くなって震え → 姿が変わって赤い衝撃波と「覚醒」
+    /// ボスの動きの演出(見た目だけで、計算には関わらない): 横に動くと進む向きへ少し傾き、速く動くとき(ワープなど)は残像を残す
+    private func animateBossMotion(to cur: CGPoint) {
+        defer { lastBossPoint = cur }
+        guard effectsOn, let last = lastBossPoint else { bossNode.zRotation = 0; return }
+        let vx = (cur.x - last.x) * 60, vy = (cur.y - last.y) * 60   // 論理px/秒
+        let target = max(-0.22, min(0.22, -vx * 0.0018))
+        bossNode.zRotation += (target - bossNode.zRotation) * 0.2
+        let speed = (vx * vx + vy * vy).squareRoot()
+        ghostTick += 1
+        guard speed > 150, ghostTick % 3 == 0 else { return }
+        let ghost = SKSpriteNode(texture: bossNode.texture, size: bossNode.size)
+        ghost.position = bossNode.position
+        ghost.zRotation = bossNode.zRotation
+        ghost.zPosition = bossNode.zPosition - 0.1
+        ghost.alpha = 0.38
+        ghost.colorBlendFactor = 0.5
+        ghost.color = Palette.pink
+        addChild(ghost)
+        ghost.run(.sequence([.group([.fadeOut(withDuration: 0.3), .scale(to: 1.08, duration: 0.3)]), .removeFromParent()]))
+    }
+
     private func updateAwaken(at bp: Point) {
         if sim.isAwakened && !awakenShown {
             awakenShown = true
@@ -302,6 +326,7 @@ final class GameScene: SKScene {
 
     /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
     private func enterWave(_ index: Int) {
+        lastBossPoint = nil
         shownWave = index
         awakenStartT = nil; awakenShown = false; awakenRingShown = false
         awakenOverlay.alpha = 0
@@ -482,6 +507,7 @@ final class GameScene: SKScene {
             let bp = sim.bossPosition
             bossNode.position = pos(bp.x, bp.y)
             updateAwaken(at: bp)
+            animateBossMotion(to: CGPoint(x: bp.x, y: bp.y))
             if let normal = characterNormal {
                 let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
                 let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal

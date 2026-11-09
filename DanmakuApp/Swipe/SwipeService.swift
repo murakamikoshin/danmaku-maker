@@ -178,6 +178,8 @@ final class SwipeService: ObservableObject {
     /// ランキング。monthly が true なら今月(日本時間の毎月 1 日 0:00 にリセット)、false なら累計
     func ranking(monthly: Bool) async throws -> SwipeRanking {
         let d = try await call("swipeRanking", monthly ? ["period": "month"] : [:])
+        // 月間のランキングに対応していない古いサーバーの応答(累計)を、今月のものとして見せない
+        if monthly, (d["period"] as? String) != "month" { throw SwipeError.other("period-unsupported") }
         let rows = (d["rows"] as? [[String: Any]] ?? []).enumerated().map { i, r -> SwipeRankRow in
             let name = (r["name"] as? String) ?? PlayerHandle.name(a: (r["a"] as? NSNumber)?.intValue ?? 0, n: (r["n"] as? NSNumber)?.intValue ?? 0, num: (r["num"] as? NSNumber)?.intValue ?? 0)
             return SwipeRankRow(id: i, rank: (r["rank"] as? NSNumber)?.intValue ?? i + 1, mine: (r["mine"] as? Bool) ?? false,

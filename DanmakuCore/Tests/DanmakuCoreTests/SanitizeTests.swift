@@ -9,7 +9,10 @@ final class SanitizeTests: XCTestCase {
         XCTAssertEqual(s.name.count, 20)
         XCTAssertEqual(s.durationSec, 60)
         XCTAssertEqual(s.bossHp, 1000)
-        XCTAssertEqual(s.bossMove, 2)
+        XCTAssertEqual(s.bossMove, Simulation.bossMoveCount - 1)   // 範囲を超えた動きは、いちばん最後の種類に丸める(いまは 0〜6)
+        XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 6, emitters: []).sanitized().bossMove, 6)
+        XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 3, emitters: []).sanitized().bossMove, 3)
+        XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: -4, emitters: []).sanitized().bossMove, 0)
         XCTAssertEqual(s.emitters.count, 8)
         let m = s.emitters[0]
         XCTAssertEqual([m.x, m.y, m.s, m.e, m.i, m.v, m.r], [1, 0.6, 0, 180, 0.05, 5, 90])

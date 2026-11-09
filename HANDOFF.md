@@ -71,3 +71,27 @@
 2. ASC: 2 つの課金の審査用スクリーンショット（CI の UI Screenshots の成果物 swipe_stamina を使う）、1.1.0 のバージョン作成・説明文（スワイプ弾幕と課金の記載、EULA リンク）・ビルド 37 以降を選択・課金 2 つとドリンクを提出物に追加
 3. 実機確認（TestFlight、Koshin）: 遊べる・音・触感・購入（サンドボックス）・RevenueCat の logIn 後の購入復元
 4. 「審査へ提出」は Koshin
+
+---
+
+## 2026-11-09 の作業メモ(swipe-mode-spec)
+
+アプリ 1.1.3 の内容と、**サーバーのデプロイ待ちの項目**。
+
+### 入れたもの
+- 世界のステージ: 動くミニプレビュー・流れるタイトル・見せ場の開始秒・プレビューなし(ネタバレ防止)・長押しで大きく再生
+- 称号: スコア達成4段階、月間ランキング(毎月1日 0:00 JST で区切り)の順位報酬(王冠・メダル・上位%)。称号は永久。王冠・名前の色は次の月まで
+- エディタ: 弾の形(標準/くの字/丸)、発射間隔 15 秒まで、ボスの動き 7 種類(上下・円・8の字・ワープを追加)
+- 世界のステージ: 作者で絞り込み
+- 設計書: `docs/ADS_PROPOSAL.md`(フェーズ4)、`docs/FRIEND_INVITE_DESIGN.md`(フェーズ3)、`docs/BOSS_ROSTER_PLAN.md`(ボス6体の移植計画)
+
+### デプロイ(本番)が必要なもの — 1.1.3 の TestFlight で確認する前に
+フェーズ1の関数(開始秒・プレビューなし)は、デプロイ済み。それ以降の、次の3つが未デプロイです。
+1. `firebase deploy --only functions`(`FUNCTIONS_DISCOVERY_TIMEOUT=120` を付ける): 称号・月間ランキング(`swipeMonthlyAward`、毎月1日 0:05 JST)・`setTitle`・発射間隔/弾の形/ボスの動きの検証
+2. `firebase deploy --only firestore:rules`: `titleState` / `publicProfiles`
+3. `firebase deploy --only firestore:indexes`: 作者での絞り込み用の索引(作成に数分かかる)
+- 先にサーバーを出さないと、新しいアプリの「今月」ランキング・称号・作者での絞り込みは動きません(古いサーバーの応答は、アプリ側で月間として見せないようにしてあります)。
+- 発射間隔が 2 秒を超えるステージ・新しいボスの動きは、**古いアプリ(1.1.2 以前)では、間隔 2 秒・横の動きに丸められて遊ばれる**ため、クリア記録の検証がずれることがあります。
+
+### テスト(すべて通過)
+`cd DanmakuCore && swift test` / `cd firebase/functions && npm run lint && npm test && npm run test:rules && npm run test:emu`(JDK の環境変数と、先に `npm run build` が要る)

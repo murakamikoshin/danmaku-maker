@@ -59,7 +59,9 @@ describe("validatePublish", () => {
     expect(validatePublish(good({ ...boss, bossHp: 400 })).ok).toBe(true);
     expect(validatePublish(good({ ...boss, bossHp: 420 }))).toEqual({ ok: false, error: "boss-hp" });
     expect(validatePublish(good({ ...boss, bossHp: 50 }))).toEqual({ ok: false, error: "boss-hp" });
-    expect(validatePublish(good({ ...boss, bossHp: 400, bossMove: 3 }))).toEqual({ ok: false, error: "boss-move" });
+    // ボスの動きは 0〜6(止まる・横2種類・上下・円・8の字・ワープ)。7 以上・負・小数・文字は拒否
+    for (const mv of [3, 4, 5, 6]) expect(validatePublish(good({ ...boss, bossHp: 400, bossMove: mv })).ok).toBe(true);
+    for (const bad of [7, 8, -1, 1.5, "2"]) expect(validatePublish(good({ ...boss, bossHp: 400, bossMove: bad }))).toEqual({ ok: false, error: "boss-move" });
   });
   it("オブジェクト以外は拒否", () => {
     expect(validatePublish(null)).toEqual({ ok: false, error: "invalid-data" });

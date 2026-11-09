@@ -727,7 +727,7 @@ final class WaveSequenceTests: XCTestCase {
         XCTAssertEqual(st.waves?.count, 2)
         XCTAssertEqual(st.waves![0].durationSec, 60)      // 選べない長さは、標準(ボス=60秒)に
         XCTAssertEqual(st.waves![0].bossHp, 1000)
-        XCTAssertEqual(st.waves![0].bossMove, 2)
+        XCTAssertEqual(st.waves![0].bossMove, 6)          // 7 は範囲外なので、いちばん最後の種類(0〜6)に
         XCTAssertEqual(st.waves![1].durationSec, 20)      // 生き残り=20秒
         XCTAssertNil(st.waves![1].bossHp)
         XCTAssertEqual(st.durationSec, 60 + 20 + Wave.intermissionBudget)
