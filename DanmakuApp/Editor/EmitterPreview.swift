@@ -494,12 +494,16 @@ struct MarqueeTitle: View {
     var body: some View {
         let overflow = max(0, textWidth - boxWidth)
         let moving = playing && overflow > 0.5
-        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: !moving)) { timeline in
-            Text(text).font(font).lineLimit(1).fixedSize()
-                .background(GeometryReader { g in Color.clear.preference(key: TextWidthKey.self, value: g.size.width) })
-                .offset(x: -Self.offset(elapsed: clock.tick(timeline.date, running: moving), overflow: overflow))
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
+        // 幅は親に合わせる(長いタイトルが自分の幅を主張して、行を横に押し広げないよう、文字は overlay で動かす)
+        Text(" ").font(font).lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .overlay(alignment: .leading) {
+                TimelineView(.animation(minimumInterval: 1.0 / 60, paused: !moving)) { timeline in
+                    Text(text).font(font).lineLimit(1).fixedSize()
+                        .background(GeometryReader { g in Color.clear.preference(key: TextWidthKey.self, value: g.size.width) })
+                        .offset(x: -Self.offset(elapsed: clock.tick(timeline.date, running: moving), overflow: overflow))
+                }
+            }
         .background(GeometryReader { g in Color.clear.preference(key: BoxWidthKey.self, value: g.size.width) })
         .clipped()
         .onPreferenceChange(TextWidthKey.self) { textWidth = $0 }

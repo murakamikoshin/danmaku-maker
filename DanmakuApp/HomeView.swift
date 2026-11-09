@@ -482,7 +482,7 @@ struct RemoteRow: View {
         // 長押しの間だけ、大きく再生する(「プレビューなし」のステージは出さない)
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.4)
-                .sequenced(before: DragGesture(minimumDistance: 0))
+                .sequenced(before: LongPressGesture(minimumDuration: .infinity, maximumDistance: 12))
                 .updating($holding) { value, state, _ in
                     if case .second(true, _) = value { state = true }
                 }
