@@ -20,6 +20,8 @@ struct HomeView: View {
     @State private var publishingEntry: SavedStage?
     @State private var query = ""
     @State private var searchError = false
+    /// 一覧がスクロール中か(世界のステージのプレビュー・タイトルを止める)
+    @State private var listScrolling = false
     #if DEBUG
     @State private var showStoreDebug = false
     #endif
@@ -61,6 +63,8 @@ struct HomeView: View {
                 .padding(.horizontal, 16).padding(.bottom, 24).padding(.top, 4)
             }
             .refreshable { if tab == .world { await world.reload() } }
+            .trackListScrolling($listScrolling)
+            .environment(\.listScrolling, listScrolling)
         }
         .background(Color(Palette.background).ignoresSafeArea())
         .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
@@ -218,7 +222,8 @@ struct HomeView: View {
             ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
         }
         .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
-        VStack(spacing: 10) {
+        // 画面に映った行だけを作る(行のプレビューとタイトルを、映ったときに動かし、外れたら止めるため)
+        LazyVStack(spacing: 10) {
             if !Backend.isAvailable {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
             }
@@ -401,10 +406,17 @@ struct SampleRow: View {
 
 struct RemoteRow: View {
     let stage: RemoteStage
+    @Environment(\.listScrolling) private var scrolling
+    /// 画面に映っているか(一覧は LazyVStack なので、映ったとき・外れたときに変わる)
+    @State private var visible = false
     var body: some View {
-        StageCardShell(mode: stage.stage.mode) {
+        // 画面に映っていて、スクロール中でないときだけ、プレビューとタイトルを動かす
+        let playing = visible && !scrolling
+        StageCardShell(mode: stage.stage.mode,
+                       thumbnail: AnyView(StageMiniPreview(stage: stage.stage, playing: playing, visible: visible))) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(stage.name).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(2).multilineTextAlignment(.leading)
+                MarqueeTitle(text: stage.name, font: .system(size: 16, weight: .heavy, design: .rounded), playing: playing, visible: visible)
+                    .foregroundStyle(Color(Palette.text))
                 HStack(spacing: 6) {
                     ModeBadge(mode: stage.stage.mode)
                     Text("\(detailText(stage.stage)) · by \(stage.authorName)").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
@@ -423,6 +435,8 @@ struct RemoteRow: View {
                 Text("world.clearrate").font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary)
             }
         }
+        .onAppear { visible = true }
+        .onDisappear { visible = false }
     }
 }
 
