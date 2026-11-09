@@ -226,6 +226,23 @@ describe("スワイプ弾幕", () => {
     await assertFails(setDoc(doc(member("u1"), "swipeScores/u1"), { key: "999", score: "9" }));
     await assertFails(setDoc(doc(member("u1"), "swipePools/meta"), { current: "x" }));
   });
+  it("称号: 持っている称号は本人だけが読める。名前の横に出す分はログイン済みなら読める。どちらも書けない", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "titleState/u1"), { titles: ["score1"], sel: "score1" });
+      await setDoc(doc(ctx.firestore(), "publicProfiles/u1"), { title: "score1", crown: 1, cw: "2026-W45" });
+    });
+    await assertSucceeds(getDoc(doc(member("u1"), "titleState/u1")));
+    await assertSucceeds(getDoc(doc(anon("u1"), "titleState/u1")));
+    await assertFails(getDoc(doc(member("u2"), "titleState/u1")));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "titleState/u1")));
+    await assertSucceeds(getDoc(doc(member("u2"), "publicProfiles/u1")));
+    await assertSucceeds(getDoc(doc(anon("u2"), "publicProfiles/u1")));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "publicProfiles/u1")));
+    // 自分でも、称号や王冠は書けない
+    await assertFails(setDoc(doc(member("u1"), "titleState/u1"), { titles: ["score4"], sel: "score4" }));
+    await assertFails(setDoc(doc(member("u1"), "publicProfiles/u1"), { title: "score4", crown: 1 }));
+    await assertFails(setDoc(doc(member("u3"), "publicProfiles/u3"), { crown: 1 }));
+  });
   it("実行中のプレイと課金の記録は、本人でも触れない", async () => {
     await assertFails(getDoc(doc(member("u1"), "swipeRuns/r1")));
     await assertFails(setDoc(doc(member("u1"), "swipeRuns/r2"), { uid: "u1", seed: 1 }));

@@ -7,6 +7,7 @@ import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-fu
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
+import { runMonthlyAward, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
@@ -578,7 +579,13 @@ export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, as
   const uid = requireAny(req);
   return submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
 });
-export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req)));
+export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period));
+/** 称号を付ける(null で外す)。持っている称号だけ */
+export const setTitle = onCall(async (req) => setTitleFn(db, requireAny(req), req.data?.id ?? null));
+/** 毎月 1 日 0:05(日本時間)に、終わった月の順位から、月間の称号・王冠・メダルを配る */
+export const swipeMonthlyAward = onSchedule({ schedule: "5 0 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "512MiB" }, async () => {
+  await runMonthlyAward(db, Date.now());
+});
 
 /** 新しく公開されたステージのクリップを調べる(盛り上がっている 10 秒を、ボットでクリアできるか確かめる) */
 export const swipeCheckNewStage = onDocumentCreated({ document: "stages/{id}", memory: "1GiB", timeoutSeconds: 300 }, async (event) => {

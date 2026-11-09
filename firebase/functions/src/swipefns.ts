@@ -9,6 +9,8 @@ import { addDrink, current, dayKeyJst, hasPass, refillKeep, spend, type StaminaS
 import { validateDisplayName } from "./validate.js";
 import { GEN_AUTHOR, GEN_CLIP_AT, genId, generateStage, parseGenId } from "./swipegen.js";
 import { GEN_SEEDS } from "./swipegen_seeds.js";
+import { grantScoreTitles, recordMonthlyBest } from "./titlesfns.js";
+import { monthEndMs, monthIdJst } from "./titles.js";
 
 /** スワイプ弾幕のサーバー処理(仕様書 8〜16 章)。index.ts の onCall から呼ぶ */
 const db = (): Firestore => getFirestore();
@@ -281,10 +283,18 @@ export async function submitSwipeRun(uid: string, member: boolean, data: unknown
       tx.set(ref, { uid, key, score: result.score.toString(), bestStreak: result.bestStreak, clips: result.clipsCleared, a, n, num: handleNumber(uid), ...(shownName ? { name: shownName } : {}), createdAt: FieldValue.serverTimestamp() });
       return true;
     });
+    // 今月のベスト(月ごとのランキング用。累計とは別に残す)
+    await recordMonthlyBest(db(), monthIdJst(Date.now()), uid, key, { uid, score: result.score.toString(), bestStreak: result.bestStreak, clips: result.clipsCleared, a, n, num: handleNumber(uid), ...(shownName ? { name: shownName } : {}) });
+  }
+
+  // スコア達成の称号(検証済みの点数だけで決める。作者で絞ったプレイは対象外。失敗しても提出は成功にする)
+  let newTitles: string[] = [];
+  if (!author && result.score > 0n) {
+    try { newTitles = await grantScoreTitles(db(), uid, result.score); } catch (e) { logger.error("grant-title-failed", { message: String(e) }); }
   }
   return {
     score: result.score.toString(), clipsCleared: result.clipsCleared, bestStreak: result.bestStreak, bombs: result.bombs, grazes: result.grazes,
-    endedByHit: result.endedByHit, scoreAfterEachClip: result.scoreAfterEachClip, ranked, improved,
+    endedByHit: result.endedByHit, scoreAfterEachClip: result.scoreAfterEachClip, ranked, improved, newTitles,
   };
 }
 
@@ -294,17 +304,38 @@ function handleNumber(uid: string): number {
   return h % 10000;
 }
 
-/** 上位 100 件と、自分の順位 */
-export async function swipeRanking(uid: string) {
-  const top = await db().collection("swipeScores").orderBy("key", "desc").limit(100).get();
-  const rows = top.docs.map((d, i) => ({ rank: i + 1, uid: d.id === uid ? d.id : undefined, mine: d.id === uid, score: d.get("score") as string, bestStreak: d.get("bestStreak") as number, a: d.get("a") as number, n: d.get("n") as number, num: d.get("num") as number, name: (d.get("name") as string | undefined) ?? null }));
-  const mine = await db().doc(`swipeScores/${uid}`).get();
+/** 名前の横に出す称号・王冠(公開のプロフィールから)。uid → 表示用 */
+async function profilesOf(uids: string[]): Promise<Map<string, { title: string | null; crown: number; medal: boolean }>> {
+  const out = new Map<string, { title: string | null; crown: number; medal: boolean }>();
+  if (uids.length === 0) return out;
+  const snaps = await db().getAll(...uids.map((u) => db().doc(`publicProfiles/${u}`)));
+  for (const s of snaps) {
+    if (!s.exists) continue;
+    out.set(s.id, { title: (s.get("title") as string | undefined) ?? null, crown: (s.get("crown") as number | undefined) ?? 0, medal: s.get("medal") === true });
+  }
+  return out;
+}
+
+/** 上位 100 件と、自分の順位。period が "month" なら今月(日本時間の毎月 1 日 0:00 区切り)、それ以外は累計 */
+export async function swipeRanking(uid: string, period?: unknown) {
+  const monthly = period === "month";
+  const month = monthIdJst(Date.now());
+  const col = monthly ? db().collection(`swipeMonthly/${month}/scores`) : db().collection("swipeScores");
+  const top = await col.orderBy("key", "desc").limit(100).get();
+  const profiles = await profilesOf(top.docs.map((d) => d.id));
+  const rows = top.docs.map((d, i) => {
+    const p = profiles.get(d.id);
+    return { rank: i + 1, uid: d.id === uid ? d.id : undefined, mine: d.id === uid, score: d.get("score") as string, bestStreak: d.get("bestStreak") as number, a: d.get("a") as number, n: d.get("n") as number, num: d.get("num") as number, name: (d.get("name") as string | undefined) ?? null,
+      title: p?.title ?? null, crown: p?.crown ?? 0, medal: p?.medal ?? false };
+  });
+  const mine = await col.doc(uid).get();
   let my: { rank: number; score: string; bestStreak: number } | null = null;
   if (mine.exists) {
-    const ahead = await db().collection("swipeScores").where("key", ">", mine.get("key")).count().get();
+    const ahead = await col.where("key", ">", mine.get("key")).count().get();
     my = { rank: ahead.data().count + 1, score: mine.get("score") as string, bestStreak: mine.get("bestStreak") as number };
   }
-  return { rows, my };
+  const total = monthly ? (await col.count().get()).data().count : null;
+  return { rows, my, period: monthly ? "month" : "all", ...(monthly ? { month, endsAt: monthEndMs(month), total } : {}) };
 }
 
 // ---------- 課金の通知(RevenueCat) ----------
