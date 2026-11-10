@@ -117,6 +117,7 @@ struct HomeView: View {
         .task(id: "\(tab == .mine)-\(auth.isMember)") { if tab == .mine { await loadPosted() } }
         .onChange(of: world.sort) { _ in Task { await world.reload() } }
         .onChange(of: world.mode) { _ in Task { await world.reload() } }
+        .onChange(of: world.difficulty) { _ in Task { await world.reload() } }
         .onChange(of: deepLink.stageID) { id in
             guard let id else { return }
             deepLink.stageID = nil
@@ -238,6 +239,7 @@ struct HomeView: View {
         }
         // クリア条件(モード)の絞り込みは、並び順のチップとは見た目も場所も分ける(同じチップが2段続くと、どちらが何か分かりにくかった)
         modeFilter
+        difficultyFilter
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.sort.title", "arrow.up.arrow.down")
             ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
@@ -288,6 +290,19 @@ struct HomeView: View {
         return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.filter.title", "flag.checkered")
             ChipGrid(items: Self.modeOptions.map { ($0.0, L($0.1)) }, selection: $world.mode, idPrefix: "home.mode", minimum: 70)
+        }
+        .padding(.vertical, 10).padding(.horizontal, 14)
+        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+    }
+
+    /// 難しさ(クリア率)の絞り込み。挑戦が10回以上のステージだけが対象
+    private var difficultyFilter: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionLabel("world.filter.difficulty", "gauge.with.dots.needle.67percent")
+            ChipGrid(items: [(nil as WorldDifficulty?, L("world.filter.all"))] + WorldDifficulty.allCases.map { ($0 as WorldDifficulty?, L($0.titleKey)) },
+                     selection: $world.difficulty, idPrefix: "home.diff", minimum: 70)
+            if world.difficulty != nil { Text("world.diff.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.55)) }
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
         .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))

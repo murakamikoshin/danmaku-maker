@@ -14,6 +14,8 @@ final class WorldViewModel: ObservableObject {
     @Published var sort: StageSort = .popular
     /// クリア条件(モード)での絞り込み。nil はすべて
     @Published var mode: Mode?
+    /// 難しさ(クリア率)での絞り込み。nil はすべて
+    @Published var difficulty: WorldDifficulty?
     /// ステージ名の検索語。空なら、一覧(並べ替え)を出す
     @Published var query = ""
     @Published private(set) var searching = false
@@ -63,7 +65,7 @@ final class WorldViewModel: ObservableObject {
             for _ in 0..<10 {
                 let page: StagePage
                 if let a = author { page = try await repo.fetchByAuthor(uid: a.uid, mode: mode, after: cursor) }
-                else { page = try await repo.fetch(sort, mode: mode, after: cursor) }
+                else { page = try await repo.fetch(sort, mode: mode, difficulty: difficulty, after: cursor) }
                 guard gen == generation else { return }
                 let added = page.stages.filter { s in !stages.contains { $0.id == s.id } }
                 stages += added

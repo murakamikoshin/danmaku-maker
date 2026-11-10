@@ -24,6 +24,23 @@ struct RemoteStage: Identifiable, Hashable {
     func hash(into h: inout Hasher) { h.combine(id) }
 }
 
+/// クリア率での難しさの絞り込み(マリオメーカー2と同じ考え方。挑戦が10回以上のステージだけが対象)。
+/// サーバーの hardRate(クリア数 ÷ 挑戦数)の範囲で絞る
+enum WorldDifficulty: String, CaseIterable, Identifiable {
+    case easy, normal, hard, oni
+    var id: String { rawValue }
+    var titleKey: String { "world.diff.\(rawValue)" }
+    /// hardRate の範囲 [from, to)
+    var range: (from: Double, to: Double) {
+        switch self {
+        case .easy: return (0.5, 1.0001)
+        case .normal: return (0.2, 0.5)
+        case .hard: return (0.05, 0.2)
+        case .oni: return (0, 0.05)
+        }
+    }
+}
+
 enum StageSort: String, CaseIterable, Identifiable {
     case popular, new, hard, trending
     var id: String { rawValue }
@@ -46,9 +63,17 @@ struct StagePage {
 struct StageRepository {
     static let pageSize = 20
 
-    func fetch(_ sort: StageSort, mode: Mode? = nil, after cursor: DocumentSnapshot?) async throws -> StagePage {
+    func fetch(_ sort: StageSort, mode: Mode? = nil, difficulty: WorldDifficulty? = nil, after cursor: DocumentSnapshot?) async throws -> StagePage {
         var q: Query = Firestore.firestore().collection("stages").whereField("status", isEqualTo: "published")
         if let mode { q = q.whereField("mode", isEqualTo: mode.rawValue) }
+        if let difficulty {
+            // 難しさで絞るときは、クリア率の高い(やさしい)順に並べる。値が入っているのは、挑戦10回以上のステージだけ
+            q = q.whereField("hardRate", isGreaterThanOrEqualTo: difficulty.range.from).whereField("hardRate", isLessThan: difficulty.range.to)
+                .order(by: "hardRate", descending: true)
+            if let cursor { q = q.start(afterDocument: cursor) }
+            let snap = try await q.limit(to: Self.pageSize).getDocuments()
+            return StagePage(stages: snap.documents.compactMap(Self.parse), cursor: snap.documents.last, reachedEnd: snap.documents.count < Self.pageSize)
+        }
         switch sort {
         case .popular: q = q.order(by: "likes", descending: true)
         case .new: q = q.order(by: "createdAt", descending: true)
