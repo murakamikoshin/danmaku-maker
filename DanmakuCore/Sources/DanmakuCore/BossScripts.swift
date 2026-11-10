@@ -21,13 +21,13 @@ extension Bullet {
     public static let lateralScript = 22
     /// 一定の速さで曲がり続ける弾(渦潮)。u0 が曲がる速さ(ラジアン/秒)
     public static let curveScript = 23
-    /// ミサイル。u0 秒まで減速、u0〜u2 秒の間は自機のほうへ turn (ラジアン/秒) で向きを変えながら accel (px/秒²) で加速(maxSpeed まで)、そのあとはまっすぐ
+    /// ミサイル。fuse 秒は待機(見えず、当たらない)。そのあと u0 秒まで減速、u0〜u2 秒の間は自機のほうへ turn (ラジアン/秒) で向きを変えながら accel (px/秒²) で加速(maxSpeed まで)、そのあとはまっすぐ
     public static let missileScript = 24
     /// 画面を暗くする印(深淵)。動かず、見えず、当たらない。fuse 秒で消える。(x, y) が提灯の位置
     public static let darkScript = 25
 
     /// 見えず、当たらない(待機中の弾・暗転の印)
-    public var isDormant: Bool { (script == Bullet.holdScript && age < fuse) || script == Bullet.darkScript }
+    public var isDormant: Bool { ((script == Bullet.holdScript || script == Bullet.missileScript) && age < fuse) || script == Bullet.darkScript }
     /// 待機中でも、うっすら見せる弾か(鎖の予告線)
     public var dormantGlow: Bool { script == Bullet.holdScript && age < fuse && BulletLook.kind(of: look) == .chain }
 
@@ -109,10 +109,12 @@ extension Bullet {
             return .alive
         case Bullet.missileScript:
             age += dt
+            if age < fuse { return .alive }   // 待機中(fuse 秒)は動かない
+            let t = age - fuse
             var sp = (vx * vx + vy * vy).squareRoot()
-            if age < u0 {
+            if t < u0 {
                 vx *= Bullet.missileDecay; vy *= Bullet.missileDecay
-            } else if age < u2 {
+            } else if t < u2 {
                 let want = atan2(playerY - y, playerX - x)
                 let cur = atan2(vy, vx)
                 var diff = want - cur

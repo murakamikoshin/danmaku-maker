@@ -43,6 +43,15 @@ BOSSES = {
             ('witchMaelstrom', ['Mahlstrom', 'Maelstrom', 'Remolino', 'Maelström', 'メイルシュトローム', '메일스트롬', 'Redemoinho', 'Мальстрём', '大漩涡', '大漩渦']),
             ('witchInk', ['Vorhang der Schwarzen Flut', 'Veil of the Black Tide', 'Velo de la marea negra', 'Voile de la marée noire', '黒潮の帳', '흑조의 장막', 'Véu da maré negra', 'Завеса чёрного прилива', '黑潮之帷', '黑潮之帷']),
         ]),
+    10: dict(
+        name=['Maschinengott', 'Mech Deity', 'Dios mecánico', 'Dieu mécanique', '機神', '기신', 'Deus mecânico', 'Механический бог', '机神', '機神'],
+        moves=[
+            ('mechLockOn', ['Kernauge-Zielerfassung', 'Core-Eye Lock-On', 'Fijación del ojo núcleo', "Verrouillage de l'œil-noyau", 'コアアイ・ロックオン', '코어 아이 락온', 'Mira do olho-núcleo', 'Захват ядра-глаза', '核心之眼·锁定', '核心之眼·鎖定']),
+            ('mechMissiles', ['Mikroraketen', 'Micro Missiles', 'Micromisiles', 'Micro-missiles', 'マイクロミサイル', '마이크로 미사일', 'Micromísseis', 'Микроракеты', '微型导弹', '微型飛彈']),
+            ('mechGatling', ['Gatling-Fächer', 'Gatling Sweep', 'Barrido Gatling', 'Balayage Gatling', 'ガトリング・スイープ', '개틀링 스위프', 'Varredura Gatling', 'Веер Гатлинга', '加特林扫射', '加特林掃射']),
+            ('mechGrid', ['Hexa-Laser', 'Hexa Laser', 'Hexaláser', 'Hexa-laser', 'ヘキサ・レーザー', '헥사 레이저', 'Hexalaser', 'Гекса-лазер', '六角激光', '六角雷射']),
+            ('mechOverload', ['Überlastung', 'Overload', 'Sobrecarga', 'Surcharge', 'オーバーロード', '오버로드', 'Sobrecarga', 'Перегрузка', '过载', '過載']),
+        ]),
 }
 
 def mk(vals):

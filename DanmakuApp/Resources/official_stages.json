@@ -2429,5 +2429,107 @@
    "formatVersion": 1,
    "name": "o35"
   }
+ },
+ {
+  "id": "o36",
+  "difficulty": 5,
+  "name": {
+   "ja": "機神の照準",
+   "en": "Mech Deity's Sights"
+  },
+  "aim": {
+   "ja": "機神の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Mech Deity's five moves. It awakens and grows stronger as its HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 10,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "mechGatling",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 2,
+     "v": 3.4,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "mechMissiles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2,
+     "c": 12,
+     "v": 3,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "mechOverload",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.3,
+     "c": 24,
+     "v": 1.2,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "mechGrid",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.4,
+     "c": 6,
+     "v": 2.4,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "mechLockOn",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2,
+     "c": 2,
+     "v": 2.6,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "mechMissiles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2,
+     "c": 12,
+     "v": 3,
+     "r": 0,
+     "k": 1,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o36"
+  }
  }
 ]

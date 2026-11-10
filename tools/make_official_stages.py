@@ -115,7 +115,12 @@ add(5, "深海の魔女の誘い", "Lure of the Deep-Sea Witch", "深海の魔�
     angel_boss(90, 500, 3, [E("witchBubbles", i=.75, c=4, v=1.2, k=0, ph=1), E("witchTentacles", i=.05, c=8, v=2, k=1, ph=1), E("witchInk", i=.85, c=3, v=1, k=2, ph=2),
                            E("witchAbyss", i=.15, c=7, v=1.8, k=3, ph=2), E("witchMaelstrom", i=.05, c=5, v=1.9, k=4, ph=3), E("witchBubbles", i=.75, c=4, v=1.2, k=0, ph=3)], look=9))
 
-assert len(S) == 35, len(S)
+# ---- ボス「機神」の見本 ----
+add(5, "機神の照準", "Mech Deity's Sights", "機神の5つの技。HPが減ると覚醒して、技が強くなる。", "The Mech Deity's five moves. It awakens and grows stronger as its HP drops.",
+    angel_boss(90, 500, 3, [E("mechGatling", i=.05, c=2, v=3.4, k=0, ph=1), E("mechMissiles", i=2, c=12, v=3, k=1, ph=1), E("mechOverload", i=.3, c=24, v=1.2, k=2, ph=2),
+                           E("mechGrid", i=.4, c=6, v=2.4, k=3, ph=2), E("mechLockOn", i=2, c=2, v=2.6, k=4, ph=3), E("mechMissiles", i=2, c=12, v=3, k=1, ph=3)], look=10))
+
+assert len(S) == 36, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

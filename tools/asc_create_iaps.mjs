@@ -81,6 +81,7 @@ products.push(
   { id: 'boss.ice_queen', yen: 400, ref: 'Boss Snow Queen', ja: ['雪の女王', 'ステージに置けるボス「雪の女王」。5つの技と覚醒つき。'], en: ['Snow Queen', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'boss.reaper', yen: 400, ref: 'Boss Reaper', ja: ['死神', 'ステージに置けるボス「死神」。5つの技と覚醒つき。'], en: ['Reaper', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'boss.witch', yen: 400, ref: 'Boss Deep-Sea Witch', ja: ['深海の魔女', 'ステージに置けるボス「深海の魔女」。5つの技と覚醒つき。'], en: ['Deep-Sea Witch', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
+  { id: 'boss.mech', yen: 400, ref: 'Boss Mech Deity', ja: ['機神', 'ステージに置けるボス「機神」。5つの技と覚醒つき。'], en: ['Mech Deity', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'patternmaker', yen: 1000, ref: 'Pattern Maker', ja: ['弾幕作成モード', '指で線を描いて、自分だけの弾幕を作れます。'], en: ['Pattern Maker', 'Draw a line to make your own bullet pattern.'], notes: makerNotes },
   { id: 'lifetime', yen: 3000, ref: 'Lifetime Pack', ja: ['永久買い切りパック', '全部の課金コンテンツと広告削除を、今後の追加分もずっと。'], en: ['Lifetime Pack', 'All paid items and Remove Ads, forever.'], notes: lifetimeNotes },
 );

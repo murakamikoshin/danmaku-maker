@@ -21,7 +21,7 @@ export interface BossBullet {
 
 /** 見えず、当たらない(待機中の弾・暗転の印) */
 export const isDormant = (b: { script: number; age: number; fuse?: number }): boolean =>
-  (b.script === HOLD_SCRIPT && b.age < (b.fuse ?? 0)) || b.script === DARK_SCRIPT;
+  ((b.script === HOLD_SCRIPT || b.script === MISSILE_SCRIPT) && b.age < (b.fuse ?? 0)) || b.script === DARK_SCRIPT;
 
 export const plainBullet = (x: number, y: number, vx: number, vy: number, color: number, look: number): BossBullet =>
   ({ x, y, vx, vy, color, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0, look });
@@ -126,10 +126,12 @@ export function stepBossScript(b: BossBullet, dt: number, px: number, py: number
     }
     case MISSILE_SCRIPT: {
       b.age += dt;
+      if (b.age < (b.fuse ?? 0)) return "alive";
+      const t = b.age - (b.fuse ?? 0);
       let sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-      if (b.age < (b.u0 ?? 0)) {
+      if (t < (b.u0 ?? 0)) {
         b.vx *= MISSILE_DECAY; b.vy *= MISSILE_DECAY;
-      } else if (b.age < (b.u2 ?? 0)) {
+      } else if (t < (b.u2 ?? 0)) {
         const want = Math.atan2(py - b.y, px - b.x);
         const cur = Math.atan2(b.vy, b.vx);
         let diff = want - cur;

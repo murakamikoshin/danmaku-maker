@@ -234,6 +234,19 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("witch-tentacles-ink-aw", witch([(.witchTentacles, 0.05, 8, 2.0, 0), (.witchInk, 0.85, 3, 1.0, 0)], awaken: 2)))
         stages.append(("witch-maelstrom-aw-mirror", witch([(.witchMaelstrom, 0.05, 5, 1.9, 0), (.witchBubbles, 0.75, 4, 1.2, 0)], awaken: 3, mir: 1)))
         stages.append(("witch-damage-all", witch([(.witchAbyss, 0.15, 7, 1.8, 0), (.witchBubbles, 0.75, 4, 1.2, 0), (.witchTentacles, 0.05, 8, 2.0, 0), (.witchMaelstrom, 0.05, 5, 1.9, 0), (.witchInk, 0.85, 3, 1.0, 0)], awaken: nil, mode: .damage)))
+        // 機神の専用の技(通常と覚醒、鏡写し、ダメージ勝負)。ここより前の並びは変えない
+        func mech(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss, mir: Int? = nil) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0, mir: mir)
+            }
+            return Stage(name: "m", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 10, awaken: awaken).sanitized()
+        }
+        stages.append(("mech-lockon-missiles", mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0)], awaken: nil)))
+        stages.append(("mech-lockon-missiles-aw", mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0)], awaken: 2)))
+        stages.append(("mech-gatling-grid", mech([(.mechGatling, 0.05, 2, 3.4, 0), (.mechGrid, 0.4, 6, 2.4, 0)], awaken: nil)))
+        stages.append(("mech-gatling-grid-aw", mech([(.mechGatling, 0.05, 2, 3.4, 0), (.mechGrid, 0.4, 6, 2.4, 0)], awaken: 2)))
+        stages.append(("mech-overload-aw-mirror", mech([(.mechOverload, 0.3, 24, 1.2, 0), (.mechLockOn, 2.0, 2, 2.6, 0)], awaken: 3, mir: 1)))
+        stages.append(("mech-damage-all", mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0), (.mechGatling, 0.05, 2, 3.4, 0), (.mechGrid, 0.4, 6, 2.4, 0), (.mechOverload, 0.3, 24, 1.2, 0)], awaken: nil, mode: .damage)))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

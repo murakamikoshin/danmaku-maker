@@ -169,6 +169,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case witchMaelstrom
     /// 墨「黒潮の帳」: 大きな墨のしずくが落ちて、弾ける
     case witchInk
+    // 機神だけが使える技
+    /// 照準「コアアイ・ロックオン」: 照準が自機を追って固定され、極太ビームと追尾ミサイル
+    case mechLockOn
+    /// 弾幕「マイクロミサイル」: 小型ミサイルを上向きにばらまき、自機へ向かって加速する
+    case mechMissiles
+    /// 掃射「ガトリング・スイープ」: 両肩のキャノンが速い砲弾を連射しながら首を振る
+    case mechGatling
+    /// 放射「ヘキサ・レーザー」: コアアイから放射状のレーザーがゆっくり回る
+    case mechGrid
+    /// 制圧「オーバーロード」: 光子弾の輪が加速する
+    case mechOverload
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -188,6 +199,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public static let reaper: [Pattern] = [.reaperScythe, .reaperSouls, .reaperChains, .reaperDeadline, .reaperRiver]
     /// 深海の魔女だけが使える技(並びは、出す順)
     public static let witch: [Pattern] = [.witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk]
+    /// 機神だけが使える技(並びは、出す順)
+    public static let mech: [Pattern] = [.mechLockOn, .mechMissiles, .mechGatling, .mechGrid, .mechOverload]
     /// そのボスの専用の技
     public static func moves(of c: BossCharacter) -> [Pattern] {
         switch c {
@@ -196,6 +209,7 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
         case .iceQueen: return iceQueen
         case .reaper: return reaper
         case .witch: return witch
+        case .mech: return mech
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)

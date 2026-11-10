@@ -582,6 +582,8 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .mechLockOn, .mechMissiles, .mechGatling, .mechGrid, .mechOverload:
+            emitMech(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk:
             emitWitch(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .reaperScythe, .reaperSouls, .reaperChains, .reaperDeadline, .reaperRiver:

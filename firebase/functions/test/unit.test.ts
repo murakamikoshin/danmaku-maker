@@ -415,7 +415,7 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 10 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 11 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
@@ -499,6 +499,16 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       for (const look of [2, 5, 6, 7, 8]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
     }
     expect(validatePublish(boss({ ...pat("reaperScythe"), bossLook: 9, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
+  });
+
+  it("機神の技は、機神(bossLook 10)のボスにだけ置ける", () => {
+    const pat = (t: string) => ({ emitters: [em({ t })] });
+    for (const t of ["mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload"]) {
+      const ok = validatePublish(boss({ ...pat(t), bossLook: 10, bossMove: 0 }));
+      expect(ok.ok && ok.stage.emitters[0]!.t).toBe(t);
+      for (const look of [2, 5, 6, 7, 8, 9]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
+    }
+    expect(validatePublish(boss({ ...pat("witchInk"), bossLook: 10, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
   });
 
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {

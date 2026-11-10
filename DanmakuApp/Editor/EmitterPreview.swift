@@ -138,8 +138,8 @@ struct BeamLook {
             // 撃っている間: 太い光線。終わりぎわに薄くなって消える
             let f = (b.age - DanmakuConfig.beamCharge) / b.beamFireTime
             firing = true
-            width = 18
-            coreWidth = 6
+            width = b.radius > 0 ? CGFloat(b.radius * 2) : 18
+            coreWidth = width / 3
             alpha = CGFloat(f > 0.75 ? max(0, (1 - f) / 0.25) : 1)
         } else {
             // ためている間: 細い予告線が、だんだん太く濃くなる(当たらない)
