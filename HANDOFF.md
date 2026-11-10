@@ -118,3 +118,10 @@
 ### デプロイ(本番)が必要なもの
 関数(`sendFeedback` の追加・反転/ボス位置/動き番号の検証)と、Firestore ルール(`feedback` / `feedbackLimits`)。
 - 古いアプリ(1.1.2 以前)は、`mir` / `bossX` / `bossY` を無視して遊ぶ。クリア記録の検証がずれることがある
+
+## 2026-11-10 友達招待の準備(進捗)
+- AppsFlyer アカウント作成済み(ログイン: koshin@koshinstudio.com。koshinstudio.com は Cloudflare Email Routing で koushinsumomo@gmail.com に転送)。
+- アプリ登録済み(iOS: id6824245206、通貨 JPY、タイムゾーン Tokyo)。開発者キーは AppsFlyer の My Apps / SDK で確認(コードやチャットに書かない)。
+- OneLink テンプレート作成済み: サブドメイン `danmaku-maker.onelink.me`、テンプレート ID `F1m3`(テスト用リンク https://danmaku-maker.onelink.me/F1m3/m1bfz05r)。
+- Apple: DeviceCheck 鍵 作成済み(鍵ID 8VG2XQRPN3、ファイル ~/.local/keys/AuthKey_8VG2XQRPN3.p8 ※再ダウンロード不可)。App ID の Associated Domains は既にオン。
+- 残り: appsflyer ブランチの合流、project.yml の Associated Domains に `applinks:danmaku-maker.onelink.me` を追加、開発者キーの設定、DeviceCheck 鍵を Firebase シークレットに登録(鍵IDとチームID 49Q2CLPBWK)、サーバー・アプリの実装(docs/FRIEND_INVITE_DESIGN.md)。
