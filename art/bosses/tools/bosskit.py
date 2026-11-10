@@ -261,3 +261,35 @@ def awakened(idle, hue, ray1, ray2, aura_c, center, r0=30, r1=54, n=22, sat=1.15
         im = aura(im, aura_c, phase=i % 3, every=2)
         out.append(im)
     return out
+
+# ---------- イラストからドット化したボス(1枚の絵から待機8コマを作る) ----------
+def from_still(path, size=(112, 112), foot=2):
+    """1枚の絵を 112×112 の中央・足元をそろえて置く"""
+    st = Image.open(path).convert('RGBA'); c = Image.new('RGBA', size, (0, 0, 0, 0))
+    c.paste(st, ((size[0] - st.width) // 2, size[1] - st.height - foot), st)
+    return c
+
+def sway(img, phase, top, amp=1.5, freq=0.16):
+    """すそ・ひれ・髪がゆれる: top より下の行を、下に行くほど大きく左右へずらす(整数ドット)"""
+    o = blank(img)
+    for y in range(img.height):
+        row = img.crop((0, y, img.width, y + 1))
+        dx = 0
+        if y > top:
+            k = (y - top) / max(1, img.height - top)
+            dx = round(amp * k * math.sin(phase + y * freq))
+        o.paste(row, (dx, y), row)
+    return o
+
+def idle_from_still(base, top, bubbles=(), amp=1.5, c1=(150, 214, 250), c2=(255, 255, 255)):
+    """待機8コマ: ゆれ + まわりで小さな粒がのぼる"""
+    out = []
+    for i in range(8):
+        ph = i / 8 * 2 * math.pi
+        im = sway(base, ph, top, amp)
+        for k, (x, y, r) in enumerate(bubbles):
+            yy = y - ((i + k * 3) % 8) * 2
+            if r > 1: ring(im, x, yy, r, c1)
+            put(im, x - (r > 1), yy - (r > 1), c2)
+        out.append(im)
+    return out

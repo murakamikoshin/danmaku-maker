@@ -109,6 +109,7 @@ function render() {
     if (m.k === "tip") { const p = m.at(); drawSprite("fox", p.x, p.y - 2, 0, 1 + (blink ? 0 : 0)); }
     if (m.k === "glint") { ctx.fillStyle = blink ? "#ffffff" : "#aadcff"; const r = 2 + (m.t % 10 < 5 ? 1 : 0); ctx.fillRect(m.x - r, m.y, r * 2 + 1, 1); ctx.fillRect(m.x, m.y - r, 1, r * 2 + 1); }
     if (m.k === "line") { ctx.strokeStyle = blink ? "#9696a8" : "#4a4a58"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2 + (m.x2 - m.x1) * 3, m.y2 + (m.y2 - m.y1) * 3); ctx.stroke(); ctx.setLineDash([]); }
+    if (m.k === "ripple") { ctx.strokeStyle = blink ? "#8cd8f8" : "#ffffff"; ctx.lineWidth = 1; for (const r of [4 + m.t % 10, 12 - (m.t % 10) / 2]) { ctx.beginPath(); ctx.ellipse(Math.round(m.x) + .5, Math.round(m.y) + .5, r, r * 0.5, 0, 0, TAU); ctx.stroke(); } }
     if (m.k === "warp") { ctx.strokeStyle = blink ? "#ff3cc8" : "#c8ff3c"; ctx.lineWidth = 1; const r = 3 + (30 - m.t) * 0.4; ctx.strokeRect(Math.round(m.x - r) + .5, Math.round(m.y - r) + .5, Math.round(r * 2), Math.round(r * 2)); ctx.fillStyle = "#ffffff"; ctx.fillRect(m.x | 0, m.y | 0, 1, 1); }
     if (m.k === "ret") {
       const e = EYE(), col = m.lock ? "#ff3c3c" : "#5adcff";

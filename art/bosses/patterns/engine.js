@@ -7,6 +7,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // ---------- 専用の弾のドット絵(1文字 = 1論理px。上向きの絵は、進む向きへ回す) ----------
 const MAPS = {
+  kingyo: ["..oo..", ".oRRo.", "oRkRRo", "oRRRRo", ".oRLo.", "..oo..", ".FFFF.", "F.FF.F"],
+  yoyo: ["..ooo..", ".oBBBo.", "oBWBBBo", "oSSSSSo", "oBBBBBo", ".oBBBo.", "..ooo..", "...o..."],
+  spark: ["..W..", ".WYW.", "WYYYW", ".WYW.", "..W.."],
+  awa: [".ooo.", "oW..o", "o...o", "o...o", ".ooo."],
   fox: ["...o...", "..oBo..", "..oBo..", ".obWBo.", ".oBWBo.", "obBWWBo", "obWWWBo", "obBWBbo", ".obbbo.", "..ooo.."],
   ofuda: ["kkkkk", "kwwwk", "kwrwk", "kwwwk", "kwrwk", "kwrwk", "kwwwk", "krrrk", "kkkkk"],
   plankton: [".gGg.", "gGWGg", "GWWWG", "gGWGg", ".gGg."],
@@ -28,6 +32,10 @@ const MAPS = {
 };
 // 通常 / 覚醒 の色
 const PALS = {
+  kingyo: [{ o: "#7a1414", R: "#f04a28", L: "#ffa078", k: "#200808", F: "#ffb4a0" }, { o: "#0e0618", R: "#3a2050", L: "#6a4a88", k: "#ffd040", F: "#9070c0" }],
+  yoyo: [{ o: "#20507a", B: "#78c8ff", W: "#ffffff", S: "#ff5078" }, { o: "#40104a", B: "#c878ff", W: "#ffffff", S: "#ffd040" }],
+  spark: [{ W: "#fff6c8", Y: "#ffb420" }, { W: "#ffe0f6", Y: "#e050ff" }],
+  awa: [{ o: "#8cd8f8", W: "#ffffff" }, { o: "#c8a0ff", W: "#ffffff" }],
   fox: [{ o: "#14286a", b: "#2878f0", B: "#6ec8ff", W: "#ebfaff" }, { o: "#2a0a46", b: "#7a28c8", B: "#c88cff", W: "#f6e8ff" }],
   ofuda: [{ k: "#3c1414", w: "#f5ebd7", r: "#c81e32" }, { k: "#1a0a28", w: "#d8c8f0", r: "#8c28dc" }],
   plankton: [{ g: "#127a72", G: "#3cdcc8", W: "#e6fff8" }, { g: "#7a1222", G: "#ff4664", W: "#ffe6ea" }],
@@ -47,7 +55,7 @@ const PALS = {
   tooth: [{ o: "#3c2a32", W: "#fff8ec" }, { o: "#3c2a32", W: "#fff8ec" }],
   goo: [{ k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }, { k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }],
 };
-const ORIENT = new Set(["fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth"]);
+const ORIENT = new Set(["kingyo", "fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth"]);
 const SPRITES = {};
 function makeSprite(map, pal) {
   const h = map.length, w = map[0].length, c = document.createElement("canvas");
@@ -56,7 +64,7 @@ function makeSprite(map, pal) {
   return c;
 }
 for (const k in MAPS) SPRITES[k] = [makeSprite(MAPS[k], PALS[k][0]), makeSprite(MAPS[k], PALS[k][1])];
-const RADIUS = { fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5 };
+const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5 };
 
 // ---------- 状態 ----------
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
@@ -398,6 +406,71 @@ R.reaperRiver = function* (aw) {
   }
   yield 60;
 };
+// ひれ(金魚すくいの金魚娘)
+const POI = () => pt(31, 27), FISHHAND = () => pt(73, 53), HCHEST = () => pt(56, 63);
+R.hireSukui = function* (aw) {
+  for (let v = 0; v < (aw ? 4 : 3); v++) {
+    const o = FISHHAND(), a0 = aimFrom(o), n = aw ? 12 : 8;
+    for (let i = 0; i < n; i++) fire("kingyo", o.x, o.y, a0 + (i - (n - 1) / 2) * 0.16, 2, { u: b => { rot(b, sin(b.t * 0.15 + b.ph) * 0.05); if (b.t < 60) steer(b, aw ? 0.022 : 0.015); } });
+    yield 40;
+  }
+  yield 40;
+};
+R.hireYoyo = function* (aw) {
+  const n = aw ? 9 : 6;
+  for (let i = 0; i < n; i++) {
+    const x = 20 + (i + 0.5) * (W - 40) / n + (rand() - 0.5) * 10;
+    fire("yoyo", x, -8, PI / 2, 0, { u: b => {
+      if (b.t <= 45) b.vy = 2.6 * (1 - b.t / 45) + 0.2; else if (b.t <= 60) b.vy = 0; else b.vy = -1.5;
+      if (b.t === 100) { b.dead = 1; const m = aw ? 12 : 8, a0 = aw ? aimFrom(b) : rand() * TAU; for (let k = 0; k < m; k++) fire("awa", b.x, b.y, a0 + k * TAU / m, 1.6); }
+    } });
+    yield 8;
+  }
+  yield 120;
+};
+R.hireHanabi = function* (aw) {
+  for (let v = 0; v < (aw ? 6 : 4); v++) {
+    const o = POI(), tx = 40 + rand() * 280, ty = 60 + rand() * 140, a = atan2(ty - o.y, tx - o.x);
+    fire("spark", o.x, o.y, a, 4, { big: 2, u: b => {
+      b.vx *= 0.95; b.vy *= 0.95;
+      if (b.t === 35) { b.dead = 1; const m = aw ? 24 : 18; for (let k = 0; k < m; k++) fire("spark", b.x, b.y, k * TAU / m, 1.6, { u: c => { c.vy += 0.025; c.vx *= 0.995; } }); }
+    } });
+    yield 26;
+  }
+  yield 120;
+};
+R.hireRipple = function* (aw) {
+  for (let v = 0; v < 4; v++) {
+    const pts = [];
+    for (let k = 0; k < (aw ? 2 : 1); k++) {
+      const a = rand() * TAU, d = 70 + rand() * 60;
+      pts.push({ x: clamp(G.P.x + cos(a) * d, 16, W - 16), y: clamp(G.P.y + sin(a) * d, 240, H - 16) });
+    }
+    pts.forEach(q => G.marks.push({ k: "ripple", x: q.x, y: q.y, t: 0, life: 30 }));
+    yield 30;
+    pts.forEach(q => { const m = aw ? 20 : 14; for (let i = 0; i < m; i++) fire("awa", q.x, q.y, i * TAU / m, 1.4); });
+    yield 15;
+  }
+  yield 60;
+};
+R.hireKaiyu = function* (aw) {
+  const cx = G.P.x, cy = G.P.y, gapAt = rand() * TAU;
+  for (const [ri, dir] of (aw ? [[0, 1], [1, -1]] : [[0, 1]])) {
+    const n = 20, R0 = 150 + ri * 40;
+    for (let i = 0; i < n; i++) {
+      const a0 = i * TAU / n;
+      if (angDiff(a0, gapAt + ri * PI) < TAU / n * 1.6) continue;
+      fire("kingyo", cx + cos(a0) * R0, cy + sin(a0) * R0, 0, 0, { u: b => {
+        if (b.t < 100) {
+          const a = a0 + b.t * 0.02 * dir, r = R0 - b.t * (R0 - 60 - ri * 30) / 100;
+          b.x = cx + cos(a) * r; b.y = cy + sin(a) * r; b.vx = 0; b.vy = 0; b.face = a + (dir > 0 ? PI : 0);
+        } else if (b.t === 100) { const a = atan2(b.y - cy, b.x - cx); b.vx = cos(a) * 2; b.vy = sin(a) * 2; b.face = undefined; }
+      } });
+    }
+  }
+  yield 170;
+};
+
 // ぷにまる(覚醒すると、同じ枠の技が別物になる)
 const PUNI = () => G.aw ? pt(68, 56) : pt(66, 88);
 const EYES = (() => { let s = 7; const r = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648; const a = []; for (let i = 0; i < 22; i++) { const t = r() * TAU, d = 8 + r() * 26; a.push([68 + cos(t) * d * 1.1, 56 + sin(t) * d * 0.8]); } return a; })();
