@@ -24,7 +24,7 @@ shot() { # name lang waitSeconds args...
     to 60 xcrun simctl io $D screenshot "$tmp" >/dev/null 2>&1
     [ "$(stat -f%z "$tmp" 2>/dev/null || echo 0)" -gt 100000 ] && break
   done
-  sleep "$wait"
+  sleep $((wait * ${WAITX:-1}))
   to 300 xcrun simctl io $D screenshot "$OUT/${lang}_${name}.png" >/dev/null 2>&1
   echo "shot ${lang}_${name} rc=$?"
 }

@@ -71,9 +71,13 @@ for (const [dev, s] of Object.entries(SETS)) {
   for (const lang of (process.env.LANGS || 'ja en').split(' ')) {
     fs.mkdirSync(path.join(OUT, dev), { recursive: true });
     for (const key of s.keys) {
+      if (!fs.existsSync(path.join(s.dir, `${lang}_${key}.png`))) { console.log('skip(元の画像なし)', dev, lang, key); continue; }
       const [l1, l2] = CAPTIONS[lang][key];
       const img = 'data:image/png;base64,' + fs.readFileSync(path.join(s.dir, `${lang}_${key}.png`)).toString('base64');
-      const fs0 = ['ja', 'ko', 'zh-Hans', 'zh-Hant'].includes(lang) ? s.font : s.font * (['de', 'ru', 'fr'].includes(lang) ? 0.74 : 0.82);
+      const cjk = ['ja', 'ko', 'zh-Hans', 'zh-Hant'].includes(lang);
+      // 長い見出しは、横幅に収まるように文字を小さくする(全角は1文字=1em、そのほかは約0.62em で見積もる)
+      const widest = Math.max([...l1].length, [...l2].length);
+      const fs0 = Math.min(cjk ? s.font : s.font * 0.82, (s.W * 0.9) / (widest * (cjk ? 1.0 : (lang === 'ru' ? 0.9 : 0.62))));
       const html = `<html><body style="margin:0;width:${s.W}px;height:${s.H}px;overflow:hidden;
         background:radial-gradient(120% 70% at 50% 0%, #3b1f6e 0%, #150b33 55%, #0a0820 100%);
         font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Apple SD Gothic Neo','PingFang SC','PingFang TC','Helvetica Neue',sans-serif;position:relative">
