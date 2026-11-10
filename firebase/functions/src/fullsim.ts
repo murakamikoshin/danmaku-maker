@@ -25,6 +25,14 @@ const BEAM_CHARGE = 1.0, BEAM_FIRE = 0.5, BEAM_HIT_R2 = 81;
 /** 巨大弾の当たる範囲(中心からの距離の2乗)。アプリの DanmakuConfig.giantHitRadiusSquared と同じ */
 const GIANT_HIT_R2 = 400;
 /** ふつうの弾の当たる半径、爆風の当たる時間、地雷の爆風の半径と散る弾の数。アプリの DanmakuConfig と同じ */
+/** ボス専用の弾の、弾そのものの半径(種類の順はアプリの BulletLook.Kind と同じ)と、自機の半径、専用の弾の最初の look */
+const BULLET_BODY_R = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5];
+const PLAYER_R = 2.5, FIRST_SPECIAL_LOOK = 16;
+export function lookHitDistance(look: number | undefined): number | undefined {
+  if (look === undefined || look < FIRST_SPECIAL_LOOK) return undefined;
+  const r = BULLET_BODY_R[Math.floor((look - FIRST_SPECIAL_LOOK) / 2)];
+  return r === undefined ? undefined : r + PLAYER_R;
+}
 const HIT_R = 5.5, BLAST_ACTIVE = 0.35, MINE_BLAST_RADIUS = 30, MINE_RING = 8;
 
 /** 爆風(隕石・地雷の爆発)が (px, py) に当たるか。予告(fuse 秒)のあと、1つで1回だけ */
@@ -36,10 +44,12 @@ export function blastHits(b: { x: number; y: number; age: number; bounces: numbe
 }
 
 /** 自機に当たる距離の2乗(弾の種類と広さで変わる)。アプリの Bullet.hitDistanceSquared と同じ */
-function hitDistanceSquared(b: Bullet): number {
+export function hitDistanceSquared(b: Bullet): number {
   if (b.script === GIANT_SCRIPT) return GIANT_HIT_R2;
   const radius = b.radius ?? 0;
   if (radius > 0) { const r = radius + HIT_R; return r * r; }
+  const lr = lookHitDistance(b.look);
+  if (lr !== undefined) return lr * lr;
   return HIT_R2;
 }
 
@@ -191,6 +201,8 @@ interface Bullet {
   gravity?: number; radius?: number; grow?: number; growMax?: number; fuse?: number;
   /** スワイプ弾幕: もうかすった弾(1発で1回だけ数える) */
   grazed?: boolean;
+  /** 見た目の番号。16 以上はボス専用の弾で、種類ごとに当たる半径が決まる(アプリの BulletLook と同じ) */
+  look?: number;
   /** 堕天使の技だけが使う予備の数値(羽・破片・閉じる輪)。アプリの Bullet と同じ意味 */
   u0?: number; u1?: number; u2?: number; u3?: number;
 }
@@ -370,9 +382,9 @@ export interface SwipeOptions { swipe?: boolean }
 
 /** かする距離の2乗(アプリの Bullet.grazeDistanceSquared と同じ)。ふつうの弾は 18px、巨大弾や広さのある弾は当たる広さ + 12.5px */
 const GRAZE_MARGIN = 12.5;
-function grazeDistanceSquared(b: Bullet): number {
+export function grazeDistanceSquared(b: Bullet): number {
   const radius = b.radius ?? 0;
-  if (b.script !== GIANT_SCRIPT && radius === 0) { const r = HIT_R + GRAZE_MARGIN; return r * r; }
+  if (b.script !== GIANT_SCRIPT && radius === 0 && (b.look ?? 0) < FIRST_SPECIAL_LOOK) { const r = HIT_R + GRAZE_MARGIN; return r * r; }
   const r = Math.sqrt(hitDistanceSquared(b)) + GRAZE_MARGIN;
   return r * r;
 }

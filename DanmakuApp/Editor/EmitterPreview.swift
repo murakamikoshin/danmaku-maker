@@ -176,6 +176,15 @@ extension GraphicsContext {
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
         if b.isBlast { drawBlast(b, color: color, scale: s, time: time); return }
         let c = CGPoint(x: b.x * s, y: b.y * s)
+        if let art = BulletArt.image(look: b.look) {
+            // ボス専用の弾: ドット絵を、進む向きへ回して描く(最近傍補間)
+            var g = self
+            g.translateBy(x: c.x, y: c.y)
+            g.rotate(by: .radians(BulletArt.rotation(b)))
+            let w = art.size.width * s * sizeBoost, h = art.size.height * s * sizeBoost
+            g.draw(Image(uiImage: art).interpolation(.none), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
+            return
+        }
         if b.drawsAsBoomerang {
             var g = self
             g.translateBy(x: c.x, y: c.y)

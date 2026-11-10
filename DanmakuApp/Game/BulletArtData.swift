@@ -1,0 +1,45 @@
+// 自動生成: tools/gen_bullet_art.mjs(手で直さない)
+// ボス専用の弾のドット絵。BulletLook.Kind の並び。1文字 = 1論理px、上向きの絵
+enum BulletArtData {
+    static let maps: [[String]] = [
+        ["...o...", "..oBo..", "..oBo..", ".obWBo.", ".oBWBo.", "obBWWBo", "obWWWBo", "obBWBbo", ".obbbo.", "..ooo.."],
+        ["kkkkk", "kwwwk", "kwrwk", "kwwwk", "kwrwk", "kwrwk", "kwwwk", "krrrk", "kkkkk"],
+        [".gGg.", "gGWGg", "GWWWG", "gGWGg", ".gGg."],
+        ["..ooooo..", ".o.....o.", "o..W....o", "o.W.....o", "o.......o", "o.......o", "o.......o", ".o.....o.", "..ooooo.."],
+        ["..kkkkk..", ".kPPPPPk.", "kPpWPPPPk", "kPWpPPPPk", "kPPPPPPPk", "kPPPPPPpk", "kPPPPPppk", ".kPPPppk.", "..kkkkk.."],
+        ["..o..", ".oWo.", ".oWo.", ".oMo.", ".oMo.", ".oMo.", "oRMRo", "oRMRo", ".oYo.", "..Y..", "..y.."],
+        ["..ooo..", ".oCCCo.", "oCWWWCo", "oCWWWCo", "oCWWWCo", ".oCCCo.", "..ooo.."],
+        [".Y.", "YWY", "YWY", "OYO", ".O."],
+        ["o..o..o", ".o.o.o.", "..oWo..", "ooWWWoo", "..oWo..", ".o.o.o.", "o..o..o"],
+        ["..W..", "..W..", ".oWo.", ".oWo.", ".oLo.", ".oLo.", "oLWLo", "oLWLo", "oLLLo", "oLLLo", "oLWLo", ".ooo.", "..o.."],
+        ["..o..", ".oWo.", ".oWo.", "oWLWo", ".oLo.", ".oLo.", "..o.."],
+        ["..ooo..", ".oGGGo.", "oGWWWGo", "oGWWWGo", ".oGWGo.", ".ogGgo.", "..ogo..", "..og...", "...o..."],
+        ["...ooo.", ".ooWWo.", "oWWo...", "oWo....", "oWWo...", ".ooWWo.", "...ooo."],
+        [".ooo.", "oL.Lo", "oL.Lo", "oL.Lo", "oL.Lo", "oL.Lo", ".ooo."],
+        ["..ooooo..", ".oPPPPPo.", "oPWPPPPPo", "oPWPPPPPo", "oPPPPPPPo", "oPPPPPPpo", ".oppppPo.", "..ooooo.."],
+        ["..ooooo..", ".oWWWWWo.", "oWWRRRWWo", "oWRRkRRWo", "oWRkkkRWo", "oWRRkRRWo", "oWWRRRWWo", ".oWWWWWo.", "..ooooo.."],
+        ["ooooo", "oWWWo", "oWWWo", ".oWo.", ".oWo.", "..o..", "..o.."],
+        [".kkk.", "kPGPk", "kGWGk", "kPGPk", ".kkk."],
+    ]
+    /// [種類][0=通常 1=覚醒] → 文字 → 色(#rrggbb)
+    static let palettes: [[[Character: String]]] = [
+        [["o": "#14286a", "b": "#2878f0", "B": "#6ec8ff", "W": "#ebfaff"], ["o": "#2a0a46", "b": "#7a28c8", "B": "#c88cff", "W": "#f6e8ff"]],
+        [["k": "#3c1414", "w": "#f5ebd7", "r": "#c81e32"], ["k": "#1a0a28", "w": "#d8c8f0", "r": "#8c28dc"]],
+        [["g": "#127a72", "G": "#3cdcc8", "W": "#e6fff8"], ["g": "#7a1222", "G": "#ff4664", "W": "#ffe6ea"]],
+        [["o": "#96e6f0", "W": "#ffffff"], ["o": "#ff7890", "W": "#ffffff"]],
+        [["k": "#0a0614", "P": "#3c2a5a", "p": "#1e1432", "W": "#8c78b4"], ["k": "#14040a", "P": "#5a1428", "p": "#320a14", "W": "#c86478"]],
+        [["o": "#141820", "W": "#ffffff", "M": "#b4bed2", "R": "#e03030", "Y": "#ffdc50", "y": "#ff8c1e"], ["o": "#140808", "W": "#ffd0d0", "M": "#5a3c46", "R": "#ff3c3c", "Y": "#ff6a3c", "y": "#c81e1e"]],
+        [["o": "#0a3c64", "C": "#5adcff", "W": "#e6faff"], ["o": "#640a14", "C": "#ff3c32", "W": "#ffe0d0"]],
+        [["Y": "#ffaa3c", "W": "#fff0c8", "O": "#c85a14"], ["Y": "#ff3c3c", "W": "#ffd0c8", "O": "#8c0a14"]],
+        [["o": "#aadcff", "W": "#ffffff"], ["o": "#ff8cb4", "W": "#ffe8f0"]],
+        [["o": "#3c78b4", "L": "#aadcff", "W": "#ffffff"], ["o": "#8c1e46", "L": "#ff8cb4", "W": "#ffe8f0"]],
+        [["o": "#3c78b4", "L": "#aadcff", "W": "#ffffff"], ["o": "#8c1e46", "L": "#ff8cb4", "W": "#ffe8f0"]],
+        [["o": "#0a3c28", "G": "#50ffa0", "g": "#1e8c5a", "W": "#e6fff0"], ["o": "#3c0a14", "G": "#ff3c50", "g": "#8c1428", "W": "#ffe0e4"]],
+        [["o": "#3c4660", "W": "#e6ebf5"], ["o": "#5a0a1e", "W": "#ffc8d0"]],
+        [["o": "#2a2a34", "L": "#9696a8"], ["o": "#3c0a14", "L": "#c8505a"]],
+        [["o": "#2a6450", "P": "#96f0c8", "p": "#5ac8a0", "W": "#f0fff8"], ["o": "#2a6450", "P": "#96f0c8", "p": "#5ac8a0", "W": "#f0fff8"]],
+        [["o": "#140a1e", "W": "#fff6dc", "R": "#e01e3c", "k": "#14060a"], ["o": "#140a1e", "W": "#fff6dc", "R": "#e01e3c", "k": "#14060a"]],
+        [["o": "#3c2a32", "W": "#fff8ec"], ["o": "#3c2a32", "W": "#fff8ec"]],
+        [["k": "#0e0618", "P": "#3c1e5a", "G": "#c8ff3c", "W": "#f8ffd0"], ["k": "#0e0618", "P": "#3c1e5a", "G": "#c8ff3c", "W": "#f8ffd0"]],
+    ]
+}

@@ -41,6 +41,7 @@
 		4AD6B4860B7EE9DB0976A23D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */; };
 		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
+		51570E8A510B9CC5E4617FA7 /* BulletArtData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A173EDBD27E9C0A4C1703D /* BulletArtData.swift */; };
 		517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76AAB990CF55410F75C347D /* ShopView.swift */; };
 		534384A6D0A70B1F45E6D19C /* se_hit.caf in Resources */ = {isa = PBXBuildFile; fileRef = 38F20BF6D338DC8F043EABE3 /* se_hit.caf */; };
 		587D602678B8051E03EEC3EB /* LocalStageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8FCD68D2BDEB92DFCAD920 /* LocalStageStore.swift */; };
@@ -64,6 +65,7 @@
 		955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */; };
 		97115F5C7296259FE7662EC2 /* SwipePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9919ADCE4A829189BF6EA647 /* SwipePalette.swift */; };
 		9A1C56DD73C860688E685439 /* SwipeHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F90FD0BF055BC9AAF9F9B76 /* SwipeHomeView.swift */; };
+		9BBA5AB80D3F8A2327881ACC /* BulletArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE02AE0D5824BF9AE290EC62 /* BulletArt.swift */; };
 		9CE8796A5A91D3ADD3148812 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */; };
 		9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F62E287AE766D76D9CF3901 /* GameScene.swift */; };
 		9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */; };
@@ -185,6 +187,7 @@
 		B4328935E6EBE2DE7478FB50 /* se_tap.caf */ = {isa = PBXFileReference; path = se_tap.caf; sourceTree = "<group>"; };
 		B6B0DA55F4187CB364C9C6C2 /* rewards */ = {isa = PBXFileReference; lastKnownFileType = folder; name = rewards; path = art/rewards; sourceTree = SOURCE_ROOT; };
 		BA8479A886EF2B4CF44742DC /* SampleStages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStages.swift; sourceTree = "<group>"; };
+		BE02AE0D5824BF9AE290EC62 /* BulletArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulletArt.swift; sourceTree = "<group>"; };
 		C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorFlowUITests.swift; sourceTree = "<group>"; };
 		C215A3C95C2A8021A12A703D /* official_stages_i18n.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages_i18n.json; sourceTree = "<group>"; };
 		C2ACDBD9418D0E35835B749E /* bgm_boss.caf */ = {isa = PBXFileReference; path = bgm_boss.caf; sourceTree = "<group>"; };
@@ -211,6 +214,7 @@
 		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F216B378A965487884CBBFE1 /* ShipSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShipSkin.swift; sourceTree = "<group>"; };
 		F432139D4D93210AE9BDE2F4 /* bgm_menu.caf */ = {isa = PBXFileReference; path = bgm_menu.caf; sourceTree = "<group>"; };
+		F6A173EDBD27E9C0A4C1703D /* BulletArtData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulletArtData.swift; sourceTree = "<group>"; };
 		F7E34F9A7A2229BC09000B94 /* se_life.caf */ = {isa = PBXFileReference; path = se_life.caf; sourceTree = "<group>"; };
 		FA14CF6B0BFE45CC242D979A /* BossSprites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BossSprites.swift; sourceTree = "<group>"; };
 		FB986508388484596E9919F0 /* StageRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageRepository.swift; sourceTree = "<group>"; };
@@ -411,6 +415,8 @@
 			isa = PBXGroup;
 			children = (
 				FA14CF6B0BFE45CC242D979A /* BossSprites.swift */,
+				BE02AE0D5824BF9AE290EC62 /* BulletArt.swift */,
+				F6A173EDBD27E9C0A4C1703D /* BulletArtData.swift */,
 				C8393515DD0F1156221C5E1B /* EnemyArt.swift */,
 				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
 				FDD3C27E636E8B15E076F52B /* Palette.swift */,
@@ -606,6 +612,8 @@
 				A97071E62973560D1F271F87 /* BannerAdView.swift in Sources */,
 				1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */,
 				46EB774F011D97C35EB1A667 /* BossSprites.swift in Sources */,
+				9BBA5AB80D3F8A2327881ACC /* BulletArt.swift in Sources */,
+				51570E8A510B9CC5E4617FA7 /* BulletArtData.swift in Sources */,
 				D06B87FBA6FC1D1D54206E05 /* CommentService.swift in Sources */,
 				B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */,
 				87237EE186219FB19202E0D5 /* CosmeticsStore.swift in Sources */,

@@ -474,6 +474,15 @@ final class GameScene: SKScene {
                 }
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
+                if let tex = BulletArt.texture(look: b.look) {
+                    // ボス専用の弾: ドット絵を、進む向きへ回して描く(見た目だけ。当たる半径は BulletLook)
+                    if n.texture !== tex { n.texture = tex }
+                    let size = tex.size()
+                    if n.size != size { n.size = size }
+                    n.zRotation = -BulletArt.rotation(b)
+                    if n.alpha != 1 { n.alpha = 1 }
+                    continue
+                }
                 let boomerang = b.drawsAsBoomerang
                 n.texture = boomerang ? boomerangTextures[min(max(b.color, 0), boomerangTextures.count - 1)] : bulletTextures[b.color]
                 // 巨大弾は、当たる範囲に合わせて大きく描く。ブーメランは🪃の形で、くるくる回す

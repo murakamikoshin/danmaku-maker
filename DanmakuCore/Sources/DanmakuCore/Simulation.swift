@@ -116,12 +116,13 @@ public struct Bullet: Equatable, Sendable {
     public var hitDistanceSquared: Double {
         if isGiant { return DanmakuConfig.giantHitRadiusSquared }
         if radius > 0 { let r = radius + DanmakuConfig.hitRadius; return r * r }
+        if let r = BulletLook.hitDistance(look) { return r * r }
         return DanmakuConfig.hitRadiusSquared
     }
 
     /// かする距離の 2 乗。ふつうの弾は 18px。巨大弾や膨らむ泡は当たり判定が大きいので、その分だけ広げる(でないと、かする前に当たってしまう)
     public var grazeDistanceSquared: Double {
-        if !isGiant && radius == 0 { return DanmakuConfig.grazeRadiusSquared }
+        if !isGiant && radius == 0 && look < BulletLook.firstSpecial { return DanmakuConfig.grazeRadiusSquared }
         let r = hitDistanceSquared.squareRoot() + DanmakuConfig.grazeMargin
         return r * r
     }
