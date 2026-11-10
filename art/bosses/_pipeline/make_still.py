@@ -22,13 +22,30 @@ def make(folder):
     fj = json.load(open(face)) if os.path.exists(face) else {}
     # 顔の座標: "coords": "sprite" ならドット絵のマスそのまま。書いていなければ高さ88のときのマス
     env = dict(os.environ, K=str(1 if fj.get('coords') == 'sprite' else h / 88))
-    run(f'{HERE}/pixel4.py', src, still, str(h), str(COLORS))
-    run(f'{HERE}/material.py', still, still, str(LEVELS), str(PASSES), str(LEVELS_LIGHT))
-    run(f'{HERE}/degrey.py', still, still)
+    if cfg.get('palette'):
+        # 黒が多く細い金の線がある絵など: 決まった色の表でドット化する(pixel4・material・degrey の代わり)
+        run(f'{HERE}/pixel_pal.py', src, still, str(h), st)
+    else:
+        run(f'{HERE}/pixel4.py', src, still, str(h), str(COLORS))
+    # 銀髪など、灰色を消すと困るキャラ: {"tint_grey": [色相0〜1, 彩度]} で、ドット化した直後の灰色を少しだけ色づけする
+    if cfg.get('tint_grey'):
+        from PIL import Image; import colorsys
+        hh, ss = cfg['tint_grey']; im = Image.open(still).convert('RGBA'); px = im.load()
+        for y in range(im.height):
+            for x in range(im.width):
+                r, g, b, a = px[x, y]
+                if not a: continue
+                _, s0, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                if s0 < 0.12 and 0.5 < v < 0.93:
+                    px[x, y] = tuple(round(c * 255) for c in colorsys.hsv_to_rgb(hh, ss, v)) + (255,)
+        im.save(still)
+    if not cfg.get('palette'):
+        run(f'{HERE}/material.py', still, still, str(LEVELS), str(PASSES), str(LEVELS_LIGHT))
+        run(f'{HERE}/degrey.py', still, still)
     if os.path.exists(face): run(f'{HERE}/face5.py', still, face, env=env)
     pol = os.path.join(S, f'polish_{bid}.py')
     if os.path.exists(pol): run(pol, still, still, env=env)
-    run(f'{HERE}/degrey.py', still, still)
+    if not cfg.get('palette'): run(f'{HERE}/degrey.py', still, still)
     parts = os.path.join(S, f'{bid}_parts.json')
     if os.path.exists(parts): run(f'{HERE}/partmap.py', still, parts)   # 7. 部位の地図
     return still
