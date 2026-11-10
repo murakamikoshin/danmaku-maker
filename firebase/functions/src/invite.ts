@@ -25,14 +25,15 @@ export const INVITEE_SHIP = "original_steel";
 const MODELS = ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"] as const;
 const colorSet = (c: string): string[] => MODELS.map((m) => `${m}_${c}`);
 export const SHIP_REWARDS: Readonly<Record<number, readonly string[]>> = {
-  1: ["original_steel"],
-  3: colorSet("steel"),
+  // 招待された人は、オリジナルと称号「おそろいの仲間」をもらう。その人が招待する側になっても、1人目のごほうびがかぶらないよう、1人目は別の自機と称号にする
+  1: ["ace_steel"],
+  3: MODELS.filter((m) => m !== "ace").map((m) => `${m}_steel`),
   5: colorSet("snow"),
   10: colorSet("emerald"),
   20: colorSet("crimson"),
   31: colorSet("shadow"),
 };
-/** 招待で手に入る自機の全部(31機。重複なし) */
+/** 招待した人が手に入れる自機の全部(30機。重複なし。31機めの「オリジナル」は、招待された人がもらう) */
 export const INVITER_SHIPS: readonly string[] = Object.values(SHIP_REWARDS).flat();
 /** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で、チケットで手に入るボスと交換できる) */
 export const BOSS_TICKET_AT: readonly number[] = [10, 20];
@@ -43,7 +44,7 @@ export const LIMITED_BOSS_KEY = "puni";
 /** 「初期プレイヤー」の自機 */
 export const FOUNDER_SHIP = "seraph_special";
 /** 招待した人が、この人数に届いたときにもらう称号 */
-export const INVITER_TITLES: Record<number, string> = { 1: "invited", 3: "inv3", 5: "inv5", 10: "inv10" };
+export const INVITER_TITLES: Record<number, string> = { 1: "inv1", 3: "inv3", 5: "inv5", 10: "inv10" };
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // 紛らわしい 0/O/1/I を除く
 export const CODE_LENGTH = 8;

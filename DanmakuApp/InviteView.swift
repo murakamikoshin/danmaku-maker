@@ -14,10 +14,10 @@ struct InviteView: View {
 
     /// 人数のごほうびの段階(サーバーの INVITER_TITLES と同じ)
     /// 招待で手に入る自機の数(サーバーの MAX_REWARDED と同じ)
-    private static let maxShips = 31
+    private static let maxShips = 30
     /// 自機をもらう節目(サーバーの SHIP_REWARDS と同じ。1人目は1機、あとは色ごとの6機種)
     private static let shipSteps = [1, 3, 5, 10, 20, 31]
-    private static let steps: [(need: Int, title: String)] = [(1, "invited"), (3, "inv3"), (5, "inv5"), (10, "inv10")]
+    private static let steps: [(need: Int, title: String)] = [(1, "inv1"), (3, "inv3"), (5, "inv5"), (10, "inv10")]
 
     var body: some View {
         ZStack {

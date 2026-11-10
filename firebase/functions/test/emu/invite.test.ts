@@ -55,11 +55,11 @@ describe("3回遊んだときの付与", () => {
     expect(await countInvitePlays(db, friend, PLAYS_NEEDED - 1)).toEqual({ granted: false });
     expect(await titlesOf(inviter)).toEqual([]);
     expect(await countInvitePlays(db, friend, 1)).toMatchObject({ granted: true });
-    expect(await titlesOf(inviter)).toEqual(["invited"]);
+    expect(await titlesOf(inviter)).toEqual(["inv1"]);
     expect((await db.doc(`users/${inviter}`).get()).exists).toBe(false);   // 1人目では、ボスのチケットは出ない
     expect(await titlesOf(friend)).toEqual(["invited"]);
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
-    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1, ships: ["original_steel"] });
+    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1, ships: ["ace_steel"] });
     expect((await getInviteInfo(db, friend)).ships).toEqual([INVITEE_SHIP]);
     expect(await countInvitePlays(db, friend, 5)).toEqual({ granted: false });
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
@@ -99,7 +99,7 @@ describe("3回遊んだときの付与", () => {
       await registerInvite(db, f, { code }, Date.now(), fresh);
       await countInvitePlays(db, f, PLAYS_NEEDED);
     }
-    expect(await titlesOf(inviter)).toEqual(["invited", "inv3", "inv5", "inv10"]);
+    expect(await titlesOf(inviter)).toEqual(["inv1", "inv3", "inv5", "inv10"]);
     expect(await getInviteInfo(db, inviter)).toMatchObject({ count: MAX_REWARDED + 2, rewarded: MAX_REWARDED });
     // ボスの無料チケットは、10・20人目で1枚ずつ(31人目は限定ボスの枠。チケットは出ない)
     expect((await db.doc(`users/${inviter}`).get()).get("bossTickets")).toBe(BOSS_TICKET_AT.length);
@@ -107,7 +107,8 @@ describe("3回遊んだときの付与", () => {
     expect((await db.doc(`users/${inviter}`).get()).get("freeBosses")).toEqual(["puni"]);
     // 自機は節目(1・3・5・10・20・31人目)で、色ごとの6機種(1人目だけ1機)。重複なし、上限を超えたぶんは増えない
     expect(Object.keys(SHIP_REWARDS).map(Number)).toEqual([1, 3, 5, 10, 20, 31]);
-    expect(new Set(INVITER_SHIPS).size).toBe(31);
+    expect(new Set(INVITER_SHIPS).size).toBe(30);   // 31機めの「オリジナル」は、招待された人がもらう
+    expect(INVITER_SHIPS).not.toContain(INVITEE_SHIP);   // 招待された人が招待する側になっても、1人目がかぶらない
     expect([...(await getInviteInfo(db, inviter)).ships].sort()).toEqual([...INVITER_SHIPS].sort());
   });
 });
@@ -127,7 +128,7 @@ describe("初期プレイヤー", () => {
 });
 
 describe("自機を渡す節目", () => {
-  it("1人目は1機、3人目で鋼の6機種、その間の人数では増えない", async () => {
+  it("1人目は1機、3人目で鋼の残り5機種、その間の人数では増えない", async () => {
     const inviter = uid("s");
     const { code } = await getInviteInfo(db, inviter);
     const shipsAfter = async (n: number) => {
@@ -138,8 +139,8 @@ describe("自機を渡す節目", () => {
     };
     expect(await shipsAfter(1)).toBe(1);
     expect(await shipsAfter(2)).toBe(1);
-    expect(await shipsAfter(3)).toBe(7);
-    expect(await shipsAfter(4)).toBe(7);
+    expect(await shipsAfter(3)).toBe(6);
+    expect(await shipsAfter(4)).toBe(6);
   });
 });
 

@@ -51714,61 +51714,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Freundes-Duo"
+            "value": "Einladungs-Debüt"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Friend Duo"
+            "value": "First Invite"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dúo de amigos"
+            "value": "Primera invitación"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Duo d’amis"
+            "value": "Première invitation"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "おそろいの仲間"
+            "value": "招待デビュー"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "짝꿍"
+            "value": "첫 초대"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dupla de amigos"
+            "value": "Primeiro convite"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Друзья-напарники"
+            "value": "Первое приглашение"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友搭档"
+            "value": "首次邀请"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友搭檔"
+            "value": "首次邀請"
           }
         }
       }
