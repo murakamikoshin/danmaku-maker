@@ -9,6 +9,25 @@ K = float(os.environ.get('K', '1'))
 im = Image.open(path).convert('RGBA'); P = im.load()
 iris, irisd, lid = (tuple(spec[k]) + (255,) for k in ('iris', 'iris_dark', 'lid'))
 import colorsys
+# "coords": "source" なら、座標は元のイラストのピクセル(ドット絵の .map.json で変換する)
+if spec.get('coords') == 'source':
+    mp = json.load(open(path + '.map.json')); bx, by, sc, pd = mp['box'][0], mp['box'][1], mp['sc'], mp.get('pad', 0)
+    tr = lambda x, y: ((x - bx) * sc + pd, (y - by) * sc + pd)
+    spec['eyes'] = [list(tr(x, y)) for x, y in spec['eyes']]
+    spec['mouth'] = [list(tr(x, y)) for x, y in spec.get('mouth', [])]
+    if 'face' in spec:
+        cx, cy = tr(*spec['face']['center']); spec['face']['center'] = [cx, cy]
+        spec['face']['r'] = [spec['face']['r'][0] * sc, spec['face']['r'][1] * sc]
+    K = 1
+# 顔の肌を塗り直す(肌が白っぽくて髪や服と同じ色にまとめられ、顔が消えたとき用)
+if 'face' in spec:
+    f = spec['face']; (cx, cy), (rx, ry) = f['center'], f['r']; sk = tuple(f['skin']) + (255,)
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 2):
+            if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1 and P[x, y][3]: P[x, y] = sk
+    if 'chin' in f:          # あごの下のふち(影)
+        ch = tuple(f['chin']) + (255,)
+        for x in range(int(cx - rx * 0.7), int(cx + rx * 0.7) + 1): P[x, round(cy + ry)] = ch
 def hsv(c): return colorsys.rgb_to_hsv(*[t / 255 for t in c[:3]])
 # 顔のまわりに混ざった、白い服の影の色(うすいピンク灰)を肌の色に戻す
 (ex0, ey0), (ex1, ey1) = [(round(x * K), round(y * K)) for x, y in spec['eyes']]

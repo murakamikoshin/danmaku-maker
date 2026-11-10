@@ -65,6 +65,6 @@ for (x, y), (m, c, reps) in out.items():
     if any(not (0 <= x + dx < W and 0 <= y + dy < H) or not P[x + dx, y + dy][3] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
         if m == 'dark': continue
         h, s, v = hsv(reps[0])
-        P[x, y] = (rgb(h, s + 0.08, max(0.58, v * 0.92)) if m not in ('white', 'grey') else (222, 182, 192)) + (255,)
+        P[x, y] = (rgb(h, s + 0.08, max(0.58, v * 0.92)) if m not in ('white', 'grey') else (232, 208, 214)) + (255,)
 im.save(sys.argv[2])
 print(sys.argv[2], len(set(P[x, y][:3] for y in range(H) for x in range(W) if P[x, y][3])), 'colors', {m: len(p) for m, p in groups.items() if len(p) > 30})

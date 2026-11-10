@@ -15,11 +15,17 @@ def run(*a, env=None): subprocess.run([sys.executable, *a], check=True, env=env,
 def make(folder):
     bid = os.path.basename(os.path.abspath(folder)); S = os.path.join(folder, 'source')
     src, face, still = (os.path.join(S, f'{bid}_{k}') for k in ('source.png', 'face.json', 'still.png'))
-    env = dict(os.environ, K=str(HEIGHT / 88))
-    run(f'{HERE}/pixel4.py', src, still, str(HEIGHT), str(COLORS))
+    # キャラごとの設定(翼や尻尾が横に大きく広がるボスは高さを上げる): source/<ID>_settings.json {"height": 80}
+    import json
+    st = os.path.join(S, f'{bid}_settings.json'); cfg = json.load(open(st)) if os.path.exists(st) else {}
+    h = cfg.get('height', HEIGHT)
+    fj = json.load(open(face)) if os.path.exists(face) else {}
+    # 顔の座標: "coords": "sprite" ならドット絵のマスそのまま。書いていなければ高さ88のときのマス
+    env = dict(os.environ, K=str(1 if fj.get('coords') == 'sprite' else h / 88))
+    run(f'{HERE}/pixel4.py', src, still, str(h), str(COLORS))
     run(f'{HERE}/material.py', still, still, str(LEVELS), str(PASSES), str(LEVELS_LIGHT))
     run(f'{HERE}/degrey.py', still, still)
-    run(f'{HERE}/face5.py', still, face, env=env)
+    if os.path.exists(face): run(f'{HERE}/face5.py', still, face, env=env)
     pol = os.path.join(S, f'polish_{bid}.py')
     if os.path.exists(pol): run(pol, still, still, env=env)
     run(f'{HERE}/degrey.py', still, still)
