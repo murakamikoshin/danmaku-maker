@@ -77,6 +77,7 @@ extension BossCharacter {
         switch self {
         case .fallenAngel: return "fallen_angel_idle_sheet"
         case .kitsune: return "kitsune_idle_sheet"
+        case .iceQueen: return "ice_idle_sheet"
         }
     }
     /// 覚醒した姿の画像ファイル名。nil は、姿を変えない
@@ -84,6 +85,7 @@ extension BossCharacter {
         switch self {
         case .fallenAngel: return "fallen_angel_awakened_idle_sheet"
         case .kitsune: return "kitsune_awakened_idle_sheet"
+        case .iceQueen: return "ice_awakened_idle_sheet"
         }
     }
 }

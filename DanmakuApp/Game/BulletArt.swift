@@ -47,6 +47,8 @@ enum BulletArt {
     /// 進む向きへ回す角度(絵は上向き)。回さない弾は 0
     static func rotation(_ b: Bullet) -> CGFloat {
         guard let k = BulletLook.kind(of: b.look), BulletLook.isOriented(k) else { return 0 }
+        // 動かない鎖などは、決めた向き(u1)へ。ほかは進む向きへ
+        if b.script == Bullet.holdScript && b.vx == 0 && b.vy == 0 { return CGFloat(b.u1) + .pi / 2 }
         return CGFloat(atan2(b.vy, b.vx)) + .pi / 2
     }
 }

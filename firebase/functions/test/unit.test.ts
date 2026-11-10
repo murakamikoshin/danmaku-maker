@@ -415,7 +415,7 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 7 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 8 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
@@ -468,6 +468,17 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(boss({ ...pat("angelHalo"), bossLook: 6, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
     // 九尾は、堕天使と同じく大きさ・動きの設定を持たない
     expect(validatePublish(boss({ ...pat("kitsuneTorii"), bossLook: 6, bossMove: 1 }))).toEqual({ ok: false, error: "look" });
+  });
+
+  it("雪の女王の技は、雪の女王(bossLook 7)のボスにだけ置ける", () => {
+    const pat = (t: string) => ({ emitters: [em({ t })] });
+    for (const t of ["iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror"]) {
+      const ok = validatePublish(boss({ ...pat(t), bossLook: 7, bossMove: 0 }));
+      expect(ok.ok && ok.stage.emitters[0]!.t).toBe(t);
+      for (const look of [2, 5, 6]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
+      expect(validatePublish(good(pat(t)))).toEqual({ ok: false, error: "emitter-pattern" });
+    }
+    expect(validatePublish(boss({ ...pat("kitsuneTorii"), bossLook: 7, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
   });
 
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {

@@ -49,6 +49,8 @@
 		60F4407E97864A330737BEA2 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD3C27E636E8B15E076F52B /* Palette.swift */; };
 		6457EDF15717BA4846124D3E /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = CFCF6F4C322CD1D39EFDA61D /* FirebaseFunctions */; };
 		69455ED16E1C066EC2FECE78 /* se_fail.caf in Resources */ = {isa = PBXBuildFile; fileRef = D8A85042053FECBD69E454F3 /* se_fail.caf */; };
+		6AA5699EEBF792CE4C397F3B /* ice_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 1044D58F43D22133A0482128 /* ice_awakened_idle_sheet.png */; };
+		6C67BC35DAEC5D0CBA18692C /* ice_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 5E67158A6A98D48DB3C9E2EB /* ice_idle_sheet.png */; };
 		6D3557BE1F8AC3B3CF638EA3 /* RankingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F6631C63821142B1374716 /* RankingService.swift */; };
 		6DE550727985EECB9AE11467 /* se_warning.caf in Resources */ = {isa = PBXBuildFile; fileRef = D2E13E3660EA4F407B0608E4 /* se_warning.caf */; };
 		6F9F4E574A781BDF193844D4 /* kitsune_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */; };
@@ -129,6 +131,7 @@
 		02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEffects.swift; sourceTree = "<group>"; };
 		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
 		102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageDetailView.swift; sourceTree = "<group>"; };
+		1044D58F43D22133A0482128 /* ice_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ice_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockStore.swift; sourceTree = "<group>"; };
 		1206C664E23CE35464BDF7BC /* se_sparkle.caf */ = {isa = PBXFileReference; path = se_sparkle.caf; sourceTree = "<group>"; };
 		14207E44305C80AA77BB6252 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
@@ -156,6 +159,7 @@
 		4F68837435E863CE44BB6217 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
 		4F83BED46E19BBDDDCE011EE /* Skin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skin.swift; sourceTree = "<group>"; };
 		50F9BB1B9ADCDC084D4AABDE /* SwipeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeModel.swift; sourceTree = "<group>"; };
+		5E67158A6A98D48DB3C9E2EB /* ice_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ice_idle_sheet.png; sourceTree = "<group>"; };
 		615128478ED419DE71F36B5D /* SwipeScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeScene.swift; sourceTree = "<group>"; };
 		61E6BCB8DCD4762D19C79CA3 /* bgm_mystery.caf */ = {isa = PBXFileReference; path = bgm_mystery.caf; sourceTree = "<group>"; };
 		6825279BEB581088B0F51469 /* RewardArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardArt.swift; sourceTree = "<group>"; };
@@ -295,6 +299,8 @@
 			children = (
 				D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */,
 				D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */,
+				1044D58F43D22133A0482128 /* ice_awakened_idle_sheet.png */,
+				5E67158A6A98D48DB3C9E2EB /* ice_idle_sheet.png */,
 				23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */,
 				D8BBAB60DC832687980AB794 /* kitsune_idle_sheet.png */,
 			);
@@ -577,6 +583,8 @@
 				2FB6FA26E202620B814C6A93 /* bgm_swipe.caf in Resources */,
 				2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */,
 				E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */,
+				6AA5699EEBF792CE4C397F3B /* ice_awakened_idle_sheet.png in Resources */,
+				6C67BC35DAEC5D0CBA18692C /* ice_idle_sheet.png in Resources */,
 				6F9F4E574A781BDF193844D4 /* kitsune_awakened_idle_sheet.png in Resources */,
 				21823CB1B64962313CD99C4F /* kitsune_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,

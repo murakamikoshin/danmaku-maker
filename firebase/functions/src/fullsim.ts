@@ -2,6 +2,8 @@ import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
+import { CURVE_SCRIPT, HOLD_SCRIPT, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
+import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
 import { BOSS_MOVE_COUNT, PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
@@ -67,13 +69,14 @@ export function beamHits(b: { x: number; y: number; vx: number; vy: number; age:
     const ex = px - (b.x + b.vx * len), ey = py - (b.y + b.vy * len);
     d2 = ex * ex + ey * ey;
   } else d2 = rx * rx + ry * ry - along * along;
-  return d2 < BEAM_HIT_R2;
+  const rad = (b as { radius?: number }).radius ?? 0;
+  return d2 < (rad > 0 ? rad * rad : BEAM_HIT_R2);
 }
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
 const BOSS_RADII = [17, 24, 34] as const;
 /** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
 /** 専用の絵を持つボス(堕天使 5・九尾 6)。位置と当たり判定はアプリの BossCharacter と同じ */
-const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6;
+const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7;
 const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 /** ボスの動き(Swift の Simulation.bossPoint と同じ式) */
@@ -217,7 +220,11 @@ function mirrorBullet(b: Bullet) {
     case BEAM_SCRIPT: case BOOMERANG_SCRIPT: case WEAVE_SCRIPT: case ZIGZAG_SCRIPT: b.turn = -b.turn; break;
     case SHARD_SCRIPT: case RING_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
     case FOLD_SCRIPT: b.u1 = -(b.u1 ?? 0); break;
-    case SWAY_SCRIPT: b.u2 = -(b.u2 ?? 0); break;
+    case SWAY_SCRIPT: if ((b.u3 ?? 0) !== 1) b.u2 = -(b.u2 ?? 0); break;
+    case HOLD_SCRIPT: b.u1 = b.u2 === 1 ? -(b.u1 ?? 0) : Math.PI - (b.u1 ?? 0); break;
+    case WIND_SCRIPT: case CURVE_SCRIPT: b.u0 = -(b.u0 ?? 0); break;
+    case ORBIT_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.u3 = -(b.u3 ?? 0); break;
+    case LATERAL_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); b.u2 = -(b.u2 ?? 0); break;
     default: break;
   }
   if (b.follow) b.follow.ox = W - b.follow.ox;
@@ -360,6 +367,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       break;
     }
     default: {
+      if (isIceQueenPattern(m.t)) { emitIceQueen(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isKitsunePattern(m.t)) { emitKitsune(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isFallenAngelPattern(m.t)) { emitFallenAngel(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       // 広告で解放するパターン: 弾の出し方の表に従う
@@ -457,7 +465,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK;
+    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK;
     const wt = Math.max(0, waveT);
     let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
@@ -527,10 +535,22 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     const born: Bullet[] = [];
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
-      if (b.script === BEAM_SCRIPT) {
+      const bm = stepBossScript(b, dt, px, py);
+      if (bm === "gone") continue;
+      if (bm === "burst") {
+        for (const c of branchChildren(b)) {
+          if (w + born.length + (bullets.length - i - 1) >= MAX_BULLETS) break;
+          born.push(c as Bullet);
+        }
+        continue;
+      }
+      if (bm === "alive") {
+        // 専用の弾の動き(上で進めた)
+      } else if (b.script === BEAM_SCRIPT) {
         // チャージビーム: 動かない。ためて、撃って、消える。当たっても光線は消えない。なぎ払いは、撃っている間だけ首を振る
         b.age += dt;
         if (b.age >= BEAM_CHARGE + (b.homeLeft > 0 ? b.homeLeft : BEAM_FIRE)) continue;
+        if ((b.u0 ?? 0) > 0 && b.age < (b.u0 ?? 0)) lockBeam(b, px, py);
         if (b.turn !== 0 && b.age >= BEAM_CHARGE) {
           const na = Math.atan2(b.vy, b.vx) + b.turn * dt;
           b.vx = Math.cos(na); b.vy = Math.sin(na);
@@ -544,7 +564,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         bullets[w++] = b;
         continue;
       }
-      if (b.script === BLAST_SCRIPT) {
+      if (bm !== "alive" && b.script === BLAST_SCRIPT) {
         // 爆風: 動かない。予告(fuse 秒)のあと、少しの間だけ当たって消える。当たっても消えない(1回だけ)
         b.age += dt;
         if (b.age >= (b.fuse ?? 0) + BLAST_ACTIVE) continue;
@@ -557,7 +577,9 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         bullets[w++] = b;
         continue;
       }
-      if (b.script === FEATHER_SCRIPT) {
+      if (bm === "alive") {
+        // 専用の弾の動き(上で進めた)
+      } else if (b.script === FEATHER_SCRIPT) {
         // 羽: 減速して止まり、そのあと左右に揺れながら、だんだん速く落ちる
         b.age += dt;
         if (b.age < FEATHER_DECEL_SECONDS) { b.vx *= FEATHER_DECAY; b.vy *= FEATHER_DECAY; }
@@ -599,7 +621,10 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       } else if (b.script === SWAY_SCRIPT) {
         // 揺れる弾: 横に揺れながら、まっすぐ落ちる
         b.age += dt;
-        b.vx = Math.sin((b.u0 ?? 0) + b.age * 60 * (b.u1 ?? 0)) * (b.u2 ?? 0);
+        const sw = (b.u0 ?? 0) + b.age * 60 * (b.u1 ?? 0);
+        if (b.u3 === 1) b.vy = Math.cos(sw) * (b.u2 ?? 0);
+        else if (b.u3 === 2) b.vx = Math.cos(sw) * (b.u2 ?? 0);
+        else b.vx = Math.sin(sw) * (b.u2 ?? 0);
         b.x += b.vx * dt; b.y += b.vy * dt;
       } else if (b.script === RING_SCRIPT) {
         // 閉じてくる輪: 中心へ向かって縮む(回る輪もある)。中心に着いたら消える
@@ -723,6 +748,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         else if (b.x > W) { b.x = 2 * W - b.x; b.vx = -b.vx; b.bounces -= 1; }
       }
       }
+      if (isDormant(b)) { bullets[w++] = b; continue; }
       if (b.script !== RING_SCRIPT && (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20)) continue;
       const dx = b.x - px, dy = b.y - py;
       if (dx * dx + dy * dy < hitDistanceSquared(b)) {

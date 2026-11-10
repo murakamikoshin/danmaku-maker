@@ -25,7 +25,11 @@ final class FallenAngelPatternTests: XCTestCase {
         XCTAssertEqual(Array(all[a..<(a + 5)]), [.angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise])
         XCTAssertEqual(all[a - 1], .swirl)
         // 九尾の技は、その後ろに足してある
-        XCTAssertEqual(Array(all.suffix(5)), [.kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance])
+        let k = all.firstIndex(of: .kitsuneLanterns)!
+        XCTAssertEqual(k, a + 5)
+        XCTAssertEqual(Array(all[k..<(k + 5)]), [.kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance])
+        // 雪の女王の技は、その後ろ
+        XCTAssertEqual(all.firstIndex(of: .iceCage), k + 5)
     }
 
     func testParadiseGapStaysWithin90DegreesOfPrevious() {

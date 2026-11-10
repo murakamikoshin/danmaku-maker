@@ -8,6 +8,8 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     case fallenAngel = 5
     /// 九尾の巫女
     case kitsune = 6
+    /// 雪の女王
+    case iceQueen = 7
 
     /// 図形のボスの数(0〜4)。bossLook がこれ以上ならキャラクター
     public static let firstCharacterLook = 5
@@ -22,13 +24,14 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         switch self {
         case .fallenAngel: return "fallen_angel"
         case .kitsune: return "kitsune"
+        case .iceQueen: return "ice_queen"
         }
     }
 
     /// 無料チケットで手に入れられるか。課金専用のボスは false にする(サーバーの PAID_ONLY_BOSSES と同じにする)
     public var ticketEligible: Bool {
         switch self {
-        case .fallenAngel, .kitsune: return true
+        case .fallenAngel, .kitsune, .iceQueen: return true
         }
     }
 
@@ -37,7 +40,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     /// 弾(自機のショット)が当たる半径(論理px)。大きさの設定(小・中・大)は、キャラクターでは使わない
     public var hitRadius: Double {
         switch self {
-        case .fallenAngel, .kitsune: return 40
+        case .fallenAngel, .kitsune, .iceQueen: return 40
         }
     }
 
@@ -46,7 +49,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public func position(waveT: Double) -> Point {
         let t = max(0, waveT)
         switch self {
-        case .fallenAngel, .kitsune:
+        case .fallenAngel, .kitsune, .iceQueen:
             return Point(x: DanmakuConfig.width / 2 + sin(t * 60 * 0.012) * 30,
                          y: 128 + sin(t * 60 * 0.02) * 5)
         }

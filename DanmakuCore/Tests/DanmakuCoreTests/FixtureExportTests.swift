@@ -195,6 +195,19 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("kitsune-sunshower-torii-aw", kitsune([(.kitsuneSunshower, 0.05, 8, 2.2, 0), (.kitsuneTorii, 0.45, 22, 1.4, 60)], awaken: 2)))
         stages.append(("kitsune-dance-aw-mirror", kitsune([(.kitsuneDance, 0.05, 9, 2.2, 0), (.kitsuneBarrier, 0.65, 12, 2.0, 0)], awaken: 3, mir: 1)))
         stages.append(("kitsune-damage-all", kitsune([(.kitsuneLanterns, 0.1, 9, 3.2, 0), (.kitsuneSunshower, 0.05, 8, 2.2, 0), (.kitsuneTorii, 0.45, 22, 1.4, 60), (.kitsuneDance, 0.05, 9, 2.2, 0)], awaken: nil, mode: .damage)))
+        // 雪の女王の専用の技(通常と覚醒、鏡写し、ダメージ勝負)。ここより前の並びは変えない
+        func iceQueen(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss, mir: Int? = nil) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0, mir: mir)
+            }
+            return Stage(name: "i", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 7, awaken: awaken).sanitized()
+        }
+        stages.append(("ice-cage-icicles", iceQueen([(.iceCage, 0.85, 6, 2.0, 0), (.iceIcicles, 0.85, 6, 1.0, 0)], awaken: nil)))
+        stages.append(("ice-cage-icicles-aw", iceQueen([(.iceCage, 0.85, 6, 2.0, 0), (.iceIcicles, 0.85, 6, 1.0, 0)], awaken: 2)))
+        stages.append(("ice-blizzard-freeze", iceQueen([(.iceBlizzard, 0.05, 8, 1.6, 0), (.iceFreeze, 0.5, 20, 2.5, 0)], awaken: nil)))
+        stages.append(("ice-blizzard-freeze-aw", iceQueen([(.iceBlizzard, 0.05, 8, 1.6, 0), (.iceFreeze, 0.5, 20, 2.5, 0)], awaken: 2)))
+        stages.append(("ice-mirror-aw-mirror", iceQueen([(.iceMirror, 0.35, 5, 3.0, 0), (.iceBlizzard, 0.05, 8, 1.6, 0), (.iceFreeze, 0.5, 20, 2.5, 0)], awaken: 3, mir: 1)))
+        stages.append(("ice-damage-all", iceQueen([(.iceCage, 0.85, 6, 2.0, 0), (.iceIcicles, 0.85, 6, 1.0, 0), (.iceBlizzard, 0.05, 8, 1.6, 0), (.iceFreeze, 0.5, 20, 2.5, 0), (.iceMirror, 0.35, 5, 3.0, 0)], awaken: nil, mode: .damage)))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

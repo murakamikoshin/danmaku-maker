@@ -20,7 +20,7 @@ final class KitsunePatternTests: XCTestCase {
         XCTAssertEqual(Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: [emitter(.angelTwin)], bossLook: 6).sanitized().emitters.map(\.t), [.ring])
         XCTAssertEqual(Pattern.kitsune.map(\.bossCharacter), Array(repeating: .kitsune, count: 5))
         XCTAssertEqual(BossCharacter.of(look: 6), .kitsune)
-        XCTAssertEqual(BossCharacter.maxLook, 6)
+        XCTAssertGreaterThanOrEqual(BossCharacter.maxLook, 6)
     }
 
     func testLanternsLightThenFireInOrder() {

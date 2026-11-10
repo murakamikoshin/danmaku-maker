@@ -10,7 +10,7 @@ export const INTERMISSION_BUDGET = 2;
 
 export const DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [0, 30, 60, 90, 120, 180], damage: [30, 60, 90, 120, 180], sequence: [] } as const;
 // 並びを変えない(乱数シードに順番を使っている)。新しいものは必ず後ろに足す
-export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance"] as const;
+export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
@@ -124,17 +124,21 @@ function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean
   return Math.abs(r - std) < 1e-6 ? { ok: true } : { ok: true, v: r };
 }
 
-/** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女)。アプリの BossCharacter.maxLook と同じ */
-export const BOSS_LOOK_MAX = 6;
+/** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女、7 は雪の女王)。アプリの BossCharacter.maxLook と同じ */
+export const BOSS_LOOK_MAX = 7;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
 export const BOSS_CHARACTER_MIN = 5;
 /** 堕天使だけが使える技。堕天使(bossLook 5)のボスの場面にだけ置ける */
 export const FALLEN_ANGEL_PATTERNS = ["angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise"] as const;
 /** 九尾の巫女だけが使える技。九尾(bossLook 6)のボスの場面にだけ置ける */
 export const KITSUNE_PATTERNS = ["kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance"] as const;
-/** ボスのキャラクター専用の技を、持ち主でない見た目のボスに置いていないか(true なら不正)。技の持ち主: 堕天使 5、九尾 6 */
+/** 雪の女王だけが使える技。雪の女王(bossLook 7)のボスの場面にだけ置ける */
+export const ICE_QUEEN_PATTERNS = ["iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror"] as const;
+/** ボスのキャラクター専用の技と、持ち主の見た目の番号(堕天使 5、九尾 6、雪の女王 7)。アプリの Pattern.moves(of:) と同じ */
+const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLEN_ANGEL_PATTERNS, 5], [KITSUNE_PATTERNS, 6], [ICE_QUEEN_PATTERNS, 7]];
+/** ボスのキャラクター専用の技を、持ち主でない見た目のボスに置いていないか(true なら不正) */
 const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
-  list.some((m) => ((FALLEN_ANGEL_PATTERNS as readonly string[]).includes(m.t) && look !== 5) || ((KITSUNE_PATTERNS as readonly string[]).includes(m.t) && look !== 6));
+  list.some((m) => MOVE_OWNERS.some(([moves, owner]) => moves.includes(m.t) && look !== owner));
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
 export const UNLIMITED_CAP_SEC = 600;

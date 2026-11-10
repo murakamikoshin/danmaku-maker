@@ -100,7 +100,12 @@ add(5, "九尾の巫女の舞", "Dance of the Nine-Tailed Shrine Maiden", "九�
     angel_boss(90, 500, 3, [E("kitsuneLanterns", i=.1, c=9, v=3.2, k=0, ph=1), E("kitsuneBarrier", i=.65, c=12, v=2, k=1, ph=1), E("kitsuneSunshower", i=.05, c=8, v=2.2, k=2, ph=2),
                            E("kitsuneTorii", i=.45, c=22, v=1.4, r=60, k=3, ph=2), E("kitsuneDance", i=.05, c=9, v=2.2, k=4, ph=3), E("kitsuneLanterns", i=.1, c=9, v=3.2, k=0, ph=3)], look=6))
 
-assert len(S) == 32, len(S)
+# ---- ボス「雪の女王」の見本 ----
+add(5, "雪の女王の氷晶", "Crystals of the Snow Queen", "雪の女王の5つの技。HPが減ると覚醒して、技が強くなる。", "The Snow Queen's five moves. She awakens and grows stronger as her HP drops.",
+    angel_boss(90, 500, 3, [E("iceCage", i=.85, c=6, v=2, k=0, ph=1), E("iceIcicles", i=.85, c=6, v=1, k=1, ph=1), E("iceMirror", i=.35, c=5, v=3, k=2, ph=2),
+                           E("iceBlizzard", i=.05, c=8, v=1.6, k=3, ph=2), E("iceFreeze", i=.5, c=20, v=2.5, k=4, ph=3), E("iceCage", i=.85, c=6, v=2, k=0, ph=3)], look=7))
+
+assert len(S) == 33, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

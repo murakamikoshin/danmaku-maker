@@ -136,6 +136,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case kitsuneTorii
     /// 九尾「玉藻の舞」: 九本の尻尾の先から、扇に狐火を撃ち続ける
     case kitsuneDance
+    // 雪の女王だけが使える技
+    /// 六花「結晶の檻」: 六方向の氷片が、枝分かれして雪の結晶の形に広がる
+    case iceCage
+    /// 氷柱「アイシクル・フォール」: 画面の上で氷柱が待ち、だんだん速く落ちてくる
+    case iceIcicles
+    /// 吹雪「ホワイトアウト」: 横風に流される雪の結晶が降り続く
+    case iceBlizzard
+    /// 凍結「時の氷結」: 氷片の輪が止まって結晶になり、砕けて散る
+    case iceFreeze
+    /// 氷鏡「ダイヤモンドダスト」: 自機狙いの氷片の扇が、壁で跳ね返る
+    case iceMirror
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -148,10 +159,16 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     /// 堕天使だけが使える技(並びは、出す順)
     public static let fallenAngel: [Pattern] = [.angelFeather, .angelHalo, .angelTwin, .angelCross, .angelParadise]
     /// ボスのキャラクターの専用の技か。その見た目のボスを選んでいるときだけ、ステージに置ける
-    public var bossCharacter: BossCharacter? {
-        if Pattern.fallenAngel.contains(self) { return .fallenAngel }
-        if Pattern.kitsune.contains(self) { return .kitsune }
-        return nil
+    public var bossCharacter: BossCharacter? { BossCharacter.allCases.first { Pattern.moves(of: $0).contains(self) } }
+    /// 雪の女王だけが使える技(並びは、出す順)
+    public static let iceQueen: [Pattern] = [.iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror]
+    /// そのボスの専用の技
+    public static func moves(of c: BossCharacter) -> [Pattern] {
+        switch c {
+        case .fallenAngel: return fallenAngel
+        case .kitsune: return kitsune
+        case .iceQueen: return iceQueen
+        }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)
     public static let kitsune: [Pattern] = [.kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance]

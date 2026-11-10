@@ -472,6 +472,11 @@ final class GameScene: SKScene {
                     blastCount += 1
                     continue
                 }
+                if b.isDormant && !b.dormantGlow {
+                    // 待機中の弾・暗転の印: 見えない
+                    n.isHidden = true
+                    continue
+                }
                 n.isHidden = false
                 n.position = pos(b.x, b.y)
                 if let tex = BulletArt.texture(look: b.look) {
@@ -480,7 +485,8 @@ final class GameScene: SKScene {
                     let size = tex.size()
                     if n.size != size { n.size = size }
                     n.zRotation = -BulletArt.rotation(b)
-                    if n.alpha != 1 { n.alpha = 1 }
+                    let alpha: CGFloat = b.dormantGlow ? 0.25 : 1   // 鎖が伸びる前の、薄い予告線
+                    if n.alpha != alpha { n.alpha = alpha }
                     continue
                 }
                 let boomerang = b.drawsAsBoomerang

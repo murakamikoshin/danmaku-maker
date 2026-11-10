@@ -176,9 +176,11 @@ extension GraphicsContext {
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
         if b.isBlast { drawBlast(b, color: color, scale: s, time: time); return }
         let c = CGPoint(x: b.x * s, y: b.y * s)
+        if b.isDormant && !b.dormantGlow { return }   // 待機中の弾・暗転の印は見えない
         if let art = BulletArt.image(look: b.look) {
             // ボス専用の弾: ドット絵を、進む向きへ回して描く(最近傍補間)
             var g = self
+            if b.dormantGlow { g.opacity = 0.25 }
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(BulletArt.rotation(b)))
             let w = art.size.width * s * sizeBoost, h = art.size.height * s * sizeBoost

@@ -194,6 +194,7 @@ struct EmitterCard: View {
         case .angelTwin: return "angle.rotate"
         case .angelParadise: return "angle.gap"
         case .angelFeather, .angelHalo, .angelCross: return "angle.none"
+        case .iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror: return "angle.none"
         case .kitsuneTorii: return "angle.gap"
         case .kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneDance: return "angle.none"
         default:

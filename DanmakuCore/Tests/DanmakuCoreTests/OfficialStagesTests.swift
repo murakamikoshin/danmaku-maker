@@ -14,8 +14,8 @@ final class OfficialStagesTests: XCTestCase {
 
     func testAllStagesInOrder() throws {
         let e = try load()
-        XCTAssertEqual(e.count, 32)   // 30本 + ボス「堕天使」「九尾の巫女」の見本
-        XCTAssertEqual(Set(e.map(\.id)).count, 32, "IDは重複しない")
+        XCTAssertEqual(e.count, 33)   // 30本 + ボス「堕天使」「九尾の巫女」「雪の女王」の見本
+        XCTAssertEqual(Set(e.map(\.id)).count, 33, "IDは重複しない")
         XCTAssertEqual(e.map(\.difficulty), e.map(\.difficulty).sorted(), "易しい→難しい順")
         XCTAssertEqual(e.first?.difficulty, 1)
         XCTAssertEqual(e.last?.difficulty, 5)

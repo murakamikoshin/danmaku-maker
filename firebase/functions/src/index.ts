@@ -127,7 +127,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
 });
 
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
-const BOSS_KEYS = ["fallen_angel", "kitsune"];
+const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen"];
 /** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
 const PAID_ONLY_BOSSES: string[] = [];
 

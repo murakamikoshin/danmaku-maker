@@ -2123,5 +2123,107 @@
    "formatVersion": 1,
    "name": "o32"
   }
+ },
+ {
+  "id": "o33",
+  "difficulty": 5,
+  "name": {
+   "ja": "雪の女王の氷晶",
+   "en": "Crystals of the Snow Queen"
+  },
+  "aim": {
+   "ja": "雪の女王の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Snow Queen's five moves. She awakens and grows stronger as her HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 7,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "iceCage",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.85,
+     "c": 6,
+     "v": 2,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "iceIcicles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.85,
+     "c": 6,
+     "v": 1,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "iceMirror",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.35,
+     "c": 5,
+     "v": 3,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "iceBlizzard",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 8,
+     "v": 1.6,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "iceFreeze",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.5,
+     "c": 20,
+     "v": 2.5,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "iceCage",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.85,
+     "c": 6,
+     "v": 2,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o33"
+  }
  }
 ]

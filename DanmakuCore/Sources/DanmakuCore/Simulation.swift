@@ -71,7 +71,11 @@ public struct Bullet: Equatable, Sendable {
         case Bullet.beamScript, Bullet.boomerangScript, Bullet.weaveScript, Bullet.zigzagScript: turn = -turn
         case Bullet.shardScript, Bullet.ringScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
         case Bullet.foldScript: u1 = -u1
-        case Bullet.swayScript: u2 = -u2
+        case Bullet.swayScript: if u3 != 1 { u2 = -u2 }
+        case Bullet.holdScript: if u2 == 1 { u1 = -u1 } else { u1 = Double.pi - u1 }
+        case Bullet.windScript, Bullet.curveScript: u0 = -u0
+        case Bullet.orbitScript: u0 = w - u0; u2 = Double.pi - u2; u3 = -u3
+        case Bullet.lateralScript: u0 = Double.pi - u0; u2 = -u2
         default: break
         }
         if follow != nil { follow!.ox = w - follow!.ox }
@@ -163,12 +167,13 @@ public struct Bullet: Equatable, Sendable {
             let ex = px - (x + vx * maxSpeed), ey = py - (y + vy * maxSpeed)
             d2 = ex * ex + ey * ey
         } else { d2 = rx * rx + ry * ry - along * along }
-        return d2 < DanmakuConfig.beamHitRadiusSquared
+        return d2 < (radius > 0 ? radius * radius : DanmakuConfig.beamHitRadiusSquared)
     }
 
     /// 分裂弾がはじけたときに散る小さな弾(進んでいた向きから、均等な角度で)。
     /// 地雷のときは、爆風と、まわりに散る弾の輪
     public func fragments() -> [Bullet] {
+        if script == Bullet.branchScript { return branchChildren() }
         if isMine {
             let speed = (vx * vx + vy * vy).squareRoot()
             let base = atan2(vy, vx)
@@ -208,6 +213,16 @@ extension Bullet {
             // チャージビームは動かない。ためて、撃って、消える。なぎ払いは、撃っている間だけ首を振る
             age += dt
             if age >= DanmakuConfig.beamCharge + beamFireTime { return .gone }
+            if u0 > 0 && age < u0 {
+                // 照準: ためている間、自機のほうへなめらかに向きを合わせる(u0 秒で固定)
+                let want = atan2(playerY - y, playerX - x)
+                let cur = atan2(vy, vx)
+                var diff = want - cur
+                while diff > Double.pi { diff -= 2 * Double.pi }
+                while diff < -Double.pi { diff += 2 * Double.pi }
+                let na = cur + diff * Bullet.lockLerp
+                vx = cos(na); vy = sin(na)
+            }
             if turn != 0 && age >= DanmakuConfig.beamCharge {
                 let na = atan2(vy, vx) + turn * dt
                 vx = cos(na); vy = sin(na)
@@ -255,6 +270,7 @@ extension Bullet {
             y = u1 + sin(ang) * maxSpeed * e * 0.8
             return .alive
         }
+        if let m = advanceBossScript(dt: dt, playerX: playerX, playerY: playerY) { return m }
         if script == Bullet.foldScript {
             // 御札: 決まった時間で直角に折れる(覚醒すると、もう一度逆に折れてジグザグになる)
             age += dt
@@ -275,7 +291,12 @@ extension Bullet {
         if script == Bullet.swayScript {
             // 揺れる弾: 横に揺れながら、まっすぐ落ちる
             age += dt
-            vx = sin(u0 + age * 60 * u1) * u2
+            // u3: 0 = 横が sin で揺れる / 1 = 縦が cos で揺れる(横は一定) / 2 = 横が cos で揺れる(波打つ列)
+            switch u3 {
+            case 1: vy = cos(u0 + age * 60 * u1) * u2
+            case 2: vx = cos(u0 + age * 60 * u1) * u2
+            default: vx = sin(u0 + age * 60 * u1) * u2
+            }
             x += vx * dt; y += vy * dt
             return .alive
         }
@@ -561,6 +582,8 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror:
+            emitIceQueen(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance:
             emitKitsune(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise:
@@ -894,6 +917,11 @@ public struct Simulation {
                 continue
             }
             if motion == .gone { continue }
+            if b.isDormant {
+                // 待機中の弾・暗転の印: 見えず、当たらない
+                bullets[w] = b; w += 1
+                continue
+            }
             if b.isBeam || b.isBlast {
                 // チャージビーム・爆風: 当たる間だけ、触れると当たる。当たっても消えない(同じものでは1回だけ)
                 let touched = b.isBeam ? b.beamHits(player.x, player.y) : b.blastHits(player.x, player.y)
