@@ -1,13 +1,15 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
+import { notifyReward } from "./notify.js";
 import { logger } from "firebase-functions/v2";
-import { awardsFor, competitionRanks, isTitleId, previousMonthId, scoreTitlesFor, monthIdJst, monthlyTitleId } from "./titles.js";
+import { awardsFor, bestCrownTitle, goldShipsFor, competitionRanks, crownOfTitle, isTitleId, previousMonthId, scoreTitlesFor, monthIdJst, monthlyTitleId } from "./titles.js";
 
 /**
  * 称号のサーバー処理。アプリからは付けさせない(付与は、検証済みの点数と、月の集計だけ)。
  *
  * - titleState/{uid}: 本人だけ読める。{ titles: 持っている称号の ID(スコア達成・週間とも永久), sel: 付けている称号(null=付けない。項目なし=まだ選んでいない) }
- * - publicProfiles/{uid}: ログイン済みなら誰でも読める。名前の横に出す分だけ。{ title, crown(1〜3), medal, cw(王冠・メダルの月) }
+ * - titleState の crownSel: 付けている王冠・メダル(月間の称号の ID。null=付けない。項目なし=おまかせ=いちばんよいもの)。王冠は月ごとに永久に持てる
+ * - publicProfiles/{uid}: ログイン済みなら誰でも読める。名前の横に出す分だけ。{ title, crown(1〜3), medal }
  * - swipeMonthly/{週}/scores/{uid}: 月ごとの自己ベスト(累計の swipeScores とは別)
  * - swipeMonthlyAwards/{週}: 集計の印(二重に配らない)
  */
@@ -47,6 +49,35 @@ export async function setTitle(db: Firestore, uid: string, id: unknown): Promise
     tx.set(profileRef, { title: id === null ? FieldValue.delete() : id }, { merge: true });
   });
   return { sel: id as string | null };
+}
+
+/** 名前の横に出す王冠・メダルの書き込み内容(なければ消す) */
+function crownPatch(c: { crown: 0 | 1 | 2 | 3; medal: boolean } | null): Record<string, unknown> {
+  return {
+    crown: c && c.crown > 0 ? c.crown : FieldValue.delete(),
+    medal: c && c.medal ? true : FieldValue.delete(),
+  };
+}
+
+/** 王冠・メダルを付ける。id は持っている月間の称号(rank1〜3 / top10)、null で外す、"auto" でおまかせ(いちばんよいもの) */
+export async function setCrown(db: Firestore, uid: string, id: unknown): Promise<{ sel: string | null; auto: boolean }> {
+  if (id !== null && id !== "auto" && !crownOfTitle(id)) throw new HttpsError("invalid-argument", "crown");
+  const stateRef = db.doc(`titleState/${uid}`);
+  const profileRef = db.doc(`publicProfiles/${uid}`);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(stateRef);
+    const owned = (snap.get("titles") as string[] | undefined) ?? [];
+    if (id === "auto") {
+      const best = bestCrownTitle(owned);
+      tx.set(stateRef, { crownSel: FieldValue.delete() }, { merge: true });
+      tx.set(profileRef, crownPatch(crownOfTitle(best)), { merge: true });
+      return { sel: best, auto: true };
+    }
+    if (id !== null && !owned.includes(id as string)) throw new HttpsError("failed-precondition", "not-owned");
+    tx.set(stateRef, { crownSel: id }, { merge: true });
+    tx.set(profileRef, crownPatch(crownOfTitle(id)), { merge: true });
+    return { sel: id as string | null, auto: false };
+  });
 }
 
 /** この月の自己ベストを残す(累計とは別。月が変わると、別の文書になる) */
@@ -98,23 +129,30 @@ export async function runMonthlyAward(db: Firestore, nowMs: number): Promise<Mon
     if (a.kinds.length > 0) {
       bw.set(db.doc(`titleState/${e.uid}`), { titles: FieldValue.arrayUnion(...a.kinds.map((k) => monthlyTitleId(k, month))) }, { merge: true });
     }
-    if (a.crown > 0 || a.medal) {
-      bw.set(db.doc(`publicProfiles/${e.uid}`), { cw: month, ...(a.crown > 0 ? { crown: a.crown } : { crown: FieldValue.delete() }), ...(a.medal ? { medal: true } : { medal: FieldValue.delete() }) }, { merge: true });
-    }
+    // 金の自機(上の順位は下のぶんも全部)。もらった自機は、招待でもらう自機と同じ置き場所(inviteState)に入れる
+    const gold = goldShipsFor(a);
+    if (gold.length > 0) bw.set(db.doc(`inviteState/${e.uid}`), { ships: FieldValue.arrayUnion(...gold) }, { merge: true });
   });
   await bw.flush();
 
-  // 先々月までの王冠・メダルを外す(称号そのものは永久に残る)
-  let cleared = 0;
-  for (;;) {
-    const old = await db.collection("publicProfiles").where("cw", "!=", month).limit(500).get();
-    if (old.empty) break;
-    const cw = db.bulkWriter();
-    for (const d of old.docs) cw.update(d.ref, { cw: FieldValue.delete(), crown: FieldValue.delete(), medal: FieldValue.delete() });
-    await cw.close();
-    cleared += old.size;
+  // 王冠・メダルは、月ごとに永久に持てる。名前の横に出すものは、本人が選ぶ(まだ選んでいない人は、おまかせ = いちばんよいもの)
+  const awarded = entries.filter((_, i) => { const a = awardsFor(ranks[i]!, total); return a.crown > 0 || a.medal; }).map((e) => e.uid);
+  const pw = db.bulkWriter();
+  pw.onWriteError((e) => e.failedAttempts < 5);
+  for (let i = 0; i < awarded.length; i += 300) {
+    const chunk = awarded.slice(i, i + 300);
+    const snaps = await db.getAll(...chunk.map((u) => db.doc(`titleState/${u}`)));
+    snaps.forEach((snap, j) => {
+      if (snap.get("crownSel") !== undefined) return;   // 自分で選んでいる人は、そのまま
+      const best = crownOfTitle(bestCrownTitle((snap.get("titles") as string[] | undefined) ?? []));
+      if (best) pw.set(db.doc(`publicProfiles/${chunk[j]!}`), crownPatch(best), { merge: true });
+    });
   }
+  await pw.close();
+  // 王冠・メダル・自機をもらった人に、ごほうびが届いたことを知らせる(同時に20人ずつ)
+  for (let i = 0; i < awarded.length; i += 20) await Promise.all(awarded.slice(i, i + 20).map((u) => notifyReward(db, u, "monthly")));
 
+  const cleared = 0;
   await marker.set({ status: "done", startedAt: nowMs, doneAt: Date.now(), participants: total, cleared });
   logger.info("swipe-monthly-award", { month, participants: total, cleared });
   return { month, participants: total, cleared };

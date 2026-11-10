@@ -53,7 +53,7 @@ describe("3回遊んだときの付与", () => {
     await registerInvite(db, friend, { code }, Date.now(), fresh);
     expect(await countInvitePlays(db, friend, PLAYS_NEEDED - 1)).toEqual({ granted: false });
     expect(await titlesOf(inviter)).toEqual([]);
-    expect(await countInvitePlays(db, friend, 1)).toEqual({ granted: true });
+    expect(await countInvitePlays(db, friend, 1)).toMatchObject({ granted: true });
     expect(await titlesOf(inviter)).toEqual(["invited"]);
     expect((await db.doc(`users/${inviter}`).get()).exists).toBe(false);   // 1人目では、ボスのチケットは出ない
     expect(await titlesOf(friend)).toEqual(["invited"]);
@@ -116,8 +116,8 @@ describe("初期プレイヤー", () => {
     const a = uid("fa"), b = uid("fb");
     const t = Date.now();
     expect(await claimFounder(db, a, t - 1000, null)).toEqual({ granted: false });
-    expect(await claimFounder(db, a, t - 1000, t)).toEqual({ granted: true });
-    expect(await claimFounder(db, a, t - 1000, t)).toEqual({ granted: true });
+    expect(await claimFounder(db, a, t - 1000, t)).toMatchObject({ granted: true });
+    expect(await claimFounder(db, a, t - 1000, t)).toMatchObject({ granted: true });
     expect(await titlesOf(a)).toEqual(["founder"]);
     expect((await getInviteInfo(db, a)).ships).toEqual([FOUNDER_SHIP]);
     expect(await claimFounder(db, b, t + 1000, t)).toEqual({ granted: false });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor } from "../src/titles.js";
 import { beamHits, blastHits } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
@@ -729,5 +730,38 @@ describe("友達招待の部品", () => {
     expect(calls[2]!.url).toBe("https://api.devicecheck.apple.com/v1/update_two_bits");
     expect(calls[2]!.body).toMatchObject({ device_token: "tok", bit0: true, bit1: false });
     await expect(deviceGateFromEnv(env, reply(401, "bad"))!.used("tok")).rejects.toThrow();
+  });
+});
+
+describe("王冠・メダルの選び方", () => {
+  it("月間の rank1〜3 / top10 だけが王冠・メダルになる", () => {
+    expect(crownOfTitle("rank1:2026-10")).toEqual({ crown: 1, medal: false, month: "2026-10" });
+    expect(crownOfTitle("rank3:2026-01")).toEqual({ crown: 3, medal: false, month: "2026-01" });
+    expect(crownOfTitle("top10:2026-12")).toEqual({ crown: 0, medal: true, month: "2026-12" });
+    for (const bad of ["pct1:2026-10", "score1", "rank1:2026-13", "rank4:2026-10", "rank1", null, 5]) expect(crownOfTitle(bad)).toBeNull();
+  });
+  it("おまかせは、1位 > 2位 > 3位 > メダルの順で、同じなら新しい月", () => {
+    expect(bestCrownTitle([])).toBeNull();
+    expect(bestCrownTitle(["score1", "pct1:2026-10"])).toBeNull();
+    expect(bestCrownTitle(["top10:2026-11", "rank3:2026-01"])).toBe("rank3:2026-01");
+    expect(bestCrownTitle(["rank2:2026-11", "rank3:2026-12", "top10:2026-12"])).toBe("rank2:2026-11");
+    expect(bestCrownTitle(["rank1:2026-09", "rank1:2026-11", "rank1:2026-10"])).toBe("rank1:2026-11");
+    expect(bestCrownTitle(["top10:2026-09", "top10:2026-11"])).toBe("top10:2026-11");
+  });
+});
+
+describe("月間ランキングの金の自機", () => {
+  it("上の順位は、下の順位のぶんも全部もらえる(1位=5機 … 上位1%・10%=1機、上位50%=なし)", () => {
+    const g = (rank: number, total: number) => goldShipsFor(awardsFor(rank, total));
+    const all = ["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"];
+    expect(g(1, 1000)).toEqual(all);
+    expect(g(2, 1000)).toEqual(all.slice(1));
+    expect(g(3, 1000)).toEqual(all.slice(2));
+    expect(g(4, 1000)).toEqual(all.slice(3));
+    expect(g(10, 1000)).toEqual(all.slice(3));
+    expect(g(11, 1000)).toEqual(["phantom_gold"]);   // 1000人: 上位1% = 10位まで、上位10% = 100位まで
+    expect(g(100, 1000)).toEqual(["phantom_gold"]);
+    expect(g(101, 1000)).toEqual([]);   // 上位50% だけの人は、自機なし
+    expect(g(2, 5)).toEqual(all.slice(1));
   });
 });

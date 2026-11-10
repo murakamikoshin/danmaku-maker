@@ -121,7 +121,7 @@ export async function registerInvite(
  * 招待された人が遊んだ回数を数える(世界のステージ・スワイプ弾幕の両方)。3 回に届いたら、両方に報酬を付ける。
  * 招待されていない人・もう付与済みの人は、何もしない。
  */
-export async function countInvitePlays(db: Firestore, uid: string, add: number): Promise<{ granted: boolean }> {
+export async function countInvitePlays(db: Firestore, uid: string, add: number): Promise<{ granted: boolean; inviter?: string }> {
   if (add <= 0) return { granted: false };
   const ref = db.doc(`invites/${uid}`);
   return db.runTransaction(async (tx) => {
@@ -169,7 +169,7 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
     if (!ownedV.includes("invited")) tx.set(inviteeTitles, { titles: [...ownedV, "invited"] }, { merge: true });
     const base = vu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
     tx.set(inviteeUser, { ...base, drinks: FieldValue.increment(INVITEE_DRINKS) }, { merge: true });
-    return { granted: true };
+    return { granted: true, inviter };
   });
 }
 

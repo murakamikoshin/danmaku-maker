@@ -7,7 +7,7 @@ import { logger } from "firebase-functions/v2";
  * 通知を受け取る端末は users/{uid}/pushDevices/{端末ID} に、アプリが書く(トークン・言語・種類ごとのオン/オフ)。
  * 種類ごとのオン/オフは端末ごと。オフの種類は送らない。
  */
-export const PUSH_KINDS = ["likes", "comments", "plays"] as const;
+export const PUSH_KINDS = ["likes", "comments", "plays", "rewards"] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
 
 /** 遊ばれた回数が、この数を超えたときに知らせる */
@@ -42,51 +42,61 @@ const TEXTS: Record<Lang, Record<PushKind, Text>> = {
     likes: { title: "いいねされました", body: (n) => `「${n}」にいいねが付きました` },
     comments: { title: "コメントが付きました", body: (n, x) => `「${n}」にコメント: ${x}` },
     plays: { title: "たくさん遊ばれています", body: (n, x) => `「${n}」が${x}回遊ばれました` },
+    rewards: { title: "ごほうびが届きました!", body: (_, x) => (x === "monthly" ? "月間ランキングのごほうびが届きました" : "ともだちが遊んでくれました。ごほうびを受け取ろう") },
   },
   en: {
     likes: { title: "New like", body: (n) => `Someone liked "${n}"` },
     comments: { title: "New comment", body: (n, x) => `New comment on "${n}": ${x}` },
     plays: { title: "Your stage is popular", body: (n, x) => `"${n}" has been played ${x} times` },
+    rewards: { title: "A reward has arrived!", body: (_, x) => (x === "monthly" ? "Your monthly ranking reward is here" : "Your friend played! Your reward is waiting") },
   },
   "zh-Hans": {
     likes: { title: "收到点赞", body: (n) => `「${n}」收到了一个赞` },
     comments: { title: "收到评论", body: (n, x) => `「${n}」有新评论：${x}` },
     plays: { title: "你的关卡很受欢迎", body: (n, x) => `「${n}」已被游玩${x}次` },
+    rewards: { title: "奖励已送达！", body: (_, x) => (x === "monthly" ? "月榜奖励已送达" : "好友玩了游戏！快来领取奖励") },
   },
   "zh-Hant": {
     likes: { title: "收到按讚", body: (n) => `「${n}」收到了一個讚` },
     comments: { title: "收到留言", body: (n, x) => `「${n}」有新留言：${x}` },
     plays: { title: "你的關卡很受歡迎", body: (n, x) => `「${n}」已被遊玩${x}次` },
+    rewards: { title: "獎勵已送達！", body: (_, x) => (x === "monthly" ? "月榜獎勵已送達" : "好友玩了遊戲！快來領取獎勵") },
   },
   ko: {
     likes: { title: "좋아요를 받았어요", body: (n) => `「${n}」에 좋아요가 달렸어요` },
     comments: { title: "댓글이 달렸어요", body: (n, x) => `「${n}」에 댓글: ${x}` },
     plays: { title: "스테이지가 인기예요", body: (n, x) => `「${n}」이(가) ${x}번 플레이되었어요` },
+    rewards: { title: "보상이 도착했어요!", body: (_, x) => (x === "monthly" ? "월간 랭킹 보상이 도착했어요" : "친구가 플레이했어요! 보상을 받아 보세요") },
   },
   es: {
     likes: { title: "Nuevo me gusta", body: (n) => `A alguien le gustó "${n}"` },
     comments: { title: "Nuevo comentario", body: (n, x) => `Nuevo comentario en "${n}": ${x}` },
     plays: { title: "Tu nivel es popular", body: (n, x) => `"${n}" se ha jugado ${x} veces` },
+    rewards: { title: "¡Ha llegado una recompensa!", body: (_, x) => (x === "monthly" ? "Tu recompensa del ranking mensual ha llegado" : "¡Tu amigo jugó! Tu recompensa te espera") },
   },
   fr: {
     likes: { title: "Nouveau j'aime", body: (n) => `Quelqu'un a aimé « ${n} »` },
     comments: { title: "Nouveau commentaire", body: (n, x) => `Nouveau commentaire sur « ${n} » : ${x}` },
     plays: { title: "Ton niveau a du succès", body: (n, x) => `« ${n} » a été joué ${x} fois` },
+    rewards: { title: "Une récompense est arrivée !", body: (_, x) => (x === "monthly" ? "Ta récompense du classement mensuel est arrivée" : "Ton ami a joué ! Ta récompense t’attend") },
   },
   de: {
     likes: { title: "Neues Like", body: (n) => `Jemandem gefällt „${n}“` },
     comments: { title: "Neuer Kommentar", body: (n, x) => `Neuer Kommentar zu „${n}“: ${x}` },
     plays: { title: "Deine Stage ist beliebt", body: (n, x) => `„${n}“ wurde ${x}-mal gespielt` },
+    rewards: { title: "Eine Belohnung ist da!", body: (_, x) => (x === "monthly" ? "Deine Belohnung fürs Monatsranking ist da" : "Dein Freund hat gespielt! Deine Belohnung wartet") },
   },
   "pt-BR": {
     likes: { title: "Nova curtida", body: (n) => `Alguém curtiu "${n}"` },
     comments: { title: "Novo comentário", body: (n, x) => `Novo comentário em "${n}": ${x}` },
     plays: { title: "Sua fase está popular", body: (n, x) => `"${n}" foi jogada ${x} vezes` },
+    rewards: { title: "Uma recompensa chegou!", body: (_, x) => (x === "monthly" ? "Sua recompensa do ranking mensal chegou" : "Seu amigo jogou! Sua recompensa está esperando") },
   },
   ru: {
     likes: { title: "Новый лайк", body: (n) => `Кому-то понравился «${n}»` },
     comments: { title: "Новый комментарий", body: (n, x) => `Новый комментарий к «${n}»: ${x}` },
     plays: { title: "Ваш уровень популярен", body: (n, x) => `«${n}» сыграли ${x} раз` },
+    rewards: { title: "Пришла награда!", body: (_, x) => (x === "monthly" ? "Награда за месячный рейтинг пришла" : "Ваш друг сыграл! Награда ждёт вас") },
   },
 };
 
@@ -103,6 +113,27 @@ export function pushText(lang: unknown, kind: PushKind, stageName: string, extra
   const name = clip(stageName.trim() || UNNAMED[l], 30);
   const t = TEXTS[l][kind];
   return { title: t.title, body: t.body(name, clip(extra, 60)) };
+}
+
+/** ごほうびが届いたことを知らせる(ともだち招待の報酬・月間ランキングの報酬)。失敗しても例外は投げない */
+export async function notifyReward(db: Firestore, to: string, what: "invite" | "monthly"): Promise<number> {
+  try {
+    const devices = await db.collection(`users/${to}/pushDevices`).get();
+    const targets = devices.docs.filter((d) => d.get("enabled") === true && d.get("rewards") !== false && typeof d.get("token") === "string");
+    if (targets.length === 0) return 0;
+    const res = await getMessaging().sendEach(targets.map((d) => {
+      const { title, body } = pushText(d.get("lang"), "rewards", "", what);
+      return { token: d.get("token") as string, notification: { title, body }, data: { kind: "rewards", what }, apns: { payload: { aps: { sound: "default" } } } };
+    }));
+    await Promise.all(res.responses.map(async (r, i) => {
+      const code = r.error?.code ?? "";
+      if (code === "messaging/registration-token-not-registered" || code === "messaging/invalid-registration-token" || code === "messaging/invalid-argument") await targets[i].ref.delete();
+    }));
+    return res.successCount;
+  } catch (err) {
+    logger.warn("notify-reward-failed", { to, what, error: String(err) });
+    return 0;
+  }
 }
 
 export type NotifyEvent = {

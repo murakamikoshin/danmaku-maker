@@ -52,7 +52,7 @@ struct DanmakuApp: App {
                 .onChange(of: auth.uid) { uid in
                     Task { await CosmeticsStore.shared.refreshPosts(uid: uid); await CosmeticsStore.shared.refreshBossTickets(uid: uid) }
                     // 友達招待: 受け取ったコードの登録と、「初期プレイヤー」の称号(サインインできてから)
-                    if uid != nil { Task { await InviteService.shared.registerPending(); await InviteService.shared.claimFounderIfNeeded(); await InviteService.shared.refresh() } }
+                    if uid != nil { Task { await InviteService.shared.registerPending(); await InviteService.shared.claimFounderIfNeeded(); await InviteService.shared.refresh(); await RewardNoticeService.shared.check() } }
                     // マイステージのバックアップ(入れ直したあとは、ここで戻る)
                     StageBackup.shared.attach(uid: uid)
                     Task { await purchases.identify(uid: uid) }
@@ -63,6 +63,7 @@ struct DanmakuApp: App {
                 .onChange(of: scenePhase) { phase in
                     if phase == .background { Task { await ResultsQueue.shared.flush() } }
                     if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
+                    if phase == .active { Task { await RewardNoticeService.shared.check() } }   // 招待や月間ランキングのごほうびが届いていないか
                     // 設定アプリで通知の許可を変えて戻ってきたときに、表示を合わせる
                     if phase == .active { Task { await NotificationService.shared.refreshAuthorization() } }
                     // 起動時に広告を開始できなかった・読み込めなかったときは、前面に戻るたびにやり直す

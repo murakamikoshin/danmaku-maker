@@ -23,6 +23,26 @@ enum TitleID {
         return Month(kind: String(parts[0]), year: y, month: m)
     }
 
+    /// 王冠・メダルになる月間の称号か(1〜3位=金銀銅の王冠、TOP10=メダル)。サーバーの crownOfTitle と同じ
+    static func crown(_ id: String) -> (crown: Int, medal: Bool)? {
+        guard let m = month(id) else { return nil }
+        switch m.kind {
+        case "rank1": return (1, false)
+        case "rank2": return (2, false)
+        case "rank3": return (3, false)
+        case "top10": return (0, true)
+        default: return nil
+        }
+    }
+
+    /// 持っている王冠・メダルを、よい順(1位が先。同じなら新しい月)に並べる
+    static func crownSorted(_ ids: [String]) -> [String] {
+        ids.compactMap { id -> (String, Int, Int)? in
+            guard let c = crown(id), let m = month(id) else { return nil }
+            return (id, c.crown > 0 ? c.crown : 4, m.year * 12 + m.month)
+        }.sorted { $0.1 != $1.1 ? $0.1 < $1.1 : $0.2 > $1.2 }.map(\.0)
+    }
+
     static func isValid(_ id: String) -> Bool { scoreIDs.contains(id) || inviteIDs.contains(id) || month(id) != nil }
 
     /// 画面に出す文字(例「弾幕職人」「2026年11月 1位」)
@@ -203,6 +223,10 @@ final class TitleService: ObservableObject {
     static let shared = TitleService()
     @Published private(set) var owned: [String] = []
     @Published private(set) var selected: String?
+    /// 付けている王冠・メダル(月間の称号の ID)。nil で、おまかせでなければ「付けない」
+    @Published private(set) var crownSel: String?
+    /// おまかせ(いちばんよい王冠・メダルを自動で付ける)か
+    @Published private(set) var crownAuto = true
     @Published private(set) var loaded = false
 
     func load(uid: String?) async {
@@ -210,6 +234,13 @@ final class TitleService: ObservableObject {
         guard let snap = try? await Firestore.firestore().document("titleState/\(uid)").getDocument() else { return }
         owned = ((snap.data()?["titles"] as? [String]) ?? []).filter(TitleID.isValid)
         selected = (snap.data()?["sel"] as? String).flatMap { TitleID.isValid($0) ? $0 : nil }
+        if let data = snap.data(), data.keys.contains("crownSel") {
+            crownAuto = false
+            crownSel = (data["crownSel"] as? String).flatMap { TitleID.crown($0) != nil ? $0 : nil }
+        } else {
+            crownAuto = true
+            crownSel = TitleID.crownSorted(owned).first
+        }
         loaded = true
     }
 
@@ -222,6 +253,24 @@ final class TitleService: ObservableObject {
             if let uid {
                 var b = ProfileBadgeStore.shared.badge(uid)
                 b.title = id
+                ProfileBadgeStore.shared.set(uid, b)
+            }
+            return true
+        } catch { return false }
+    }
+
+    /// 王冠・メダルを付ける。id が nil で外す。auto == true でおまかせ(いちばんよいもの)。成功したら true
+    func selectCrown(_ id: String?, auto: Bool = false, uid: String?) async -> Bool {
+        guard Backend.isAvailable else { return false }
+        do {
+            _ = try await Backend.functions.httpsCallable("setCrown").call(["id": auto ? "auto" : (id as Any? ?? NSNull())])
+            crownAuto = auto
+            crownSel = auto ? TitleID.crownSorted(owned).first : id
+            if let uid {
+                var b = ProfileBadgeStore.shared.badge(uid)
+                let c = crownSel.flatMap { TitleID.crown($0) }
+                b.crown = c?.crown ?? 0
+                b.medal = c?.medal ?? false
                 ProfileBadgeStore.shared.set(uid, b)
             }
             return true
@@ -287,6 +336,21 @@ struct TitlePickerView: View {
                         }
                         Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
                     }
+                    GamePanel(title: "title.section.crown", tint: Color(CrownStyle.gold)) {
+                        let crowns = TitleID.crownSorted(service.owned)
+                        VStack(spacing: 8) {
+                            crownRow(title: L("title.crown.auto"), on: service.crownAuto, id: "auto", icon: "wand.and.stars", color: Color(Palette.text)) { pickCrown(nil, auto: true) }
+                            ForEach(crowns, id: \.self) { id in
+                                let c = TitleID.crown(id)
+                                crownRow(title: TitleID.text(id) ?? "", on: !service.crownAuto && service.crownSel == id, id: id,
+                                         icon: (c?.crown ?? 0) > 0 ? "crown.fill" : "medal.fill",
+                                         color: CrownStyle.color(c?.crown ?? 0) ?? Color(Palette.pink)) { pickCrown(id, auto: false) }
+                            }
+                            crownRow(title: L("title.crown.none"), on: !service.crownAuto && service.crownSel == nil, id: "none", icon: "nosign", color: Color(Palette.text).opacity(0.6)) { pickCrown(nil, auto: false) }
+                        }
+                        if crowns.isEmpty { Text("title.crown.empty").font(.footnote).foregroundStyle(Color(Palette.text).opacity(0.6)) }
+                        Text("title.crown.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                    }
                     let invites = TitleID.inviteSorted(service.owned)
                     if !invites.isEmpty {
                         GamePanel(title: "title.section.invite", tint: Color(Palette.bullets[0])) {
@@ -310,6 +374,26 @@ struct TitlePickerView: View {
         }
         .preferredColorScheme(.dark)
         .task { await service.load(uid: auth.uid) }
+    }
+
+    private func crownRow(title: String, on: Bool, id: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button { gameTap(); action() } label: {
+            HStack(spacing: 10) {
+                Image(systemName: icon).font(.system(size: 16, weight: .bold)).foregroundStyle(color).frame(width: 24)
+                Text(title).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Spacer()
+                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+            }
+            .padding(.vertical, 10).padding(.horizontal, 12)
+            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color(Palette.pink) : GameStyle.edge, lineWidth: on ? 1.5 : 1))
+        }
+        .buttonStyle(BounceButtonStyle())
+        .accessibilityIdentifier("crown.row.\(id)")
+    }
+
+    private func pickCrown(_ id: String?, auto: Bool) {
+        Task { failed = !(await service.selectCrown(id, auto: auto, uid: auth.uid)) }
     }
 
     private func row(_ id: String) -> some View {

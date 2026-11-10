@@ -6,7 +6,7 @@ import UserNotifications
 
 /// 通知の種類。サーバー(firebase/functions/src/notify.ts の PushKind)と同じ名前
 enum PushKind: String, CaseIterable, Identifiable {
-    case likes, comments, plays
+    case likes, comments, plays, rewards
     var id: String { rawValue }
     /// LocalizedStringKey("…\\(rawValue)") と書くと、キーが "settings.notify.%@" になって翻訳が引けないので、文字列をつないで作る
     var titleKey: LocalizedStringKey { LocalizedStringKey("settings.notify." + rawValue) }
@@ -15,6 +15,7 @@ enum PushKind: String, CaseIterable, Identifiable {
         case .likes: "heart.fill"
         case .comments: "text.bubble.fill"
         case .plays: "flag.checkered"
+        case .rewards: "gift.fill"
         }
     }
 }

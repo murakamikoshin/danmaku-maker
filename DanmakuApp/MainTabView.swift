@@ -15,6 +15,7 @@ struct MainTabView: View {
     @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var swipeConfig: SwipeConfig
+    @ObservedObject private var notice = RewardNoticeService.shared
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
@@ -38,6 +39,10 @@ struct MainTabView: View {
             }
         }
         .onChange(of: tab) { opened.insert($0) }
+        .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty }, set: { if !$0 { notice.pending = [] } })) {
+            RewardNoticeView(items: notice.pending) { notice.pending = [] }
+        }
+        .task { await notice.check() }
         .onAppear {
             AudioManager.shared.play(.menu)
             #if DEBUG

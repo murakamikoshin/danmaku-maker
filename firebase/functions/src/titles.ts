@@ -33,6 +33,27 @@ export function isTitleId(id: unknown): id is string {
   return !!m && (MONTHLY_KINDS as readonly string[]).includes(m[1]!);
 }
 
+/** 王冠・メダルの元になる月間の称号か(1〜3 位=金銀銅の王冠、トップ10=メダル)。例 rank1:2026-11 */
+export function crownOfTitle(id: unknown): { crown: 0 | 1 | 2 | 3; medal: boolean; month: string } | null {
+  if (typeof id !== "string") return null;
+  const m = /^(rank1|rank2|rank3|top10):(\d{4}-(?:0[1-9]|1[0-2]))$/.exec(id);
+  if (!m) return null;
+  const kind = m[1]!;
+  return { crown: kind === "rank1" ? 1 : kind === "rank2" ? 2 : kind === "rank3" ? 3 : 0, medal: kind === "top10", month: m[2]! };
+}
+
+/** 持っている称号から、いちばんよい王冠・メダルを選ぶ(王冠は 1 位が上。同じなら新しい月)。なければ null */
+export function bestCrownTitle(owned: readonly string[]): string | null {
+  let best: { id: string; rank: number; month: string } | null = null;
+  for (const id of owned) {
+    const c = crownOfTitle(id);
+    if (!c) continue;
+    const rank = c.crown > 0 ? c.crown : 4;   // メダルは王冠より下
+    if (!best || rank < best.rank || (rank === best.rank && c.month > best.month)) best = { id, rank, month: c.month };
+  }
+  return best?.id ?? null;
+}
+
 /** この点数で取れるスコア達成の称号(低い順) */
 export function scoreTitlesFor(score: bigint): string[] {
   return SCORE_TITLES.filter((t) => score >= t.min).map((t) => t.id);
@@ -62,6 +83,14 @@ export interface MonthlyAward {
   crown: 0 | 1 | 2 | 3;
   /** 4〜10 位の小さなメダル */
   medal: boolean;
+}
+
+/** 月間ランキングのごほうびの金の自機(art/rewards の ID)。上の順位は、下の順位のぶんも全部もらえる。1位=5機 … 上位1%・10%=1機。ワスプは取ってある */
+export const GOLD_SHIP_ORDER = ["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"] as const;
+export function goldShipsFor(a: { kinds: readonly string[]; crown: number; medal: boolean }): string[] {
+  // 何機もらえるか: 1位=5, 2位=4, 3位=3, 4〜10位=2, 上位1%・10%=1, 上位50%=0
+  const n = a.crown === 1 ? 5 : a.crown === 2 ? 4 : a.crown === 3 ? 3 : a.medal ? 2 : a.kinds.some((k) => k === "pct1" || k === "pct10") ? 1 : 0;
+  return GOLD_SHIP_ORDER.slice(GOLD_SHIP_ORDER.length - n);
 }
 
 /** 参加者 total 人のうち rank 位(同点は同じ順位)がもらうもの。上位 1%・10%・50% は、一番高い段階を1つ */

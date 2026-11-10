@@ -9,8 +9,9 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
 import nodemailer from "nodemailer";
 import { submitFeedback } from "./feedback.js";
+import { notifyReward } from "./notify.js";
 import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, getInviteInfo as getInviteInfoFn, registerInvite as registerInviteFn } from "./invite.js";
-import { runMonthlyAward, setTitle as setTitleFn } from "./titlesfns.js";
+import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
@@ -126,6 +127,11 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   return { id };
 });
 
+/** 友達が3回遊んで報酬が出たら、招待した人に「ごほうびが届きました」を知らせる */
+async function rewardInviter(r: { granted: boolean; inviter?: string } | undefined): Promise<void> {
+  if (r?.granted && r.inviter) await notifyReward(db, r.inviter, "invite");
+}
+
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
 const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni"];
 /** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
@@ -207,7 +213,7 @@ export const submitResults = onCall(async (req) => {
   }
   // 招待された人なら、遊んだ回数を数える(失敗しても、結果の送信は成功のまま)
   const totalPlays = [...merged.values()].reduce((a, b) => a + b.plays, 0);
-  await countInvitePlays(db, req.auth!.uid, totalPlays).catch((e) => logger.warn("countInvitePlays", e));
+  await rewardInviter(await countInvitePlays(db, req.auth!.uid, totalPlays).catch((e) => { logger.warn("countInvitePlays", e); return undefined; }));
   return { ok: true };
 });
 
@@ -596,7 +602,7 @@ export const swipeUseDrink = onCall(async (req) => useDrink(requireAny(req)));
 export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, async (req) => {
   const uid = requireAny(req);
   const result = await submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
-  await countInvitePlays(db, uid, 1).catch((e) => logger.warn("countInvitePlays", e));
+  await rewardInviter(await countInvitePlays(db, uid, 1).catch((e) => { logger.warn("countInvitePlays", e); return undefined; }));
   return result;
 });
 /** 自分の招待コードと、招待の状況(コードがなければ作る) */
@@ -616,6 +622,7 @@ export const claimFounder = onCall(async (req) => {
 });
 export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period));
 /** 称号を付ける(null で外す)。持っている称号だけ */
+export const setCrown = onCall(async (req) => setCrownFn(db, requireAny(req), req.data?.id ?? null));
 export const setTitle = onCall(async (req) => setTitleFn(db, requireAny(req), req.data?.id ?? null));
 /**
  * 「要望を送る」。内容は feedback に残し、送信設定(環境変数 FEEDBACK_SMTP_URL と FEEDBACK_FROM)があればメールも転送する。
