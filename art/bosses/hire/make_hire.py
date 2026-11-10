@@ -20,5 +20,5 @@ awake_states(frames, dict(core=CORE, c1=(190, 90, 255), c2=(240, 210, 255), lean
 NOTE = '元の絵は Canva で生成したイラスト(source/hire_source.png)を、決まった作り方(../_pipeline/README.md)でドット化したもの。待機はひれのゆれ・リボン・金魚の動き・1ドットの呼吸＋泡(体と脚の形は変えない)。覚醒は黒い出目金の紫に染まる'
 
 if __name__ == '__main__':
-    size, nc = export(ID, '金魚すくいの金魚娘 ひれ', frames, NOTE)
+    size, nc = export(ID, '金魚姫', frames, NOTE)
     print(ID, size, nc, 'colors')

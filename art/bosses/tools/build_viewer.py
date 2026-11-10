@@ -3,7 +3,7 @@ import base64, json, sys, os
 from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = [('fallen_angel','堕天使','両手のオーブ'),('kitsune','九尾の巫女','尻尾の付け根'),('witch','深海の魔女','帽子の提灯'),
-     ('mech','機神','胸のコアアイ'),('ice','雪の女王','背後の結晶'),('reaper','死神','頭蓋の目'),('hire','ひれ','ポイ・金魚の手'),('puni','ぷにまる','本体')]
+     ('mech','機神','胸のコアアイ'),('ice','雪の女王','背後の結晶'),('reaper','死神','頭蓋の目'),('hire','金魚姫','ポイ・金魚の手'),('puni','ぷにまる','本体')]
 ACTS = [('idle','待機',8,'loop'),('windup','構え',4,'once'),('attack','技中',4,'loop'),('recover','硬直',2,'once')]
 data = []
 for bid, name, core in B:

@@ -1,4 +1,4 @@
-"""ひれの仕上げ(手直し)。座標はドット絵のマス"""
+"""金魚姫の仕上げ(手直し)。座標はドット絵のマス"""
 import sys, colorsys, math
 from PIL import Image
 import os
