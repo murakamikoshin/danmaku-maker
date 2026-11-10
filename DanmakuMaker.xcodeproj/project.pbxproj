@@ -36,6 +36,7 @@
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
 		4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE99B3637315E889FFCC33EC /* GameUI.swift */; };
 		45924AE0CA078873D2A83691 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6318A05C51A88952A6A8B21 /* NotificationService.swift */; };
+		4606BF25A527592293EDCE24 /* rewards in Resources */ = {isa = PBXBuildFile; fileRef = B6B0DA55F4187CB364C9C6C2 /* rewards */; };
 		46EB774F011D97C35EB1A667 /* BossSprites.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA14CF6B0BFE45CC242D979A /* BossSprites.swift */; };
 		4AD6B4860B7EE9DB0976A23D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */; };
 		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
@@ -85,6 +86,7 @@
 		CD3DFDB6FAD0B45BD1CDB997 /* RewardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E163A6266ACFCDDDD873ED /* RewardStore.swift */; };
 		CDBFA71C66EC250234E9DDB5 /* StoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95160D2A88138F6429741ED2 /* StoreView.swift */; };
 		CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */ = {isa = PBXBuildFile; fileRef = E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */; };
+		D06116E9C29FDF3247EB2045 /* ShipSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F216B378A965487884CBBFE1 /* ShipSkin.swift */; };
 		D06B87FBA6FC1D1D54206E05 /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C491E753AF70E1D5511B48 /* CommentService.swift */; };
 		D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0719981841E39DB1D9E6C6AB /* FirebaseFirestore */; };
 		D3ABB662271871355FFEBA58 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F68837435E863CE44BB6217 /* FeedbackView.swift */; };
@@ -181,6 +183,7 @@
 		B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsQueue.swift; sourceTree = "<group>"; };
 		B20CD895E1DF2E57774AA998 /* PatternMakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternMakerView.swift; sourceTree = "<group>"; };
 		B4328935E6EBE2DE7478FB50 /* se_tap.caf */ = {isa = PBXFileReference; path = se_tap.caf; sourceTree = "<group>"; };
+		B6B0DA55F4187CB364C9C6C2 /* rewards */ = {isa = PBXFileReference; lastKnownFileType = folder; name = rewards; path = art/rewards; sourceTree = SOURCE_ROOT; };
 		BA8479A886EF2B4CF44742DC /* SampleStages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStages.swift; sourceTree = "<group>"; };
 		C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorFlowUITests.swift; sourceTree = "<group>"; };
 		C215A3C95C2A8021A12A703D /* official_stages_i18n.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages_i18n.json; sourceTree = "<group>"; };
@@ -206,6 +209,7 @@
 		E76AAB990CF55410F75C347D /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 		E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F216B378A965487884CBBFE1 /* ShipSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShipSkin.swift; sourceTree = "<group>"; };
 		F432139D4D93210AE9BDE2F4 /* bgm_menu.caf */ = {isa = PBXFileReference; path = bgm_menu.caf; sourceTree = "<group>"; };
 		F7E34F9A7A2229BC09000B94 /* se_life.caf */ = {isa = PBXFileReference; path = se_life.caf; sourceTree = "<group>"; };
 		FA14CF6B0BFE45CC242D979A /* BossSprites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BossSprites.swift; sourceTree = "<group>"; };
@@ -410,6 +414,7 @@
 				C8393515DD0F1156221C5E1B /* EnemyArt.swift */,
 				8F62E287AE766D76D9CF3901 /* GameScene.swift */,
 				FDD3C27E636E8B15E076F52B /* Palette.swift */,
+				F216B378A965487884CBBFE1 /* ShipSkin.swift */,
 				4F83BED46E19BBDDDCE011EE /* Skin.swift */,
 				77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */,
 			);
@@ -419,6 +424,7 @@
 		E259C44490F67C30B8FB0946 = {
 			isa = PBXGroup;
 			children = (
+				B6B0DA55F4187CB364C9C6C2 /* rewards */,
 				ADDE986E96D5A43E7CF359ED /* DanmakuApp */,
 				38E9D6174EF8206BAC49A0C6 /* DanmakuAppUITests */,
 				037B791375337A501E9E53CA /* Packages */,
@@ -561,6 +567,7 @@
 				E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
 				4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */,
+				4606BF25A527592293EDCE24 /* rewards in Resources */,
 				CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */,
 				F651D5E0055CF2DD08697CAE /* se_clear.caf in Resources */,
 				69455ED16E1C066EC2FECE78 /* se_fail.caf in Resources */,
@@ -635,6 +642,7 @@
 				D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */,
 				09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */,
 				C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */,
+				D06116E9C29FDF3247EB2045 /* ShipSkin.swift in Sources */,
 				258439472FCE7575D6175586 /* ShopEffects.swift in Sources */,
 				517E3A320ECFA38B24FE0FE8 /* ShopView.swift in Sources */,
 				F7796624B3092E53B550441B /* Skin.swift in Sources */,
@@ -730,7 +738,7 @@
 				ADMOB_INTERSTITIAL_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
 				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
 				APPLE_APP_ID = 6824245206;
-				APPSFLYER_DEV_KEY = "";
+				APPSFLYER_DEV_KEY = VTHehqvd87knLrpFbaYVeE;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -802,7 +810,7 @@
 				ADMOB_INTERSTITIAL_UNIT_ID = "ca-app-pub-3863314847163872/6771452085";
 				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3863314847163872/5500185716";
 				APPLE_APP_ID = 6824245206;
-				APPSFLYER_DEV_KEY = "";
+				APPSFLYER_DEV_KEY = VTHehqvd87knLrpFbaYVeE;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

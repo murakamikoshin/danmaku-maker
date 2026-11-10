@@ -18,6 +18,12 @@ final class CosmeticsStore: ObservableObject {
     private static let freeBossesKey = "cosmetics.freeBosses"
     private static let bossTicketsKey = "cosmetics.bossTickets"
     private static let ticketGrantedKey = "cosmetics.ticketGranted"
+    private static let skinsOwnedKey = "cosmetics.shipSkinsOwned"
+    private static let skinKey = "cosmetics.shipSkin"
+
+    /// 招待などで手に入れたドット絵の自機(サーバーの記録。端末にも覚えておく)と、いま使っているもの(nil=標準の自機)
+    @Published private(set) var ownedSkins: [String] = []
+    @Published private(set) var shipSkin: String?
 
     /// ボスの無料チケット(初めて公開すると1枚もらえる。サーバーの記録)の残り枚数と、もうもらったか
     @Published private(set) var bossTickets = 0
@@ -25,6 +31,9 @@ final class CosmeticsStore: ObservableObject {
 
     /// 無料チケットでボスをもらえるか。チケットが残っているか、まだ一度も公開しておらず、初めての公開のために1体もらえるとき
     var canClaimBossTicket: Bool { bossTickets > 0 || (!ticketGranted && postedCount == 0) }
+
+    /// 無料でボスと交換できる回数(チケットの枚数に、初めての公開のための 1 体を足したもの)
+    var availableBossClaims: Int { bossTickets + ((!ticketGranted && postedCount == 0) ? 1 : 0) }
 
     /// 投稿したステージの数(サーバーの記録から数えた、いちばん多い値)。投稿数で解放される見た目に使う
     @Published private(set) var postedCount: Int
@@ -40,6 +49,8 @@ final class CosmeticsStore: ObservableObject {
         effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
         ownership.adPatterns = AdPatternStore.load(defaults).unlocked
         ownership.freeBosses = Set((defaults.stringArray(forKey: Self.freeBossesKey) ?? []).compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
+        ownedSkins = (defaults.stringArray(forKey: Self.skinsOwnedKey) ?? []).filter(ShipSkin.isValid)
+        shipSkin = defaults.string(forKey: Self.skinKey).flatMap { ShipSkin.isValid($0) ? $0 : nil }
         bossTickets = defaults.integer(forKey: Self.bossTicketsKey)
         ticketGranted = defaults.bool(forKey: Self.ticketGrantedKey)
         #if DEBUG
@@ -85,6 +96,8 @@ final class CosmeticsStore: ObservableObject {
         }
         // 撃ち方はステージで決まっている(作った人が選ぶ)。テストプレイも、遊ぶ人も、同じ
         l.shot = stage.shotType
+        // ドット絵の自機は、遊ぶ人が選んだもの(見た目だけ。持っているものだけ)
+        l.shipSkin = shipSkin.flatMap { ownedSkins.contains($0) ? $0 : nil }
         if ownership.hasCustomImages {
             l.customBoss = customs.boss && CustomImageStore.exists(.boss)
             l.customBullet = customs.bullet && CustomImageStore.exists(.bullet)
@@ -143,6 +156,21 @@ final class CosmeticsStore: ObservableObject {
         defaults.set(next.freeBosses.map(\.productKey).sorted(), forKey: Self.freeBossesKey)
         defaults.set(tickets, forKey: Self.bossTicketsKey)
         defaults.set(ticketGranted, forKey: Self.ticketGrantedKey)
+    }
+
+    /// サーバーの記録から、持っているドット絵の自機を更新する(増えるだけ。使っているものが消えたら標準に戻す)
+    func setOwnedSkins(_ ids: [String]) {
+        let next = Array(Set(ownedSkins).union(ids.filter(ShipSkin.isValid))).sorted { (ShipSkin.all.firstIndex(of: $0) ?? 0) < (ShipSkin.all.firstIndex(of: $1) ?? 0) }
+        guard next != ownedSkins else { return }
+        ownedSkins = next
+        defaults.set(next, forKey: Self.skinsOwnedKey)
+    }
+
+    /// 使うドット絵の自機を選ぶ(nil で標準の自機)。持っているものだけ
+    func selectSkin(_ id: String?) {
+        if let id, !ownedSkins.contains(id) { return }
+        shipSkin = id
+        if let id { defaults.set(id, forKey: Self.skinKey) } else { defaults.removeObject(forKey: Self.skinKey) }
     }
 
     func setPostedCount(_ n: Int) {

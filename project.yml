@@ -28,6 +28,10 @@ targets:
     platform: iOS
     sources:
       - DanmakuApp
+      # 招待のごほうびの自機(ドット絵)。フォルダのまま入れて、rewards/<ID>/<ID>_<コマ>.png で読む
+      - path: art/rewards
+        type: folder
+        buildPhase: resources
     info:
       path: DanmakuApp/Info.plist
       properties:

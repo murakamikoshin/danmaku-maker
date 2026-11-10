@@ -22,6 +22,13 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         }
     }
 
+    /// 無料チケットで手に入れられるか。課金専用のボスは false にする(サーバーの PAID_ONLY_BOSSES と同じにする)
+    public var ticketEligible: Bool {
+        switch self {
+        case .fallenAngel: return true
+        }
+    }
+
     public static func of(look: Int) -> BossCharacter? { BossCharacter(rawValue: look) }
 
     /// 弾(自機のショット)が当たる半径(論理px)。大きさの設定(小・中・大)は、キャラクターでは使わない

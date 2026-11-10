@@ -12,12 +12,24 @@ import { HttpsError } from "firebase-functions/v2/https";
  * 流れ: 招待された人が初めて開く → registerInvite(1回だけ) → 3回遊ぶ → 両方に付与(称号・回復ドリンク)
  */
 
-export const MAX_REWARDED = 10;
+/** 報酬を出す人数の上限。1人につき自機が1機(INVITER_SHIPS の長さ)。それ以上は数えるだけ */
+export const MAX_REWARDED = 31;
 export const PLAYS_NEEDED = 3;
 /** 招待された人のアカウントが、この日数より古いと、新しい人とみなさない(登録を受け付けない) */
 export const MAX_ACCOUNT_AGE_MS = 3 * 24 * 3600_000;
 /** 招待された人がもらう回復ドリンクの本数 */
 export const INVITEE_DRINKS = 2;
+/** 招待された人(と、招待した 1 人目)がもらう自機 */
+export const INVITEE_SHIP = "original_steel";
+/** 招待した人が、n 人目(1〜10)でもらう自機。アプリ側の絵(art/rewards)の ID。1 人目はおそろい */
+export const INVITER_SHIPS: readonly string[] = [
+  "original_steel",
+  ...["steel", "snow", "emerald", "crimson", "shadow"].flatMap((c) => ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"].map((m) => `${m}_${c}`)),
+];
+/** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で好きなボスと交換できる) */
+export const BOSS_TICKET_AT: readonly number[] = [10, 20, 31];
+/** 「初期プレイヤー」の自機 */
+export const FOUNDER_SHIP = "seraph_special";
 /** 招待した人が、この人数に届いたときにもらう称号 */
 export const INVITER_TITLES: Record<number, string> = { 1: "invited", 3: "inv3", 5: "inv5", 10: "inv10" };
 
@@ -38,7 +50,7 @@ export interface DeviceGate {
 }
 
 /** 自分の招待コード(なければ作る)と、状況 */
-export async function getInviteInfo(db: Firestore, uid: string): Promise<{ code: string; count: number; rewarded: number; joinedBy: boolean }> {
+export async function getInviteInfo(db: Firestore, uid: string): Promise<{ code: string; count: number; rewarded: number; joinedBy: boolean; ships: string[] }> {
   const ref = db.doc(`inviteState/${uid}`);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -53,7 +65,7 @@ export async function getInviteInfo(db: Firestore, uid: string): Promise<{ code:
       tx.set(db.doc(`inviteCodes/${code}`), { uid });
       tx.set(ref, { code }, { merge: true });
     }
-    return { code, count: (snap.get("count") as number | undefined) ?? 0, rewarded: (snap.get("rewarded") as number | undefined) ?? 0, joinedBy: !!snap.get("joinedBy") };
+    return { code, count: (snap.get("count") as number | undefined) ?? 0, rewarded: (snap.get("rewarded") as number | undefined) ?? 0, joinedBy: !!snap.get("joinedBy"), ships: (snap.get("ships") as string[] | undefined) ?? [] };
   });
 }
 
@@ -110,7 +122,8 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
     const inviterTitles = db.doc(`titleState/${inviter}`);
     const inviteeTitles = db.doc(`titleState/${uid}`);
     const inviteeUser = db.doc(`users/${uid}`);
-    const [is, it, vt, vu] = await Promise.all([tx.get(inviterState), tx.get(inviterTitles), tx.get(inviteeTitles), tx.get(inviteeUser)]);
+    const inviterUser = db.doc(`users/${inviter}`);
+    const [is, it, vt, vu, iu] = await Promise.all([tx.get(inviterState), tx.get(inviterTitles), tx.get(inviteeTitles), tx.get(inviteeUser), tx.get(inviterUser)]);
     // 同じ端末で、もう招待された側になっていた(再インストールでの自作自演)なら、どちらにも報酬を出さず、人数にも数えない
     if (snap.get("noReward") === true) { tx.update(ref, { plays, rewarded: true, rewardedAt: FieldValue.serverTimestamp() }); return { granted: false }; }
     tx.update(ref, { plays, rewarded: true, rewardedAt: FieldValue.serverTimestamp() });
@@ -118,13 +131,22 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
     const rewarded = (is.get("rewarded") as number | undefined) ?? 0;
     const inviterGets = rewarded < MAX_REWARDED;
     const newRewarded = inviterGets ? rewarded + 1 : rewarded;
-    tx.set(inviterState, { count, ...(inviterGets ? { rewarded: newRewarded } : {}) }, { merge: true });
+    tx.set(inviterState, {
+      count,
+      ...(inviterGets ? { rewarded: newRewarded, ships: FieldValue.arrayUnion(INVITER_SHIPS[newRewarded - 1]!) } : {}),
+    }, { merge: true });
     if (inviterGets) {
       const t = INVITER_TITLES[newRewarded];
       const ownedI = (it.get("titles") as string[] | undefined) ?? [];
       // 1 人目は「おそろい」の称号。以降は 3・5・10 人目で、その人数の称号
       if (t && !ownedI.includes(t)) tx.set(inviterTitles, { titles: [...ownedI, t] }, { merge: true });
+      // 10・20・31 人目で、ボスの無料チケットを 1 枚(まだユーザー情報がなければ、最低限の項目も作る)
+      if (BOSS_TICKET_AT.includes(newRewarded)) {
+        const base = iu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
+        tx.set(inviterUser, { ...base, bossTickets: FieldValue.increment(1) }, { merge: true });
+      }
     }
+    tx.set(db.doc(`inviteState/${uid}`), { ships: FieldValue.arrayUnion(INVITEE_SHIP) }, { merge: true });
     const ownedV = (vt.get("titles") as string[] | undefined) ?? [];
     if (!ownedV.includes("invited")) tx.set(inviteeTitles, { titles: [...ownedV, "invited"] }, { merge: true });
     const base = vu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
@@ -143,6 +165,7 @@ export async function claimFounder(db: Firestore, uid: string, accountCreatedAt:
     const owned = (snap.get("titles") as string[] | undefined) ?? [];
     if (owned.includes("founder")) return { granted: true };
     tx.set(ref, { titles: [...owned, "founder"] }, { merge: true });
+    tx.set(db.doc(`inviteState/${uid}`), { ships: FieldValue.arrayUnion(FOUNDER_SHIP) }, { merge: true });
     return { granted: true };
   });
 }

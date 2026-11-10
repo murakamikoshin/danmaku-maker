@@ -88,8 +88,9 @@ struct PublishFlowView: View {
                     GamePanel(title: "publish.boss.title") {
                         Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }
-                    if cosmetics.canClaimBossTicket {
+                    if cosmetics.canClaimBossTicket && boss.ticketEligible {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
+                        TicketCount()
                         GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.accent) {
                             Task {
                                 claimingTicket = true

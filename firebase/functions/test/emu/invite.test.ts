@@ -2,7 +2,7 @@
 import { getFirestore as adminDb } from "firebase-admin/firestore";
 import { initializeApp as adminInit } from "firebase-admin/app";
 import { describe, expect, it } from "vitest";
-import { INVITEE_DRINKS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
+import { BOSS_TICKET_AT, FOUNDER_SHIP, INVITEE_DRINKS, INVITEE_SHIP, INVITER_SHIPS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
 
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
 const db = adminDb(adminInit({ projectId: "demo-danmaku" }, "invite-admin"));
@@ -55,9 +55,11 @@ describe("3回遊んだときの付与", () => {
     expect(await titlesOf(inviter)).toEqual([]);
     expect(await countInvitePlays(db, friend, 1)).toEqual({ granted: true });
     expect(await titlesOf(inviter)).toEqual(["invited"]);
+    expect((await db.doc(`users/${inviter}`).get()).exists).toBe(false);   // 1人目では、ボスのチケットは出ない
     expect(await titlesOf(friend)).toEqual(["invited"]);
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
-    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1 });
+    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1, ships: [INVITER_SHIPS[0]] });
+    expect((await getInviteInfo(db, friend)).ships).toEqual([INVITEE_SHIP]);
     expect(await countInvitePlays(db, friend, 5)).toEqual({ granted: false });
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
   });
@@ -76,7 +78,8 @@ describe("3回遊んだときの付与", () => {
     expect(await titlesOf(friend)).toEqual([]);
     expect((await db.doc(`users/${friend}`).get()).exists).toBe(false);
     expect(await titlesOf(inviter)).toEqual([]);
-    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 0, rewarded: 0 });
+    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 0, rewarded: 0, ships: [] });
+    expect((await getInviteInfo(db, friend)).ships).toEqual([]);
   });
   it("初めての端末は、使ったと記録される。端末の判定が壊れていても登録は通る", async () => {
     const [inviter, a, b] = [uid("k"), uid("l"), uid("m")];
@@ -87,7 +90,7 @@ describe("3回遊んだときの付与", () => {
     const broken: DeviceGate = { used: async () => { throw new Error("apple down"); }, mark: async () => { throw new Error("apple down"); } };
     expect(await registerInvite(db, b, { code, deviceToken: "x" }, Date.now(), { ...fresh, device: broken })).toEqual({ status: "registered", noReward: false });
   });
-  it("人数の称号は、1・3・5・10人目で付く。10人を超えたぶんは、数えるが付けない", async () => {
+  it("人数の称号は1・3・5・10人目で付き、自機は1人ごとに1機。上限を超えたぶんは、数えるが付けない", async () => {
     const inviter = uid("n");
     const { code } = await getInviteInfo(db, inviter);
     for (let i = 1; i <= MAX_REWARDED + 2; i++) {
@@ -97,6 +100,11 @@ describe("3回遊んだときの付与", () => {
     }
     expect(await titlesOf(inviter)).toEqual(["invited", "inv3", "inv5", "inv10"]);
     expect(await getInviteInfo(db, inviter)).toMatchObject({ count: MAX_REWARDED + 2, rewarded: MAX_REWARDED });
+    // ボスの無料チケットは、10・20・31人目で1枚ずつ(上限を超えたぶんでは増えない)
+    expect((await db.doc(`users/${inviter}`).get()).get("bossTickets")).toBe(BOSS_TICKET_AT.length);
+    // 人数ごとに自機が1機ずつ増え(重複なし)、上限を超えたぶんは増えない
+    expect(new Set(INVITER_SHIPS).size).toBe(MAX_REWARDED);
+    expect([...(await getInviteInfo(db, inviter)).ships].sort()).toEqual([...INVITER_SHIPS].sort());
   });
 });
 
@@ -108,6 +116,7 @@ describe("初期プレイヤー", () => {
     expect(await claimFounder(db, a, t - 1000, t)).toEqual({ granted: true });
     expect(await claimFounder(db, a, t - 1000, t)).toEqual({ granted: true });
     expect(await titlesOf(a)).toEqual(["founder"]);
+    expect((await getInviteInfo(db, a)).ships).toEqual([FOUNDER_SHIP]);
     expect(await claimFounder(db, b, t + 1000, t)).toEqual({ granted: false });
     expect(await titlesOf(b)).toEqual([]);
   });

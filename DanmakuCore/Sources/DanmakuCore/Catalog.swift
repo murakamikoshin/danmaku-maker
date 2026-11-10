@@ -205,11 +205,13 @@ public struct Loadout: Equatable, Codable, Sendable {
     public var customBoss = false
     public var customBullet = false
     public var customShip = false
+    /// 招待のごほうびなどで手に入れた、ドット絵の自機(art/rewards の ID)。見た目だけで、当たり判定は変わらない
+    public var shipSkin: String?
 
     public init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case bullets, background, ship, shot, customBoss, customBullet, customShip
+        case bullets, background, ship, shot, customBoss, customBullet, customShip, shipSkin
     }
 
     /// 古い保存データ(自分の画像の項目がない)も読めるようにする
@@ -222,6 +224,7 @@ public struct Loadout: Equatable, Codable, Sendable {
         customBoss = try c.decodeIfPresent(Bool.self, forKey: .customBoss) ?? false
         customBullet = try c.decodeIfPresent(Bool.self, forKey: .customBullet) ?? false
         customShip = try c.decodeIfPresent(Bool.self, forKey: .customShip) ?? false
+        shipSkin = try c.decodeIfPresent(String.self, forKey: .shipSkin)
     }
 
     public func theme(for part: ThemePart) -> Theme {

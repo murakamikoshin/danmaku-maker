@@ -952,7 +952,8 @@ private struct BossShopCard: View {
                         if cosmetics.ownership.has(boss) {
                             EquippedLabel()
                         } else {
-                            if cosmetics.canClaimBossTicket {
+                            if cosmetics.canClaimBossTicket && boss.ticketEligible {
+                                TicketCount()
                                 Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
                                     Label("shop.boss.ticket", systemImage: "ticket.fill").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
                                         .padding(.vertical, 8).padding(.horizontal, 12)

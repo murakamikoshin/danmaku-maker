@@ -27,6 +27,7 @@ final class GameScene: SKScene {
     /// ブーメランの弾の絵(🪃の形。弾の色ごと)
     private let boomerangTextures: [SKTexture]
     private let shipNode: SKSpriteNode
+    private let shipSkinFrames: [SKTexture]
     private let bossNode: SKSpriteNode
     /// ボスの動きの演出(見た目だけ): 前のフレームの位置と、残像を出す間引き用の数
     private var lastBossPoint: CGPoint?
@@ -92,7 +93,10 @@ final class GameScene: SKScene {
             bulletTextures = SpriteFactory.bullets(loadout.bullets)
         }
         boomerangTextures = SpriteFactory.boomerangs(loadout.bullets)
-        shipNode = SKSpriteNode(texture: (loadout.customShip ? SpriteFactory.custom(.ship) : nil) ?? SpriteFactory.ship(loadout.ship))
+        // ドット絵の自機(招待のごほうび)。自分の画像を使うときは、そちらを優先する
+        let skinFrames = (loadout.customShip && SpriteFactory.custom(.ship) != nil) ? [] : (loadout.shipSkin.map(ShipSkin.textures) ?? [])
+        shipSkinFrames = skinFrames
+        shipNode = SKSpriteNode(texture: skinFrames.first ?? (loadout.customShip ? SpriteFactory.custom(.ship) : nil) ?? SpriteFactory.ship(loadout.ship))
         if loadout.customBoss, let t = SpriteFactory.custom(.boss), let f = SpriteFactory.custom(.boss, flash: true) {
             bossTexture = t; bossFlashTexture = f
             customBossTextures = (t, f)
@@ -186,6 +190,9 @@ final class GameScene: SKScene {
         addChild(bossNode)
         shipNode.zPosition = 3
         addChild(shipNode)
+        if shipSkinFrames.count > 1 {
+            shipNode.run(.repeatForever(.animate(with: shipSkinFrames, timePerFrame: 0.12, resize: false, restore: false)))
+        }
         if effectsOn, let r = fx.aura { buildAura(r) }
 
         let back = SKSpriteNode(color: Palette.barBack, size: CGSize(width: W, height: 5))

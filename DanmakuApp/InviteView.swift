@@ -3,6 +3,7 @@ import SwiftUI
 /// 「友達を招待」。自分のコードとリンク、人数とごほうび、友達のコードの入力
 struct InviteView: View {
     @ObservedObject private var service = InviteService.shared
+    @EnvironmentObject private var cosmetics: CosmeticsStore
     @EnvironmentObject private var auth: AuthService
     @Environment(\.dismiss) private var dismiss
     @State private var entered = ""
@@ -12,6 +13,8 @@ struct InviteView: View {
     @FocusState private var focused: Bool
 
     /// 人数のごほうびの段階(サーバーの INVITER_TITLES と同じ)
+    /// 招待で手に入る自機の数(サーバーの MAX_REWARDED と同じ)
+    private static let maxShips = 31
     private static let steps: [(need: Int, title: String)] = [(1, "invited"), (3, "inv3"), (5, "inv5"), (10, "inv10")]
 
     var body: some View {
@@ -22,6 +25,7 @@ struct InviteView: View {
                     header
                     sharePanel
                     progressPanel
+                    shipPanel
                     enterPanel
                 }
                 .padding(.horizontal, 16).padding(.bottom, 28).padding(.top, 8)
@@ -108,13 +112,57 @@ struct InviteView: View {
                     TitleChip(id: step.title, size: 12).opacity(got ? 1 : 0.5)
                 }
             }
+            Text(String(format: L("invite.ship.progress"), min(rewarded, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            if rewarded < Self.maxShips {
+                Text(String(format: L("invite.ship.next"), 1)).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.bullets[0]))
+            }
             if let next {
                 Text(String(format: L("invite.progress.next"), next.need - rewarded)).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.pink))
             } else {
                 Text("invite.progress.max").font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
             }
+            VStack(alignment: .leading, spacing: 2) {
+                TicketCount()
+                Text("ticket.where").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+            }
+            Text("invite.boss.note").font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
             Text("invite.progress.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
         }
+    }
+
+    /// 手に入れた自機から、使うものを選ぶ(標準の自機に戻すこともできる)
+    private var shipPanel: some View {
+        GamePanel(title: "ship.section", tint: Color(Palette.bullets[0])) {
+            Text("ship.note").font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.7))
+            let columns = [GridItem(.adaptive(minimum: 78), spacing: 8)]
+            LazyVGrid(columns: columns, spacing: 8) {
+                skinTile(id: nil)
+                ForEach(cosmetics.ownedSkins, id: \.self) { skinTile(id: $0) }
+            }
+            if cosmetics.ownedSkins.isEmpty {
+                Text("ship.empty").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+            }
+        }
+    }
+
+    private func skinTile(id: String?) -> some View {
+        let on = cosmetics.shipSkin == id
+        return Button { gameTap(); cosmetics.selectSkin(id) } label: {
+            VStack(spacing: 4) {
+                if let id {
+                    SkinThumb(id: id).frame(width: 56, height: 56)
+                    Text(ShipSkin.name(id)).font(.system(size: 10, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1).minimumScaleFactor(0.7)
+                } else {
+                    Image(uiImage: SpriteFactory.shipImage(.classic)).resizable().interpolation(.high).frame(width: 36, height: 43).frame(width: 56, height: 56)
+                    Text("ship.default").font(.system(size: 10, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                }
+            }
+            .frame(maxWidth: .infinity).padding(.vertical, 8)
+            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color(Palette.pink) : GameStyle.edge, lineWidth: on ? 1.5 : 1))
+        }
+        .buttonStyle(BounceButtonStyle())
+        .accessibilityIdentifier("ship.\(id ?? "default")")
     }
 
     @ViewBuilder private var enterPanel: some View {
@@ -160,5 +208,33 @@ struct InviteView: View {
         case .network: return "invite.error.network"
         case nil: return nil
         }
+    }
+}
+
+/// ドット絵の自機の見本(ゲームと同じコマ送り・同じ 0.12 秒。ぼかさずに拡大する)
+struct SkinThumb: View {
+    let id: String
+    var body: some View {
+        let frames = ShipSkin.frames(id)
+        TimelineView(.animation(minimumInterval: 0.12)) { ctx in
+            if frames.isEmpty { Color.clear } else {
+                Image(uiImage: frames[Int(ctx.date.timeIntervalSinceReferenceDate / 0.12) % frames.count])
+                    .interpolation(.none).resizable().scaledToFit()
+            }
+        }
+    }
+}
+
+/// ボスの無料チケットの枚数(ショップ・公開・招待の画面で、同じ見た目で出す)
+struct TicketCount: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    var body: some View {
+        let n = cosmetics.availableBossClaims
+        HStack(spacing: 6) {
+            Image(systemName: "ticket.fill").font(.system(size: 12, weight: .bold))
+            Text(String(format: L("ticket.count"), n)).font(.system(size: 12, weight: .heavy, design: .rounded))
+        }
+        .foregroundStyle(n > 0 ? Color(Palette.bullets[4]) : Color(Palette.text).opacity(0.5))
+        .accessibilityIdentifier("ticket.count")
     }
 }

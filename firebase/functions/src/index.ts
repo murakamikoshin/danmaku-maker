@@ -128,6 +128,8 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
 
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
 const BOSS_KEYS = ["fallen_angel"];
+/** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
+const PAID_ONLY_BOSSES: string[] = [];
 
 /**
  * 無料チケットで、ボスを1体もらう。チケットは初めて公開したときに1枚もらえる。
@@ -137,6 +139,7 @@ export const claimBossTicket = onCall(async (req) => {
   const uid = requireMember(req);
   const boss = (req.data as { boss?: unknown })?.boss;
   if (typeof boss !== "string" || !BOSS_KEYS.includes(boss)) throw new HttpsError("invalid-argument", "boss");
+  if (PAID_ONLY_BOSSES.includes(boss)) throw new HttpsError("failed-precondition", "paid-only");
   const userRef = db.doc(`users/${uid}`);
   return db.runTransaction(async (tx) => {
     const user = await tx.get(userRef);

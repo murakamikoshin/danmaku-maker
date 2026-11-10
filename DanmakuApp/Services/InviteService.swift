@@ -1,4 +1,5 @@
 import DeviceCheck
+import FirebaseAuth
 import FirebaseFunctions
 import Foundation
 
@@ -82,6 +83,8 @@ final class InviteService: ObservableObject {
         do {
             let r = try await Backend.functions.httpsCallable("getInviteInfo").call()
             guard let d = r.data as? [String: Any], let code = d["code"] as? String else { loadFailed = true; return }
+            CosmeticsStore.shared.setOwnedSkins(d["ships"] as? [String] ?? [])
+            if let uid = Auth.auth().currentUser?.uid { await CosmeticsStore.shared.refreshBossTickets(uid: uid) }   // ボスのチケットが増えているかもしれない
             info = Info(code: code, count: (d["count"] as? NSNumber)?.intValue ?? 0, rewarded: (d["rewarded"] as? NSNumber)?.intValue ?? 0, joinedBy: d["joinedBy"] as? Bool ?? false)
             loadFailed = false
         } catch { loadFailed = true }
