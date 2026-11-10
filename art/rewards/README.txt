@@ -4,3 +4,7 @@
 - 通常機: 3コマ（0→1→2→1 でループ。噴射炎アニメ）
 - seraph_special: 4コマ（0→1→2→3 でループ。翼の色・オーラ・きらめきが動く）
 - 拡大表示時は filteringMode = .nearest
+
+ticket_rainbow（レアチケット）
+- 64x28 / 透過PNG / 8コマ（0→7 でループ。虹色が流れ、0〜3コマ目で光の帯が横切る）
+- 拡大表示時は filteringMode = .nearest
