@@ -5,6 +5,7 @@
 4. face5.py    目(赤の縦長 2×3、上にまぶたの影)と口を置き直す。目のまわりのノイズも消す
 5. polish_<ID>.py があれば、キャラごとの手直し(持ち物の形など)
 6. degrey.py   もう一度灰色を消す
+7. partmap.py  <ID>_parts.json があれば、部位の地図(1ドットごとの部位)を作る
 使い方: python3 make_still.py <ボスのフォルダ>   (フォルダの source/ に <ID>_source.png と <ID>_face.json を置く)
 顔の座標(<ID>_face.json)は、高さ88で作ったときのマスで書く(高さ66に合わせて自動で 0.75 倍する)"""
 import os, sys, subprocess
@@ -22,5 +23,7 @@ def make(folder):
     pol = os.path.join(S, f'polish_{bid}.py')
     if os.path.exists(pol): run(pol, still, still, env=env)
     run(f'{HERE}/degrey.py', still, still)
+    parts = os.path.join(S, f'{bid}_parts.json')
+    if os.path.exists(parts): run(f'{HERE}/partmap.py', still, parts)   # 7. 部位の地図
     return still
 if __name__ == '__main__': print(make(sys.argv[1]))

@@ -374,3 +374,76 @@ def fill_gaps(im, base):
 def count_gaps(im, base):
     P = im.load(); Bp = base.load(); W_, H_ = im.size
     return sum(1 for y in range(H_) for x in range(W_) if Bp[x, y][3] and not P[x, y][3])
+
+# ---------- 部位の地図を使った待機(体・手・持ち物は動かさない) ----------
+def from_still_parts(still_path, foot=2, size=(112, 112)):
+    """ドット絵と部位の地図を、112×112 の同じ位置に置く。戻り値: (絵, 部位の番号の地図, 部位の一覧)"""
+    import json
+    img = from_still(still_path, size, foot)
+    base = still_path.rsplit('_still.png', 1)[0]
+    lab_small = Image.open(base + '_partmap.png'); st = Image.open(still_path)
+    lab = Image.new('L', size, 0); lab.paste(lab_small, ((size[0] - st.width) // 2, size[1] - st.height - foot))
+    folder = os.path.dirname(still_path); bid = os.path.basename(base)
+    spec = json.load(open(os.path.join(folder, bid + '_parts.json')))
+    parts = {p['name']: dict(p, id=i + 2) for i, p in enumerate(spec['parts'])}
+    return img, lab, parts
+
+def rig_frame(base, lab, parts, moves, sway_t=None):
+    """moves: {部位の名前: (dx, dy)}。種類が flow の部位は、sway_t=(位相, ゆれ幅) で下ほど大きく左右にゆれる。
+    空いた所: floating は透明、flow と ribbon は後ろ(動かない部位)の色でとなりから埋める"""
+    from collections import Counter
+    W_, H_ = base.size; B_ = base.load(); Lb = lab.load()
+    out = base.copy(); O = out.load()
+    kind_of = {p['id']: p['kind'] for p in parts.values()}
+    name_of = {p['id']: n for n, p in parts.items()}
+    flows = [p['id'] for p in parts.values() if p['kind'] == 'flow']
+    ys = {}
+    for y in range(H_):
+        for x in range(W_):
+            if Lb[x, y] in flows: ys.setdefault(Lb[x, y], []).append(y)
+    placed = []; vacated = set()
+    for y in range(H_):
+        for x in range(W_):
+            pid = Lb[x, y]
+            if pid < 2: continue
+            kind = kind_of[pid]; dx = dy = 0
+            if kind == 'flow' and sway_t:
+                top, bot = min(ys[pid]), max(ys[pid]); k = (y - top) / max(1, bot - top)
+                dx = round(sway_t[1] * k * math.sin(sway_t[0] + y * 0.16))
+            elif name_of[pid] in moves: dx, dy = moves[name_of[pid]]
+            if not (dx or dy): continue
+            vacated.add((x, y)); placed.append((x + dx, y + dy, B_[x, y], kind))
+    for (x, y) in vacated: O[x, y] = (0, 0, 0, 0)
+    order = {'flow': 0, 'ribbon': 1, 'held': 2, 'floating': 3}
+    for x, y, c, kind in sorted(placed, key=lambda t: order.get(t[3], 0)):
+        if 0 <= x < W_ and 0 <= y < H_: O[x, y] = c
+    # 空いた所を埋める(浮いている物の跡は埋めない)
+    todo = [(x, y) for (x, y) in vacated if not O[x, y][3] and kind_of[Lb[x, y]] != 'floating']
+    for _ in range(3):
+        add = []
+        for (x, y) in todo:
+            if O[x, y][3]: continue
+            # 後ろの色: 動かない部位(体・持ち物)を優先。なければ同じ部位(ひれの内側の穴など)の色
+            me = Lb[x, y]
+            near = [(x + a, y + b) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)) if 0 <= x + a < W_ and 0 <= y + b < H_ and O[x + a, y + b][3]]
+            still_nb = [O[q][:3] for q in near if Lb[q] in (1,) + tuple(i for i, k in kind_of.items() if k == 'held')]
+            same_nb = [O[q][:3] for q in near if Lb[q] == me]
+            nb = still_nb or same_nb
+            if nb: add.append((x, y, Counter(nb).most_common(1)[0][0]))
+        for x, y, c in add: O[x, y] = c + (255,)
+    return out
+
+def idle_parts_map(base, lab, parts, motions, sway_amp=2.5, breathe=1, bubbles=(), c1=(150, 214, 250), c2=(255, 255, 255)):
+    """待機8コマ。motions: {部位の名前: (ゆれ幅x, ゆれ幅y, 位相のずれ)}。flow の部位は自動でゆれる"""
+    out = []
+    for i in range(8):
+        ph = i / 8 * 2 * math.pi
+        mv = {n: (round(ax * math.sin(ph + d)), round(ay * math.sin(ph + d))) for n, (ax, ay, d) in motions.items()}
+        im = rig_frame(base, lab, parts, mv, (ph, sway_amp))
+        if breathe: im = offset(im, 0, -1 if math.sin(ph) > 0.35 else 0)
+        for k, (x, y, r) in enumerate(bubbles):
+            yy = y - ((i + k * 3) % 8) * 2
+            if r > 1: ring(im, x, yy, r, c1)
+            put(im, x - (r > 1), yy - (r > 1), c2)
+        out.append(im)
+    return out

@@ -6,16 +6,12 @@ import make_still
 # 元のイラスト(source/hire_source.png、Canvaで生成)を、決まった作り方(../_pipeline/README.md)でドット化する
 ID = 'hire'
 still = make_still.make(HERE)
-base = from_still(still, foot=23)
-# ゆれるのは左右に広がった金魚のひれだけ(体のはば x=44〜67 の外側)。脚・体は動かさない
-FINS = lambda x, y: x < 44 or x > 67
-# 手・腕は動かさない(手に持っているポイも動かさない)。金魚は手の上に浮いているので、金魚だけを動かす
-PARTS = [((36, 22, 43, 30), 1, 1, 0.0),          # 左のお団子のリボン
-         ((69, 22, 78, 30), 1, 1, 1.6),          # 右のお団子のリボン
-         ((69, 37, 80, 45), 0, 2, 0.8, False),   # 手の上の金魚(上下に泳ぐ)。浮いているので、動いたあとは埋めない
-         ((74, 46, 80, 47), 0, 2, 0.8, False)]   # 金魚のしっぽの下のふち(手より右だけ)
-idle = idle_rig(base, top=52, fins=FINS, parts=PARTS, amp=2.6,
-                bubbles=[(18, 34, 2), (96, 30, 2), (100, 74, 3), (12, 80, 1), (94, 96, 1), (24, 96, 2), (88, 54, 1)])
+# 部位の地図(source/hire_parts.json → source/hire_partmap.png)で、どのドットが何かを分かったうえで動かす
+base, lab, parts = from_still_parts(still, foot=23)
+MOTIONS = {'ribbon_l': (1, 1, 0.0), 'ribbon_r': (1, 1, 1.6), 'ribbon_l2': (0, 1, 0.8), 'ribbon_r2': (0, 1, 2.4),
+           'goldfish': (0, 2, 0.8)}        # ポイ(手に持った物)と体は動かさない。ひれ(flow)は自動でゆれる
+idle = idle_parts_map(base, lab, parts, MOTIONS, sway_amp=2.6,
+                      bubbles=[(18, 34, 2), (96, 30, 2), (100, 74, 3), (12, 80, 1), (94, 96, 1), (24, 96, 2), (88, 54, 1)])
 frames = dict(idle=idle)
 CORE = [(39, 33), (73, 42)]          # ポイ、金魚をのせた手
 frames.update(standard(idle, dict(core=CORE, c1=(255, 110, 70), c2=(255, 236, 200), lean=1, scale=0.8)))
