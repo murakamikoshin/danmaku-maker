@@ -2,7 +2,7 @@
 import { getFirestore as adminDb } from "firebase-admin/firestore";
 import { initializeApp as adminInit } from "firebase-admin/app";
 import { describe, expect, it } from "vitest";
-import { BOSS_TICKET_AT, FOUNDER_SHIP, INVITEE_DRINKS, INVITEE_SHIP, INVITER_SHIPS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
+import { BOSS_TICKET_AT, FOUNDER_SHIP, SHIP_REWARDS, INVITEE_DRINKS, INVITEE_SHIP, INVITER_SHIPS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
 
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
 const db = adminDb(adminInit({ projectId: "demo-danmaku" }, "invite-admin"));
@@ -58,7 +58,7 @@ describe("3回遊んだときの付与", () => {
     expect((await db.doc(`users/${inviter}`).get()).exists).toBe(false);   // 1人目では、ボスのチケットは出ない
     expect(await titlesOf(friend)).toEqual(["invited"]);
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
-    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1, ships: [INVITER_SHIPS[0]] });
+    expect(await getInviteInfo(db, inviter)).toMatchObject({ count: 1, rewarded: 1, ships: ["original_steel"] });
     expect((await getInviteInfo(db, friend)).ships).toEqual([INVITEE_SHIP]);
     expect(await countInvitePlays(db, friend, 5)).toEqual({ granted: false });
     expect((await db.doc(`users/${friend}`).get()).get("drinks")).toBe(INVITEE_DRINKS);
@@ -104,8 +104,9 @@ describe("3回遊んだときの付与", () => {
     expect((await db.doc(`users/${inviter}`).get()).get("bossTickets")).toBe(BOSS_TICKET_AT.length);
     // 31人目で、招待限定のボス(ぷにまる)が手に入る
     expect((await db.doc(`users/${inviter}`).get()).get("freeBosses")).toEqual(["puni"]);
-    // 人数ごとに自機が1機ずつ増え(重複なし)、上限を超えたぶんは増えない
-    expect(new Set(INVITER_SHIPS).size).toBe(MAX_REWARDED);
+    // 自機は節目(1・3・5・10・20・31人目)で、色ごとの6機種(1人目だけ1機)。重複なし、上限を超えたぶんは増えない
+    expect(Object.keys(SHIP_REWARDS).map(Number)).toEqual([1, 3, 5, 10, 20, 31]);
+    expect(new Set(INVITER_SHIPS).size).toBe(31);
     expect([...(await getInviteInfo(db, inviter)).ships].sort()).toEqual([...INVITER_SHIPS].sort());
   });
 });
@@ -121,5 +122,22 @@ describe("初期プレイヤー", () => {
     expect((await getInviteInfo(db, a)).ships).toEqual([FOUNDER_SHIP]);
     expect(await claimFounder(db, b, t + 1000, t)).toEqual({ granted: false });
     expect(await titlesOf(b)).toEqual([]);
+  });
+});
+
+describe("自機を渡す節目", () => {
+  it("1人目は1機、3人目で鋼の6機種、その間の人数では増えない", async () => {
+    const inviter = uid("s");
+    const { code } = await getInviteInfo(db, inviter);
+    const shipsAfter = async (n: number) => {
+      const f = uid(`sf${n}`);
+      await registerInvite(db, f, { code }, Date.now(), fresh);
+      await countInvitePlays(db, f, PLAYS_NEEDED);
+      return (await getInviteInfo(db, inviter)).ships.length;
+    };
+    expect(await shipsAfter(1)).toBe(1);
+    expect(await shipsAfter(2)).toBe(1);
+    expect(await shipsAfter(3)).toBe(7);
+    expect(await shipsAfter(4)).toBe(7);
   });
 });

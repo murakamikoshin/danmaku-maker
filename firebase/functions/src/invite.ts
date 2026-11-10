@@ -12,7 +12,7 @@ import { HttpsError } from "firebase-functions/v2/https";
  * 流れ: 招待された人が初めて開く → registerInvite(1回だけ) → 3回遊ぶ → 両方に付与(称号・回復ドリンク)
  */
 
-/** 報酬を出す人数の上限。1人につき自機が1機(INVITER_SHIPS の長さ)。それ以上は数えるだけ */
+/** 報酬を出す人数の上限。それ以上は数えるだけ */
 export const MAX_REWARDED = 31;
 export const PLAYS_NEEDED = 3;
 /** 招待された人のアカウントが、この日数より古いと、新しい人とみなさない(登録を受け付けない) */
@@ -21,11 +21,19 @@ export const MAX_ACCOUNT_AGE_MS = 3 * 24 * 3600_000;
 export const INVITEE_DRINKS = 2;
 /** 招待された人(と、招待した 1 人目)がもらう自機 */
 export const INVITEE_SHIP = "original_steel";
-/** 招待した人が、n 人目(1〜10)でもらう自機。アプリ側の絵(art/rewards)の ID。1 人目はおそろい */
-export const INVITER_SHIPS: readonly string[] = [
-  "original_steel",
-  ...["steel", "snow", "emerald", "crimson", "shadow"].flatMap((c) => ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"].map((m) => `${m}_${c}`)),
-];
+/** 招待した人が、この人数に届いたときにもらう自機。節目ごとに、色ごと(6機種)をまとめて渡す。アプリ側の絵(art/rewards)の ID */
+const MODELS = ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"] as const;
+const colorSet = (c: string): string[] => MODELS.map((m) => `${m}_${c}`);
+export const SHIP_REWARDS: Readonly<Record<number, readonly string[]>> = {
+  1: ["original_steel"],
+  3: colorSet("steel"),
+  5: colorSet("snow"),
+  10: colorSet("emerald"),
+  20: colorSet("crimson"),
+  31: colorSet("shadow"),
+};
+/** 招待で手に入る自機の全部(31機。重複なし) */
+export const INVITER_SHIPS: readonly string[] = Object.values(SHIP_REWARDS).flat();
 /** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で、チケットで手に入るボスと交換できる) */
 export const BOSS_TICKET_AT: readonly number[] = [10, 20];
 /** 31 人目(上限)は、招待限定のボス(課金・チケットでは手に入らない)の枠。ボスができたら、ここで付ける */
@@ -137,7 +145,8 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
     const newRewarded = inviterGets ? rewarded + 1 : rewarded;
     tx.set(inviterState, {
       count,
-      ...(inviterGets ? { rewarded: newRewarded, ships: FieldValue.arrayUnion(INVITER_SHIPS[newRewarded - 1]!) } : {}),
+      ...(inviterGets ? { rewarded: newRewarded } : {}),
+      ...(inviterGets && SHIP_REWARDS[newRewarded] ? { ships: FieldValue.arrayUnion(...SHIP_REWARDS[newRewarded]!) } : {}),
     }, { merge: true });
     if (inviterGets) {
       const t = INVITER_TITLES[newRewarded];

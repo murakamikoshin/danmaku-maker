@@ -25,6 +25,38 @@ const CAPTIONS = {
     '05_play_fireworks': ['Even fireworks-like', 'patterns are yours'],
     '07_shop': ['Add shots, patterns', 'and looks in the shop'],
   },
+  es: {
+    '01_home': ['Juega al instante', 'con niveles de muestra'], '02_play_hell': ['Un solo dedo', '¡para esquivarlo todo!'], '03_play_boss': ['También puedes', 'crear jefes'],
+    '04_editor': ['Crea niveles de', 'balas con facilidad'], '05_play_fireworks': ['Hasta patrones', 'como fuegos artificiales'], '07_shop': ['Añade disparos, patrones', 'y estilos en la tienda'],
+  },
+  de: {
+    '01_home': ['Sofort spielen', 'mit Beispielstufen'], '02_play_hell': ['Ein Finger,', 'alles ausweichen!'], '03_play_boss': ['Auch Bosskämpfe', 'kannst du bauen'],
+    '04_editor': ['Bullet-Hell-Stufen', 'ganz einfach bauen'], '05_play_fireworks': ['Sogar feuerwerks-', 'artige Muster'], '07_shop': ['Schüsse, Muster, Looks', 'im Shop hinzufügen'],
+  },
+  fr: {
+    '01_home': ['Jouez tout de suite', "avec des niveaux d'exemple"], '02_play_hell': ['Un seul doigt', 'pour tout esquiver !'], '03_play_boss': ['Créez aussi', 'vos combats de boss'],
+    '04_editor': ['Créez des niveaux', 'de bullet hell'], '05_play_fireworks': ['Même des motifs', "façon feu d'artifice"], '07_shop': ['Tirs, motifs et looks', 'à ajouter dans la boutique'],
+  },
+  'pt-BR': {
+    '01_home': ['Jogue na hora', 'com fases de exemplo'], '02_play_hell': ['Um dedo só', 'para desviar de tudo!'], '03_play_boss': ['Crie também', 'batalhas de chefe'],
+    '04_editor': ['Crie fases de', 'bullet hell com facilidade'], '05_play_fireworks': ['Até padrões', 'como fogos de artifício'], '07_shop': ['Adicione tiros, padrões', 'e visuais na loja'],
+  },
+  ru: {
+    '01_home': ['Играйте сразу', 'на примерах уровней'], '02_play_hell': ['Одним пальцем', 'уклоняйтесь от всего!'], '03_play_boss': ['Создавайте и', 'битвы с боссами'],
+    '04_editor': ['Легко создавайте', 'уровни с пулями'], '05_play_fireworks': ['Даже узоры', 'как салют'], '07_shop': ['Выстрелы, узоры и вид', '— в магазине'],
+  },
+  ko: {
+    '01_home': ['바로 플레이', '샘플 스테이지'], '02_play_hell': ['손가락 하나로', '탄막을 피해라!'], '03_play_boss': ['보스전도', '직접 만들 수 있어요'],
+    '04_editor': ['탄막 스테이지를', '간단하게 제작'], '05_play_fireworks': ['불꽃놀이 같은', '탄막도 만들 수 있어요'], '07_shop': ['공격·탄막·스타일을', '상점에서 추가'],
+  },
+  'zh-Hans': {
+    '01_home': ['立即开玩', '附带示例关卡'], '02_play_hell': ['一根手指', '躲开所有弹幕！'], '03_play_boss': ['连Boss战', '也能自己做'],
+    '04_editor': ['轻松制作', '弹幕关卡'], '05_play_fireworks': ['烟花般的', '弹幕也能做'], '07_shop': ['在商店中添加', '射击、弹幕与外观'],
+  },
+  'zh-Hant': {
+    '01_home': ['立即開玩', '附帶範例關卡'], '02_play_hell': ['一根手指', '躲開所有彈幕！'], '03_play_boss': ['連Boss戰', '也能自己做'],
+    '04_editor': ['輕鬆製作', '彈幕關卡'], '05_play_fireworks': ['煙火般的', '彈幕也能做'], '07_shop': ['在商店中新增', '射擊、彈幕與外觀'],
+  },
 };
 const SETS = {
   iphone: { dir: SRC, W: 1290, H: 2796, font: 112, top: 150, imgTop: 620, imgW: 0.82, keys: ['01_home', '02_play_hell', '03_play_boss', '05_play_fireworks', '04_editor'] },
@@ -36,15 +68,15 @@ const ctx = browser.contexts()[0];
 const page = await ctx.newPage();
 for (const [dev, s] of Object.entries(SETS)) {
   await page.setViewportSize({ width: s.W, height: s.H });
-  for (const lang of ['ja', 'en']) {
+  for (const lang of (process.env.LANGS || 'ja en').split(' ')) {
     fs.mkdirSync(path.join(OUT, dev), { recursive: true });
     for (const key of s.keys) {
       const [l1, l2] = CAPTIONS[lang][key];
       const img = 'data:image/png;base64,' + fs.readFileSync(path.join(s.dir, `${lang}_${key}.png`)).toString('base64');
-      const fs0 = lang === 'en' ? s.font * 0.86 : s.font;
+      const fs0 = ['ja', 'ko', 'zh-Hans', 'zh-Hant'].includes(lang) ? s.font : s.font * (['de', 'ru', 'fr'].includes(lang) ? 0.74 : 0.82);
       const html = `<html><body style="margin:0;width:${s.W}px;height:${s.H}px;overflow:hidden;
         background:radial-gradient(120% 70% at 50% 0%, #3b1f6e 0%, #150b33 55%, #0a0820 100%);
-        font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Helvetica Neue',sans-serif;position:relative">
+        font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Apple SD Gothic Neo','PingFang SC','PingFang TC','Helvetica Neue',sans-serif;position:relative">
         <div style="position:absolute;top:${s.top}px;left:0;right:0;text-align:center;color:#fff;font-weight:900;white-space:nowrap;
           font-size:${fs0}px;line-height:1.22;letter-spacing:0.01em;text-shadow:0 6px 30px rgba(255,107,157,.5)">
           ${l1}<br><span style="color:#ffd166">${l2}</span></div>

@@ -1,3 +1,4 @@
+#if canImport(AppsFlyerLib)
 import AppsFlyerLib
 import AppTrackingTransparency
 import UIKit
@@ -77,3 +78,17 @@ extension AttributionService {
         AppsFlyerLib.shared().continue(userActivity, restorationHandler: nil)
     }
 }
+#else
+import UIKit
+
+/// AppsFlyer を入れずにビルドしたとき(この Mac の Xcode 15.2 では、AppsFlyer がリンクできないので、
+/// ストア用スクリーンショットなどを撮るときだけ使う)。何もしない
+@MainActor
+final class AttributionService {
+    static let shared = AttributionService()
+    func configure(launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {}
+    func trackingDecided() {}
+    func handle(url: URL) {}
+    func handle(userActivity: NSUserActivity) {}
+}
+#endif

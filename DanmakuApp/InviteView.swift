@@ -15,6 +15,8 @@ struct InviteView: View {
     /// 人数のごほうびの段階(サーバーの INVITER_TITLES と同じ)
     /// 招待で手に入る自機の数(サーバーの MAX_REWARDED と同じ)
     private static let maxShips = 31
+    /// 自機をもらう節目(サーバーの SHIP_REWARDS と同じ。1人目は1機、あとは色ごとの6機種)
+    private static let shipSteps = [1, 3, 5, 10, 20, 31]
     private static let steps: [(need: Int, title: String)] = [(1, "invited"), (3, "inv3"), (5, "inv5"), (10, "inv10")]
 
     var body: some View {
@@ -112,9 +114,9 @@ struct InviteView: View {
                     TitleChip(id: step.title, size: 12).opacity(got ? 1 : 0.5)
                 }
             }
-            Text(String(format: L("invite.ship.progress"), min(rewarded, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
-            if rewarded < Self.maxShips {
-                Text(String(format: L("invite.ship.next"), 1)).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.bullets[0]))
+            Text(String(format: L("invite.ship.progress"), min(cosmetics.ownedSkins.count, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            if let nextShip = Self.shipSteps.first(where: { $0 > rewarded }) {
+                Text(String(format: L("invite.ship.next"), nextShip - rewarded)).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.bullets[0]))
             }
             if let next {
                 Text(String(format: L("invite.progress.next"), next.need - rewarded)).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.pink))
