@@ -158,7 +158,7 @@ struct PublishFlowView: View {
             if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
                 // 初めての公開のごほうび: ボスの無料チケット
                 Button { gameTap(); showShop = true } label: {
-                    Label("publish.done.ticket", systemImage: "ticket.fill").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    HStack(spacing: 8) { TicketArtView(height: 18); Text("publish.done.ticket") }.font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(GameStyle.accent, in: RoundedRectangle(cornerRadius: 14))
                 }

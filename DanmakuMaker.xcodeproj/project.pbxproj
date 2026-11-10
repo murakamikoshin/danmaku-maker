@@ -85,6 +85,7 @@
 		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
 		B6C3F839660EB325FD0BF973 /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = AB52EFC09A12811D950F1323 /* AppsFlyerLib */; };
 		B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DE776EFBE3A43B7196CBB2 /* CommentViews.swift */; };
+		B94B0B95C15A8EAA333E45CB /* TicketArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC652E2B13C3DCC55382D2EB /* TicketArt.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
 		BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */ = {isa = PBXBuildFile; fileRef = 966ADA412BC3686AAAF4587D /* official_stages.json */; };
 		C7DAF3081867CB2B6C186573 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC441513117F025F08A727B7 /* ShareText.swift */; };
@@ -207,6 +208,7 @@
 		B4328935E6EBE2DE7478FB50 /* se_tap.caf */ = {isa = PBXFileReference; path = se_tap.caf; sourceTree = "<group>"; };
 		B6B0DA55F4187CB364C9C6C2 /* rewards */ = {isa = PBXFileReference; lastKnownFileType = folder; name = rewards; path = art/rewards; sourceTree = SOURCE_ROOT; };
 		BA8479A886EF2B4CF44742DC /* SampleStages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStages.swift; sourceTree = "<group>"; };
+		BC652E2B13C3DCC55382D2EB /* TicketArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicketArt.swift; sourceTree = "<group>"; };
 		BE02AE0D5824BF9AE290EC62 /* BulletArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulletArt.swift; sourceTree = "<group>"; };
 		C0DF481572A42E3EBF41E91A /* EditorFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorFlowUITests.swift; sourceTree = "<group>"; };
 		C215A3C95C2A8021A12A703D /* official_stages_i18n.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages_i18n.json; sourceTree = "<group>"; };
@@ -456,6 +458,7 @@
 				F216B378A965487884CBBFE1 /* ShipSkin.swift */,
 				4F83BED46E19BBDDDCE011EE /* Skin.swift */,
 				77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */,
+				BC652E2B13C3DCC55382D2EB /* TicketArt.swift */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -710,6 +713,7 @@
 				97115F5C7296259FE7662EC2 /* SwipePalette.swift in Sources */,
 				00A1FC5C7565FEC4B320110E /* SwipeScene.swift in Sources */,
 				6FC2842093BC35D3483AEA1B /* SwipeService.swift in Sources */,
+				B94B0B95C15A8EAA333E45CB /* TicketArt.swift in Sources */,
 				B29625A7B420E5FBB2C70E33 /* Titles.swift in Sources */,
 				9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */,
 			);

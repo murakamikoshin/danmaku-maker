@@ -955,7 +955,7 @@ private struct BossShopCard: View {
                             if cosmetics.canClaimBossTicket && boss.ticketEligible {
                                 TicketCount()
                                 Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
-                                    Label("shop.boss.ticket", systemImage: "ticket.fill").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                    HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket") }.font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
                                         .padding(.vertical, 8).padding(.horizontal, 12)
                                         .background(Color(Palette.bullets[4]), in: Capsule())
                                 }

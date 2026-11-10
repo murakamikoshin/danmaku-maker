@@ -236,7 +236,7 @@ struct TicketCount: View {
     var body: some View {
         let n = cosmetics.availableBossClaims
         HStack(spacing: 6) {
-            Image(systemName: "ticket.fill").font(.system(size: 12, weight: .bold))
+            TicketArtView(height: 20).opacity(n > 0 ? 1 : 0.45)
             Text(String(format: L("ticket.count"), n)).font(.system(size: 12, weight: .heavy, design: .rounded))
         }
         .foregroundStyle(n > 0 ? Color(Palette.bullets[4]) : Color(Palette.text).opacity(0.5))
