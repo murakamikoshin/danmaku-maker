@@ -337,13 +337,18 @@ def move_parts(img, parts):
 
 def idle_rig(base, top, fins, parts, breathe=1, bubbles=(), amp=2.5, c1=(150, 214, 250), c2=(255, 255, 255)):
     """待機8コマ: ひれのゆれ + 部品(リボン・持ち物など)の動き + 全体の呼吸 + 粒。体と脚の形は変えない
-    parts: [((x0, y0, x1, y1), ax, ay, 位相のずれ), ...]  ax, ay はゆれ幅(ドット)"""
+    parts: [((x0, y0, x1, y1), ax, ay, 位相のずれ[, すき間を埋めるか]), ...]  ax, ay はゆれ幅(ドット)
+    すき間を埋めるか: 体にくっついた部品は True(省略時)、手の上に浮いている物などは False"""
     out = []
     for i in range(8):
         ph = i / 8 * 2 * math.pi
-        im = sway_region(base, ph, top, fins, amp)
-        im = move_parts(im, [(box, round(ax * math.sin(ph + d)), round(ay * math.sin(ph + d))) for box, ax, ay, d in parts])
-        im = fill_gaps(im, base)
+        im = fill_gaps(sway_region(base, ph, top, fins, amp), base)
+        # 体にくっついた部品(リボンなど)は、動いたあとのすき間を埋める。浮いている物(金魚など)は埋めない(影が残るので)
+        def mv(p): return (p[0], round(p[1] * math.sin(ph + p[3])), round(p[2] * math.sin(ph + p[3])))
+        stuck = [mv(p) for p in parts if (p[4] if len(p) > 4 else True)]
+        floating = [mv(p) for p in parts if not (p[4] if len(p) > 4 else True)]
+        before = im.copy(); im = fill_gaps(move_parts(im, stuck), before)
+        im = move_parts(im, floating)
         if breathe: im = offset(im, 0, -1 if math.sin(ph) > 0.35 else 0)
         for k, (x, y, r) in enumerate(bubbles):
             yy = y - ((i + k * 3) % 8) * 2
