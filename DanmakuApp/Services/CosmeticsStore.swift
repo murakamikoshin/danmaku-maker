@@ -160,10 +160,27 @@ final class CosmeticsStore: ObservableObject {
 
     /// サーバーの記録から、持っているドット絵の自機を更新する(増えるだけ。使っているものが消えたら標準に戻す)
     func setOwnedSkins(_ ids: [String]) {
-        let next = Array(Set(ownedSkins).union(ids.filter(ShipSkin.isValid))).sorted { (ShipSkin.all.firstIndex(of: $0) ?? 0) < (ShipSkin.all.firstIndex(of: $1) ?? 0) }
+        let next = Array(Set(ownedSkins).union(ids.filter(ShipSkin.isValid))).sorted { (ShipSkin.all.firstIndex(of: $0) ?? 999) < (ShipSkin.all.firstIndex(of: $1) ?? 999) }
         guard next != ownedSkins else { return }
         ownedSkins = next
         defaults.set(next, forKey: Self.skinsOwnedKey)
+    }
+
+    /// サーバーから配る自機(無料)をもらう
+    func claimRemoteShip(_ id: String) {
+        guard let item = RemoteCatalog.shared.item(id), item.free else { return }
+        setOwnedSkins([id])
+    }
+
+    /// 買った商品の ID から、サーバーから配る自機の所持を合わせる(購入・復元のとき)
+    func updateRemoteOwnership(productIDs: Set<String>) {
+        let ids = RemoteCatalog.shared.items.compactMap { i in i.productId.flatMap { productIDs.contains($0) ? i.id : nil } }
+        if !ids.isEmpty { setOwnedSkins(ids) }
+    }
+
+    /// 配る自機の一覧が更新されたとき: 外れた(消された)自機を使っていたら、標準に戻す
+    func catalogChanged() {
+        if let s = shipSkin, RemoteCatalog.isRemoteID(s), RemoteCatalog.shared.item(s) == nil { selectSkin(nil) }
     }
 
     /// 使うドット絵の自機を選ぶ(nil で標準の自機)。持っているものだけ

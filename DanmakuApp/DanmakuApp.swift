@@ -50,6 +50,7 @@ struct DanmakuApp: App {
                     await ResultsQueue.shared.flush()
                 }
                 .onChange(of: auth.uid) { uid in
+                    if uid != nil { Task { await RemoteCatalog.shared.refresh() } }
                     Task { await CosmeticsStore.shared.refreshPosts(uid: uid); await CosmeticsStore.shared.refreshBossTickets(uid: uid) }
                     // 友達招待: 受け取ったコードの登録と、「初期プレイヤー」の称号(サインインできてから)
                     if uid != nil { Task { await InviteService.shared.registerPending(); await InviteService.shared.claimFounderIfNeeded(); await InviteService.shared.refresh(); await RewardNoticeService.shared.check() } }

@@ -90,6 +90,8 @@ service cloud.firestore {
     match /inviteState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /invites/{uid} { allow read, write: if false; }
     match /inviteCodes/{code} { allow read, write: if false; }
+    // サーバーから配る商品(自機の絵など)。ログイン済みなら読める。書けるのは管理者だけ
+    match /catalog/{doc} { allow read: if signedIn(); allow write: if false; }
     match /titleState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /publicProfiles/{uid} { allow read: if signedIn(); allow write: if false; }
 

@@ -226,6 +226,13 @@ describe("スワイプ弾幕", () => {
     await assertFails(setDoc(doc(member("u1"), "swipeScores/u1"), { key: "999", score: "9" }));
     await assertFails(setDoc(doc(member("u1"), "swipePools/meta"), { current: "x" }));
   });
+  it("サーバーから配る商品(catalog): ログイン済みなら読める。誰も書けない", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), "catalog/shop"), { v: 1, items: [] }); });
+    await assertSucceeds(getDoc(doc(member("u1"), "catalog/shop")));
+    await assertSucceeds(getDoc(doc(anon("u1"), "catalog/shop")));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "catalog/shop")));
+    await assertFails(setDoc(doc(member("u1"), "catalog/shop"), { v: 1, items: [{ id: "x_hack" }] }));
+  });
   it("称号: 持っている称号は本人だけが読める。名前の横に出す分はログイン済みなら読める。どちらも書けない", async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), "titleState/u1"), { titles: ["score1"], sel: "score1" });

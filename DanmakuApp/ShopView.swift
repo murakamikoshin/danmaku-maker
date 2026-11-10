@@ -155,6 +155,7 @@ struct ShopView: View {
         case .bosses:
             ForEach(BossCharacter.allCases.filter(\.purchasable), id: \.self) { BossShopCard(boss: $0) }
         case .looks:
+            RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
             RewardShop()
             ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }

@@ -110,6 +110,23 @@ final class PurchaseService: NSObject, ObservableObject {
         // 永久買い切りパックは、広告削除も含む
         isPremium = info.entitlements[Self.entitlementID]?.isActive == true || ids.contains(Self.removeAdsID) || ids.contains(Product.lifetime.id)
         cosmetics.updateOwnership(productIDs: ids)
+        cosmetics.updateRemoteOwnership(productIDs: ids)
+    }
+}
+
+// MARK: サーバーから配る自機（RemoteCatalog）の購入
+
+extension PurchaseService {
+    /// 商品 ID の価格の表示（ストアにまだ無い・読めないときは nil）
+    func price(of productID: String) async -> String? {
+        guard isConfigured else { return nil }
+        return await Purchases.shared.products([productID]).first?.localizedPriceString
+    }
+
+    func buyRemoteShip(_ item: RemoteCatalog.Item) async {
+        guard isConfigured, let pid = item.productId, let sp = await Purchases.shared.products([pid]).first else { message = L("store.unavailable"); return }
+        await run { try await Purchases.shared.purchase(product: sp) }
+        if cosmetics.ownedSkins.contains(item.id) { cosmetics.selectSkin(item.id) }
     }
 }
 

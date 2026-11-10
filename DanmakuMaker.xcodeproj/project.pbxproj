@@ -55,6 +55,7 @@
 		4722AAD151035445B69CC154 /* fallen_angel_attack_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 053C262F506F47DE303F68E7 /* fallen_angel_attack_sheet.png */; };
 		4A3CBE21126E48CD42796FD4 /* reaper_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 04408E7E6ACCC985DCFCFDA8 /* reaper_awakened_idle_sheet.png */; };
 		4AD6B4860B7EE9DB0976A23D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */; };
+		4BB6ABB5BBBD212B3C26BB50 /* RemoteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FF9701B0FA66874D0BA6486 /* RemoteCatalog.swift */; };
 		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
 		51570E8A510B9CC5E4617FA7 /* BulletArtData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A173EDBD27E9C0A4C1703D /* BulletArtData.swift */; };
@@ -185,6 +186,7 @@
 		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
 		0959F15E82D57107F8E23729 /* fallen_angel_attack_awakened_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_attack_awakened_sheet.png; sourceTree = "<group>"; };
 		0EBE2F9ABB86729E670738A7 /* puni_recover_awakened_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = puni_recover_awakened_sheet.png; sourceTree = "<group>"; };
+		0FF9701B0FA66874D0BA6486 /* RemoteCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCatalog.swift; sourceTree = "<group>"; };
 		102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageDetailView.swift; sourceTree = "<group>"; };
 		1036D3BE36EA54E28492AE5D /* mech_recover_awakened_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mech_recover_awakened_sheet.png; sourceTree = "<group>"; };
 		1044D58F43D22133A0482128 /* ice_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ice_awakened_idle_sheet.png; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 				336990F3C2805B0B289AF111 /* PublishService.swift */,
 				8FABAD127D8EABEA2C29870E /* PurchaseService.swift */,
 				38F6631C63821142B1374716 /* RankingService.swift */,
+				0FF9701B0FA66874D0BA6486 /* RemoteCatalog.swift */,
 				B1AC8C0BD99BF81242574849 /* ResultsQueue.swift */,
 				2C5D7E67CC5290C128C81398 /* RewardNoticeService.swift */,
 				D1E163A6266ACFCDDDD873ED /* RewardStore.swift */,
@@ -862,6 +865,7 @@
 				BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */,
 				6D3557BE1F8AC3B3CF638EA3 /* RankingService.swift in Sources */,
 				FC01B1EDF7596ACE8FFD87D0 /* RankingViews.swift in Sources */,
+				4BB6ABB5BBBD212B3C26BB50 /* RemoteCatalog.swift in Sources */,
 				7A872D6145DFFA9320989551 /* ResultsQueue.swift in Sources */,
 				2A55DA44E85BB1B20F77D9DE /* RewardArt.swift in Sources */,
 				B247C121FFCCA1E14FC39AAC /* RewardNoticeService.swift in Sources */,
