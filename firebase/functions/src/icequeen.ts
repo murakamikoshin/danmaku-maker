@@ -11,7 +11,7 @@ export function emitIceQueen(m: Emitter, k: number, cx: number, cy: number, px: 
   const n = Math.max(1, m.c);
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
-  const c = { x: cx, y: cy - 12 };
+  const c = { x: cx, y: cy - 16 };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   const plain = (x: number, y: number, a: number, speed: number, kind: number): AngelBullet => plainBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, m.k, look(kind));

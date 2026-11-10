@@ -440,6 +440,39 @@ export const sharePage = onRequest(async (req, res) => {
     .set("Cache-Control", page.status === 200 ? "public, max-age=300, s-maxage=600" : "public, max-age=60").send(page.html);
 });
 
+/**
+ * ステージの一覧に出す、見せ場の静止画(作者が決めた開始秒の1枚)。投稿のあとに、作者のアプリが作って送ってくる。
+ * 本人のステージだけ。PNG で 80KB まで。保存して、stages/{id}.pv を true にする。配るのは /pv/{id}.png(pvImage)
+ */
+export const savePreviewImage = onCall({ memory: "256MiB" }, async (req) => {
+  const uid = requireAny(req);
+  const id = String((req.data as { stageId?: unknown })?.stageId ?? "");
+  const b64 = (req.data as { png?: unknown })?.png;
+  if (!isValidShortId(id) || typeof b64 !== "string" || b64.length > 110_000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) throw new HttpsError("invalid-argument", "preview");
+  const png = Buffer.from(b64, "base64");
+  // PNG の目印(8バイト)と大きさ(幅・高さ 64〜512)を確かめる
+  if (png.length < 100 || png.length > 80_000 || png.readUInt32BE(0) !== 0x89504e47 || png.readUInt32BE(4) !== 0x0d0a1a0a) throw new HttpsError("invalid-argument", "preview");
+  const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
+  if (w < 64 || w > 512 || h < 64 || h > 512) throw new HttpsError("invalid-argument", "preview");
+  const ref = db.doc(`stages/${id}`);
+  const snap = await ref.get();
+  if (!snap.exists || snap.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
+  await getStorage().bucket().file(`pv/${id}.png`).save(png, { contentType: "image/png", metadata: { cacheControl: "public, max-age=3600" } });
+  await ref.update({ pv: true });
+  return { ok: true };
+});
+
+/** /pv/{id}.png … 一覧に出す見せ場の静止画 */
+export const pvImage = onRequest(async (req, res) => {
+  const id = normalizeShortId((req.path.split("/").filter(Boolean).pop() ?? "").replace(/\.png$/i, ""));
+  if (!isValidShortId(id)) { res.status(404).send("not found"); return; }
+  const file = getStorage().bucket().file(`pv/${id}.png`);
+  if (!(await file.exists())[0]) { res.status(404).send("not found"); return; }
+  const snap = await db.doc(`stages/${id}`).get();
+  if (!snap.exists || !isOpen(snap.get("status"))) { res.status(404).send("not found"); return; }
+  res.status(200).set("Content-Type", "image/png").set("Cache-Control", "public, max-age=3600, s-maxage=3600").send((await file.download())[0]);
+});
+
 /** /og/{id}.png … OGP 画像。無ければ作り直して保存する */
 export const ogImage = onRequest({ memory: "512MiB" }, async (req, res) => {
   const id = normalizeShortId((req.path.split("/").filter(Boolean).pop() ?? "").replace(/\.png$/i, ""));
@@ -465,6 +498,7 @@ async function eraseStage(stageRef: DocumentReference): Promise<void> {
   const scoreReplays = await db.collection("scoreReplays").where("stageId", "==", id).get();
   for (const r of scoreReplays.docs) await r.ref.delete();
   await getStorage().bucket().file(`og/${id}.png`).delete({ ignoreNotFound: true });
+  await getStorage().bucket().file(`pv/${id}.png`).delete({ ignoreNotFound: true });
 }
 
 /** 投稿したステージを世界から消す。作者本人だけができる(ステージの記録も、まとめて消える) */
@@ -547,7 +581,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "needs",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "needs", "pv",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {

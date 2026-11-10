@@ -367,6 +367,31 @@ final class MiniStageEngine {
 
 /// 世界のステージ一覧の左に出す、動く小さなプレビュー(自機・当たり判定なし。弾は大きめに描く)。
 /// 画面の上側(360×360)を切り取って見せる
+/// 作者が決めた見せ場の1枚(静止画)。一覧に出す画像を作るときと、同じ見た目で使う。動くプレビューと同じ描き方(同じ計算・同じ絵)
+struct StageStillView: View {
+    let stage: Stage
+    var size: CGFloat = 168
+    var boost: CGFloat = 1.4
+
+    var body: some View {
+        let skin = Skin.of(stage.lookBullets)
+        let bg = Skin.of(stage.lookBackground).background
+        Canvas { ctx, sz in
+            let engine = MiniStageEngine(stage: stage)
+            StageMiniPreview.draw(&ctx, sim: engine.sim, skin: skin, theme: stage.lookBullets, scale: sz.width / DanmakuConfig.width, boost: boost, time: 0)
+        }
+        .frame(width: size, height: size)
+        .background(Color(bg))
+    }
+
+    /// 送る PNG(168×168 を 2 倍で描く。ふつう 10〜30KB)
+    @MainActor static func png(for stage: Stage) -> Data? {
+        let r = ImageRenderer(content: StageStillView(stage: stage))
+        r.scale = 2
+        return r.uiImage?.pngData()
+    }
+}
+
 struct StageMiniPreview: View {
     let stage: Stage
     /// 動かすか(画面に映っていて、スクロール中でない)
@@ -400,7 +425,7 @@ struct StageMiniPreview: View {
         .accessibilityHidden(true)
     }
 
-    private static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, theme: Theme, scale s: CGFloat, boost: CGFloat, time: Double) {
+    fileprivate static func draw(_ ctx: inout GraphicsContext, sim: Simulation, skin: Skin, theme: Theme, scale s: CGFloat, boost: CGFloat, time: Double) {
         if sim.isBoss {
             let p = sim.bossPosition
             let c = CGPoint(x: CGFloat(p.x) * s, y: CGFloat(p.y) * s)

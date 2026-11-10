@@ -3,8 +3,8 @@ import Foundation
 /// 死神の5つの技の弾の出し方。サーバー(reaper.ts)にも同じ計算がある。
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒に直したもの。(cx, cy) はボスの中心
 extension Emit {
-    /// 頭蓋(絵の中の (56,40))
-    static func reaperSkull(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 32) }
+    /// フードのドクロ(絵の中の (66,30))。新しい絵(2026-11-11)の位置
+    static func reaperSkull(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 20, cy - 52) }
 
     static func emitReaper(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                            rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool, salt: UInt32) {

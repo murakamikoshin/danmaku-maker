@@ -421,6 +421,32 @@ struct SampleRow: View {
     }
 }
 
+/// 一覧の見せ場の静止画(作者が決めた1枚)。読み込めなければ、動くプレビューにする
+struct PreviewStillTile: View {
+    let url: URL
+    let stage: Stage
+    let playing: Bool
+    let visible: Bool
+    var size: CGFloat = 56
+
+    var body: some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .success(let image):
+                image.interpolation(.medium).resizable().scaledToFill()
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
+                    .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
+            case .failure:
+                StageMiniPreview(stage: stage, playing: playing, visible: visible)
+            default:
+                Color(Skin.of(stage.lookBackground).background).frame(width: size, height: size).clipShape(RoundedRectangle(cornerRadius: size * 0.21))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 struct RemoteRow: View {
     let stage: RemoteStage
     @Environment(\.listScrolling) private var scrolling
@@ -433,6 +459,7 @@ struct RemoteRow: View {
         StageCardShell(mode: stage.stage.mode,
                        thumbnail: stage.stage.hidesPreview
                            ? AnyView(SpoilerTile())
+                           : stage.hasPreviewImage ? AnyView(PreviewStillTile(url: stage.previewImageURL, stage: stage.stage, playing: playing, visible: visible))
                            : AnyView(StageMiniPreview(stage: stage.stage, playing: playing, visible: visible))) {
             VStack(alignment: .leading, spacing: 4) {
                 MarqueeTitle(text: stage.name, font: .system(size: 16, weight: .heavy, design: .rounded), playing: playing, visible: visible)

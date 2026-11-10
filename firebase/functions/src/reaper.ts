@@ -13,7 +13,7 @@ export function emitReaper(m: Emitter, k: number, cx: number, cy: number, px: nu
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
   const W = 360, H = 540;
-  const skull = { x: cx, y: cy - 32 };
+  const skull = { x: cx + 20, y: cy - 52 };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {

@@ -15,7 +15,8 @@
     "cleanUrls": true,
     "rewrites": [
       { "source": "/s/**", "function": { "functionId": "sharePage", "region": "asia-northeast1" } },
-      { "source": "/og/**", "function": { "functionId": "ogImage", "region": "asia-northeast1" } }
+      { "source": "/og/**", "function": { "functionId": "ogImage", "region": "asia-northeast1" } },
+      { "source": "/pv/**", "function": { "functionId": "pvImage", "region": "asia-northeast1" } }
     ],
     "headers": [
       { "source": "/.well-known/apple-app-site-association", "headers": [{ "key": "Content-Type", "value": "application/json" }] },

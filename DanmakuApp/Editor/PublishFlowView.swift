@@ -194,6 +194,7 @@ struct PublishFlowView: View {
             }
             _ = await adShown
             phase = .done(id)
+            Task { await PublishService.uploadPreview(id: id, stage: stage) }   // 一覧に出す見せ場の静止画
             AudioManager.shared.se(.get)
             onPublished(id)
             if BossCharacter.editorEnabled { Task { await cosmetics.refreshBossTickets(uid: auth.uid) } }

@@ -16,6 +16,9 @@ struct RemoteStage: Identifiable, Hashable {
     let comments: Int
     /// 遊ぶのに必要な内容のレベル(サーバーが付ける。ないステージは 1)
     var needs = 1
+    /// 作者が決めた見せ場の静止画があるか(あれば一覧はそれを出す。なければ動くプレビュー)
+    var hasPreviewImage = false
+    var previewImageURL: URL { AppConfig.webBase.appendingPathComponent("pv/\(id).png") }
     /// このアプリより新しい内容が要るか(要るなら、遊ばせずにアップデートを案内する)
     var needsNewerApp: Bool { needs > DanmakuConfig.contentLevel }
 
@@ -161,6 +164,6 @@ struct StageRepository {
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
         return RemoteStage(id: id, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
-                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")))
+                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")), hasPreviewImage: (d["pv"] as? Bool) == true)
     }
 }

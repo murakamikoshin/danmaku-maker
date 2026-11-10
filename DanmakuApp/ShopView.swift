@@ -11,7 +11,15 @@ struct ShopView: View {
     @State private var celebrate = false
     @State private var tab: ShopTab
 
-    init(initialTab: ShopTab = .deals) { _tab = State(initialValue: initialTab) }
+    init(initialTab: ShopTab = .deals) {
+        #if DEBUG
+        // 画面確認・審査用スクリーンショット用: -shop-bosses でボスのタブを開く(製品ビルドには入らない)
+        let tab = ProcessInfo.processInfo.arguments.contains("-shop-bosses") ? ShopTab.bosses : initialTab
+        _tab = State(initialValue: tab)
+        #else
+        _tab = State(initialValue: initialTab)
+        #endif
+    }
 
     /// ショップの区切り。上のタブで切り替える
     enum ShopTab: Hashable {

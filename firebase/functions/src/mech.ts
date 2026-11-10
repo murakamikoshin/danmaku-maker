@@ -6,7 +6,7 @@ import { KIND, MISSILE_SCRIPT, lookCode, plainBullet, type BossBullet } from "./
 export const isMechPattern = (t: string): boolean => (MECH_PATTERNS as readonly string[]).includes(t);
 
 const BEAM_SCRIPT = 4;
-const cannon = (left: boolean, cx: number, cy: number) => ({ x: left ? cx - 74 : cx + 72, y: cy + 18 });
+const cannon = (left: boolean, cx: number, cy: number) => ({ x: left ? cx - 62 : cx + 60, y: cy - 20 });
 
 function missile(x: number, y: number, angle: number, speed: number, delay: number, decelEnd: number, steerEnd: number, turn: number, accel: number, maxSpeed: number, look: number, color: number): BossBullet {
   const b = plainBullet(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, color, look);
@@ -25,7 +25,7 @@ export function emitMech(m: Emitter, k: number, cx: number, cy: number, px: numb
   const n = Math.max(1, m.c);
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
-  const eye = { x: cx, y: cy + 8 };
+  const eye = { x: cx, y: cy - 14 };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {

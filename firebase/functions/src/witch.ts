@@ -6,13 +6,11 @@ import { SWAY_SCRIPT } from "./kitsune.js";
 /** 深海の魔女の5つの技の弾の出し方。アプリの WitchPatterns.swift と同じ計算。 */
 export const isWitchPattern = (t: string): boolean => (WITCH_PATTERNS as readonly string[]).includes(t);
 
-const TENT = [10, 34, 58, 80, 100, 122, 146, 170];
+const TIP_OFFSETS: ReadonlyArray<readonly [number, number]> = [[74, 22], [64, 40], [40, 66], [16, 74], [-12, 74], [-32, 62], [-66, 48], [-58, 16]];
+const TENT = TIP_OFFSETS.map(([x, y]) => (Math.atan2(y - 14, x) * 180) / Math.PI);
 const DARK_SECONDS = 230 / 60;
 const DRAG_DECAY = Math.sqrt(0.995);
-const tip = (j: number, cx: number, cy: number) => {
-  const a = (TENT[j]! * Math.PI) / 180;
-  return { x: cx + Math.cos(a) * 60, y: cy + 16 + Math.sin(a) * 60 };
-};
+const tip = (j: number, cx: number, cy: number) => ({ x: cx + TIP_OFFSETS[j]![0], y: cy + TIP_OFFSETS[j]![1] });
 
 export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: AngelBullet[],
   awakened: boolean, _salt: number, maxBullets: number) {
@@ -25,7 +23,7 @@ export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: num
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {
     case "witchAbyss": {
-      const lantern = { x: cx + 28, y: cy - 96 };
+      const lantern = { x: cx + 42, y: cy - 54 };
       if (k % 17 === 0 && room()) {
         const d = plainBullet(lantern.x, lantern.y, 0, 0, m.k, 0);
         d.script = DARK_SCRIPT; d.fuse = DARK_SECONDS;
@@ -90,7 +88,7 @@ export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: num
     case "witchMaelstrom": {
       const cyc = k % 50;
       if (!(cyc < 40 && cyc % 4 !== 3)) break;
-      const root = { x: cx, y: cy + 16 };
+      const root = { x: cx, y: cy + 14 };
       const arms = awakened ? n + 2 : n;
       const t = cyc * m.i * 60;
       for (let a = 0; a < arms; a++) {

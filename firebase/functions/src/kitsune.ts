@@ -13,10 +13,10 @@ const lookCode = (kind: number, awakened: boolean) => 16 + kind * 2 + (awakened 
 const FOX = 0, OFUDA = 1;
 const W = 360;
 
-const root = (cx: number, cy: number) => ({ x: cx, y: cy + 8 });
+const root = (cx: number, cy: number) => ({ x: cx, y: cy - 10 });
+const TIPS: ReadonlyArray<readonly [number, number]> = [[-64, 30], [-70, -4], [-60, -40], [-32, -64], [32, -70], [56, -48], [70, -28], [76, 2], [66, 34]];
 function tip(k: number, cx: number, cy: number) {
-  const a = ((-90 + (k - 4) * 24) * Math.PI) / 180;
-  return { x: cx + Math.cos(a) * 92, y: cy + 8 + Math.sin(a) * 92 };
+  return { x: cx + TIPS[k]![0], y: cy + TIPS[k]![1] };
 }
 
 export function emitKitsune(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: AngelBullet[],

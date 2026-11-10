@@ -46,7 +46,7 @@ final class ReaperPatternTests: XCTestCase {
         var s = out[0]
         var t = 0.0
         while t < 0.6 { _ = s.advance(dt: dt, width: 360, playerX: 180, playerY: 500); t += dt }
-        XCTAssertEqual(hypot(s.x - 180, s.y - 96), 10 + 72 * 0.6, accuracy: 3, "半径が広がりながら回る")
+        XCTAssertEqual(hypot(s.x - 200, s.y - 76), 10 + 72 * 0.6, accuracy: 3, "半径が広がりながら回る")
         for _ in 0..<20 { _ = s.advance(dt: dt, width: 360, playerX: 180, playerY: 500) }
         XCTAssertEqual(s.script, 0)
         XCTAssertEqual(hypot(s.vx, s.vy), 84, accuracy: 1e-6)

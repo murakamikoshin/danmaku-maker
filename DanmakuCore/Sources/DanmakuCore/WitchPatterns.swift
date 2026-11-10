@@ -3,13 +3,14 @@ import Foundation
 /// 深海の魔女の5つの技の弾の出し方。サーバー(witch.ts)にも同じ計算がある。
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒に直したもの。(cx, cy) はボスの中心
 extension Emit {
-    /// 触手の付け根(絵の中の (56,64))、提灯(70,8)、触手の先(付け根から角度 TENT[j]・半径30)
-    static func witchRoot(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy + 16) }
-    static func witchLantern(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 28, cy - 96) }
-    static let witchTentAngles: [Double] = [10, 34, 58, 80, 100, 122, 146, 170]
+    /// 触手の付け根(絵の中の (56,63))、提灯 (77,29)、触手の先(絵のドット位置を、画面の位置にした差)。新しい絵(2026-11-11)の位置
+    static func witchRoot(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy + 14) }
+    static func witchLantern(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 42, cy - 54) }
+    static let witchTipOffsets: [(Double, Double)] = [(74, 22), (64, 40), (40, 66), (16, 74), (-12, 74), (-32, 62), (-66, 48), (-58, 16)]
+    /// 付け根から触手の先を見た向き(度)
+    static let witchTentAngles: [Double] = witchTipOffsets.map { atan2($0.1 - 14, $0.0) * 180 / Double.pi }
     static func witchTip(_ j: Int, _ cx: Double, _ cy: Double) -> (x: Double, y: Double) {
-        let a = witchTentAngles[j] * Double.pi / 180
-        return (cx + cos(a) * 60, cy + 16 + sin(a) * 60)
+        (cx + witchTipOffsets[j].0, cy + witchTipOffsets[j].1)
     }
     /// 暗転の長さ(秒): 技の間 150 フレーム + 80 フレーム
     static let witchDarkSeconds = 230.0 / 60
