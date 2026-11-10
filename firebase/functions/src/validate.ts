@@ -10,7 +10,7 @@ export const INTERMISSION_BUDGET = 2;
 
 export const DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [0, 30, 60, 90, 120, 180], damage: [30, 60, 90, 120, 180], sequence: [] } as const;
 // 並びを変えない(乱数シードに順番を使っている)。新しいものは必ず後ろに足す
-export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake"] as const;
+export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake", "hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
@@ -137,7 +137,7 @@ function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean
 }
 
 /** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女、7 は雪の女王)。アプリの BossCharacter.maxLook と同じ */
-export const BOSS_LOOK_MAX = 11;
+export const BOSS_LOOK_MAX = 12;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
 export const BOSS_CHARACTER_MIN = 5;
 /** 堕天使だけが使える技。堕天使(bossLook 5)のボスの場面にだけ置ける */
@@ -153,9 +153,10 @@ export const WITCH_PATTERNS = ["witchAbyss", "witchBubbles", "witchTentacles", "
 /** 機神だけが使える技。機神(bossLook 10)のボスの場面にだけ置ける */
 export const MECH_PATTERNS = ["mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload"] as const;
 /** ぷにまるだけが使える技。ぷにまる(bossLook 11)のボスの場面にだけ置ける */
+export const HIRE_PATTERNS = ["hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu"] as const;
 export const PUNI_PATTERNS = ["puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake"] as const;
 /** ボスのキャラクター専用の技と、持ち主の見た目の番号(堕天使 5、九尾 6、雪の女王 7、死神 8、魔女 9、機神 10、ぷにまる 11)。アプリの Pattern.moves(of:) と同じ */
-const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLEN_ANGEL_PATTERNS, 5], [KITSUNE_PATTERNS, 6], [ICE_QUEEN_PATTERNS, 7], [REAPER_PATTERNS, 8], [WITCH_PATTERNS, 9], [MECH_PATTERNS, 10], [PUNI_PATTERNS, 11]];
+const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLEN_ANGEL_PATTERNS, 5], [KITSUNE_PATTERNS, 6], [ICE_QUEEN_PATTERNS, 7], [REAPER_PATTERNS, 8], [WITCH_PATTERNS, 9], [MECH_PATTERNS, 10], [PUNI_PATTERNS, 11], [HIRE_PATTERNS, 12]];
 /** ボスのキャラクター専用の技を、持ち主でない見た目のボスに置いていないか(true なら不正) */
 const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
   list.some((m) => MOVE_OWNERS.some(([moves, owner]) => moves.includes(m.t) && look !== owner));

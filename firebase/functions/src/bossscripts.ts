@@ -3,10 +3,11 @@
  * 数値は engine.js(60fps の px/フレーム)を、秒・px/秒に直したもの。
  */
 export const HOLD_SCRIPT = 16, BRANCH_SCRIPT = 17, FREEZE_SCRIPT = 18, WIND_SCRIPT = 19, ORBIT_SCRIPT = 20, DRAG_SCRIPT = 21,
-  LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25, WARP = 26;
+  LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25, WARP = 26,
+  WOBBLE_SCRIPT = 27, YOYO_SCRIPT = 28, KAIYU_SCRIPT = 29;
 
 /** 専用の弾の番号(アプリの BulletLook.code と同じ: 16 + 種類 × 2 + 覚醒) */
-export const KIND = { fox: 0, ofuda: 1, plankton: 2, bubble: 3, ink: 4, missile: 5, hex: 6, shell: 7, flake: 8, icicle: 9, shard: 10, soul: 11, blade: 12, chain: 13, jelly: 14, eye: 15, tooth: 16, goo: 17 } as const;
+export const KIND = { fox: 0, ofuda: 1, plankton: 2, bubble: 3, ink: 4, missile: 5, hex: 6, shell: 7, flake: 8, icicle: 9, shard: 10, soul: 11, blade: 12, chain: 13, jelly: 14, eye: 15, tooth: 16, goo: 17, kingyo: 18, yoyo: 19, spark: 20, awa: 21 } as const;
 export const lookCode = (kind: number, awakened: boolean): number => 16 + kind * 2 + (awakened ? 1 : 0);
 export const lookKind = (look: number | undefined): number | undefined => (look === undefined || look < 16 ? undefined : Math.floor((look - 16) / 2));
 export const lookAwakened = (look: number | undefined): boolean => look !== undefined && look >= 16 && (look - 16) % 2 === 1;
@@ -21,7 +22,7 @@ export interface BossBullet {
 
 /** 見えず、当たらない(待機中の弾・暗転の印) */
 export const isDormant = (b: { script: number; age: number; fuse?: number }): boolean =>
-  ((b.script === HOLD_SCRIPT || b.script === MISSILE_SCRIPT) && b.age < (b.fuse ?? 0)) || b.script === DARK_SCRIPT;
+  ((b.script === HOLD_SCRIPT || b.script === MISSILE_SCRIPT || b.script === YOYO_SCRIPT) && b.age < (b.fuse ?? 0)) || b.script === DARK_SCRIPT;
 
 export const plainBullet = (x: number, y: number, vx: number, vy: number, color: number, look: number): BossBullet =>
   ({ x, y, vx, vy, color, turn: 0, homeLeft: 0, accel: 0, maxSpeed: 0, bounces: 0, script: 0, age: 0, look });
@@ -148,6 +149,47 @@ export function stepBossScript(b: BossBullet, dt: number, px: number, py: number
     case DARK_SCRIPT:
       b.age += dt;
       return b.age >= (b.fuse ?? 0) ? "gone" : "alive";
+    case WOBBLE_SCRIPT: {
+      b.age += dt;
+      const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      let na = Math.atan2(b.vy, b.vx) + (b.u0 ?? 0) * Math.sin((b.u1 ?? 0) * b.age + (b.u2 ?? 0)) * dt;
+      if (b.age < (b.u3 ?? 0)) {
+        const want = Math.atan2(py - b.y, px - b.x);
+        let diff = want - na;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        const maxTurn = b.turn * dt;
+        na += Math.min(maxTurn, Math.max(-maxTurn, diff));
+      }
+      b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      return "alive";
+    }
+    case YOYO_SCRIPT: {
+      b.age += dt;
+      if (b.age < (b.fuse ?? 0)) return "alive";
+      const t = b.age - (b.fuse ?? 0);
+      if (t >= 100 / 60) return "gone";
+      b.vy = t <= 0.75 ? (2.6 * (1 - t / 0.75) + 0.2) * 60 : t <= 1.0 ? 0 : -90;
+      b.y += b.vy * dt;
+      return "alive";
+    }
+    case KAIYU_SCRIPT: {
+      b.age += dt;
+      const fuse = b.fuse ?? 0;
+      if (b.age < fuse) {
+        const r = b.maxSpeed - (b.age * (b.maxSpeed - b.accel)) / fuse;
+        const a = (b.u2 ?? 0) + b.turn * b.age;
+        b.x = (b.u0 ?? 0) + Math.cos(a) * r; b.y = (b.u1 ?? 0) + Math.sin(a) * r;
+        const dir = b.turn >= 0 ? 1 : -1;
+        b.vx = -Math.sin(a) * dir; b.vy = Math.cos(a) * dir;
+        return "alive";
+      }
+      const a = Math.atan2(b.y - (b.u1 ?? 0), b.x - (b.u0 ?? 0));
+      b.vx = Math.cos(a) * 120; b.vy = Math.sin(a) * 120;
+      b.script = 0; b.turn = 0; b.maxSpeed = 0; b.accel = 0;
+      return null;
+    }
     case WARP: {
       b.age += dt;
       if (b.homeLeft === 0 && b.age >= (b.fuse ?? 0) - 0.5) {

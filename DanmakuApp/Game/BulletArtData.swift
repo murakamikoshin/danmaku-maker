@@ -20,6 +20,10 @@ enum BulletArtData {
         ["..ooooo..", ".oWWWWWo.", "oWWRRRWWo", "oWRRkRRWo", "oWRkkkRWo", "oWRRkRRWo", "oWWRRRWWo", ".oWWWWWo.", "..ooooo.."],
         ["ooooo", "oWWWo", "oWWWo", ".oWo.", ".oWo.", "..o..", "..o.."],
         [".kkk.", "kPGPk", "kGWGk", "kPGPk", ".kkk."],
+        ["..oo..", ".oRRo.", "oRkRRo", "oRRRRo", ".oRLo.", "..oo..", ".FFFF.", "F.FF.F"],
+        ["..ooo..", ".oBBBo.", "oBWBBBo", "oSSSSSo", "oBBBBBo", ".oBBBo.", "..ooo..", "...o..."],
+        ["..W..", ".WYW.", "WYYYW", ".WYW.", "..W.."],
+        [".ooo.", "oW..o", "o...o", "o...o", ".ooo."],
     ]
     /// [種類][0=通常 1=覚醒] → 文字 → 色(#rrggbb)
     static let palettes: [[[Character: String]]] = [
@@ -41,5 +45,9 @@ enum BulletArtData {
         [["o": "#140a1e", "W": "#fff6dc", "R": "#e01e3c", "k": "#14060a"], ["o": "#140a1e", "W": "#fff6dc", "R": "#e01e3c", "k": "#14060a"]],
         [["o": "#3c2a32", "W": "#fff8ec"], ["o": "#3c2a32", "W": "#fff8ec"]],
         [["k": "#0e0618", "P": "#3c1e5a", "G": "#c8ff3c", "W": "#f8ffd0"], ["k": "#0e0618", "P": "#3c1e5a", "G": "#c8ff3c", "W": "#f8ffd0"]],
+        [["o": "#7a1414", "R": "#f04a28", "L": "#ffa078", "k": "#200808", "F": "#ffb4a0"], ["o": "#0e0618", "R": "#3a2050", "L": "#6a4a88", "k": "#ffd040", "F": "#9070c0"]],
+        [["o": "#20507a", "B": "#78c8ff", "W": "#ffffff", "S": "#ff5078"], ["o": "#40104a", "B": "#c878ff", "W": "#ffffff", "S": "#ffd040"]],
+        [["W": "#fff6c8", "Y": "#ffb420"], ["W": "#ffe0f6", "Y": "#e050ff"]],
+        [["o": "#8cd8f8", "W": "#ffffff"], ["o": "#c8a0ff", "W": "#ffffff"]],
     ]
 }

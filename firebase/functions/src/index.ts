@@ -133,7 +133,7 @@ async function rewardInviter(r: { granted: boolean; inviter?: string } | undefin
 }
 
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
-const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni"];
+const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni", "hire"];
 /** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
 const PAID_ONLY_BOSSES: string[] = ["puni"];
 

@@ -2531,5 +2531,107 @@
    "formatVersion": 1,
    "name": "o36"
   }
+ },
+ {
+  "id": "o37",
+  "difficulty": 5,
+  "name": {
+   "ja": "金魚姫の夏祭り",
+   "en": "Goldfish Princess's Summer Festival"
+  },
+  "aim": {
+   "ja": "金魚姫の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Goldfish Princess's five moves. She awakens and grows stronger as her HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 12,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "hireSukui",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.65,
+     "c": 8,
+     "v": 2,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "hireYoyo",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 1.2,
+     "c": 6,
+     "v": 2.2,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "hireRipple",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.5,
+     "c": 14,
+     "v": 1.5,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "hireHanabi",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.6,
+     "c": 1,
+     "v": 4,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "hireKaiyu",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 3.2,
+     "c": 20,
+     "v": 1,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "hireSukui",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.65,
+     "c": 8,
+     "v": 2,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o37"
+  }
  }
 ]

@@ -104,6 +104,7 @@ extension BossCharacter {
         case .witch: return "witch_idle_sheet"
         case .mech: return "mech_idle_sheet"
         case .puni: return "puni_idle_sheet"
+        case .hire: return "hire_idle_sheet"
         }
     }
     /// 覚醒した姿の画像ファイル名。nil は、姿を変えない
@@ -116,6 +117,7 @@ extension BossCharacter {
         case .witch: return "witch_awakened_idle_sheet"
         case .mech: return "mech_awakened_idle_sheet"
         case .puni: return "puni_awakened_idle_sheet"
+        case .hire: return "hire_awakened_idle_sheet"
         }
     }
 }

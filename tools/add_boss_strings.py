@@ -62,6 +62,15 @@ BOSSES = {
             ('puniPurupuru', ['Purupuru', 'Purupuru', 'Purupuru', 'Purupuru', 'ぷるぷる', '푸루푸루', 'Purupuru', 'Пурупуру', '噗噜噗噜', '噗嚕噗嚕']),
             ('puniOsusowake', ['Osusowake', 'Osusowake', 'Osusowake', 'Osusowake', 'おすそわけ', '나눠주기', 'Osusowake', 'Осусовакэ', '分享', '分享']),
         ]),
+    12: dict(
+        name=['Goldfisch-Prinzessin', 'Goldfish Princess', 'Princesa pez dorado', 'Princesse poisson rouge', '金魚姫', '금붕어 공주', 'Princesa peixe-dourado', 'Принцесса золотых рыбок', '金鱼姬', '金魚姬'],
+        moves=[
+            ('hireSukui', ['Fischfang', 'Scooping Goldfish', 'Pesca de peces', 'Pêche aux poissons', '金魚すくい', '금붕어 건지기', 'Pesca de peixes', 'Ловля рыбок', '捞金鱼', '撈金魚']),
+            ('hireYoyo', ['Wasserballon-Angeln', 'Yo-yo Fishing', 'Pesca de globos de agua', "Pêche aux ballons d'eau", 'ヨーヨー釣り', '요요 낚시', 'Pesca de balões', 'Ловля водяных шаров', '钓水球', '釣水球']),
+            ('hireHanabi', ['Feuerwerk', 'Fireworks', 'Fuegos artificiales', "Feux d'artifice", '打ち上げ花火', '불꽃놀이', 'Fogos de artifício', 'Фейерверк', '烟花', '煙火']),
+            ('hireRipple', ['Wellenringe', 'Ripples', 'Ondas', 'Ondulations', '波紋', '물결', 'Ondulações', 'Круги на воде', '波纹', '波紋']),
+            ('hireKaiyu', ['Kreisende Wanderung', 'Swirling Voyage', 'Travesía en espiral', 'Voyage tourbillonnant', 'ぐるぐる回遊', '빙글빙글 회유', 'Cruzeiro giratório', 'Кружение стаи', '回游旋涡', '回遊旋渦']),
+        ]),
 }
 
 def mk(vals):

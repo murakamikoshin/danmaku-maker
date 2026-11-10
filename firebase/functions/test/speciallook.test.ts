@@ -18,7 +18,7 @@ describe("ボス専用の弾の当たる半径", () => {
     expect(grazeDistanceSquared({ ...base, look: code(0) })).toBeCloseTo(18 ** 2, 9);
   });
   it("範囲外の番号は標準扱い", () => {
-    expect(lookHitDistance(16 + 36)).toBeUndefined();
+    expect(lookHitDistance(16 + 44)).toBeUndefined();
     expect(hitDistanceSquared({ ...base, radius: 8, look: code(3) })).toBeCloseTo(13.5 ** 2, 9);
   });
 });

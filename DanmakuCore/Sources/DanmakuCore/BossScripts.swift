@@ -27,11 +27,17 @@ extension Bullet {
     public static let darkScript = 25
     /// 瞬間移動する弾(位相のずれ)。fuse 秒で、自機から u1 px・向き u0 の場所へ移る。移る 0.5 秒前に行き先が決まり(u2, u3)、予告の印が出る。homeLeft は段階(0/1/2)
     public static let warpScript = 26
+    /// 泳ぐ弾(金魚)。向きが u0 (ラジアン/秒) × sin(u1 × 経過秒 + u2) でゆらゆら曲がり、u3 秒の間は turn (ラジアン/秒) で自機のほうへ少し向く
+    public static let wobbleScript = 27
+    /// 水ヨーヨー。fuse 秒は待機(見えず、当たらない)。そのあと、45フレームかけて減速しながら落ち、止まり、上へはずむ(縦だけ動く)
+    public static let yoyoScript = 28
+    /// 金魚の輪(回遊)。(u0, u1) を中心に、角度 u2 から turn (ラジアン/秒) で回りながら、半径 maxSpeed から accel まで fuse 秒で縮み、そのあと外へ散る
+    public static let kaiyuScript = 29
 
     /// 見えず、当たらない(待機中の弾・暗転の印)
-    public var isDormant: Bool { ((script == Bullet.holdScript || script == Bullet.missileScript) && age < fuse) || script == Bullet.darkScript }
+    public var isDormant: Bool { ((script == Bullet.holdScript || script == Bullet.missileScript || script == Bullet.yoyoScript) && age < fuse) || script == Bullet.darkScript }
     /// 待機中でも、うっすら見せる弾か(鎖の予告線)
-    public var dormantGlow: Bool { script == Bullet.holdScript && age < fuse && BulletLook.kind(of: look) == .chain }
+    public var dormantGlow: Bool { script == Bullet.holdScript && age < fuse && (BulletLook.kind(of: look) == .chain || BulletLook.kind(of: look) == .awa) }
 
     /// 1ステップごとの速さの倍率(1/60 秒あたりの倍率を、1/120 秒の刻みに直したもの)
     static let missileDecay = (0.95 as Double).squareRoot()
@@ -132,6 +138,43 @@ extension Bullet {
         case Bullet.darkScript:
             age += dt
             return age >= fuse ? .gone : .alive
+        case Bullet.wobbleScript:
+            age += dt
+            let sp = (vx * vx + vy * vy).squareRoot()
+            var na = atan2(vy, vx) + u0 * sin(u1 * age + u2) * dt
+            if age < u3 {
+                let want = atan2(playerY - y, playerX - x)
+                var diff = want - na
+                while diff > Double.pi { diff -= 2 * Double.pi }
+                while diff < -Double.pi { diff += 2 * Double.pi }
+                let maxTurn = turn * dt
+                na += min(maxTurn, max(-maxTurn, diff))
+            }
+            vx = cos(na) * sp; vy = sin(na) * sp
+            x += vx * dt; y += vy * dt
+            return .alive
+        case Bullet.yoyoScript:
+            age += dt
+            if age < fuse { return .alive }
+            let t = age - fuse
+            if t >= 100.0 / 60 { return .gone }
+            vy = t <= 0.75 ? (2.6 * (1 - t / 0.75) + 0.2) * 60 : (t <= 1.0 ? 0 : -90)
+            y += vy * dt
+            return .alive
+        case Bullet.kaiyuScript:
+            age += dt
+            if age < fuse {
+                let r = maxSpeed - age * (maxSpeed - accel) / fuse
+                let a = u2 + turn * age
+                x = u0 + cos(a) * r; y = u1 + sin(a) * r
+                let dir = turn >= 0 ? 1.0 : -1.0
+                vx = -sin(a) * dir; vy = cos(a) * dir   // 向きだけ(絵を回すため)。動きには使わない
+                return .alive
+            }
+            let a = atan2(y - u1, x - u0)
+            vx = cos(a) * 120; vy = sin(a) * 120
+            script = 0; turn = 0; maxSpeed = 0; accel = 0
+            return nil
         case Bullet.warpScript:
             age += dt
             if homeLeft == 0 && age >= fuse - 0.5 {

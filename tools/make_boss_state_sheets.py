@@ -6,7 +6,7 @@ import pathlib
 from PIL import Image
 root = pathlib.Path(__file__).resolve().parent.parent
 out = root / "DanmakuApp/Resources/Bosses"
-for i in ["fallen_angel", "kitsune", "ice", "reaper", "witch", "mech", "puni"]:
+for i in ["fallen_angel", "kitsune", "ice", "reaper", "witch", "mech", "puni", "hire"]:
     for suf in ["", "_awakened"]:
         for st, n in [("windup", 4), ("attack", 4), ("recover", 2)]:
             fr = [Image.open(root / f"art/bosses/{i}/{i}_{st}{suf}_{k}.png").convert("RGBA") for k in range(n)]
@@ -16,7 +16,7 @@ for i in ["fallen_angel", "kitsune", "ice", "reaper", "witch", "mech", "puni"]:
                 sheet.paste(f, (k * w, 0))
             sheet.save(out / f"{i}_{st}{suf}_sheet.png")
 # 待機(8コマ)。通常は <ID>_idle_sheet.png、覚醒は <ID>_awakened_idle_sheet.png(ぷにまるの通常も、ほかの状態と同じ幅の絵を使う)
-for i in ["fallen_angel", "kitsune", "ice", "reaper", "witch", "mech", "puni"]:
+for i in ["fallen_angel", "kitsune", "ice", "reaper", "witch", "mech", "puni", "hire"]:
     for src, dst in [("idle", f"{i}_idle_sheet.png"), ("idle_awakened", f"{i}_awakened_idle_sheet.png")]:
         fr = [Image.open(root / f"art/bosses/{i}/{i}_{src}_{k}.png").convert("RGBA") for k in range(8)]
         w, h = fr[0].size

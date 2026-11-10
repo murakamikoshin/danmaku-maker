@@ -8,9 +8,11 @@ public enum BulletLook {
     /// 並びは変えない(look の番号になる)。足すときは必ず後ろへ
     public enum Kind: Int, CaseIterable, Sendable {
         case fox, ofuda, plankton, bubble, ink, missile, hex, shell, flake, icicle, shard, soul, blade, chain, jelly, eye, tooth, goo
+        // 金魚姫の弾(2026-11-11 に追加)
+        case kingyo, yoyo, spark, awa
     }
     /// 各種類の、弾そのものの半径(px)
-    static let bodyRadius: [Double] = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5]
+    static let bodyRadius: [Double] = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5]
     /// 自機の当たり判定の半径(px)
     static let playerRadius = 2.5
 
@@ -29,7 +31,7 @@ public enum BulletLook {
     /// 進む向きへ回して描く弾か(ほかは回さない)
     public static func isOriented(_ k: Kind) -> Bool {
         switch k {
-        case .fox, .ofuda, .missile, .shell, .icicle, .shard, .soul, .chain, .tooth: return true
+        case .fox, .ofuda, .missile, .shell, .icicle, .shard, .soul, .chain, .tooth, .kingyo: return true
         default: return false
         }
     }

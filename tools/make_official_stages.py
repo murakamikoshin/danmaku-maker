@@ -120,7 +120,12 @@ add(5, "機神の照準", "Mech Deity's Sights", "機神の5つの技。HPが減
     angel_boss(90, 500, 3, [E("mechGatling", i=.05, c=2, v=3.4, k=0, ph=1), E("mechMissiles", i=2, c=12, v=3, k=1, ph=1), E("mechOverload", i=.3, c=24, v=1.2, k=2, ph=2),
                            E("mechGrid", i=.4, c=6, v=2.4, k=3, ph=2), E("mechLockOn", i=2, c=2, v=2.6, k=4, ph=3), E("mechMissiles", i=2, c=12, v=3, k=1, ph=3)], look=10))
 
-assert len(S) == 36, len(S)
+# ---- ボス「金魚姫」の見本 ----
+add(5, "金魚姫の夏祭り", "Goldfish Princess's Summer Festival", "金魚姫の5つの技。HPが減ると覚醒して、技が強くなる。", "The Goldfish Princess's five moves. She awakens and grows stronger as her HP drops.",
+    angel_boss(90, 500, 3, [E("hireSukui", i=.65, c=8, v=2, k=0, ph=1), E("hireYoyo", i=1.2, c=6, v=2.2, k=1, ph=1), E("hireRipple", i=.5, c=14, v=1.5, k=2, ph=2),
+                           E("hireHanabi", i=.6, c=1, v=4, k=3, ph=2), E("hireKaiyu", i=3.2, c=20, v=1, k=4, ph=3), E("hireSukui", i=.65, c=8, v=2, k=0, ph=3)], look=12))
+
+assert len(S) == 37, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

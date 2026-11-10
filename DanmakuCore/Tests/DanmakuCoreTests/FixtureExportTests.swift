@@ -260,6 +260,20 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("puni-gaze-shower-aw", puni([puniAll[0], puniAll[1]], awaken: 2)))
         stages.append(("puni-teeth-lasers-aw", puni([puniAll[2], puniAll[3]], awaken: 2)))
         stages.append(("puni-phase-aw-mirror", puni([puniAll[4], puniAll[0]], awaken: 3, mir: 1)))
+        // 金魚姫の専用の技(通常と覚醒、鏡写し、ダメージ勝負)。ここより前の並びは変えない
+        func hire(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss, mir: Int? = nil) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0, mir: mir)
+            }
+            return Stage(name: "h", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 12, awaken: awaken).sanitized()
+        }
+        let hireAll: [(DanmakuCore.Pattern, Double, Int, Double, Int)] = [(.hireSukui, 0.65, 8, 2.0, 0), (.hireYoyo, 1.2, 6, 2.2, 0), (.hireHanabi, 0.6, 1, 4.0, 0), (.hireRipple, 0.5, 14, 1.5, 0), (.hireKaiyu, 3.2, 20, 1.0, 0)]
+        stages.append(("hire-normal", hire(hireAll, awaken: nil)))
+        stages.append(("hire-awakened", hire(hireAll, awaken: 2)))
+        stages.append(("hire-sukui-yoyo-aw", hire([hireAll[0], hireAll[1]], awaken: 2)))
+        stages.append(("hire-hanabi-ripple-aw-mirror", hire([hireAll[2], hireAll[3]], awaken: 3, mir: 1)))
+        stages.append(("hire-kaiyu-sukui-mirror", hire([hireAll[4], hireAll[0]], awaken: nil, mir: 1)))
+        stages.append(("hire-damage-all", hire(hireAll, awaken: nil, mode: .damage)))
         stages.append(("puni-damage-all", puni(puniAll, awaken: nil, mode: .damage)))
 
         var cases: [Case] = []
