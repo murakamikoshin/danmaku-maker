@@ -2327,5 +2327,107 @@
    "formatVersion": 1,
    "name": "o34"
   }
+ },
+ {
+  "id": "o35",
+  "difficulty": 5,
+  "name": {
+   "ja": "深海の魔女の誘い",
+   "en": "Lure of the Deep-Sea Witch"
+  },
+  "aim": {
+   "ja": "深海の魔女の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Deep-Sea Witch's five moves. She awakens and grows stronger as her HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 9,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "witchBubbles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.75,
+     "c": 4,
+     "v": 1.2,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "witchTentacles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 8,
+     "v": 2,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "witchInk",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.85,
+     "c": 3,
+     "v": 1,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "witchAbyss",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.15,
+     "c": 7,
+     "v": 1.8,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "witchMaelstrom",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 5,
+     "v": 1.9,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "witchBubbles",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.75,
+     "c": 4,
+     "v": 1.2,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o35"
+  }
  }
 ]

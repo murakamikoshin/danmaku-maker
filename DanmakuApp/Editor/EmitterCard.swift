@@ -195,6 +195,7 @@ struct EmitterCard: View {
         case .angelParadise: return "angle.gap"
         case .angelFeather, .angelHalo, .angelCross: return "angle.none"
         case .iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror: return "angle.none"
+        case .witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk: return "angle.none"
         case .reaperDeadline: return "angle.gap"
         case .reaperScythe, .reaperSouls, .reaperChains, .reaperRiver: return "angle.none"
         case .kitsuneTorii: return "angle.gap"

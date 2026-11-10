@@ -110,7 +110,12 @@ add(5, "死神の収穫", "The Reaper's Harvest", "死神の5つの技。HPが�
     angel_boss(90, 500, 3, [E("reaperScythe", i=2.5, c=28, v=1, k=0, ph=1), E("reaperSouls", i=3.5, c=10, v=1.4, k=1, ph=1), E("reaperDeadline", i=1.15, c=14, v=1, r=56, k=2, ph=2),
                            E("reaperChains", i=1.15, c=3, v=4, k=3, ph=2), E("reaperRiver", i=.15, c=5, v=2.4, k=4, ph=3), E("reaperScythe", i=2.5, c=28, v=1, k=0, ph=3)], look=8))
 
-assert len(S) == 34, len(S)
+# ---- ボス「深海の魔女」の見本 ----
+add(5, "深海の魔女の誘い", "Lure of the Deep-Sea Witch", "深海の魔女の5つの技。HPが減ると覚醒して、技が強くなる。", "The Deep-Sea Witch's five moves. She awakens and grows stronger as her HP drops.",
+    angel_boss(90, 500, 3, [E("witchBubbles", i=.75, c=4, v=1.2, k=0, ph=1), E("witchTentacles", i=.05, c=8, v=2, k=1, ph=1), E("witchInk", i=.85, c=3, v=1, k=2, ph=2),
+                           E("witchAbyss", i=.15, c=7, v=1.8, k=3, ph=2), E("witchMaelstrom", i=.05, c=5, v=1.9, k=4, ph=3), E("witchBubbles", i=.75, c=4, v=1.2, k=0, ph=3)], look=9))
+
+assert len(S) == 35, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

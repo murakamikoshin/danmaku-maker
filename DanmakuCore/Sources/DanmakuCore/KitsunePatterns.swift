@@ -54,7 +54,9 @@ extension Emit {
             // 天気雨: 空から狐火が左右に揺れながら降る(覚醒は2倍・速い)。10回(0.5秒)に1回、自機狙いの御札3way
             let root = kitsuneRoot(cx, cy)
             // 間隔 0.05秒(3フレーム)の目盛りで、4フレームに1粒(覚醒は2フレームに1粒)になるよう間引く
-            let drops = awakened ? (k % 2 == 0 ? 2 : 1) : (k % 4 == 3 ? 0 : 1)
+            // 150フレーム(50回)降らせて、60フレーム休む
+            let cyc = k % 70
+            let drops = cyc >= 50 ? 0 : (awakened ? (cyc % 2 == 0 ? 2 : 1) : (cyc % 4 == 3 ? 0 : 1))
             for _ in 0..<drops {
                 let x = rng.next() * DanmakuConfig.width
                 let ph = rng.next() * 9
@@ -64,7 +66,7 @@ extension Emit {
                 b.u0 = ph * 20 * 0.04; b.u1 = 0.04; b.u2 = 0.8 * 60
                 out.append(b)
             }
-            if k % 10 == 0 {
+            if cyc < 50 && cyc % 10 == 0 {
                 let aim = atan2(py - root.y, px - root.x) + off
                 for d in [-0.2, 0.0, 0.2] where room() { out.append(add(root.x, root.y, aim + d, sp * 2.6 / 2.2, .ofuda)) }
             }
@@ -90,8 +92,10 @@ extension Emit {
         default:
             // 玉藻の舞: 九本の尻尾の先から、下向きの扇に狐火。扇は尻尾ごとに揺れる。覚醒は1つの先から2本(揺れが逆向き)
             // 4回に1回は休んで、平均で4フレームに1回の扇にする(間隔の目盛りが0.05秒刻みのため)
-            if k % 4 == 3 { return }
-            let t = Double(k) * m.i * 60
+            // 120フレーム(40回)撃って、48フレーム休む
+            let cyc = k % 56
+            if cyc >= 40 || cyc % 4 == 3 { return }
+            let t = Double(cyc) * m.i * 60
             for tip in 0..<9 {
                 let o = kitsuneTip(tip, cx, cy)
                 let base = Double.pi / 2 + Double(tip - 4) * 0.28 + off

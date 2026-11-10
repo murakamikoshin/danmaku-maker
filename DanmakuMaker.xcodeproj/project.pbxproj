@@ -35,10 +35,12 @@
 		3B98C5054EB5F1C20E340941 /* EnemyArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8393515DD0F1156221C5E1B /* EnemyArt.swift */; };
 		3BDECC8375E5A2CE752EF736 /* OFL-DelaGothicOne.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F3E159DD0B6B045774CF307 /* OFL-DelaGothicOne.txt */; };
 		422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9391B5CB3600EA4B42088BAD /* AuthService.swift */; };
+		44A4CA436AAD6A65875AFC57 /* witch_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 129915C79D5B692FA3DD509D /* witch_idle_sheet.png */; };
 		4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE99B3637315E889FFCC33EC /* GameUI.swift */; };
 		45924AE0CA078873D2A83691 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6318A05C51A88952A6A8B21 /* NotificationService.swift */; };
 		4606BF25A527592293EDCE24 /* rewards in Resources */ = {isa = PBXBuildFile; fileRef = B6B0DA55F4187CB364C9C6C2 /* rewards */; };
 		46EB774F011D97C35EB1A667 /* BossSprites.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA14CF6B0BFE45CC242D979A /* BossSprites.swift */; };
+		4A3CBE21126E48CD42796FD4 /* reaper_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 04408E7E6ACCC985DCFCFDA8 /* reaper_awakened_idle_sheet.png */; };
 		4AD6B4860B7EE9DB0976A23D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */; };
 		4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */ = {isa = PBXBuildFile; fileRef = C215A3C95C2A8021A12A703D /* official_stages_i18n.json */; };
 		4FB11696D193E6302F80B9DA /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68321CF2F6D3DCFF7456C66 /* Backend.swift */; };
@@ -74,6 +76,7 @@
 		9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F62E287AE766D76D9CF3901 /* GameScene.swift */; };
 		9F2C28E4A8C7A154DE62258F /* WorldViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4039C4E3E8FEA659CE47036E /* WorldViewModel.swift */; };
 		A97071E62973560D1F271F87 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9430A9E973CE136581259DC9 /* BannerAdView.swift */; };
+		A9D16E416D1C0755B7E593EC /* witch_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = F9CDCE1275D9995A7D0507BE /* witch_awakened_idle_sheet.png */; };
 		AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */; };
 		AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED3045376B6993745B32B4 /* DanmakuApp.swift */; };
 		B259B87E13614269D15389E9 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
@@ -129,11 +132,13 @@
 
 /* Begin PBXFileReference section */
 		02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEffects.swift; sourceTree = "<group>"; };
+		04408E7E6ACCC985DCFCFDA8 /* reaper_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = reaper_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
 		102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageDetailView.swift; sourceTree = "<group>"; };
 		1044D58F43D22133A0482128 /* ice_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ice_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockStore.swift; sourceTree = "<group>"; };
 		1206C664E23CE35464BDF7BC /* se_sparkle.caf */ = {isa = PBXFileReference; path = se_sparkle.caf; sourceTree = "<group>"; };
+		129915C79D5B692FA3DD509D /* witch_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = witch_idle_sheet.png; sourceTree = "<group>"; };
 		14207E44305C80AA77BB6252 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
 		14C491E753AF70E1D5511B48 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
 		1813EF0CCD30071AF2F3CEAF /* SwipeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeAudio.swift; sourceTree = "<group>"; };
@@ -224,6 +229,7 @@
 		F432139D4D93210AE9BDE2F4 /* bgm_menu.caf */ = {isa = PBXFileReference; path = bgm_menu.caf; sourceTree = "<group>"; };
 		F6A173EDBD27E9C0A4C1703D /* BulletArtData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulletArtData.swift; sourceTree = "<group>"; };
 		F7E34F9A7A2229BC09000B94 /* se_life.caf */ = {isa = PBXFileReference; path = se_life.caf; sourceTree = "<group>"; };
+		F9CDCE1275D9995A7D0507BE /* witch_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = witch_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		FA14CF6B0BFE45CC242D979A /* BossSprites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BossSprites.swift; sourceTree = "<group>"; };
 		FB986508388484596E9919F0 /* StageRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageRepository.swift; sourceTree = "<group>"; };
 		FC441513117F025F08A727B7 /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
@@ -303,6 +309,9 @@
 				5E67158A6A98D48DB3C9E2EB /* ice_idle_sheet.png */,
 				23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */,
 				D8BBAB60DC832687980AB794 /* kitsune_idle_sheet.png */,
+				04408E7E6ACCC985DCFCFDA8 /* reaper_awakened_idle_sheet.png */,
+				F9CDCE1275D9995A7D0507BE /* witch_awakened_idle_sheet.png */,
+				129915C79D5B692FA3DD509D /* witch_idle_sheet.png */,
 			);
 			path = Bosses;
 			sourceTree = "<group>";
@@ -589,6 +598,7 @@
 				21823CB1B64962313CD99C4F /* kitsune_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
 				4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */,
+				4A3CBE21126E48CD42796FD4 /* reaper_awakened_idle_sheet.png in Resources */,
 				4606BF25A527592293EDCE24 /* rewards in Resources */,
 				CE050FCCEE5FF2AB8D08ECE3 /* se_boom.caf in Resources */,
 				F651D5E0055CF2DD08697CAE /* se_clear.caf in Resources */,
@@ -599,6 +609,8 @@
 				CD2EC75149BDFBF9BC5929C1 /* se_sparkle.caf in Resources */,
 				C8EDD7C8D74949DDF38EA165 /* se_tap.caf in Resources */,
 				6DE550727985EECB9AE11467 /* se_warning.caf in Resources */,
+				A9D16E416D1C0755B7E593EC /* witch_awakened_idle_sheet.png in Resources */,
+				44A4CA436AAD6A65875AFC57 /* witch_idle_sheet.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -92,9 +92,13 @@ final class KitsunePatternTests: XCTestCase {
         XCTAssertEqual(shot(rain, 1, awakened: true).count, 1)
         XCTAssertEqual(shot(rain, 2, awakened: true).count, 2, "覚醒は2フレームに1粒")
         XCTAssertEqual(shot(rain, 0).count, 4, "10回に1回、御札3way")
+        XCTAssertEqual(shot(rain, 50).count, 0, "60フレーム休む")
+        XCTAssertEqual(shot(rain, 70).count, 4, "また降り始める")
         let dance = emitter(.kitsuneDance, v: 2.2, i: 0.05)
         XCTAssertEqual(shot(dance, 1).count, 9)
         XCTAssertEqual(shot(dance, 3).count, 0)
+        XCTAssertEqual(shot(dance, 41).count, 0, "休む間")
+        XCTAssertEqual(shot(dance, 57).count, 9, "また撃ち始める")
         XCTAssertEqual(shot(dance, 1, awakened: true).count, 18)
     }
 

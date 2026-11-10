@@ -48,6 +48,8 @@ final class GameScene: SKScene {
     private static let awakenSwap = 0.45
     private var mookNodes: [SKSpriteNode] = []
     private var bulletNodes: [SKSpriteNode] = []
+    /// 深海の魔女「深淵」の暗転(提灯と自機のまわりだけ見える)。見た目だけで、計算には関わらない
+    private let darkNode = SKShapeNode()
     /// チャージビームの光線(外側の光と、白い芯)。使い回す
     private var beamNodes: [(glow: SKShapeNode, core: SKShapeNode)] = []
     /// 爆風(隕石・地雷の爆発)の円。使い回す
@@ -171,6 +173,31 @@ final class GameScene: SKScene {
         core.isHidden = !look.firing
         core.lineWidth = look.coreWidth
         core.alpha = look.alpha
+    }
+
+    /// 暗転の印(死神ではなく魔女の「深淵」)があるあいだ、画面を暗くして、提灯と自機のまわりだけ見せる
+    private func updateDarkness(_ bs: [Bullet]) {
+        guard let mark = bs.first(where: { $0.script == Bullet.darkScript }) else {
+            if !darkNode.isHidden { darkNode.isHidden = true }
+            return
+        }
+        if darkNode.parent == nil {
+            darkNode.zPosition = 4.5
+            darkNode.strokeColor = .clear
+            darkNode.fillColor = UIColor(red: 0.01, green: 0.02, blue: 0.08, alpha: 1)
+            addChild(darkNode)
+        }
+        // 出てくるときと消えるときは、なめらかに
+        let fade = max(0, min(1, min(mark.age / 0.4, (mark.fuse - mark.age) / 0.6)))
+        let W = CGFloat(GameScene.W), H = CGFloat(GameScene.H)
+        let path = CGMutablePath()
+        path.addRect(CGRect(x: 0, y: 0, width: W, height: H))
+        let lamp = pos(mark.x, mark.y), me = pos(sim.player.x, sim.player.y)
+        path.addEllipse(in: CGRect(x: lamp.x - 46, y: lamp.y - 46, width: 92, height: 92))
+        path.addEllipse(in: CGRect(x: me.x - 44, y: me.y - 44, width: 88, height: 88))
+        darkNode.path = path
+        darkNode.alpha = 0.93 * fade
+        darkNode.isHidden = false
     }
 
     private func buildNodes() {
@@ -482,7 +509,7 @@ final class GameScene: SKScene {
                 if let tex = BulletArt.texture(look: b.look) {
                     // ボス専用の弾: ドット絵を、進む向きへ回して描く(見た目だけ。当たる半径は BulletLook)
                     if n.texture !== tex { n.texture = tex }
-                    let size = tex.size()
+                    let size = BulletArt.drawSize(b)
                     if n.size != size { n.size = size }
                     n.zRotation = -BulletArt.rotation(b)
                     let alpha: CGFloat = b.dormantGlow ? 0.25 : 1   // 鎖が伸びる前の、薄い予告線
@@ -510,6 +537,8 @@ final class GameScene: SKScene {
 
         for i in beamCount..<beamNodes.count where !beamNodes[i].glow.isHidden { beamNodes[i].glow.isHidden = true }
         for i in blastCount..<blastNodes.count where !blastNodes[i].isHidden { blastNodes[i].isHidden = true }
+
+        updateDarkness(bs)
 
         if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
         if sim.defeats > shownDefeats {

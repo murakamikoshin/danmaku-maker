@@ -58,7 +58,8 @@ export function emitKitsune(m: Emitter, k: number, cx: number, cy: number, px: n
     }
     case "kitsuneSunshower": {
       const r = root(cx, cy);
-      const drops = awakened ? (k % 2 === 0 ? 2 : 1) : (k % 4 === 3 ? 0 : 1);
+      const cyc = k % 70;
+      const drops = cyc >= 50 ? 0 : awakened ? (cyc % 2 === 0 ? 2 : 1) : cyc % 4 === 3 ? 0 : 1;
       for (let q = 0; q < drops; q++) {
         const x = rng() * W;
         const ph = rng() * 9;
@@ -68,7 +69,7 @@ export function emitKitsune(m: Emitter, k: number, cx: number, cy: number, px: n
         b.u0 = ph * 20 * 0.04; b.u1 = 0.04; b.u2 = 0.8 * 60;
         out.push(b);
       }
-      if (k % 10 === 0) {
+      if (cyc < 50 && cyc % 10 === 0) {
         const aim = Math.atan2(py - r.y, px - r.x) + off;
         for (const d of [-0.2, 0, 0.2]) if (room()) out.push(add(r.x, r.y, aim + d, (sp * 2.6) / 2.2, OFUDA));
       }
@@ -93,8 +94,9 @@ export function emitKitsune(m: Emitter, k: number, cx: number, cy: number, px: n
       break;
     }
     default: {
-      if (k % 4 === 3) break;
-      const t = k * m.i * 60;
+      const cyc = k % 56;
+      if (cyc >= 40 || cyc % 4 === 3) break;
+      const t = cyc * m.i * 60;
       for (let tp = 0; tp < 9; tp++) {
         const o = tip(tp, cx, cy);
         const base = Math.PI / 2 + (tp - 4) * 0.28 + off;

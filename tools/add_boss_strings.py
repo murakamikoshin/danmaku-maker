@@ -34,6 +34,15 @@ BOSSES = {
             ('reaperDeadline', ['Deadline', 'Deadline', 'Fecha límite', 'Date limite', 'デッドライン', '데드라인', 'Prazo final', 'Крайний срок', '死线', '死線']),
             ('reaperRiver', ['Überfahrt über den Styx', 'Crossing the Styx', 'Cruce del Estigia', 'Traversée du Styx', '三途の渡し', '삼도천 건너기', 'Travessia do Estige', 'Переправа через Стикс', '渡过三途川', '渡過三途川']),
         ]),
+    9: dict(
+        name=['Tiefsee-Hexe', 'Deep-Sea Witch', 'Bruja del abismo', 'Sorcière des abysses', '深海の魔女', '심해의 마녀', 'Bruxa das profundezas', 'Ведьма глубин', '深海魔女', '深海魔女'],
+        moves=[
+            ('witchAbyss', ['Lockruf der Laterne', 'Lure of the Lantern', 'El señuelo del farol', "L'appât de la lanterne", '提灯の誘い', '초롱의 유혹', 'Isca da lanterna', 'Зов фонаря', '灯笼的诱惑', '燈籠的誘惑']),
+            ('witchBubbles', ['Wachsende Blasen', 'Swelling Bubbles', 'Burbujas crecientes', 'Bulles gonflantes', '膨らむ泡', '부푸는 거품', 'Bolhas crescentes', 'Растущие пузыри', '膨胀气泡', '膨脹氣泡']),
+            ('witchTentacles', ['Umarmung der acht Arme', 'Embrace of Eight Arms', 'Abrazo de ocho brazos', 'Étreinte des huit bras', '八腕の抱擁', '여덟 팔의 포옹', 'Abraço de oito braços', 'Объятия восьми рук', '八臂拥抱', '八臂擁抱']),
+            ('witchMaelstrom', ['Mahlstrom', 'Maelstrom', 'Remolino', 'Maelström', 'メイルシュトローム', '메일스트롬', 'Redemoinho', 'Мальстрём', '大漩涡', '大漩渦']),
+            ('witchInk', ['Vorhang der Schwarzen Flut', 'Veil of the Black Tide', 'Velo de la marea negra', 'Voile de la marée noire', '黒潮の帳', '흑조의 장막', 'Véu da maré negra', 'Завеса чёрного прилива', '黑潮之帷', '黑潮之帷']),
+        ]),
 }
 
 def mk(vals):

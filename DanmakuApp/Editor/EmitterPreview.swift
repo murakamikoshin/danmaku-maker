@@ -183,7 +183,8 @@ extension GraphicsContext {
             if b.dormantGlow { g.opacity = 0.25 }
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(BulletArt.rotation(b)))
-            let w = art.size.width * s * sizeBoost, h = art.size.height * s * sizeBoost
+            let drawSize = BulletArt.drawSize(b)
+            let w = drawSize.width * s * sizeBoost, h = drawSize.height * s * sizeBoost
             g.draw(Image(uiImage: art).interpolation(.none), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
             return
         }

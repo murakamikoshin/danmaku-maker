@@ -44,6 +44,15 @@ enum BulletArt {
         return t
     }
 
+    /// 画面に描く大きさ。膨らむ泡は、当たる広さに合わせて大きくする
+    static func drawSize(_ b: Bullet) -> CGSize {
+        if BulletLook.kind(of: b.look) == .bubble && b.radius > 0 {
+            let d = CGFloat(b.radius + 3) * 2
+            return CGSize(width: d, height: d)
+        }
+        return texture(look: b.look)?.size() ?? .zero
+    }
+
     /// 進む向きへ回す角度(絵は上向き)。回さない弾は 0
     static func rotation(_ b: Bullet) -> CGFloat {
         guard let k = BulletLook.kind(of: b.look), BulletLook.isOriented(k) else { return 0 }
