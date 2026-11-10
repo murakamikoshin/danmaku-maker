@@ -1,0 +1,94 @@
+<title>弾幕メーカー ボス図鑑</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1p:wght@400;500;700&display=swap">
+<style>
+/* 暗い弾幕の画面に合わせた一色の見た目。上に全員まとめての切り替え、下にボスのカード */
+:root{
+  --bg:#0f0b1c; --field:#100c1c; --panel:#171228; --line:#2a2342; --fg:#e9e4f5; --mute:#9d94b8;
+  --accent:#ff2a4a; --awake:#f2c14e; --awake-ink:#1a1206;
+  --display:"DotGothic16","M PLUS 1p",ui-monospace,monospace;
+  --body:"M PLUS 1p","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,40px);letter-spacing:.04em;margin:0;line-height:1.15;text-wrap:balance}
+h1 small{display:block;font-size:13px;color:var(--mute);font-family:var(--body);letter-spacing:.08em;margin-top:6px}
+.controls{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lab{font-size:12px;color:var(--mute);letter-spacing:.08em;margin-right:4px}
+button{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer;font-size:13px}
+button:hover{border-color:var(--mute)}
+button:focus-visible{outline:2px solid var(--awake);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.form button[data-v="awake"][aria-pressed="true"]{background:var(--awake);border-color:var(--awake);color:var(--awake-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.card.awake{border-color:#5a4520}
+.stage{background:var(--field);display:grid;place-items:center;padding:14px 0;position:relative;border-bottom:1px solid var(--line)}
+.stage img{image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;height:auto}
+.fno{position:absolute;right:10px;bottom:8px;font-family:var(--display);font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.tag{position:absolute;left:10px;top:8px;font-size:11px;letter-spacing:.1em;color:var(--awake)}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.title h2{margin:0;font-family:var(--display);font-weight:400;font-size:22px}
+.meta{font-size:12px;color:var(--mute)}
+.row{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}
+.tabs button span{color:var(--mute);font-size:11px;margin-left:4px}
+.tabs button[aria-pressed="true"] span{color:#ffd9df}
+.strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
+.strip img{image-rendering:pixelated;background:var(--field);border:1px solid var(--line);border-radius:4px;height:56px;width:auto;flex:none;cursor:pointer}
+.strip img.on{border-color:var(--awake)}
+.order{font-size:12px;color:var(--mute)}
+footer{margin-top:28px;font-size:12.5px;color:var(--mute);max-width:72ch}
+</style>
+<div class="wrap">
+<header>
+  <h1>弾幕メーカー ボス図鑑<small>7体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最近傍補間で3倍表示</small></h1>
+  <div class="controls">
+    <div class="bar"><span class="lab">全員まとめて</span><div class="bar form" id="allForm"></div><div class="bar" id="allAct"></div></div>
+    <div class="bar"><button id="speed" type="button" aria-pressed="false">ゆっくり再生</button></div>
+  </div>
+</header>
+<div class="grid" id="grid"></div>
+<footer>通常の待機は元の絵そのまま。構え・技中・硬直と、九尾・魔女・機神・女王・死神の覚醒は、元の絵を土台に描き足した。構え・技中・硬直では体を少し傾けて、真正面一辺倒にならないようにしている。構えと硬直は1回だけ流れる動きなので、ここでは最後のコマで少し止めてから繰り返している。コマをタップするとそこで止まり、状態を切り替えると再生に戻る。素材は swipe-mode-spec の art/bosses/&lt;ID&gt;/。</footer>
+</div>
+<script>
+const DATA=__DATA__, ACTS=__ACTS__;
+const FORMS=[{id:"normal",label:"通常"},{id:"awake",label:"覚醒"}];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let frameMs=120; const cards=[];
+function el(t,a={},...k){const e=document.createElement(t);for(const[x,y]of Object.entries(a)){if(x==="class")e.className=y;else e.setAttribute(x,y)}k.forEach(c=>e.append(c));return e}
+function group(list,cls,onpick){const g=el("div",{class:"bar "+cls,role:"group"});list.forEach(o=>{const b=el("button",{type:"button","data-v":o.id,"aria-pressed":"false"},o.label,...(o.n?[el("span",{},o.n+"コマ")]:[]));b.onclick=()=>onpick(o.id);g.append(b)});return g}
+function press(g,v){[...g.children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))}
+DATA.forEach(b=>{
+  const c={b,form:"normal",act:"idle",i:0,hold:0};
+  c.img=el("img",{alt:b.name,width:b.w*3,height:b.h*3}); c.fno=el("div",{class:"fno"}); c.tag=el("div",{class:"tag"});
+  c.formG=group(FORMS,"form",v=>set(c,v,c.act)); c.actG=group(ACTS,"tabs",v=>set(c,c.form,v));
+  c.strip=el("div",{class:"strip"}); c.order=el("div",{class:"order"});
+  c.card=el("article",{class:"card"},el("div",{class:"stage"},c.img,c.tag,c.fno),
+    el("div",{class:"body"},el("div",{class:"title"},el("h2",{},b.name),el("span",{class:"meta"},b.w+"×"+b.h+" / 核: "+b.core)),
+      el("div",{class:"row"},c.formG,c.actG),c.strip,c.order));
+  document.getElementById("grid").append(c.card); cards.push(c); set(c,"normal","idle");
+});
+function set(c,form,act){c.form=form;c.act=act;c.i=0;c.hold=0;c.paused=reduce;
+  press(c.formG,form);press(c.actG,act);c.card.classList.toggle("awake",form==="awake");c.tag.textContent=form==="awake"?"覚醒":"";
+  const a=ACTS.find(x=>x.id===act), f=c.b.frames[form+":"+act];
+  c.strip.replaceChildren(...f.map((src,i)=>{const t=el("img",{src,alt:a.label+" "+i});t.onclick=()=>{c.i=i;c.paused=true;draw(c)};return t}));
+  const name=(form==="awake"?"覚醒・":"")+a.label, file=act+(form==="awake"?"_awakened":"");
+  c.order.textContent=name+"("+file+"): "+(a.mode==="loop"?"0→"+(a.n-1)+" でループ":"0→"+(a.n-1)+" の順に1回");
+  draw(c)}
+function draw(c){const f=c.b.frames[c.form+":"+c.act];c.img.src=f[c.i];c.fno.textContent=c.i+" / "+(f.length-1);
+  [...c.strip.children].forEach((t,k)=>t.classList.toggle("on",k===c.i))}
+function tick(){cards.forEach(c=>{if(c.paused)return;const a=ACTS.find(x=>x.id===c.act);
+  if(a.mode==="once"&&c.i===a.n-1){if(++c.hold<6)return;c.hold=0;c.i=0}else c.i=(c.i+1)%a.n;draw(c)});setTimeout(tick,frameMs)}
+let gForm="normal", gAct="idle";
+const allForm=group(FORMS,"form",v=>{gForm=v;press(allForm,v);cards.forEach(c=>set(c,v,c.act))});
+const allAct=group(ACTS,"tabs",v=>{gAct=v;press(allAct,v);cards.forEach(c=>set(c,c.form,v))});
+document.getElementById("allForm").replaceWith(allForm); document.getElementById("allAct").replaceWith(allAct);
+press(allForm,"normal"); press(allAct,"idle");
+const sp=document.getElementById("speed");sp.onclick=()=>{const on=sp.getAttribute("aria-pressed")!=="true";sp.setAttribute("aria-pressed",on);frameMs=on?360:120};
+tick();
+</script>

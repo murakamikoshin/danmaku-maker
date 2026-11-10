@@ -147,7 +147,9 @@ def rays_behind(img, cx, cy, r0, r1, n, phase, c1, c2):
 
 # ---------- 書き出し ----------
 STATES = [('idle', 8, '0→1→…→7 でループ'), ('windup', 4, '0→3 の順に1回'), ('attack', 4, '0→3 でループ'),
-          ('recover', 2, '0→1 の順に1回(そのあと待機へ)'), ('idle_awakened', 8, '0→1→…→7 でループ')]
+          ('recover', 2, '0→1 の順に1回(そのあと待機へ)'), ('idle_awakened', 8, '0→1→…→7 でループ'),
+          ('windup_awakened', 4, '0→3 の順に1回(覚醒後)'), ('attack_awakened', 4, '0→3 でループ(覚醒後)'),
+          ('recover_awakened', 2, '0→1 の順に1回(そのあと覚醒後の待機へ)')]
 
 def export(boss_id, title, frames, note=''):
     out = os.path.join(ROOT, boss_id); os.makedirs(out, exist_ok=True)
@@ -181,7 +183,7 @@ def export(boss_id, title, frames, note=''):
              '- ファイル名: ' + f'{boss_id}_<状態>_<コマ番号>.png', '',
              '状態ごとのコマ数とループの順番:']
     for st, n, order in STATES: lines.append(f'- {st}: {n}コマ。{order}')
-    lines += ['', '- 待機(idle)は元の絵(handoff/sheets)をそのまま1コマずつに分けたもの']
+    lines += ['', '- 待機(idle)は元の絵(handoff/sheets)をそのまま1コマずつに分けたもの。〇〇_awakened は覚醒後の姿の同じ動き']
     if note: lines.append('- ' + note)
     lines += ['- 構え・技中・硬直では、体を少し傾けて真正面一辺倒にならないようにしている(行ごとの整数ずらしなので、ぼけない)',
               '- 再生の目安: 1コマ 0.12 秒(状態ごとのGIFと同じ)', '',
@@ -244,6 +246,11 @@ def standard(idle, cfg):
         r.append(im)
     out['recover'] = r
     return out
+
+def awake_states(frames, cfg):
+    """覚醒後の構え・技中・硬直(覚醒後の待機の絵を土台にする)"""
+    for k, v in standard(frames['idle_awakened'], cfg).items():
+        frames[k + '_awakened'] = v
 
 def awakened(idle, hue, ray1, ray2, aura_c, center, r0=30, r1=54, n=22, sat=1.15, val=0.8, thr=0.3):
     """覚醒後の待機: 色を変え、うしろに放射する光、体のふちに点滅する光"""
