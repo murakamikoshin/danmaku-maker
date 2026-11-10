@@ -521,6 +521,15 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     }
   });
 
+  it("新しいボス(九尾以降)のステージには、必要な内容のレベル needs: 2 が付き、堕天使までのステージには付かない", () => {
+    const a = validatePublish(boss({ emitters: [em({ t: "kitsuneTorii" })], bossLook: 6, bossMove: 0 }));
+    expect(a.ok && a.stage.needs).toBe(2);
+    const b = validatePublish(boss({ emitters: [em({ t: "angelHalo" })], bossLook: 5, bossMove: 0 }));
+    expect(b.ok && "needs" in b.stage).toBe(false);
+    const c = validatePublish(boss({}));
+    expect(c.ok && "needs" in c.stage).toBe(false);
+  });
+
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {
     const a = validatePublish(good({ emitters: [em({ a: 45 })] }));
     expect(a.ok && a.stage.emitters[0]!.a).toBe(45);

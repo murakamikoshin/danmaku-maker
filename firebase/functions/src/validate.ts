@@ -148,6 +148,16 @@ const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLE
 const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
   list.some((m) => MOVE_OWNERS.some(([moves, owner]) => moves.includes(m.t) && look !== owner));
 
+/**
+ * ステージを遊ぶのに必要なアプリの内容のレベル(アプリの DanmakuConfig.contentLevel と同じ。1=1.1.2 まで、2=1.1.3〜の新しいボス)。
+ * 新しいボス(bossLook 6 以上。堕天使の次から)を使うステージに付ける。古いアプリには届かないが、これからのアプリは、自分より大きいレベルのステージを「アップデートが必要」と案内できる
+ */
+export const NEW_BOSS_LOOK_MIN = 6;
+export function contentLevelOf(bossLook: number | undefined, waves: readonly { bossLook?: number }[] | undefined): number {
+  if ((bossLook ?? 0) >= NEW_BOSS_LOOK_MIN) return 2;
+  return (waves ?? []).some((w) => (w.bossLook ?? 0) >= NEW_BOSS_LOOK_MIN) ? 2 : 1;
+}
+
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
 export const UNLIMITED_CAP_SEC = 600;
 /** 実際に使う制限時間(秒) */
@@ -413,7 +423,7 @@ export function validatePublish(input: unknown): Validated {
   return {
     ok: true,
     clearReplay: replay,
-    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
+    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves) > 1 ? { needs: contentLevelOf(bBossLook.v, waves) } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),

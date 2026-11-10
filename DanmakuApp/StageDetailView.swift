@@ -32,8 +32,17 @@ struct StageDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     hero
-                    GameActionButton(title: "detail.play", systemImage: "play.fill", fill: GameStyle.accent) { playing = true }
-                        .accessibilityIdentifier("detail.play")
+                    if remote.needsNewerApp {
+                        // このアプリより新しい内容(新しいボスなど)が要るステージは、遊ばせない
+                        Label("detail.needsupdate", systemImage: "arrow.down.app.fill")
+                            .font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                            .frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 14))
+                            .accessibilityIdentifier("detail.needsupdate")
+                    } else {
+                        GameActionButton(title: "detail.play", systemImage: "play.fill", fill: GameStyle.accent) { playing = true }
+                            .accessibilityIdentifier("detail.play")
+                    }
                     actions
                     if let message { Text(message).font(.footnote).foregroundStyle(.secondary) }
                     if remote.stage.hasRanking { RankingSection(stageID: remote.id, mode: remote.stage.mode) }

@@ -14,6 +14,10 @@ struct RemoteStage: Identifiable, Hashable {
     let likes: Int
     /// コメントの数(古いステージは項目がないので 0)
     let comments: Int
+    /// 遊ぶのに必要な内容のレベル(サーバーが付ける。ないステージは 1)
+    var needs = 1
+    /// このアプリより新しい内容が要るか(要るなら、遊ばせずにアップデートを案内する)
+    var needsNewerApp: Bool { needs > DanmakuConfig.contentLevel }
 
     var clearRatePercent: Int? { plays > 0 ? Int((Double(clears) / Double(plays) * 100).rounded()) : nil }
     static func == (a: RemoteStage, b: RemoteStage) -> Bool { a.id == b.id && a.likes == b.likes && a.comments == b.comments && a.plays == b.plays && a.clears == b.clears }
@@ -132,6 +136,6 @@ struct StageRepository {
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
         return RemoteStage(id: id, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
-                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"))
+                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")))
     }
 }
