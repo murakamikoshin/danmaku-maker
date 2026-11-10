@@ -129,7 +129,7 @@
   },
   {
    "name": "fire0",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      51,
@@ -151,7 +151,7 @@
   },
   {
    "name": "fire1",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      18,
@@ -173,7 +173,7 @@
   },
   {
    "name": "fire2",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      7,
@@ -195,7 +195,7 @@
   },
   {
    "name": "fire3",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      13,
@@ -217,7 +217,7 @@
   },
   {
    "name": "fire4",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      129,
@@ -239,7 +239,7 @@
   },
   {
    "name": "fire5",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      159,
@@ -261,7 +261,7 @@
   },
   {
    "name": "fire6",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      177,
@@ -283,7 +283,7 @@
   },
   {
    "name": "fire7",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      183,
@@ -305,7 +305,7 @@
   },
   {
    "name": "fire8",
-   "kind": "floating",
+   "kind": "ribbon",
    "poly": [
     [
      171,

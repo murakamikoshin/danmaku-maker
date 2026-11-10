@@ -431,6 +431,22 @@ def rig_frame(base, lab, parts, moves, sway_t=None):
             nb = still_nb or same_nb
             if nb: add.append((x, y, Counter(nb).most_common(1)[0][0]))
         for x, y, c in add: O[x, y] = c + (255,)
+    # すき間をふさぐ: 元の絵では色があった所で、上下か左右の両どなりに色があるのに透明になったドット
+    # (flow を1行ずつずらすと、行の端や行と行のあいだに1ドットの透明な線ができるため)。浮いている物の跡でも、うしろの部位にはさまれていれば埋める
+    for _ in range(2):
+        add = []
+        for y in range(1, H_ - 1):
+            for x in range(1, W_ - 1):
+                if O[x, y][3]: continue
+                lr = O[x - 1, y][3] and O[x + 1, y][3]; ud = O[x, y - 1][3] and O[x, y + 1][3]
+                if not (lr or ud): continue
+                if not Lb[x, y]:
+                    # 元は背景だった所: ゆれる部位の行どうしが上下にずれてできた切れ込みだけ埋める
+                    if not ud or not any(Lb[u, y] in flows for u in range(max(0, x - 3), min(W_, x + 4))): continue
+                near = [(x + a, y + b) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)) if O[x + a, y + b][3]]
+                if kind_of.get(Lb[x, y]) == 'floating' and not all(kind_of.get(Lb[q]) != 'floating' for q in near): continue
+                add.append((x, y, Counter(O[q][:3] for q in near).most_common(1)[0][0]))
+        for x, y, c in add: O[x, y] = c + (255,)
     return out
 
 def idle_parts_map(base, lab, parts, motions, sway_amp=2.5, breathe=1, bubbles=(), c1=(150, 214, 250), c2=(255, 255, 255)):
