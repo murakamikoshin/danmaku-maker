@@ -63,7 +63,7 @@ const SETS = {
   ipad: { dir: path.join(SRC, 'ipad'), W: 2048, H: 2732, font: 104, top: 130, imgTop: 470, imgW: 0.74, keys: ['01_home', '02_play_hell', '03_play_boss', '04_editor', '07_shop'] },
 };
 
-const browser = await chromium.connectOverCDP('http://localhost:9222');
+const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
 const ctx = browser.contexts()[0];
 const page = await ctx.newPage();
 for (const [dev, s] of Object.entries(SETS)) {

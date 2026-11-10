@@ -27013,65 +27013,66 @@
       }
     },
     "editor.enemy.size.note": {
+      "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Größer = leichter zu treffen, kleiner = schwerer. Normal sind 24px."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bigger bosses are easier to hit; smaller ones are harder."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "大きいほど弾が当たりやすく、小さいほど難しくなります。"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BOSS 越大越容易命中,越小越难。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BOSS 越大越容易命中,越小越難。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "보스가 클수록 맞히기 쉽고, 작을수록 어려워요."
+            "value": "Bigger is easier to hit, smaller is harder. The standard is 24px."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los jefes grandes son más fáciles de acertar; los pequeños, más difíciles."
+            "value": "Más grande es más fácil de acertar; más pequeño, más difícil. Lo normal son 24 px."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les gros boss sont plus faciles à toucher ; les petits, plus difficiles."
+            "value": "Plus grand = plus facile à toucher, plus petit = plus difficile. Standard : 24 px."
           }
         },
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Größere Bosse sind leichter zu treffen, kleinere schwerer."
+            "value": "大きいほど弾が当たりやすく、小さいほど難しくなります。ふつうは24pxです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "클수록 맞히기 쉽고, 작을수록 어려워져요. 기본은 24px이에요"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chefes maiores são mais fáceis de acertar; menores, mais difíceis."
+            "value": "Maior é mais fácil de acertar, menor é mais difícil. O padrão é 24 px."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В больших боссов легче попасть; в маленьких труднее."
+            "value": "Чем больше, тем легче попасть; чем меньше, тем сложнее. Стандарт — 24 px."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "越大越容易击中，越小越难。标准为24px。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "越大越容易擊中，越小越難。標準為24px。"
           }
         }
       }
@@ -58789,6 +58790,71 @@
           "stringUnit": {
             "state": "translated",
             "value": "僅限挑戰10次以上的關卡。通關率：簡單50%以上，普通20–50%，困難5–20%，鬼畜低於5%。"
+          }
+        }
+      }
+    },
+    "editor.enemy.size.radius": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss-Radius"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss radius"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radio del jefe"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rayon du boss"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの大きさ(半径)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보스 크기(반지름)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raio do chefe"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Радиус босса"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss半径"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss半徑"
           }
         }
       }

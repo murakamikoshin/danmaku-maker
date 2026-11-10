@@ -108,6 +108,18 @@ const REWARD_KIND_COUNT = 5;
 const REWARD_FX_KINDS = 4;
 
 /** 大きさ・見た目の共通の検査: 範囲外は不正。標準の値は保存しない(undefined を返す) */
+/** ボスの大きさの指定。0〜2 は小・中・大、10〜44 は半径(px)。小・中・大と同じ半径は 0・1・2 に戻す(アプリの Wave.sanitizedSize と同じ)。中(標準)は undefined */
+const BOSS_RADII_STD = [17, 24, 34];
+export const BOSS_RADIUS_MIN = 10, BOSS_RADIUS_MAX = 44;
+function bossSizeVal(v: unknown): { ok: true; v: number | undefined } | { ok: false } {
+  if (v === undefined || v === null) return { ok: true, v: undefined };
+  if (typeof v !== "number" || !Number.isInteger(v)) return { ok: false };
+  let n = v;
+  if (n >= BOSS_RADIUS_MIN && n <= BOSS_RADIUS_MAX) { const i = BOSS_RADII_STD.indexOf(n); n = i >= 0 ? i : n; }
+  else if (n < 0 || n > 2) return { ok: false };
+  return { ok: true, v: n === 1 ? undefined : n };
+}
+
 function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: true; v: number | undefined } | { ok: false } {
   if (v === undefined || v === null) return { ok: true, v: undefined };
   const n = int(v, lo, hi);
@@ -153,9 +165,10 @@ const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
  * 新しいボス(bossLook 6 以上。堕天使の次から)を使うステージに付ける。古いアプリには届かないが、これからのアプリは、自分より大きいレベルのステージを「アップデートが必要」と案内できる
  */
 export const NEW_BOSS_LOOK_MIN = 6;
-export function contentLevelOf(bossLook: number | undefined, waves: readonly { bossLook?: number }[] | undefined): number {
-  if ((bossLook ?? 0) >= NEW_BOSS_LOOK_MIN) return 2;
-  return (waves ?? []).some((w) => (w.bossLook ?? 0) >= NEW_BOSS_LOOK_MIN) ? 2 : 1;
+export function contentLevelOf(bossLook: number | undefined, waves: readonly { bossLook?: number; bossSize?: number }[] | undefined, bossSize?: number): number {
+  // 新しいボス、または半径で決めた大きさ(10〜44)を使うステージは、レベル2
+  if ((bossLook ?? 0) >= NEW_BOSS_LOOK_MIN || (bossSize ?? 0) >= BOSS_RADIUS_MIN) return 2;
+  return (waves ?? []).some((w) => (w.bossLook ?? 0) >= NEW_BOSS_LOOK_MIN || (w.bossSize ?? 0) >= BOSS_RADIUS_MIN) ? 2 : 1;
 }
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
@@ -243,7 +256,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       if (dv === null || kind !== "boss") return { ok: false, error: "wave-defeat" };
       if (dv !== 1) defeat = dv;   // 1(爆発)は標準なので、保存しない
     }
-    const wSize = optInt(w.bossSize, 0, 2, 1);
+    const wSize = bossSizeVal(w.bossSize);
     const wMooks = optInt(w.mooks, 0, 2, null);
     const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
     const wMookLook = optInt(w.mookLook, 0, 4, 0);
@@ -364,7 +377,7 @@ export function validatePublish(input: unknown): Validated {
     if (dv !== 1) bossDefeat = dv;
   }
 
-  const bSize = optInt(input.bossSize, 0, 2, 1);
+  const bSize = bossSizeVal(input.bossSize);
   const bMooks = optInt(input.mooks, 0, 2, null);
   const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
   const bMookLook = optInt(input.mookLook, 0, 4, 0);
@@ -423,7 +436,7 @@ export function validatePublish(input: unknown): Validated {
   return {
     ok: true,
     clearReplay: replay,
-    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves) > 1 ? { needs: contentLevelOf(bBossLook.v, waves) } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
+    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves, bSize.v) > 1 ? { needs: contentLevelOf(bBossLook.v, waves, bSize.v) } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),

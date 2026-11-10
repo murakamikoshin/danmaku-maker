@@ -729,6 +729,8 @@ public struct Simulation {
     private var spec: WaveSpec { specs[waveIndex] }
     /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
     public var bossSizeIndex: Int { spec.size }
+    /// 自機の弾が当たる、ボスの半径(論理px)。キャラクターのボスは決まった値、図形のボスは大きさの指定(小・中・大 または 半径)
+    public var bossHitRadius: Double { spec.character?.hitRadius ?? DanmakuConfig.bossRadius(size: spec.size) }
     public var bossLookIndex: Int { spec.look }
     /// 専用の絵を持つボスか(図形のボスなら nil)
     public var bossCharacter: BossCharacter? { spec.character }
@@ -880,7 +882,7 @@ public struct Simulation {
                 s.y -= 600 * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
-                let br = spec.character?.hitRadius ?? DanmakuConfig.bossRadii[min(max(spec.size, 0), 2)]
+                let br = bossHitRadius
                 if dx * dx + dy * dy < br * br {
                     damageDealt += s.damage
                     if !isDamageRace { hp -= s.damage }

@@ -78,6 +78,8 @@ export function beamHits(b: { x: number; y: number; vx: number; vy: number; age:
 }
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
 const BOSS_RADII = [17, 24, 34] as const;
+/** ボスの大きさの指定から、当たる半径を出す。10〜44 は半径そのもの(px)。範囲外は中。アプリの DanmakuConfig.bossRadius(size:) と同じ */
+const bossRadiusOf = (size: number): number => (size >= 10 && size <= 44 ? size : BOSS_RADII[Math.min(Math.max(size, 0), 2)]!);
 /** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
 /** 専用の絵を持つボス(堕天使 5・九尾 6)。位置と当たり判定はアプリの BossCharacter と同じ */
 const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7, REAPER_LOOK = 8, WITCH_LOOK = 9, MECH_LOOK = 10, PUNI_LOOK = 11;
@@ -482,7 +484,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     }
     const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : bp.x;
     const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : bp.y;
-    const bossRadius = angel ? FALLEN_ANGEL_RADIUS : BOSS_RADII[Math.min(Math.max(sp.size, 0), 2)]!;
+    const bossRadius = angel ? FALLEN_ANGEL_RADIUS : bossRadiusOf(sp.size);
     if (sp.boss) {
       const ph = phaseOf(waveT);
       if (ph !== phase) {

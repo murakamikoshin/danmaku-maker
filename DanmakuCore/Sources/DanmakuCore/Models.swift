@@ -16,6 +16,19 @@ public enum DanmakuConfig {
     public static let homingSeconds = 2.5
     /// ボスの大きさ(0=小 1=中 2=大)ごとの、プレイヤーの弾が当たる半径(論理px)。見た目の大きさも同じ比率で変わる
     public static let bossRadii: [Double] = [17, 24, 34]
+    /// ボスの大きさの指定(Stage.bossSize)。0〜2 は小・中・大(上の半径)。10〜44 は、半径そのもの(px)。スライダーで細かく決める
+    public static let bossRadiusRange = 10...44
+    /// 大きさの指定から、弾が当たる半径(論理px)を出す。範囲外は中
+    public static func bossRadius(size: Int) -> Double {
+        if bossRadiusRange.contains(size) { return Double(size) }
+        return bossRadii[min(max(size, 0), 2)]
+    }
+    /// 半径(px)から、保存する大きさの指定にする。小・中・大と同じ半径は、これまでの 0・1・2 に戻す(古いアプリでも遊べる)
+    public static func bossSize(forRadius px: Int) -> Int {
+        let r = min(bossRadiusRange.upperBound, max(bossRadiusRange.lowerBound, px))
+        if let i = bossRadii.firstIndex(of: Double(r)) { return i }
+        return r
+    }
     /// ボス・雑魚の見た目の種類の数(0 は標準)。見た目だけで、計算には関わらない
     public static let enemyLooks = 5
     /// ボスの見た目の番号の数(0〜4 が図形、5 以降が BossCharacter)。雑魚の見た目は enemyLooks のまま
@@ -348,7 +361,10 @@ public struct Wave: Codable, Equatable, Sendable {
 
     /// 中(標準)は保存しない。範囲外は標準に戻す
     static func sanitizedSize(_ v: Int?) -> Int? {
-        guard let v, (0...2).contains(v), v != 1 else { return nil }
+        guard let v else { return nil }
+        // 10〜44 は半径(px)。小・中・大と同じ半径は 0・1・2 に戻す。中(標準)は保存しない
+        if DanmakuConfig.bossRadiusRange.contains(v) { let s = DanmakuConfig.bossSize(forRadius: v); return s == 1 ? nil : s }
+        guard (0...2).contains(v), v != 1 else { return nil }
         return v
     }
     /// キャラクターのボスは、大きさ・動きの設定を使わない(絵と判定が決まっている)ので、保存しない

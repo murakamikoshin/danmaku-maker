@@ -12,7 +12,7 @@ enum EnemyArt {
     }
 
     /// ボスの絵の一辺(ポイント)。当たる半径の2倍にそろえて、見た目と当たり判定がずれないようにする
-    static func bossPoints(size: Int) -> CGFloat { CGFloat(DanmakuConfig.bossRadii[min(max(size, 0), 2)] * 2) }
+    static func bossPoints(size: Int) -> CGFloat { CGFloat(DanmakuConfig.bossRadius(size: size) * 2) }
     /// 雑魚の絵の一辺(ポイント)。見た目だけ
     static func mookPoints(size: Int) -> CGFloat { [18, 26, 36][min(max(size, 0), 2)] }
 

@@ -342,7 +342,11 @@ private struct EnemyControls: View {
                     Text("editor.enemy.character.note").font(.caption2).foregroundStyle(.secondary)
                 } else {
                     Text("editor.enemy.size").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                    ChipGrid(items: sizeItems(), selection: $bossSize, idPrefix: "editor.boss.size")
+                    // スライダーで半径(px)を決める。小・中・大と同じ値は、保存のときに 0・1・2 に戻る
+                    SliderRow(label: "editor.enemy.size.radius",
+                              value: Binding(get: { DanmakuConfig.bossRadius(size: bossSize) }, set: { bossSize = DanmakuConfig.bossSize(forRadius: Int($0.rounded())) }),
+                              range: Double(DanmakuConfig.bossRadiusRange.lowerBound)...Double(DanmakuConfig.bossRadiusRange.upperBound), step: 1) { "\(Int($0))px" }
+                        .accessibilityIdentifier("editor.boss.size")
                     Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
                 }
                 Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)

@@ -530,6 +530,19 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(c.ok && "needs" in c.stage).toBe(false);
   });
 
+  it("ボスの大きさ: 0〜2 は小・中・大、10〜44 は半径(px)。小・中・大と同じ半径は戻し、半径を使うステージには needs: 2 が付く", () => {
+    const sz = (n: unknown) => validatePublish(boss({ bossSize: n }));
+    const r30 = sz(30);
+    expect(r30.ok && r30.stage.bossSize).toBe(30);
+    expect(r30.ok && r30.stage.needs).toBe(2);
+    const r17 = sz(17); expect(r17.ok && r17.stage.bossSize).toBe(0); expect(r17.ok && "needs" in r17.stage).toBe(false);
+    const r34 = sz(34); expect(r34.ok && r34.stage.bossSize).toBe(2);
+    const r24 = sz(24); expect(r24.ok && "bossSize" in r24.stage).toBe(false);   // 24 は中(標準)
+    const r2 = sz(2); expect(r2.ok && r2.stage.bossSize).toBe(2);
+    const r44 = sz(44); expect(r44.ok && r44.stage.bossSize).toBe(44);
+    for (const bad of [3, 9, 45, -1, 30.5, "30"]) expect(sz(bad)).toEqual({ ok: false, error: "look" });
+  });
+
   it("パターンの回転は -180〜180 度。回せないパターンには付けられない", () => {
     const a = validatePublish(good({ emitters: [em({ a: 45 })] }));
     expect(a.ok && a.stage.emitters[0]!.a).toBe(45);
