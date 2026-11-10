@@ -320,3 +320,33 @@ def idle_parts(base, top, region, bubbles=(), amp=1.5, c1=(150, 214, 250), c2=(2
             put(im, x - (r > 1), yy - (r > 1), c2)
         out.append(im)
     return out
+
+def move_parts(img, parts):
+    """決めた四角の中のドットを、それぞれ (dx, dy) だけ動かす。parts: [((x0, y0, x1, y1), dx, dy), ...]
+    先に全部消してから置くので、部品どうしが重なっても形は崩れない"""
+    o = img.copy(); P = img.load(); O = o.load(); W_, H_ = img.size
+    moved = []
+    for (x0, y0, x1, y1), dx, dy in parts:
+        if not (dx or dy): continue
+        for y in range(max(0, y0), min(H_, y1 + 1)):
+            for x in range(max(0, x0), min(W_, x1 + 1)):
+                if P[x, y][3]: moved.append((x + dx, y + dy, P[x, y])); O[x, y] = (0, 0, 0, 0)
+    for x, y, c in moved:
+        if 0 <= x < W_ and 0 <= y < H_: O[x, y] = c
+    return o
+
+def idle_rig(base, top, fins, parts, breathe=1, bubbles=(), amp=2.5, c1=(150, 214, 250), c2=(255, 255, 255)):
+    """待機8コマ: ひれのゆれ + 部品(リボン・持ち物など)の動き + 全体の呼吸 + 粒。体と脚の形は変えない
+    parts: [((x0, y0, x1, y1), ax, ay, 位相のずれ), ...]  ax, ay はゆれ幅(ドット)"""
+    out = []
+    for i in range(8):
+        ph = i / 8 * 2 * math.pi
+        im = sway_region(base, ph, top, fins, amp)
+        im = move_parts(im, [(box, round(ax * math.sin(ph + d)), round(ay * math.sin(ph + d))) for box, ax, ay, d in parts])
+        if breathe: im = offset(im, 0, -1 if math.sin(ph) > 0.35 else 0)
+        for k, (x, y, r) in enumerate(bubbles):
+            yy = y - ((i + k * 3) % 8) * 2
+            if r > 1: ring(im, x, yy, r, c1)
+            put(im, x - (r > 1), yy - (r > 1), c2)
+        out.append(im)
+    return out
