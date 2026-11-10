@@ -407,7 +407,7 @@ R.reaperRiver = function* (aw) {
   yield 60;
 };
 // ひれ(金魚すくいの金魚娘)
-const POI = () => pt(31, 27), FISHHAND = () => pt(73, 53), HCHEST = () => pt(56, 63);
+const POI = () => pt(39, 33), FISHHAND = () => pt(73, 42), HCHEST = () => pt(56, 51);
 R.hireSukui = function* (aw) {
   for (let v = 0; v < (aw ? 4 : 3); v++) {
     const o = FISHHAND(), a0 = aimFrom(o), n = aw ? 12 : 8;
