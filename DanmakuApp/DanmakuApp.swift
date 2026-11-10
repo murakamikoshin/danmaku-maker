@@ -51,13 +51,15 @@ struct DanmakuApp: App {
                 }
                 .onChange(of: auth.uid) { uid in
                     Task { await CosmeticsStore.shared.refreshPosts(uid: uid); await CosmeticsStore.shared.refreshBossTickets(uid: uid) }
+                    // 友達招待: 受け取ったコードの登録と、「初期プレイヤー」の称号(サインインできてから)
+                    if uid != nil { Task { await InviteService.shared.registerPending(); await InviteService.shared.claimFounderIfNeeded() } }
                     // マイステージのバックアップ(入れ直したあとは、ここで戻る)
                     StageBackup.shared.attach(uid: uid)
                     Task { await purchases.identify(uid: uid) }
                     NotificationService.shared.attach(uid: uid)
                 }
-                .onOpenURL { deepLink.handle($0) }
-                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL) }
+                .onOpenURL { deepLink.handle($0); AttributionService.shared.handle(url: $0) }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL); AttributionService.shared.handle(userActivity: $0) }
                 .onChange(of: scenePhase) { phase in
                     if phase == .background { Task { await ResultsQueue.shared.flush() } }
                     if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
@@ -79,6 +81,8 @@ final class DeepLink: ObservableObject {
     @Published var stageID: String?
 
     func handle(_ url: URL?) {
+        // 招待リンク(OneLink)をアプリで直接開いたとき。コードは deep_link_sub1 に入っている
+        if let url, let code = InviteService.code(from: url) { InviteService.shared.receive(code: code); return }
         guard let url, url.path.hasPrefix("/s/") else { return }
         let id = url.lastPathComponent.uppercased()
         if id.count == 5 { stageID = id }

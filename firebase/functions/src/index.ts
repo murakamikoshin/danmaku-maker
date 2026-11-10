@@ -9,6 +9,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
 import nodemailer from "nodemailer";
 import { submitFeedback } from "./feedback.js";
+import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, getInviteInfo as getInviteInfoFn, registerInvite as registerInviteFn } from "./invite.js";
 import { runMonthlyAward, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
@@ -201,6 +202,9 @@ export const submitResults = onCall(async (req) => {
     // 遊ばれた回数が節目を越えたら、作者に知らせる
     if (milestone) await notifyAuthor(db, { to: milestone.to, kind: "plays", stageId: id, stageName: milestone.name, extra: String(milestone.m) });
   }
+  // 招待された人なら、遊んだ回数を数える(失敗しても、結果の送信は成功のまま)
+  const totalPlays = [...merged.values()].reduce((a, b) => a + b.plays, 0);
+  await countInvitePlays(db, req.auth!.uid, totalPlays).catch((e) => logger.warn("countInvitePlays", e));
   return { ok: true };
 });
 
@@ -509,6 +513,15 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   const reports = await db.collection("reports").where("reporterUid", "==", uid).get();
   for (const r of reports.docs) await r.ref.update({ reporterUid: "deleted" });
 
+  // 友達招待の記録(自分のコード・招待された記録)。他の人に付けた報酬は、そのまま残す
+  const inv = await db.doc(`inviteState/${uid}`).get();
+  const myCode = inv.get("code") as string | undefined;
+  if (myCode) await db.doc(`inviteCodes/${myCode}`).delete();
+  await db.doc(`inviteState/${uid}`).delete();
+  await db.doc(`invites/${uid}`).delete();
+  await db.doc(`titleState/${uid}`).delete();
+  await db.doc(`publicProfiles/${uid}`).delete();
+
   await db.recursiveDelete(db.doc(`users/${uid}`));
   await getAuth().deleteUser(uid);
   logger.info("account-deleted", { stages: mine.size, likes: likes.size });
@@ -579,7 +592,24 @@ export const swipeRefillByAd = onCall(async (req) => refillByAd(requireAny(req))
 export const swipeUseDrink = onCall(async (req) => useDrink(requireAny(req)));
 export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, async (req) => {
   const uid = requireAny(req);
-  return submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
+  const result = await submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
+  await countInvitePlays(db, uid, 1).catch((e) => logger.warn("countInvitePlays", e));
+  return result;
+});
+/** 自分の招待コードと、招待の状況(コードがなければ作る) */
+export const getInviteInfo = onCall(async (req) => getInviteInfoFn(db, requireAny(req)));
+/** 友達の招待コードを登録する(1回だけ)。報酬は、招待された人が3回遊んだときにサーバーが付ける */
+export const registerInvite = onCall(async (req) => {
+  const uid = requireAny(req);
+  const created = await getAuth().getUser(uid).then((u) => Date.parse(u.metadata.creationTime)).catch(() => null);
+  return registerInviteFn(db, uid, req.data, Date.now(), { accountCreatedAt: Number.isFinite(created) ? created : null, device: deviceGateFromEnv(process.env) });
+});
+/** 招待機能が出る前から遊んでいる人に「初期プレイヤー」称号を付ける(締め切りの時刻 FOUNDER_CUTOFF_MS を設定するまでは、配らない) */
+export const claimFounder = onCall(async (req) => {
+  const uid = requireAny(req);
+  const created = await getAuth().getUser(uid).then((u) => Date.parse(u.metadata.creationTime)).catch(() => null);
+  const cutoff = Number(process.env.FOUNDER_CUTOFF_MS);
+  return claimFounderFn(db, uid, Number.isFinite(created) ? created : null, Number.isFinite(cutoff) && cutoff > 0 ? cutoff : null);
 });
 export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period));
 /** 称号を付ける(null で外す)。持っている称号だけ */

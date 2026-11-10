@@ -87,6 +87,9 @@ service cloud.firestore {
     match /swipeMismatches/{id} { allow read, write: if false; }
 
     // 称号: 持っている称号と付けている称号は本人だけが読める。名前の横に出す分(公開のプロフィール)は、ログイン済みなら誰でも読める。書き込みは Cloud Functions だけ
+    match /inviteState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
+    match /invites/{uid} { allow read, write: if false; }
+    match /inviteCodes/{code} { allow read, write: if false; }
     match /titleState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /publicProfiles/{uid} { allow read: if signedIn(); allow write: if false; }
 

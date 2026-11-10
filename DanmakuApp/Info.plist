@@ -8,6 +8,10 @@
 	<string>$(ADMOB_INTERSTITIAL_UNIT_ID)</string>
 	<key>ADMOB_REWARDED_UNIT_ID</key>
 	<string>$(ADMOB_REWARDED_UNIT_ID)</string>
+	<key>APPLE_APP_ID</key>
+	<string>$(APPLE_APP_ID)</string>
+	<key>APPSFLYER_DEV_KEY</key>
+	<string>$(APPSFLYER_DEV_KEY)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

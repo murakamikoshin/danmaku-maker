@@ -630,3 +630,39 @@ describe("爆風(隕石・地雷)の当たり判定", () => {
     expect(blastHits(blast({ bounces: 0 }), 100, 100)).toBe(false);
   });
 });
+
+describe("友達招待の部品", () => {
+  it("招待コードは、小文字・空白・ハイフンを直して読み、紛らわしい文字(0/O/1/I)を含むものは断る", async () => {
+    const { normalizeCode, isValidCode } = await import("../src/invite.js");
+    expect(normalizeCode(" abcd-efgh ")).toBe("ABCDEFGH");
+    expect(isValidCode("ABCDEFGH")).toBe(true);
+    for (const bad of ["ABCDEFG", "ABCDEFGHJ", "ABCDEFG0", "ABCDEFGO", "ABCDEFG1", "ABCDEFGI", "", normalizeCode(undefined)]) expect(isValidCode(bad)).toBe(false);
+  });
+  it("DeviceCheck の署名つきトークンは、ES256 で、鍵 ID とチーム ID が入る", async () => {
+    const { generateKeyPairSync, verify } = await import("node:crypto");
+    const { deviceCheckJwt } = await import("../src/invite.js");
+    const { privateKey, publicKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    const pem = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+    const jwt = deviceCheckJwt(pem, "KEY1234567", "TEAM123456", 1_700_000_000);
+    const [h, b, sig] = jwt.split(".") as [string, string, string];
+    expect(JSON.parse(Buffer.from(h, "base64url").toString())).toEqual({ alg: "ES256", kid: "KEY1234567", typ: "JWT" });
+    expect(JSON.parse(Buffer.from(b, "base64url").toString())).toEqual({ iss: "TEAM123456", iat: 1_700_000_000 });
+    expect(verify("sha256", Buffer.from(`${h}.${b}`), { key: publicKey, dsaEncoding: "ieee-p1363" }, Buffer.from(sig, "base64url"))).toBe(true);
+  });
+  it("DeviceCheck: 設定が足りなければ判定しない。設定があれば、記録なし=未使用・bit0=使用済みを読み分ける", async () => {
+    const { generateKeyPairSync } = await import("node:crypto");
+    const { deviceGateFromEnv } = await import("../src/invite.js");
+    expect(deviceGateFromEnv({})).toBeNull();
+    const pem = generateKeyPairSync("ec", { namedCurve: "P-256" }).privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+    const env = { DEVICECHECK_P8: Buffer.from(pem).toString("base64"), DEVICECHECK_KEY_ID: "K", DEVICECHECK_TEAM_ID: "T" };
+    const calls: { url: string; body: Record<string, unknown> }[] = [];
+    const reply = (status: number, text: string) => (async (url: unknown, init: { body: string }) => { calls.push({ url: String(url), body: JSON.parse(init.body) }); return { status, text: async () => text } as Response; }) as unknown as typeof fetch;
+    expect(await deviceGateFromEnv(env, reply(200, "Failed to find bit state"))!.used("tok")).toBe(false);
+    expect(await deviceGateFromEnv(env, reply(200, JSON.stringify({ bit0: true, bit1: false, last_update_time: "2026-11" })))!.used("tok")).toBe(true);
+    await deviceGateFromEnv(env, reply(200, ""))!.mark("tok");
+    expect(calls[0]!.url).toBe("https://api.devicecheck.apple.com/v1/query_two_bits");
+    expect(calls[2]!.url).toBe("https://api.devicecheck.apple.com/v1/update_two_bits");
+    expect(calls[2]!.body).toMatchObject({ device_token: "tok", bit0: true, bit1: false });
+    await expect(deviceGateFromEnv(env, reply(401, "bad"))!.used("tok")).rejects.toThrow();
+  });
+});

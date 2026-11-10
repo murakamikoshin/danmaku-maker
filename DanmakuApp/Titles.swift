@@ -9,6 +9,8 @@ enum TitleID {
     static let scoreIDs = ["score1", "score2", "score3", "score4"]
     /// スコア達成のしきい値(サーバーの titles.ts と同じ値)
     static let scoreMin: [String: String] = ["score1": "100000000", "score2": "1000000000000", "score3": "1000000000000000000", "score4": "10000000000000000000000000000"]
+    /// 友達招待の称号(サーバーの titles.ts の INVITE_TITLES と同じ)。招待のしくみだけが付ける
+    static let inviteIDs = ["invited", "inv1", "inv3", "inv5", "inv10", "founder"]
     static let monthKinds = ["rank1", "rank2", "rank3", "top10", "pct1", "pct10", "pct50"]
 
     struct Month: Equatable { let kind: String; let year: Int; let month: Int }
@@ -21,11 +23,11 @@ enum TitleID {
         return Month(kind: String(parts[0]), year: y, month: m)
     }
 
-    static func isValid(_ id: String) -> Bool { scoreIDs.contains(id) || month(id) != nil }
+    static func isValid(_ id: String) -> Bool { scoreIDs.contains(id) || inviteIDs.contains(id) || month(id) != nil }
 
     /// 画面に出す文字(例「弾幕職人」「2026年11月 1位」)
     static func text(_ id: String) -> String? {
-        if scoreIDs.contains(id) { return L("title.\(id)") }
+        if scoreIDs.contains(id) || inviteIDs.contains(id) { return L("title.\(id)") }
         if let m = month(id) { return String(format: L("title.m.\(m.kind)"), m.year, m.month) }
         return nil
     }
@@ -42,12 +44,19 @@ enum TitleID {
             }
         }
         switch id {
+        case "inv10", "founder": return CrownStyle.gold
+        case "inv5": return Color(Palette.pink)
+        case "inv3": return Color(Palette.bullets[2])
+        case "invited", "inv1": return Color(Palette.bullets[0])
         case "score4": return CrownStyle.gold
         case "score3": return Color(Palette.pink)
         case "score2": return Color(Palette.bullets[2])
         default: return Color(Palette.bullets[4])
         }
     }
+
+    /// 持っている招待の称号を、決まった順に並べる
+    static func inviteSorted(_ ids: [String]) -> [String] { inviteIDs.filter { ids.contains($0) } }
 
     /// 持っている称号を、見せる順に並べる(スコア達成は高い順、月間は新しい月が先。同じ月は順位が上のものが先)
     static func monthSorted(_ ids: [String]) -> [String] {
@@ -277,6 +286,12 @@ struct TitlePickerView: View {
                             VStack(spacing: 8) { ForEach(monthly, id: \.self) { row($0) } }
                         }
                         Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                    }
+                    let invites = TitleID.inviteSorted(service.owned)
+                    if !invites.isEmpty {
+                        GamePanel(title: "title.section.invite", tint: Color(Palette.bullets[0])) {
+                            VStack(spacing: 8) { ForEach(invites, id: \.self) { row($0) } }
+                        }
                     }
                     Button { gameTap(); pick(nil) } label: {
                         HStack {

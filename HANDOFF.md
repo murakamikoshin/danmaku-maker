@@ -125,3 +125,11 @@
 - OneLink テンプレート作成済み: サブドメイン `danmaku-maker.onelink.me`、テンプレート ID `F1m3`(テスト用リンク https://danmaku-maker.onelink.me/F1m3/m1bfz05r)。
 - Apple: DeviceCheck 鍵 作成済み(鍵ID 8VG2XQRPN3、ファイル ~/.local/keys/AuthKey_8VG2XQRPN3.p8 ※再ダウンロード不可)。App ID の Associated Domains は既にオン。
 - 残り: appsflyer ブランチの合流、project.yml の Associated Domains に `applinks:danmaku-maker.onelink.me` を追加、開発者キーの設定、DeviceCheck 鍵を Firebase シークレットに登録(鍵IDとチームID 49Q2CLPBWK)、サーバー・アプリの実装(docs/FRIEND_INVITE_DESIGN.md)。
+
+## 2026-11-10 友達招待の実装(コミット済み・本番デプロイ前)
+- サーバー: `firebase/functions/src/invite.ts`(getInviteInfo / registerInvite / claimFounder、遊んだ回数の数え上げは submitResults と swipeSubmitRun から)。Firestore: inviteState(本人だけ読める)・invites・inviteCodes(サーバーだけ)。テスト: test/emu/invite.test.ts、unit.test.ts
+- ごほうび(今は称号+回復ドリンク): 招待された人 = 称号「おそろいの仲間」+ドリンク2本、招待した人 = 1人目「おそろいの仲間」、3/5/10人目で inv3/inv5/inv10(10人まで)。パーツのデザインが決まったら差し替える。「初期プレイヤー」は環境変数 FOUNDER_CUTOFF_MS(この時刻より前に作ったアカウントだけ)を入れるまで配らない。
+- 端末の判定(DeviceCheck)は、環境変数 DEVICECHECK_P8(鍵の base64)・DEVICECHECK_KEY_ID(8VG2XQRPN3)・DEVICECHECK_TEAM_ID(49Q2CLPBWK)が揃うと有効。無ければ判定なし。
+- アプリ: `Services/InviteService.swift`、`InviteView.swift`(設定 > 友達を招待)、OneLink 受け取りは AttributionService(UDL)。リンク: https://danmaku-maker.onelink.me/F1m3?deep_link_value=invite&deep_link_sub1=<コード>。project.yml の APPSFLYER_DEV_KEY が空のあいだは計測・OneLink の自動受け取りは止まる(手入力のコードは動く)。
+- 手元の Xcode 15.2 では AppsFlyer 7.0.4 のリンクが通らない(swift_FORCE_LOAD。コンパイルまでは通る)。CI の Xcode 26 で確認する。
+- 世界のステージ一覧の「長押しで大きなプレビュー」は、不具合のもとなので削除した。

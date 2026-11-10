@@ -22,9 +22,6 @@ struct HomeView: View {
     @State private var searchError = false
     /// 一覧がスクロール中か(世界のステージのプレビュー・タイトルを止める)
     @State private var listScrolling = false
-    /// 長押し中のステージ(大きなプレビューを出す)と、長押しのあとの指を離した瞬間のタップを無視する期限
-    @State private var heldStage: RemoteStage?
-    @State private var ignoreTapUntil = Date.distantPast
     #if DEBUG
     @State private var showStoreDebug = false
     #endif
@@ -71,8 +68,6 @@ struct HomeView: View {
             .environment(\.listScrolling, listScrolling)
         }
         .background(Color(Palette.background).ignoresSafeArea())
-        .overlay { if let s = heldStage { StageHoldPreview(stage: s) } }
-        .animation(.easeOut(duration: 0.12), value: heldStage?.id)
         .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: s.title) { playing = nil }
@@ -255,11 +250,8 @@ struct HomeView: View {
             }
             let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) }
             ForEach(visible) { s in
-                // Button ではなくタップで開く(長押しのジェスチャーと Button のタップがぶつかって、タップが効かなくなるため)
-                RemoteRow(stage: s, onHold: holdChanged)
-                    .contentShape(Rectangle())
-                    .onTapGesture { if Date() > ignoreTapUntil { gameTap(); detail = s } }
-                    .accessibilityAddTraits(.isButton)
+                Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
+                    .buttonStyle(.plain)
                     // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
                     .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
             }
@@ -280,12 +272,6 @@ struct HomeView: View {
                 Text(world.searching ? "world.search.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
-    }
-
-    /// 長押しの始まり・終わり。終わった直後の「指を離したタップ」で詳細が開かないように、少しの間タップを無視する
-    private func holdChanged(_ s: RemoteStage?) {
-        if s != nil { ignoreTapUntil = .distantFuture } else { ignoreTapUntil = Date().addingTimeInterval(0.35) }
-        heldStage = s
     }
 
     private func loadMoreWorld() async {
@@ -422,9 +408,6 @@ struct SampleRow: View {
 
 struct RemoteRow: View {
     let stage: RemoteStage
-    /// 長押しの始まり(その行のステージ)と終わり(nil)を伝える
-    var onHold: ((RemoteStage?) -> Void)? = nil
-    @GestureState private var holding = false
     @Environment(\.listScrolling) private var scrolling
     @ObservedObject private var badges = ProfileBadgeStore.shared
     /// 画面に映っているか(一覧は LazyVStack なので、映ったとき・外れたときに変わる)
@@ -463,18 +446,6 @@ struct RemoteRow: View {
         }
         .onAppear { visible = true; badges.request([stage.authorUid]) }
         .onDisappear { visible = false }
-        // 長押しの間だけ、大きく再生する(「プレビューなし」のステージは出さない)
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.4)
-                .sequenced(before: LongPressGesture(minimumDuration: .infinity, maximumDistance: 12))
-                .updating($holding) { value, state, _ in
-                    if case .second(true, _) = value { state = true }
-                }
-        )
-        .onChange(of: holding) { _, now in
-            guard !stage.stage.hidesPreview else { return }
-            onHold?(now ? stage : nil)
-        }
     }
 }
 

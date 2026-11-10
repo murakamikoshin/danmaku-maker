@@ -11,6 +11,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:danmaku-maker.web.app</string>
+		<string>applinks:danmaku-maker.onelink.me</string>
 	</array>
 </dict>
 </plist>

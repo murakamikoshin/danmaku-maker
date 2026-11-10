@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		00A1FC5C7565FEC4B320110E /* SwipeScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615128478ED419DE71F36B5D /* SwipeScene.swift */; };
+		071D572AFC379229CC272AE3 /* InviteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF508725467E7BA7E008B01 /* InviteService.swift */; };
 		09B387C9A8FCD3FBB4FB40E0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE917C9BB76D326485AC381 /* SettingsView.swift */; };
 		0D7873A09140B44B35D8F46B /* se_get.caf in Resources */ = {isa = PBXBuildFile; fileRef = C5224F9D0128CAA0F361E5A3 /* se_get.caf */; };
 		10FF7C28EA88754D6D373736 /* PostQuotaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD184CEA2DD857CD5676F6A /* PostQuotaService.swift */; };
 		120FA968D44EB5A13BA9A033 /* AdPatternStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E01EDC40C37D63D5BFCBB /* AdPatternStore.swift */; };
 		1215C9FDD1B4A4B287E586C2 /* SwipeConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40ADE42EAA98FB605A05DBE1 /* SwipeConfig.swift */; };
+		138B957FE4558FE900DB2D1F /* AttributionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E687E4070D61C14836155C91 /* AttributionService.swift */; };
 		1824196EED242121C72C2DD2 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F59B3D178DDB070FCACBB /* PlayView.swift */; };
 		19B9548383503BD2EE44B99A /* bgm_stage.caf in Resources */ = {isa = PBXBuildFile; fileRef = FD3D2EA322BA8AD7A2883996 /* bgm_stage.caf */; };
 		1BFBA87BDE46B43E2AFD555C /* PublishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336990F3C2805B0B289AF111 /* PublishService.swift */; };
@@ -70,6 +72,7 @@
 		B259B87E13614269D15389E9 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
 		B29625A7B420E5FBB2C70E33 /* Titles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19084243662110CA130C11E5 /* Titles.swift */; };
 		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
+		B6C3F839660EB325FD0BF973 /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = AB52EFC09A12811D950F1323 /* AppsFlyerLib */; };
 		B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DE776EFBE3A43B7196CBB2 /* CommentViews.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
 		BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */ = {isa = PBXBuildFile; fileRef = 966ADA412BC3686AAAF4587D /* official_stages.json */; };
@@ -86,6 +89,7 @@
 		D0C0DAA2C43102A64E9A2A88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0719981841E39DB1D9E6C6AB /* FirebaseFirestore */; };
 		D3ABB662271871355FFEBA58 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F68837435E863CE44BB6217 /* FeedbackView.swift */; };
 		D7833137BBA76E6D7DE72C3D /* SampleStages.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8479A886EF2B4CF44742DC /* SampleStages.swift */; };
+		D9F4E01B5C9D6A0BB4D68889 /* InviteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1BF72A86D909E8288282E77 /* InviteView.swift */; };
 		DB8245559AA794D35992DF01 /* DailyRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEDF0B0A7D3F0B6DB776BA4 /* DailyRewardView.swift */; };
 		DD5A4F46808AE530C121BA06 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE38DC60AFF43856F6B97CF /* AudioManager.swift */; };
 		E06EA720167D731F500C2403 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8AC7B188372A599912AC6166 /* Localizable.xcstrings */; };
@@ -170,6 +174,7 @@
 		9919ADCE4A829189BF6EA647 /* SwipePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipePalette.swift; sourceTree = "<group>"; };
 		999CC41D43E16FE0C7135EDD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9A902F18477257157CAD6D89 /* RankingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViews.swift; sourceTree = "<group>"; };
+		9CF508725467E7BA7E008B01 /* InviteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteService.swift; sourceTree = "<group>"; };
 		9F3E01EDC40C37D63D5BFCBB /* AdPatternStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdPatternStore.swift; sourceTree = "<group>"; };
 		AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DanmakuApp.entitlements; sourceTree = "<group>"; };
 		B022E164B161AC369C1B1B4C /* DelaGothicOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DelaGothicOne-Regular.ttf"; sourceTree = "<group>"; };
@@ -187,6 +192,7 @@
 		CBED3045376B6993745B32B4 /* DanmakuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmakuApp.swift; sourceTree = "<group>"; };
 		CE2E8AF4C2864B6CCE26CD02 /* se_clear.caf */ = {isa = PBXFileReference; path = se_clear.caf; sourceTree = "<group>"; };
 		D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_awakened_idle_sheet.png; sourceTree = "<group>"; };
+		D1BF72A86D909E8288282E77 /* InviteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteView.swift; sourceTree = "<group>"; };
 		D1E163A6266ACFCDDDD873ED /* RewardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardStore.swift; sourceTree = "<group>"; };
 		D2BAD28940EC30276707CFDA /* SwipeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeService.swift; sourceTree = "<group>"; };
 		D2E13E3660EA4F407B0608E4 /* se_warning.caf */ = {isa = PBXFileReference; path = se_warning.caf; sourceTree = "<group>"; };
@@ -196,6 +202,7 @@
 		D8A85042053FECBD69E454F3 /* se_fail.caf */ = {isa = PBXFileReference; path = se_fail.caf; sourceTree = "<group>"; };
 		DAA4624B3387C7D797F98B70 /* EmitterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterCard.swift; sourceTree = "<group>"; };
 		E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */ = {isa = PBXFileReference; path = se_boom.caf; sourceTree = "<group>"; };
+		E687E4070D61C14836155C91 /* AttributionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionService.swift; sourceTree = "<group>"; };
 		E76AAB990CF55410F75C347D /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 		E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		EBE917C9BB76D326485AC381 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -224,6 +231,7 @@
 				B259B87E13614269D15389E9 /* GoogleMobileAds in Frameworks */,
 				2AFD1CC65A31EF1FF80CECE9 /* GoogleUserMessagingPlatform in Frameworks */,
 				746DFD5FFE2E149B7DDA3B08 /* RevenueCat in Frameworks */,
+				B6C3F839660EB325FD0BF973 /* AppsFlyerLib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +306,7 @@
 				9F3E01EDC40C37D63D5BFCBB /* AdPatternStore.swift */,
 				98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */,
 				7D829E677A324B52D22AD32A /* AppConfig.swift */,
+				E687E4070D61C14836155C91 /* AttributionService.swift */,
 				FEE38DC60AFF43856F6B97CF /* AudioManager.swift */,
 				9391B5CB3600EA4B42088BAD /* AuthService.swift */,
 				C68321CF2F6D3DCFF7456C66 /* Backend.swift */,
@@ -306,6 +315,7 @@
 				14C491E753AF70E1D5511B48 /* CommentService.swift */,
 				8818662D190C2A2F85F2F2CD /* CosmeticsStore.swift */,
 				9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */,
+				9CF508725467E7BA7E008B01 /* InviteService.swift */,
 				3E8FCD68D2BDEB92DFCAD920 /* LocalStageStore.swift */,
 				D6318A05C51A88952A6A8B21 /* NotificationService.swift */,
 				8524A918F37005EBA71BD0DF /* PatternLibrary.swift */,
@@ -357,6 +367,7 @@
 				999CC41D43E16FE0C7135EDD /* HomeView.swift */,
 				72F3CDCA55F3D4734044C80B /* Info.plist */,
 				4412D3DEBF51C69CE833FAEB /* InfoPlist.xcstrings */,
+				D1BF72A86D909E8288282E77 /* InviteView.swift */,
 				8AC7B188372A599912AC6166 /* Localizable.xcstrings */,
 				3ACCCCE535A3473E173ED76E /* MainTabView.swift */,
 				B20CD895E1DF2E57774AA998 /* PatternMakerView.swift */,
@@ -450,6 +461,7 @@
 				FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */,
 				B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */,
 				7E25805402198660741F69EC /* RevenueCat */,
+				AB52EFC09A12811D950F1323 /* AppsFlyerLib */,
 			);
 			productName = DanmakuApp;
 			productReference = 7FCDC0542E0DF6D21044E11D /* DanmakuApp.app */;
@@ -510,6 +522,7 @@
 			mainGroup = E259C44490F67C30B8FB0946;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				0FD38E1E474DE501A72ACBD3 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */,
 				02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				C477D248F6279A380A1DC92A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
@@ -579,6 +592,7 @@
 				120FA968D44EB5A13BA9A033 /* AdPatternStore.swift in Sources */,
 				2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */,
 				8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */,
+				138B957FE4558FE900DB2D1F /* AttributionService.swift in Sources */,
 				DD5A4F46808AE530C121BA06 /* AudioManager.swift in Sources */,
 				422683B39C4F6C2F5AC0A4BC /* AuthService.swift in Sources */,
 				4FB11696D193E6302F80B9DA /* Backend.swift in Sources */,
@@ -600,6 +614,8 @@
 				9EE2B974E5C16CBCDD2627B2 /* GameScene.swift in Sources */,
 				4571A8B5F7F66B0673EC41E5 /* GameUI.swift in Sources */,
 				F73B628F9BBEAB9474E903AF /* HomeView.swift in Sources */,
+				071D572AFC379229CC272AE3 /* InviteService.swift in Sources */,
+				D9F4E01B5C9D6A0BB4D68889 /* InviteView.swift in Sources */,
 				587D602678B8051E03EEC3EB /* LocalStageStore.swift in Sources */,
 				B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */,
 				45924AE0CA078873D2A83691 /* NotificationService.swift in Sources */,
@@ -713,6 +729,8 @@
 				ADMOB_BANNER_UNIT_ID = "ca-app-pub-3940256099942544/2435281174";
 				ADMOB_INTERSTITIAL_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
 				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
+				APPLE_APP_ID = 6824245206;
+				APPSFLYER_DEV_KEY = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -783,6 +801,8 @@
 				ADMOB_BANNER_UNIT_ID = "ca-app-pub-3863314847163872/8149204246";
 				ADMOB_INTERSTITIAL_UNIT_ID = "ca-app-pub-3863314847163872/6771452085";
 				ADMOB_REWARDED_UNIT_ID = "ca-app-pub-3863314847163872/5500185716";
+				APPLE_APP_ID = 6824245206;
+				APPSFLYER_DEV_KEY = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DanmakuApp/DanmakuApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -923,6 +943,14 @@
 				version = 11.6.0;
 			};
 		};
+		0FD38E1E474DE501A72ACBD3 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AppsFlyerSDK/AppsFlyerFramework";
+			requirement = {
+				kind = exactVersion;
+				version = 7.0.4;
+			};
+		};
 		634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
@@ -973,6 +1001,11 @@
 		849C6FF0167B1B8617DAC835 /* DanmakuCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DanmakuCore;
+		};
+		AB52EFC09A12811D950F1323 /* AppsFlyerLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0FD38E1E474DE501A72ACBD3 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */;
+			productName = AppsFlyerLib;
 		};
 		B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */ = {
 			isa = XCSwiftPackageProductDependency;

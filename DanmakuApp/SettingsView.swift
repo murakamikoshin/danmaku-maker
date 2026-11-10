@@ -64,6 +64,7 @@ struct SettingsView: View {
     @State private var showDelete = false
     @State private var showHandle = false
     @State private var showFeedback = false
+    @State private var showInvite = false
     @ObservedObject private var notify = NotificationService.shared
     @State private var notifyDenied = false
 
@@ -136,6 +137,18 @@ struct SettingsView: View {
                     GamePanel(title: "settings.about", tint: Color(Palette.bullets[4])) {
                         linkRow("settings.terms", "doc.text", AppConfig.termsURL)
                         linkRow("settings.privacy", "lock.shield", AppConfig.privacyURL)
+                        Button { gameTap(); showInvite = true } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "person.2.fill").font(.system(size: 15, weight: .bold)).frame(width: 24)
+                                Text("invite.row").font(.system(size: 15, weight: .heavy, design: .rounded))
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
+                            }
+                            .foregroundStyle(Color(Palette.text))
+                            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("settings.invite")
                         Button { gameTap(); showFeedback = true } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "lightbulb").font(.system(size: 15, weight: .bold)).frame(width: 24)
@@ -166,6 +179,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showStore) { StoreView() }
         .sheet(isPresented: $showHandle) { HandleSheet() }
         .sheet(isPresented: $showFeedback) { FeedbackView() }
+        .sheet(isPresented: $showInvite) { InviteView().environmentObject(auth) }
         .preferredColorScheme(.dark)
     }
 

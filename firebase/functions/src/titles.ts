@@ -14,6 +14,9 @@ export const SCORE_TITLES: { id: string; min: bigint }[] = [
   { id: "score4", min: 10n ** 28n },   // 弾幕の神: 1穣点
 ];
 
+/** 友達招待の称号(招待した人数・招待されて遊んだ・初期プレイヤー)。招待のサーバー処理だけが付ける */
+export const INVITE_TITLES = ["invited", "inv1", "inv3", "inv5", "inv10", "founder"] as const;
+
 /** 月間の称号の種類 */
 export const MONTHLY_KINDS = ["rank1", "rank2", "rank3", "top10", "pct1", "pct10", "pct50"] as const;
 export type MonthlyKind = (typeof MONTHLY_KINDS)[number];
@@ -25,6 +28,7 @@ export const monthlyTitleId = (kind: MonthlyKind, month: string) => `${kind}:${m
 export function isTitleId(id: unknown): id is string {
   if (typeof id !== "string") return false;
   if (SCORE_TITLES.some((t) => t.id === id)) return true;
+  if ((INVITE_TITLES as readonly string[]).includes(id)) return true;
   const m = /^([a-z0-9]+):(\d{4})-(0[1-9]|1[0-2])$/.exec(id);
   return !!m && (MONTHLY_KINDS as readonly string[]).includes(m[1]!);
 }

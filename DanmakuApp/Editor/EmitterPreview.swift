@@ -430,26 +430,6 @@ struct SpoilerTile: View {
     }
 }
 
-/// 一覧のセルを長押ししている間だけ出す、大きなプレビュー(指を離すと消える)
-struct StageHoldPreview: View {
-    let stage: RemoteStage
-    var body: some View {
-        let side = min(UIScreen.main.bounds.width - 48, 340)
-        ZStack {
-            Color.black.opacity(0.55).ignoresSafeArea()
-            VStack(spacing: 12) {
-                StageMiniPreview(stage: stage.stage, playing: true, visible: true, size: side, boost: 1.15)
-                    .shadow(color: .black.opacity(0.5), radius: 16)
-                Text(stage.name).font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-                    .lineLimit(2).multilineTextAlignment(.center).padding(.horizontal, 24)
-            }
-        }
-        .allowsHitTesting(false)
-        .transition(.opacity)
-        .accessibilityHidden(true)
-    }
-}
-
 /// 1行に収まらないタイトルを、横に流して最後まで見せる。
 /// 先頭で2秒止まる → 一定の速さで末尾まで流れる → 末尾で1秒止まる → 先頭へパッと戻る、をくり返す。
 /// 速さはタイトルの長さによらず同じ。収まるタイトルは動かさない
