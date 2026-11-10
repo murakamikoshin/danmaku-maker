@@ -1,0 +1,234 @@
+<title>ボス専用技 試射場</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1p:wght@400;500;700&display=swap">
+<style>
+/* 弾幕の画面そのままの暗い一色。左に試射場(ゲーム画面)、右にボスと技の選択と仕様 */
+:root{
+  --bg:#0c0916; --field:#0d0a18; --panel:#161126; --line:#2a2342; --fg:#ebe6f6; --mute:#9d94b8;
+  --accent:#ff2a4a; --awake:#f2c14e; --awake-ink:#1a1206; --lock:#7fd8ff;
+  --display:"DotGothic16","M PLUS 1p",ui-monospace,monospace;
+  --body:"M PLUS 1p","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.6}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 44px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(24px,4vw,36px);margin:0 0 4px;letter-spacing:.04em;text-wrap:balance}
+.lead{color:var(--mute);font-size:13.5px;margin:0 0 18px;max-width:70ch}
+.main{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:820px){.main{grid-template-columns:1fr}}
+.screen{position:relative;max-width:380px;width:100%;margin:0 auto}
+canvas#field{display:block;width:100%;aspect-ratio:360/600;max-width:100%;background:var(--field);border:1px solid var(--line);border-radius:8px;image-rendering:pixelated;touch-action:none;cursor:crosshair}
+.under{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lab{font-size:12px;color:var(--mute);letter-spacing:.08em;margin-right:2px}
+button{font:inherit;font-size:13px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--mute)}
+button:focus-visible{outline:2px solid var(--awake);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#form button[data-v="awake"][aria-pressed="true"]{background:var(--awake);border-color:var(--awake);color:var(--awake-ink)}
+.bosses{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.bosses button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 5px}
+.bosses img{image-rendering:pixelated;width:56px;height:56px;object-fit:contain}
+.bosses span{font-size:12px}
+.pats{display:flex;flex-direction:column;gap:6px}
+.pats button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:8px 12px}
+.pats .nm{font-family:var(--display);font-size:16px}
+.pats .sig{font-size:11px;color:var(--awake);border:1px solid #5a4520;border-radius:4px;padding:0 6px;white-space:nowrap}
+.pats button[aria-pressed="true"] .sig{color:#fff;border-color:#fff8}
+.spec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.spec h2{margin:0;font-family:var(--display);font-weight:400;font-size:22px;text-wrap:balance}
+.lock{font-size:12px;color:var(--lock)}
+.spec dl{margin:0;display:grid;grid-template-columns:5.5em 1fr;gap:6px 12px;font-size:13.5px}
+.spec dt{color:var(--mute)}
+.spec dd{margin:0;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);border-radius:6px;padding:3px 8px 3px 4px;font-size:12.5px}
+.chip canvas{image-rendering:pixelated;width:30px;height:30px}
+.chip small{color:var(--mute)}
+code{font-family:ui-monospace,monospace;font-size:12px;color:var(--lock)}
+footer{margin-top:24px;font-size:12.5px;color:var(--mute);max-width:72ch}
+</style>
+<div class="wrap">
+  <h1>ボス専用技 試射場</h1>
+  <p class="lead">そのボスを選んでいるときだけステージに置ける、限定の弾幕パターン。6体×5技、弾も専用の見た目。自機は自動で避ける(ドラッグか矢印キーで自分でも動かせる)。</p>
+  <div class="main">
+    <div>
+      <div class="screen"><canvas id="field" width="720" height="1200" aria-label="試射場"></canvas></div>
+      <div class="under">
+        <button id="auto" type="button" aria-pressed="true">自動で避ける</button>
+        <button id="again" type="button">最初から</button>
+      </div>
+    </div>
+    <div class="side">
+      <div class="bosses" id="bosses" role="group" aria-label="ボス"></div>
+      <div class="bar"><span class="lab">姿</span><div class="bar" id="form" role="group" aria-label="姿"></div></div>
+      <div class="pats" id="pats" role="group" aria-label="技"></div>
+      <div class="spec" id="spec"></div>
+    </div>
+  </div>
+  <footer>見た目と動きを確かめるためのプレビューで、数値は見栄えで決めたもの。難易度はゲームに入れて実機で調整する。ぷにまるの覚醒の技名は、ショップや選択画面では隠す(ザコの技名だけ見せる)。仕様は swipe-mode-spec の docs/BOSS_EXCLUSIVE_PATTERNS.md。</footer>
+</div>
+<script>
+const SPEC = __SPEC__, FRAMES = __FRAMES__, SHIP = "__SHIP__";
+</script>
+<script>
+__ENGINE__
+</script>
+<script>
+// ---------- 描画 ----------
+const cv = document.getElementById("field"), ctx = cv.getContext("2d");
+const IMG = {};
+function img(src) { if (!IMG[src]) { const i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
+const ship = img(SHIP);
+// ボスの全コマを先に読み込む(描く直前に読み込むと、最初のうち絵が出ない)
+for (const id in FRAMES) for (const k in FRAMES[id]) FRAMES[id][k].forEach(img);
+const STARS = Array.from({ length: 60 }, () => [Math.random() * W, Math.random() * H, Math.random() < 0.2 ? 2 : 1]);
+const ANIM = { idle: [8, "loop"], windup: [4, "once"], attack: [4, "loop"], recover: [2, "once"] };
+function bossFrame() {
+  const [n, mode] = ANIM[G.anim], i = Math.floor(G.animT / 7);
+  const k = mode === "loop" ? i % n : Math.min(i, n - 1);
+  return FRAMES[G.boss.id][(G.aw ? "awake:" : "normal:") + G.anim][k];
+}
+function drawSprite(type, x, y, a, sc) {
+  const s = SPRITES[type][G.aw ? 1 : 0], w = s.width * sc, h = s.height * sc;
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); if (a) ctx.rotate(a);
+  ctx.drawImage(s, -w / 2, -h / 2, w, h); ctx.restore();
+}
+function render() {
+  ctx.setTransform(2, 0, 0, 2, 0, 0); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "#0d0a18"; ctx.fillRect(0, 0, W, H);
+  for (const [x, y, s] of STARS) { const yy = (y + G.T * 0.3 * s) % H; ctx.fillStyle = s > 1 ? "#5a5078" : "#2e2846"; ctx.fillRect(x | 0, yy | 0, 1, 1); }
+  // ボス
+  const fr = img(bossFrame()), bw = G.boss.w, bh = G.boss.h;
+  if (fr.complete) ctx.drawImage(fr, Math.round(G.B.x - bw), Math.round(G.B.y - bh), bw * 2, bh * 2);
+  // 予告の印
+  for (const m of G.marks) {
+    const blink = (m.t >> 2) % 2;
+    if (m.k === "tip") { const p = m.at(); drawSprite("fox", p.x, p.y - 2, 0, 1 + (blink ? 0 : 0)); }
+    if (m.k === "glint") { ctx.fillStyle = blink ? "#ffffff" : "#aadcff"; const r = 2 + (m.t % 10 < 5 ? 1 : 0); ctx.fillRect(m.x - r, m.y, r * 2 + 1, 1); ctx.fillRect(m.x, m.y - r, 1, r * 2 + 1); }
+    if (m.k === "line") { ctx.strokeStyle = blink ? "#9696a8" : "#4a4a58"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2 + (m.x2 - m.x1) * 3, m.y2 + (m.y2 - m.y1) * 3); ctx.stroke(); ctx.setLineDash([]); }
+    if (m.k === "warp") { ctx.strokeStyle = blink ? "#ff3cc8" : "#c8ff3c"; ctx.lineWidth = 1; const r = 3 + (30 - m.t) * 0.4; ctx.strokeRect(Math.round(m.x - r) + .5, Math.round(m.y - r) + .5, Math.round(r * 2), Math.round(r * 2)); ctx.fillStyle = "#ffffff"; ctx.fillRect(m.x | 0, m.y | 0, 1, 1); }
+    if (m.k === "ret") {
+      const e = EYE(), col = m.lock ? "#ff3c3c" : "#5adcff";
+      ctx.strokeStyle = col; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(m.x, m.y); ctx.stroke(); ctx.globalAlpha = 1;
+      const x = Math.round(m.x), y = Math.round(m.y), r = 9; ctx.fillStyle = col;
+      for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { ctx.fillRect(x + sx * r - (sx < 0 ? 0 : 3), y + sy * r - (sy < 0 ? 0 : 0), 4, 1); ctx.fillRect(x + sx * r - (sx < 0 ? 0 : 0), y + sy * r - (sy < 0 ? 0 : 3), 1, 4); }
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  // レーザー
+  for (const L of G.lasers) {
+    const o = L.from(), x2 = o.x + cos(L.a) * L.len, y2 = o.y + sin(L.a) * L.len;
+    ctx.lineCap = "butt";
+    if (L.t <= L.warn) { ctx.strokeStyle = L.col[0]; ctx.globalAlpha = (L.t >> 2) % 2 ? 0.8 : 0.35; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); ctx.globalAlpha = 1; }
+    else { const k = Math.min(1, (L.t - L.warn) / 6); ctx.strokeStyle = L.col[0]; ctx.lineWidth = L.w * k; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); ctx.strokeStyle = L.col[1]; ctx.lineWidth = L.w * 0.4 * k; ctx.stroke(); }
+  }
+  // 弾
+  for (const b of G.bullets) {
+    let a = 0, sc = 1;
+    if (b.face !== undefined) a = b.face;
+    else if (ORIENT.has(b.type) && (b.vx || b.vy)) a = atan2(b.vy, b.vx) + PI / 2;
+    if (b.spin) a = b.t * 0.25;
+    if (b.type === "bubble") sc = Math.max(1, b.r / 4);
+    if (b.type === "ink") sc = 1.5;
+    if (b.big) sc = b.big;
+    drawSprite(b.type, b.x, b.y, a, sc);
+  }
+  // 自機
+  if (!(G.inv && (G.inv >> 2) % 2)) {
+    if (ship.complete) ctx.drawImage(ship, Math.round(G.P.x - 16), Math.round(G.P.y - 16), 32, 32);
+  }
+  ctx.fillStyle = "#ff2a4a"; ctx.fillRect(Math.round(G.P.x) - 2, Math.round(G.P.y) - 2, 5, 5);
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(Math.round(G.P.x) - 1, Math.round(G.P.y) - 1, 3, 3);
+  // 暗転(提灯と自機のまわりだけ見える)
+  if (G.dark > 0) {
+    const k = Math.min(1, G.dark / 30, (230 - G.dark) / 30 + 0.0001);
+    dk.clearRect(0, 0, W, H); dk.fillStyle = "rgba(4,3,10," + (0.94 * Math.max(0, Math.min(1, k))) + ")"; dk.fillRect(0, 0, W, H);
+    dk.globalCompositeOperation = "destination-out";
+    const l = pt(70, 8);
+    for (const [x, y, r] of [[l.x, l.y, 46], [G.P.x, G.P.y, 44]]) { dk.beginPath(); dk.arc(x, y, r, 0, TAU); dk.fill(); }
+    dk.globalCompositeOperation = "source-over";
+    ctx.drawImage(dark, 0, 0);
+  }
+  // 技の名前と被弾
+  if (G.banner) {
+    const t = G.banner.t, name = G.pat.card.split(" / ")[G.aw && G.pat.card.includes(" / ") ? 1 : 0];
+    const x = Math.round(Math.min(8, -200 + t * 16));
+    ctx.font = "13px " + getComputedStyle(document.body).getPropertyValue("--display");
+    const w = ctx.measureText(name).width + 18;
+    ctx.fillStyle = G.aw ? "rgba(90,60,10,.85)" : "rgba(120,16,36,.85)"; ctx.fillRect(x, 10, w, 22);
+    ctx.fillStyle = G.aw ? "#f2c14e" : "#ff2a4a"; ctx.fillRect(x, 10, 2, 22);
+    ctx.fillStyle = "#ffffff"; ctx.textBaseline = "middle"; ctx.fillText(name, x + 9, 21.5);
+  }
+  ctx.font = "12px " + getComputedStyle(document.body).getPropertyValue("--display");
+  ctx.fillStyle = "#9d94b8"; ctx.textAlign = "right"; ctx.fillText("被弾 " + G.hits, W - 8, H - 10); ctx.textAlign = "left";
+}
+const dark = document.createElement("canvas"); dark.width = W; dark.height = H; const dk = dark.getContext("2d");
+
+// ---------- 画面の部品 ----------
+function el(t, a = {}, ...k) { const e = document.createElement(t); for (const [x, y] of Object.entries(a)) { if (x === "class") e.className = y; else e.setAttribute(x, y); } k.forEach(c => e.append(c)); return e; }
+function press(g, v) { [...g.children].forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); }
+const bossesEl = document.getElementById("bosses"), formEl = document.getElementById("form"), patsEl = document.getElementById("pats"), specEl = document.getElementById("spec");
+SPEC.bosses.forEach(b => {
+  const bt = el("button", { type: "button", "data-v": b.id }, el("img", { src: FRAMES[b.id]["normal:idle"][0], alt: "" }), el("span", {}, b.name));
+  bt.onclick = () => pickBoss(b.id); bossesEl.append(bt);
+});
+[["normal", "通常"], ["awake", "覚醒"]].forEach(([v, l]) => { const bt = el("button", { type: "button", "data-v": v }, l); bt.onclick = () => { G.aw = v === "awake"; press(formEl, v); showSpec(); reset(); }; formEl.append(bt); });
+function bulletIcon(type) {
+  const s = SPRITES[type][G.aw ? 1 : 0], c = el("canvas", { width: 10, height: 10 }), x = c.getContext("2d");
+  x.drawImage(s, Math.floor((10 - s.width) / 2), Math.floor((10 - s.height) / 2)); return c;
+}
+function pickBoss(id) {
+  const b = SPEC.bosses.find(x => x.id === id);
+  G.boss = { id, w: b.w, h: b.h };
+  press(bossesEl, id);
+  patsEl.replaceChildren(...SPEC.patterns[id].map(p => {
+    const nm = p.card.split(" / ")[0];
+    const bt = el("button", { type: "button", "data-v": p.id }, el("span", { class: "nm" }, nm), ...(p.sig ? [el("span", { class: "sig" }, "看板技")] : []));
+    bt.onclick = () => pickPat(p.id); return bt;
+  }));
+  pickPat(SPEC.patterns[id][0].id);
+}
+function pickPat(pid) { G.pat = SPEC.patterns[G.boss.id].find(p => p.id === pid); press(patsEl, pid); showSpec(); reset(); }
+function showSpec() {
+  const p = G.pat, b = SPEC.bosses.find(x => x.id === G.boss.id);
+  const names = p.card.split(" / ");
+  specEl.replaceChildren(
+    el("h2", {}, G.aw && names[1] ? names[1] : names[0]),
+    el("div", { class: "lock" }, b.name + "を選んでいるときだけ置ける ・ Pattern." + p.id),
+    el("dl", {},
+      el("dt", {}, "動き"), el("dd", {}, p.desc),
+      el("dt", {}, "覚醒すると"), el("dd", {}, p.awake),
+      el("dt", {}, "数値"), el("dd", {}, p.params),
+      el("dt", {}, "発射位置"), el("dd", {}, b.origin)),
+    el("div", { class: "chips" }, ...p.bullets.map(t => el("div", { class: "chip" }, bulletIcon(t), el("span", {}, SPEC.bullets[t].name, " ", el("small", {}, SPEC.bullets[t].note))))));
+  formEl.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", (x.dataset.v === "awake") === G.aw));
+  [...patsEl.children].forEach((bt, i) => { bt.querySelector(".nm").textContent = SPEC.patterns[G.boss.id][i].card.split(" / ")[G.aw && SPEC.patterns[G.boss.id][i].card.includes(" / ") ? 1 : 0]; });
+}
+const autoBt = document.getElementById("auto");
+autoBt.onclick = () => { G.auto = !G.auto; autoBt.setAttribute("aria-pressed", G.auto); };
+document.getElementById("again").onclick = () => reset();
+function toField(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
+cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); G.target = toField(e); });
+cv.addEventListener("pointermove", e => { if (G.target) G.target = toField(e); });
+cv.addEventListener("pointerup", () => { G.target = null; });
+cv.addEventListener("pointercancel", () => { G.target = null; });
+addEventListener("keydown", e => { if (e.key.startsWith("Arrow")) { keys[e.key] = 1; if (document.activeElement === document.body || document.activeElement === cv) e.preventDefault(); } });
+addEventListener("keyup", e => { keys[e.key] = 0; });
+
+// ---------- 開始 ----------
+G.aw = false; press(formEl, "normal");
+pickBoss("kitsune");
+let last = performance.now(), acc = 0;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function loop(now) {
+  acc += Math.min(100, now - last); last = now;
+  while (acc >= 1000 / 60) { step(); acc -= 1000 / 60; }
+  render(); requestAnimationFrame(loop);
+}
+for (let i = 0; i < 40; i++) step();
+render();
+requestAnimationFrame(loop);
+</script>
