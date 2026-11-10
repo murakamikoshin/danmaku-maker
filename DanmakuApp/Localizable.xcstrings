@@ -57157,13 +57157,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "王冠・奖牌"
+            "value": "王冠·奖牌"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "王冠・獎牌"
+            "value": "王冠·獎牌"
           }
         }
       }
@@ -57807,13 +57807,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "王冠・奖牌：%@"
+            "value": "王冠·奖牌：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "王冠・獎牌：%@"
+            "value": "王冠·獎牌：%@"
           }
         }
       }

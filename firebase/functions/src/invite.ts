@@ -25,15 +25,15 @@ export const INVITEE_SHIP = "original_steel";
 const MODELS = ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"] as const;
 const colorSet = (c: string): string[] => MODELS.map((m) => `${m}_${c}`);
 export const SHIP_REWARDS: Readonly<Record<number, readonly string[]>> = {
-  // 招待された人は、オリジナルと称号「おそろいの仲間」をもらう。その人が招待する側になっても、1人目のごほうびがかぶらないよう、1人目は別の自機と称号にする
-  1: ["ace_steel"],
+  // 1人目は、オリジナルに加えて、エース・鋼と称号「招待デビュー」。招待された人(オリジナルと「おそろいの仲間」をもらう)が招待する側になっても、新しいものが増える
+  1: ["original_steel", "ace_steel"],
   3: MODELS.filter((m) => m !== "ace").map((m) => `${m}_steel`),
   5: colorSet("snow"),
   10: colorSet("emerald"),
   20: colorSet("crimson"),
   31: colorSet("shadow"),
 };
-/** 招待した人が手に入れる自機の全部(30機。重複なし。31機めの「オリジナル」は、招待された人がもらう) */
+/** 招待した人が手に入れる自機の全部(31機。重複なし) */
 export const INVITER_SHIPS: readonly string[] = Object.values(SHIP_REWARDS).flat();
 /** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で、チケットで手に入るボスと交換できる) */
 export const BOSS_TICKET_AT: readonly number[] = [10, 20];
