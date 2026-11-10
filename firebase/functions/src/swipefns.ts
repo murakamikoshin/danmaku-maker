@@ -32,7 +32,7 @@ async function staminaView(uid: string, now: number) {
   const user = await db().doc(`users/${uid}`).get();
   const unlimited = hasPass(user.get("pass") as { until?: number } | undefined, now);
   const cur = current(staminaOf(user), now);
-  return { value: cur.value, nextAt: cur.nextAt, drinks: (user.get("drinks") as number | undefined) ?? 0, unlimited, adRefillUsed: user.get("adRefillDay") === dayKeyJst(now) };
+  return { value: cur.value, nextAt: cur.nextAt, drinks: (user.get("drinks") as number | undefined) ?? 0, unlimited, adRefillUsed: user.get("adRefillDay") === dayKeyJst(now), gifts: (user.get("participationDrinks") as number | undefined) ?? 0 };
 }
 
 export const getStamina = (uid: string) => staminaView(uid, Date.now());
@@ -369,18 +369,3 @@ export async function applyPurchaseEvent(event: { id?: string; type?: string; ap
 }
 
 export { isMemberToken };
-
-/**
- * 参加賞: スワイプ弾幕を初めて遊び終えたとき(記録が通ったとき)に、回復ドリンクを 1 個、1 度だけ渡す。
- * 新しい版を入れた既存のユーザーも、次に遊び終えたときにもらえる。もらったら true
- */
-export async function grantParticipationDrink(db: Firestore, uid: string): Promise<boolean> {
-  const ref = db.doc(`users/${uid}`);
-  return db.runTransaction(async (tx) => {
-    const user = await tx.get(ref);
-    if (user.get("participationDrink") === true) return false;
-    const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
-    tx.set(ref, { ...base, participationDrink: true, drinks: FieldValue.increment(1) }, { merge: true });
-    return true;
-  });
-}

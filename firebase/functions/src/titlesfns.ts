@@ -149,11 +149,32 @@ export async function runMonthlyAward(db: Firestore, nowMs: number): Promise<Mon
     });
   }
   await pw.close();
-  // 王冠・メダル・自機をもらった人に、ごほうびが届いたことを知らせる(同時に20人ずつ)
-  for (let i = 0; i < awarded.length; i += 20) await Promise.all(awarded.slice(i, i + 20).map((u) => notifyReward(db, u, "monthly")));
+  // 参加賞: その月に遊んだ人全員に、回復ドリンクを 1 個(二重には渡さない)。同時に20人ずつ
+  const everyone = entries.map((e) => e.uid);
+  for (let i = 0; i < everyone.length; i += 20) await Promise.all(everyone.slice(i, i + 20).map((u) => grantMonthlyParticipation(db, u, month)));
+  // 結果と、ごほうびが届いたことを知らせる(同時に20人ずつ)
+  for (let i = 0; i < everyone.length; i += 20) await Promise.all(everyone.slice(i, i + 20).map((u) => notifyReward(db, u, "monthly")));
 
   const cleared = 0;
   await marker.set({ status: "done", startedAt: nowMs, doneAt: Date.now(), participants: total, cleared });
   logger.info("swipe-monthly-award", { month, participants: total, cleared });
   return { month, participants: total, cleared };
+}
+
+/**
+ * 参加賞: 月ごとの結果発表のとき、その月にスワイプ弾幕を遊んだ(記録のある)人全員に、回復ドリンクを 1 個渡す。
+ * 同じ月に二重に渡さない(users/{uid}/monthlyGifts/{月} の印)。渡したら true
+ */
+export async function grantMonthlyParticipation(db: Firestore, uid: string, month: string): Promise<boolean> {
+  const ref = db.doc(`users/${uid}`);
+  const mark = db.doc(`users/${uid}/monthlyGifts/${month}`);
+  return db.runTransaction(async (tx) => {
+    const [user, done] = await Promise.all([tx.get(ref), tx.get(mark)]);
+    if (done.exists) return false;
+    const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
+    tx.create(mark, { at: FieldValue.serverTimestamp() });
+    // participationDrinks は、これまでに参加賞でもらった数(アプリが「届いた」を知らせるために使う)
+    tx.set(ref, { ...base, drinks: FieldValue.increment(1), participationDrinks: FieldValue.increment(1) }, { merge: true });
+    return true;
+  });
 }

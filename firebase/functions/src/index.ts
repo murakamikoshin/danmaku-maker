@@ -12,7 +12,7 @@ import { submitFeedback } from "./feedback.js";
 import { notifyReward } from "./notify.js";
 import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, getInviteInfo as getInviteInfoFn, registerInvite as registerInviteFn } from "./invite.js";
 import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
-import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, grantParticipationDrink, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
+import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
@@ -603,9 +603,7 @@ export const swipeSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 180 }, as
   const uid = requireAny(req);
   const result = await submitSwipeRun(uid, isMemberToken(req.auth?.token), req.data);
   await rewardInviter(await countInvitePlays(db, uid, 1).catch((e) => { logger.warn("countInvitePlays", e); return undefined; }));
-  // 参加賞: 初めて遊び終えたら、回復ドリンクを 1 個
-  const gift = await grantParticipationDrink(db, uid).catch((e) => { logger.warn("participation-drink", e); return false; });
-  return gift ? { ...result, participationDrink: true } : result;
+  return result;
 });
 /** 自分の招待コードと、招待の状況(コードがなければ作る) */
 export const getInviteInfo = onCall(async (req) => getInviteInfoFn(db, requireAny(req)));

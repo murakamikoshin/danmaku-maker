@@ -1,5 +1,5 @@
 // 友達招待: 登録・自分/古いアカウント/存在しないコードの拒否・3回遊んだときの付与・端末の判定・上限・初期プレイヤーを、エミュレーターで確かめる
-import { grantParticipationDrink } from "../../src/swipefns.js";
+import { grantMonthlyParticipation } from "../../src/titlesfns.js";
 import { getFirestore as adminDb } from "firebase-admin/firestore";
 import { initializeApp as adminInit } from "firebase-admin/app";
 import { describe, expect, it } from "vitest";
@@ -146,16 +146,20 @@ describe("自機を渡す節目", () => {
 });
 
 describe("参加賞", () => {
-  it("初めて遊び終えたとき、回復ドリンクを1個、1度だけ渡す", async () => {
+  it("月ごとの結果発表で、回復ドリンクを1個。同じ月には二重に渡さない", async () => {
     const u = uid("pd");
-    expect(await grantParticipationDrink(db, u)).toBe(true);
+    expect(await grantMonthlyParticipation(db, u, "2026-10")).toBe(true);
     expect((await db.doc(`users/${u}`).get()).get("drinks")).toBe(1);
-    expect(await grantParticipationDrink(db, u)).toBe(false);
+    expect(await grantMonthlyParticipation(db, u, "2026-10")).toBe(false);
     expect((await db.doc(`users/${u}`).get()).get("drinks")).toBe(1);
+    expect(await grantMonthlyParticipation(db, u, "2026-11")).toBe(true);   // 次の月は、また1個
+    const got = await db.doc(`users/${u}`).get();
+    expect(got.get("drinks")).toBe(2);
+    expect(got.get("participationDrinks")).toBe(2);
     // すでにドリンクを持っている人にも、1個足す
     const v = uid("pe");
     await db.doc(`users/${v}`).set({ displayName: "x", postCount: 0, blockedUids: [], drinks: 4 });
-    expect(await grantParticipationDrink(db, v)).toBe(true);
+    expect(await grantMonthlyParticipation(db, v, "2026-10")).toBe(true);
     expect((await db.doc(`users/${v}`).get()).get("drinks")).toBe(5);
   });
 });

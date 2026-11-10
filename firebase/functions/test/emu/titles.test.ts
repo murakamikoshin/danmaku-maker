@@ -92,6 +92,10 @@ describe("月の集計", () => {
     expect(await titles(uids[1]!)).toEqual(expect.arrayContaining(["rank2:2026-10", "pct10:2026-10"]));   // 20人: 2位は上位10%(2位まで)
     expect(await titles(uids[10]!)).toEqual([]);   // 11位は、どれにも入らない
     expect(await prof(uids[10]!)).toEqual({});   // 王冠もメダルもない
+    // 参加賞: その月に遊んだ全員に、回復ドリンクが1個(11位の人にも)
+    const drinks = async (uid: string) => (await db.doc(`users/${uid}`).get()).get("drinks");
+    expect(await drinks(uids[0]!)).toBeGreaterThanOrEqual(1);
+    expect(await drinks(uids[10]!)).toBeGreaterThanOrEqual(1);
     // 金の自機: 1位は5機、3位は3機、4位は2機。11位は、なし
     const ships = async (uid: string) => (((await db.doc(`inviteState/${uid}`).get()).get("ships") as string[] | undefined) ?? []).sort();
     expect(await ships(uids[0]!)).toEqual(["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"]);
@@ -105,6 +109,7 @@ describe("月の集計", () => {
     // 二重には配らない
     const again = await runMonthlyAward(db, now + 1000);
     expect(again.skipped).toBe(true);
+    expect(await drinks(uids[10]!)).toBe(1);
 
     // 次の月になっても、王冠・メダル・称号は残る
     await runMonthlyAward(db, jst(2026, 12, 1, 0, 5));

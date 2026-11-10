@@ -30,6 +30,9 @@ final class RewardNoticeService: ObservableObject {
         defer { checking = false }
         await InviteService.shared.refresh()           // 自機・チケット・ボス
         await TitleService.shared.load(uid: uid)       // 称号・王冠
+        // 参加賞(月ごとの結果発表で届く回復ドリンク)。これまでにもらった数が、サーバーの gifts
+        let gifts = ((try? await Backend.functions.httpsCallable("swipeGetStamina").call())?.data as? [String: Any])?["gifts"] as? NSNumber
+        let giftCount = gifts?.intValue
         let store = CosmeticsStore.shared
         let ships = Set(store.ownedSkins)
         let titles = Set(TitleService.shared.owned)
@@ -37,7 +40,9 @@ final class RewardNoticeService: ObservableObject {
         let tickets = store.bossTickets
         let k = key(uid)
         defer {
-            defaults.set(["ships": Array(ships), "titles": Array(titles), "bosses": Array(bosses), "tickets": tickets] as [String: Any], forKey: k)
+            var save: [String: Any] = ["ships": Array(ships), "titles": Array(titles), "bosses": Array(bosses), "tickets": tickets]
+            if let giftCount { save["gifts"] = giftCount } else if let old = defaults.dictionary(forKey: k)?["gifts"] { save["gifts"] = old }   // 読めなかったときは、前の値のまま
+            defaults.set(save, forKey: k)
         }
         guard let seen = defaults.dictionary(forKey: k) else { return }   // 初めて: 出さずに、いまの状態を覚える
         let seenShips = Set(seen["ships"] as? [String] ?? []), seenTitles = Set(seen["titles"] as? [String] ?? [])
@@ -45,6 +50,7 @@ final class RewardNoticeService: ObservableObject {
         var items: [Item] = []
         for s in ships.subtracting(seenShips).sorted() where ShipSkin.isValid(s) { items.append(Item(kind: .ship(s))) }
         for t in titles.subtracting(seenTitles).sorted() where TitleID.isValid(t) { items.append(Item(kind: .title(t))) }
+        if let giftCount, let seenGifts = seen["gifts"] as? Int, giftCount > seenGifts { items.append(Item(kind: .drink(giftCount - seenGifts))) }
         if tickets > seenTickets { items.append(Item(kind: .ticket(tickets - seenTickets))) }
         for b in BossCharacter.allCases where bosses.contains(b.productKey) && !seenBosses.contains(b.productKey) { items.append(Item(kind: .boss(b))) }
         if !items.isEmpty { pending = items }
