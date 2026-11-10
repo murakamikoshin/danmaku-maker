@@ -172,6 +172,8 @@ final class SwipeService: ObservableObject {
         r.ranked = (d["ranked"] as? Bool) ?? false
         r.improved = (d["improved"] as? Bool) ?? false
         r.newTitles = ((d["newTitles"] as? [String]) ?? []).filter(TitleID.isValid)
+        // 参加賞(初めて遊び終えたときの回復ドリンク)が届いたら、ごほうびの画面で知らせる
+        if (d["participationDrink"] as? Bool) == true { RewardNoticeService.shared.pending.append(.init(kind: .drink(1))) }
         return r
     }
 

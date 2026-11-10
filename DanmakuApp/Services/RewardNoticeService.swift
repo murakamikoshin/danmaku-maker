@@ -10,7 +10,7 @@ final class RewardNoticeService: ObservableObject {
     static let shared = RewardNoticeService()
 
     struct Item: Identifiable, Equatable {
-        enum Kind: Equatable { case ship(String), title(String), ticket(Int), boss(BossCharacter) }
+        enum Kind: Equatable { case ship(String), title(String), ticket(Int), boss(BossCharacter), drink(Int) }
         let id = UUID()
         let kind: Kind
     }
@@ -80,6 +80,7 @@ struct RewardNoticeView: View {
             case .ship(let id): SkinThumb(id: id).frame(width: 48, height: 48)
             case .title: Image(systemName: "rosette").font(.system(size: 24, weight: .bold)).foregroundStyle(Color(Palette.gold)).frame(width: 48, height: 48)
             case .ticket: TicketArtView(height: 24).frame(width: 64, height: 48)
+            case .drink: Image(systemName: "drop.fill").font(.system(size: 24, weight: .bold)).foregroundStyle(Color(Palette.bullets[2])).frame(width: 48, height: 48)
             case .boss(let b): Image(uiImage: BossSprites.art(b, awakened: false)?.still ?? UIImage()).resizable().interpolation(.none).scaledToFit().frame(width: 48, height: 48)
             }
             Text(text(item)).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
@@ -98,6 +99,7 @@ struct RewardNoticeView: View {
             return String(format: L("reward.notice.title.item"), TitleID.text(id) ?? "")
         case .ticket(let n): return String(format: L("reward.notice.ticket"), n)
         case .boss(let b): return String(format: L("reward.notice.boss"), L("enemy.boss.\(b.rawValue)"))
+        case .drink(let n): return String(format: L("reward.notice.drink"), n)
         }
     }
 }
