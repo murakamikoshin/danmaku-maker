@@ -17,10 +17,10 @@ const HALO = { dx: -1, dy: -75 }, CHEST = { dx: 0, dy: -28 };
 /** 出した弾の形(fullsim.ts の Bullet と同じ) */
 export interface AngelBullet {
   x: number; y: number; vx: number; vy: number; color: number; turn: number; homeLeft: number; accel: number; maxSpeed: number; bounces: number; script: number; age: number;
-  fuse?: number; u0?: number; u1?: number; u2?: number; u3?: number;
+  fuse?: number; u0?: number; u1?: number; u2?: number; u3?: number; look?: number;
 }
 
-function mulberry(seed: number) {
+export function mulberry(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

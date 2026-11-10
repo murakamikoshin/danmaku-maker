@@ -2,6 +2,7 @@ import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
+import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
 import { BOSS_MOVE_COUNT, PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -71,7 +72,8 @@ export function beamHits(b: { x: number; y: number; vx: number; vy: number; age:
 /** ボスの大きさ(小・中・大)ごとの、弾が当たる半径。アプリの DanmakuConfig.bossRadii と同じ */
 const BOSS_RADII = [17, 24, 34] as const;
 /** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
-const FALLEN_ANGEL_LOOK = 5;
+/** 専用の絵を持つボス(堕天使 5・九尾 6)。位置と当たり判定はアプリの BossCharacter と同じ */
+const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6;
 const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 /** ボスの動き(Swift の Simulation.bossPoint と同じ式) */
@@ -214,6 +216,8 @@ function mirrorBullet(b: Bullet) {
   switch (b.script) {
     case BEAM_SCRIPT: case BOOMERANG_SCRIPT: case WEAVE_SCRIPT: case ZIGZAG_SCRIPT: b.turn = -b.turn; break;
     case SHARD_SCRIPT: case RING_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
+    case FOLD_SCRIPT: b.u1 = -(b.u1 ?? 0); break;
+    case SWAY_SCRIPT: b.u2 = -(b.u2 ?? 0); break;
     default: break;
   }
   if (b.follow) b.follow.ox = W - b.follow.ox;
@@ -356,6 +360,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       break;
     }
     default: {
+      if (isKitsunePattern(m.t)) { emitKitsune(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isFallenAngelPattern(m.t)) { emitFallenAngel(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       // 広告で解放するパターン: 弾の出し方の表に従う
       const recipe = RECIPES[m.t];
@@ -452,7 +457,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const angel = sp.look === FALLEN_ANGEL_LOOK;
+    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK;
     const wt = Math.max(0, waveT);
     let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
@@ -576,6 +581,26 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
           b.x = (b.u0 ?? 0) + Math.cos(ang) * b.maxSpeed * e;
           b.y = (b.u1 ?? 0) + Math.sin(ang) * b.maxSpeed * e * 0.8;
         }
+      } else if (b.script === FOLD_SCRIPT) {
+        // 御札: 決まった時間で直角に折れる(覚醒すると、もう一度逆に折れてジグザグになる)
+        b.age += dt;
+        if (b.homeLeft === 0 && b.age >= (b.u0 ?? 0)) {
+          const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * (b.u3 ?? 1);
+          const na = Math.atan2(b.vy, b.vx) + (b.u1 ?? 0);
+          b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+          b.homeLeft = 1;
+        } else if (b.homeLeft === 1 && (b.u2 ?? 0) > 0 && b.age >= (b.u2 ?? 0)) {
+          const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          const na = Math.atan2(b.vy, b.vx) - (b.u1 ?? 0);
+          b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+          b.homeLeft = 2;
+        }
+        b.x += b.vx * dt; b.y += b.vy * dt;
+      } else if (b.script === SWAY_SCRIPT) {
+        // 揺れる弾: 横に揺れながら、まっすぐ落ちる
+        b.age += dt;
+        b.vx = Math.sin((b.u0 ?? 0) + b.age * 60 * (b.u1 ?? 0)) * (b.u2 ?? 0);
+        b.x += b.vx * dt; b.y += b.vy * dt;
       } else if (b.script === RING_SCRIPT) {
         // 閉じてくる輪: 中心へ向かって縮む(回る輪もある)。中心に着いたら消える
         b.age += dt;

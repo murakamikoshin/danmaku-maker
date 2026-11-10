@@ -56,6 +56,11 @@ public struct Bullet: Equatable, Sendable {
     static let featherDecelSeconds = 32.0 / 60
     static let featherDecay = (0.93 as Double).squareRoot()
 
+    /// 御札の印(直角結界)。u0 秒で u1 ラジアン(符号つき)だけ向きを折り、速さを u3 倍にする。u2 > 0 なら u2 秒でもう一度、逆に折る。homeLeft が折った回数
+    public static let foldScript = 14
+    /// 揺れる弾の印(天気雨・千本鳥居の覚醒)。横の速さが sin(u0 + 経過フレーム × u1) × u2 (px/秒)。縦は変えない
+    public static let swayScript = 15
+
     public var isRing: Bool { script == Bullet.ringScript }
 
     /// 画面の左右を反転する(発射の線対称)。向きの符号を持つ動き(カーブ・蛇行・光線のなぎ払い・回る破片/輪)は、回る向きも反対にする
@@ -65,6 +70,8 @@ public struct Bullet: Equatable, Sendable {
         switch script {
         case Bullet.beamScript, Bullet.boomerangScript, Bullet.weaveScript, Bullet.zigzagScript: turn = -turn
         case Bullet.shardScript, Bullet.ringScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
+        case Bullet.foldScript: u1 = -u1
+        case Bullet.swayScript: u2 = -u2
         default: break
         }
         if follow != nil { follow!.ox = w - follow!.ox }
@@ -246,6 +253,30 @@ extension Bullet {
             let ang = u2 + turn * max(0, age - 0.4)
             x = u0 + cos(ang) * maxSpeed * e
             y = u1 + sin(ang) * maxSpeed * e * 0.8
+            return .alive
+        }
+        if script == Bullet.foldScript {
+            // 御札: 決まった時間で直角に折れる(覚醒すると、もう一度逆に折れてジグザグになる)
+            age += dt
+            if homeLeft == 0 && age >= u0 {
+                let sp = (vx * vx + vy * vy).squareRoot() * u3
+                let na = atan2(vy, vx) + u1
+                vx = cos(na) * sp; vy = sin(na) * sp
+                homeLeft = 1
+            } else if homeLeft == 1 && u2 > 0 && age >= u2 {
+                let sp = (vx * vx + vy * vy).squareRoot()
+                let na = atan2(vy, vx) - u1
+                vx = cos(na) * sp; vy = sin(na) * sp
+                homeLeft = 2
+            }
+            x += vx * dt; y += vy * dt
+            return .alive
+        }
+        if script == Bullet.swayScript {
+            // 揺れる弾: 横に揺れながら、まっすぐ落ちる
+            age += dt
+            vx = sin(u0 + age * 60 * u1) * u2
+            x += vx * dt; y += vy * dt
             return .alive
         }
         if script == Bullet.ringScript {
@@ -530,6 +561,8 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance:
+            emitKitsune(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise:
             emitFallenAngel(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         default:

@@ -76,12 +76,14 @@ extension BossCharacter {
     var sheet: String? {
         switch self {
         case .fallenAngel: return "fallen_angel_idle_sheet"
+        case .kitsune: return "kitsune_idle_sheet"
         }
     }
     /// 覚醒した姿の画像ファイル名。nil は、姿を変えない
     var awakenedSheet: String? {
         switch self {
         case .fallenAngel: return "fallen_angel_awakened_idle_sheet"
+        case .kitsune: return "kitsune_awakened_idle_sheet"
         }
     }
 }

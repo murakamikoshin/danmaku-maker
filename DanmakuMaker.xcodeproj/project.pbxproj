@@ -21,6 +21,7 @@
 		1C20487B71E38F28F475A332 /* CustomImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9530E1EAF580BD67F83B4EE6 /* CustomImageStore.swift */; };
 		1C4E61A46658BD3C2C25238C /* bgm_boss.caf in Resources */ = {isa = PBXBuildFile; fileRef = C2ACDBD9418D0E35835B749E /* bgm_boss.caf */; };
 		1F91A43E586B316BBD734F94 /* BlockStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1CF7BA1869BF6F9BDA4A6 /* BlockStore.swift */; };
+		21823CB1B64962313CD99C4F /* kitsune_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D8BBAB60DC832687980AB794 /* kitsune_idle_sheet.png */; };
 		2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */; };
 		258439472FCE7575D6175586 /* ShopEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */; };
 		2A55DA44E85BB1B20F77D9DE /* RewardArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6825279BEB581088B0F51469 /* RewardArt.swift */; };
@@ -50,6 +51,7 @@
 		69455ED16E1C066EC2FECE78 /* se_fail.caf in Resources */ = {isa = PBXBuildFile; fileRef = D8A85042053FECBD69E454F3 /* se_fail.caf */; };
 		6D3557BE1F8AC3B3CF638EA3 /* RankingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F6631C63821142B1374716 /* RankingService.swift */; };
 		6DE550727985EECB9AE11467 /* se_warning.caf in Resources */ = {isa = PBXBuildFile; fileRef = D2E13E3660EA4F407B0608E4 /* se_warning.caf */; };
+		6F9F4E574A781BDF193844D4 /* kitsune_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */; };
 		6FC2842093BC35D3483AEA1B /* SwipeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BAD28940EC30276707CFDA /* SwipeService.swift */; };
 		719CE9B25A4D4A4364874C40 /* DelaGothicOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B022E164B161AC369C1B1B4C /* DelaGothicOne-Regular.ttf */; };
 		746DFD5FFE2E149B7DDA3B08 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 7E25805402198660741F69EC /* RevenueCat */; };
@@ -136,6 +138,7 @@
 		1BD184CEA2DD857CD5676F6A /* PostQuotaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostQuotaService.swift; sourceTree = "<group>"; };
 		1EB55E6B7227AB4BCFACF4BC /* bgm_swipe.caf */ = {isa = PBXFileReference; path = bgm_swipe.caf; sourceTree = "<group>"; };
 		22CBB003D2F0B51C6B71C9FE /* PublishFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishFlowView.swift; sourceTree = "<group>"; };
+		23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kitsune_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		26808C89214BA52C1C7B9577 /* ScreenshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotUITests.swift; sourceTree = "<group>"; };
 		2F3E159DD0B6B045774CF307 /* OFL-DelaGothicOne.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-DelaGothicOne.txt"; sourceTree = "<group>"; };
 		2F90FD0BF055BC9AAF9F9B76 /* SwipeHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeHomeView.swift; sourceTree = "<group>"; };
@@ -206,6 +209,7 @@
 		D6318A05C51A88952A6A8B21 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_idle_sheet.png; sourceTree = "<group>"; };
 		D8A85042053FECBD69E454F3 /* se_fail.caf */ = {isa = PBXFileReference; path = se_fail.caf; sourceTree = "<group>"; };
+		D8BBAB60DC832687980AB794 /* kitsune_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kitsune_idle_sheet.png; sourceTree = "<group>"; };
 		DAA4624B3387C7D797F98B70 /* EmitterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterCard.swift; sourceTree = "<group>"; };
 		E66CEFFE7BE092A2A6A16C00 /* se_boom.caf */ = {isa = PBXFileReference; path = se_boom.caf; sourceTree = "<group>"; };
 		E687E4070D61C14836155C91 /* AttributionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionService.swift; sourceTree = "<group>"; };
@@ -291,6 +295,8 @@
 			children = (
 				D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */,
 				D6C08167013B46C55187FABF /* fallen_angel_idle_sheet.png */,
+				23F206A1E9E837F1CC022C6E /* kitsune_awakened_idle_sheet.png */,
+				D8BBAB60DC832687980AB794 /* kitsune_idle_sheet.png */,
 			);
 			path = Bosses;
 			sourceTree = "<group>";
@@ -571,6 +577,8 @@
 				2FB6FA26E202620B814C6A93 /* bgm_swipe.caf in Resources */,
 				2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */,
 				E5893805022D5A2BDD1D7721 /* fallen_angel_idle_sheet.png in Resources */,
+				6F9F4E574A781BDF193844D4 /* kitsune_awakened_idle_sheet.png in Resources */,
+				21823CB1B64962313CD99C4F /* kitsune_idle_sheet.png in Resources */,
 				BE5EA25924214B2949BA5A0A /* official_stages.json in Resources */,
 				4F08E969CB5E204C71A84E21 /* official_stages_i18n.json in Resources */,
 				4606BF25A527592293EDCE24 /* rewards in Resources */,

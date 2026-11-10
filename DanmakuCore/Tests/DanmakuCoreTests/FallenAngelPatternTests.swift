@@ -21,8 +21,11 @@ final class FallenAngelPatternTests: XCTestCase {
     func testPatternOrderAppended() {
         // 並びは変えない: 新しい技は、いちばん後ろ
         let all = AngelPattern.allCases
-        XCTAssertEqual(Array(all.suffix(5)), [.angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise])
-        XCTAssertEqual(all[all.count - 6], .swirl)
+        let a = all.firstIndex(of: .angelTwin)!
+        XCTAssertEqual(Array(all[a..<(a + 5)]), [.angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise])
+        XCTAssertEqual(all[a - 1], .swirl)
+        // 九尾の技は、その後ろに足してある
+        XCTAssertEqual(Array(all.suffix(5)), [.kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance])
     }
 
     func testParadiseGapStaysWithin90DegreesOfPrevious() {

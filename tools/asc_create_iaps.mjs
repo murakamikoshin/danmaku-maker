@@ -77,6 +77,7 @@ const lifetimeNotes = 'This is a one-time (non-consumable) purchase. To test: op
 const bossNotes = 'This is a one-time (non-consumable) purchase. To test: open the Shop tab (bottom of the screen) and open the "Bosses" tab at the top. Buy "Fallen Angel". It can then be placed as the boss of a stage you publish (Create tab > Boss mode > Advanced > Boss look). Anyone can play stages that use the boss without buying; it can also be tried in the editor before buying, and is only needed to publish. Use "Restore Purchases" at the top of the Shop screen to restore it. No account is required.';
 products.push(
   { id: 'boss.fallen_angel', yen: 400, ref: 'Boss Fallen Angel', ja: ['堕天使', 'ステージに置けるボス「堕天使」。5つの技と覚醒つき。'], en: ['Fallen Angel', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
+  { id: 'boss.kitsune', yen: 400, ref: 'Boss Nine-Tailed Shrine Maiden', ja: ['九尾の巫女', 'ステージに置けるボス「九尾の巫女」。5つの技と覚醒つき。'], en: ['Nine-Tailed Shrine Maiden', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'patternmaker', yen: 1000, ref: 'Pattern Maker', ja: ['弾幕作成モード', '指で線を描いて、自分だけの弾幕を作れます。'], en: ['Pattern Maker', 'Draw a line to make your own bullet pattern.'], notes: makerNotes },
   { id: 'lifetime', yen: 3000, ref: 'Lifetime Pack', ja: ['永久買い切りパック', '全部の課金コンテンツと広告削除を、今後の追加分もずっと。'], en: ['Lifetime Pack', 'All paid items and Remove Ads, forever.'], notes: lifetimeNotes },
 );

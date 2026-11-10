@@ -182,6 +182,20 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("boss-home", Stage(name: "h", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 5, emitters: emitters([.ring, .aim, .spiral], boss: true), lifeMode: .hp, lifeCount: 10, bossX: 0.75, bossY: 0.3).sanitized()))
         stages.append(("damage-home", Stage(name: "h", mode: .damage, durationSec: 60, bossMove: 2, emitters: emitters([.aim, .flower], boss: true), lifeMode: .hp, lifeCount: 12, bossX: 0.25, bossY: 0.1).sanitized()))
 
+        // 九尾の巫女の専用の技(通常と覚醒、鏡写し、連戦)。ここより前の並びは変えない
+        func kitsune(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss, mir: Int? = nil) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0, mir: mir)
+            }
+            return Stage(name: "k", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 6, awaken: awaken).sanitized()
+        }
+        stages.append(("kitsune-lanterns-barrier", kitsune([(.kitsuneLanterns, 0.1, 9, 3.2, 0), (.kitsuneBarrier, 0.65, 12, 2.0, 0)], awaken: nil)))
+        stages.append(("kitsune-lanterns-barrier-aw", kitsune([(.kitsuneLanterns, 0.1, 9, 3.2, 0), (.kitsuneBarrier, 0.65, 12, 2.0, 0)], awaken: 2)))
+        stages.append(("kitsune-sunshower-torii", kitsune([(.kitsuneSunshower, 0.05, 8, 2.2, 0), (.kitsuneTorii, 0.45, 22, 1.4, 60)], awaken: nil)))
+        stages.append(("kitsune-sunshower-torii-aw", kitsune([(.kitsuneSunshower, 0.05, 8, 2.2, 0), (.kitsuneTorii, 0.45, 22, 1.4, 60)], awaken: 2)))
+        stages.append(("kitsune-dance-aw-mirror", kitsune([(.kitsuneDance, 0.05, 9, 2.2, 0), (.kitsuneBarrier, 0.65, 12, 2.0, 0)], awaken: 3, mir: 1)))
+        stages.append(("kitsune-damage-all", kitsune([(.kitsuneLanterns, 0.1, 9, 3.2, 0), (.kitsuneSunshower, 0.05, 8, 2.2, 0), (.kitsuneTorii, 0.45, 22, 1.4, 60), (.kitsuneDance, 0.05, 9, 2.2, 0)], awaken: nil, mode: .damage)))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

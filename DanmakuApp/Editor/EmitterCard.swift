@@ -158,7 +158,7 @@ struct EmitterCard: View {
             SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),
                       range: -180...180, step: 15, disabled: !emitter.canRotate) { "\(Int($0))°" }
             if advanced {
-                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart) { "\(Int($0))°" }
+                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart) { "\(Int($0))" + (emitter.t == .kitsuneTorii ? "px" : "°") }
             }
             }   // if !collapsed
         }
@@ -194,6 +194,8 @@ struct EmitterCard: View {
         case .angelTwin: return "angle.rotate"
         case .angelParadise: return "angle.gap"
         case .angelFeather, .angelHalo, .angelCross: return "angle.none"
+        case .kitsuneTorii: return "angle.gap"
+        case .kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneDance: return "angle.none"
         default:
             // 広告で解放するパターン: 形によって、角度の意味が違う
             guard let r = emitter.t.recipe else { return "angle.none" }

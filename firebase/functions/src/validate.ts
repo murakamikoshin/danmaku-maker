@@ -10,7 +10,7 @@ export const INTERMISSION_BUDGET = 2;
 
 export const DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [0, 30, 60, 90, 120, 180], damage: [30, 60, 90, 120, 180], sequence: [] } as const;
 // 並びを変えない(乱数シードに順番を使っている)。新しいものは必ず後ろに足す
-export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise"] as const;
+export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
@@ -124,13 +124,17 @@ function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean
   return Math.abs(r - std) < 1e-6 ? { ok: true } : { ok: true, v: r };
 }
 
-/** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使)。アプリの BossCharacter.maxLook と同じ */
-export const BOSS_LOOK_MAX = 5;
+/** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女)。アプリの BossCharacter.maxLook と同じ */
+export const BOSS_LOOK_MAX = 6;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
 export const BOSS_CHARACTER_MIN = 5;
 /** 堕天使だけが使える技。堕天使(bossLook 5)のボスの場面にだけ置ける */
 export const FALLEN_ANGEL_PATTERNS = ["angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise"] as const;
-const usesAngelPattern = (list: Emitter[]) => list.some((m) => (FALLEN_ANGEL_PATTERNS as readonly string[]).includes(m.t));
+/** 九尾の巫女だけが使える技。九尾(bossLook 6)のボスの場面にだけ置ける */
+export const KITSUNE_PATTERNS = ["kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance"] as const;
+/** ボスのキャラクター専用の技を、持ち主でない見た目のボスに置いていないか(true なら不正)。技の持ち主: 堕天使 5、九尾 6 */
+const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
+  list.some((m) => ((FALLEN_ANGEL_PATTERNS as readonly string[]).includes(m.t) && look !== 5) || ((KITSUNE_PATTERNS as readonly string[]).includes(m.t) && look !== 6));
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
 export const UNLIMITED_CAP_SEC = 600;
@@ -229,8 +233,8 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
     if ((wBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (wSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "wave-look" };
     if ((wSize.v !== undefined || wBossLook.v !== undefined) && kind !== "boss") return { ok: false, error: "wave-look" };
-    // 堕天使の技は、堕天使のボスの場面にだけ置ける
-    if (usesAngelPattern(em.list) && !(kind === "boss" && wBossLook.v === 5)) return { ok: false, error: "emitter-pattern" };
+    // 堕天使・九尾の技は、そのボスの場面にだけ置ける
+    if (wrongBossPattern(em.list, kind === "boss" ? wBossLook.v : undefined)) return { ok: false, error: "emitter-pattern" };
     if (wMookLook.v !== undefined && wMooks.v === undefined && w.mooks === undefined) return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
@@ -350,8 +354,8 @@ export function validatePublish(input: unknown): Validated {
   // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
   if ((bBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (bSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "look" };
   if ((bSize.v !== undefined || bBossLook.v !== undefined) && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
-  // 堕天使の技は、堕天使のボスにだけ置ける
-  if (usesAngelPattern(emitters) && !((mode === "boss" || mode === "damage") && bBossLook.v === 5)) return { ok: false, error: "emitter-pattern" };
+  // 堕天使・九尾の技は、そのボスにだけ置ける
+  if (wrongBossPattern(emitters, mode === "boss" || mode === "damage" ? bBossLook.v : undefined)) return { ok: false, error: "emitter-pattern" };
   if (mode === "sequence" && (bMooks.v !== undefined || bMookLook.v !== undefined)) return { ok: false, error: "look" };
   if (bMookLook.v !== undefined && input.mooks === undefined) return { ok: false, error: "look" };
 

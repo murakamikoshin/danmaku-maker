@@ -125,6 +125,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case angelCross
     /// 終焉「失楽園」: 自機を中心にした弾の輪が閉じてくる。抜け道は1か所だけ
     case angelParadise
+    // 九尾の巫女だけが使える技(並びは変えない。足すときは必ず後ろへ)
+    /// 狐火「九つの灯」: 九本の尻尾の先に狐火が灯り、順に自機へ飛ぶ
+    case kitsuneLanterns
+    /// 御札「直角結界」: 御札が輪になって広がり、直角に曲がって格子の結界になる
+    case kitsuneBarrier
+    /// 狐雨「天気雨」: 空から狐火が降り、自機狙いの御札が混ざる
+    case kitsuneSunshower
+    /// 鳥居「千本鳥居」: 御札の壁が下りてくる。通り道は1か所
+    case kitsuneTorii
+    /// 九尾「玉藻の舞」: 九本の尻尾の先から、扇に狐火を撃ち続ける
+    case kitsuneDance
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -137,7 +148,13 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     /// 堕天使だけが使える技(並びは、出す順)
     public static let fallenAngel: [Pattern] = [.angelFeather, .angelHalo, .angelTwin, .angelCross, .angelParadise]
     /// ボスのキャラクターの専用の技か。その見た目のボスを選んでいるときだけ、ステージに置ける
-    public var bossCharacter: BossCharacter? { Pattern.fallenAngel.contains(self) ? .fallenAngel : nil }
+    public var bossCharacter: BossCharacter? {
+        if Pattern.fallenAngel.contains(self) { return .fallenAngel }
+        if Pattern.kitsune.contains(self) { return .kitsune }
+        return nil
+    }
+    /// 九尾の巫女だけが使える技(並びは、出す順)
+    public static let kitsune: [Pattern] = [.kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance]
 }
 
 public enum Mode: String, Codable, Sendable {

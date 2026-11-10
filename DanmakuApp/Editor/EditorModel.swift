@@ -28,6 +28,11 @@ extension Emitter {
         case .angelHalo: return Emitter(t: t, e: end, i: 2.0, c: 22, v: 4.2, r: 0)
         case .angelCross: return Emitter(t: t, e: end, i: 2.0, c: 1, v: 2.0, r: 0)
         case .angelParadise: return Emitter(t: t, e: end, i: 1.2, c: 23, v: 1.05, r: 29)
+        case .kitsuneLanterns: return Emitter(t: t, e: end, i: 0.1, c: 9, v: 3.2, r: 0)
+        case .kitsuneBarrier: return Emitter(t: t, e: end, i: 0.65, c: 12, v: 2.0, r: 0)
+        case .kitsuneSunshower: return Emitter(t: t, e: end, i: 0.05, c: 8, v: 2.2, r: 0)
+        case .kitsuneTorii: return Emitter(t: t, e: end, i: 0.45, c: 22, v: 1.4, r: 60)
+        case .kitsuneDance: return Emitter(t: t, e: end, i: 0.05, c: 9, v: 2.2, r: 0)
         default:
             // 広告で解放するパターン: 表の初期値
             let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)

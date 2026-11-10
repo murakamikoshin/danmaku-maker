@@ -12,7 +12,7 @@ final class BossCharacterTests: XCTestCase {
         XCTAssertEqual(boss(look: 5).bossLook, 5)
         XCTAssertEqual(Stage(name: "d", mode: .damage, durationSec: 60, emitters: [], bossLook: 5).sanitized().bossLook, 5)
         XCTAssertNil(Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], bossLook: 5).sanitized().bossLook)
-        XCTAssertNil(boss(look: 6).bossLook, "知らない番号は標準に戻す")
+        XCTAssertNil(boss(look: 7).bossLook, "知らない番号は標準に戻す")
         XCTAssertEqual(boss(look: 3).bossLook, 3, "図形のボスは、これまでどおり")
     }
 

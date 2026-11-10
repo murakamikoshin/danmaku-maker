@@ -2021,5 +2021,107 @@
    "formatVersion": 1,
    "name": "o31"
   }
+ },
+ {
+  "id": "o32",
+  "difficulty": 5,
+  "name": {
+   "ja": "九尾の巫女の舞",
+   "en": "Dance of the Nine-Tailed Shrine Maiden"
+  },
+  "aim": {
+   "ja": "九尾の巫女の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Nine-Tailed Shrine Maiden's five moves. She awakens and grows stronger as her HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 6,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "kitsuneLanterns",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.1,
+     "c": 9,
+     "v": 3.2,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "kitsuneBarrier",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.65,
+     "c": 12,
+     "v": 2,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "kitsuneSunshower",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 8,
+     "v": 2.2,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "kitsuneTorii",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.45,
+     "c": 22,
+     "v": 1.4,
+     "r": 60,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "kitsuneDance",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.05,
+     "c": 9,
+     "v": 2.2,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "kitsuneLanterns",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.1,
+     "c": 9,
+     "v": 3.2,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o32"
+  }
  }
 ]
