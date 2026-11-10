@@ -343,6 +343,7 @@ def idle_rig(base, top, fins, parts, breathe=1, bubbles=(), amp=2.5, c1=(150, 21
         ph = i / 8 * 2 * math.pi
         im = sway_region(base, ph, top, fins, amp)
         im = move_parts(im, [(box, round(ax * math.sin(ph + d)), round(ay * math.sin(ph + d))) for box, ax, ay, d in parts])
+        im = fill_gaps(im, base)
         if breathe: im = offset(im, 0, -1 if math.sin(ph) > 0.35 else 0)
         for k, (x, y, r) in enumerate(bubbles):
             yy = y - ((i + k * 3) % 8) * 2
@@ -350,3 +351,21 @@ def idle_rig(base, top, fins, parts, breathe=1, bubbles=(), amp=2.5, c1=(150, 21
             put(im, x - (r > 1), yy - (r > 1), c2)
         out.append(im)
     return out
+
+def fill_gaps(im, base):
+    """部品を動かしたあとのすき間を埋める: 元の絵では色があったのに透明になったドットを、となりの色で埋める"""
+    from collections import Counter
+    P = im.load(); Bp = base.load(); W_, H_ = im.size
+    for _ in range(3):
+        add = []
+        for y in range(H_):
+            for x in range(W_):
+                if P[x, y][3] or not Bp[x, y][3]: continue
+                nb = [P[x + dx, y + dy][:3] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if 0 <= x + dx < W_ and 0 <= y + dy < H_ and P[x + dx, y + dy][3]]
+                if nb: add.append((x, y, Counter(nb).most_common(1)[0][0]))
+        for x, y, c in add: P[x, y] = c + (255,)
+    return im
+
+def count_gaps(im, base):
+    P = im.load(); Bp = base.load(); W_, H_ = im.size
+    return sum(1 for y in range(H_) for x in range(W_) if Bp[x, y][3] and not P[x, y][3])
