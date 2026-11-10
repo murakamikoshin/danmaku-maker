@@ -88,7 +88,10 @@ function spawn(gen) { G.tasks.push({ g: gen, wait: 0 }); }
 // ---------- 技 ----------
 const R = {};
 // 九尾の巫女
-const TIP = k => { const a = (-90 + (k - 4) * 24) * PI / 180; return pt(56 + cos(a) * 46, 60 + sin(a) * 46); };
+// 尻尾の先の狐火(左下 → 上 → 右下の順)。新しい絵(元絵→ドット化)の位置
+const KFIRES = [[24,71],[21,54],[26,36],[40,24],[72,21],[84,32],[91,42],[94,57],[89,73]];
+const TIP = k => pt(KFIRES[k][0], KFIRES[k][1]);
+const KROOT = () => pt(56, 51);
 R.kitsuneLanterns = function* (aw) {
   for (let r = 0; r < (aw ? 2 : 1); r++) {
     const order = r % 2 ? [8, 7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -103,7 +106,7 @@ R.kitsuneLanterns = function* (aw) {
 };
 R.kitsuneBarrier = function* (aw) {
   for (let v = 0; v < 3; v++) {
-    const o = pt(56, 60), n = aw ? 18 : 12;
+    const o = KROOT(), n = aw ? 18 : 12;
     for (let i = 0; i < n; i++) {
       const s = i % 2 ? 1 : -1;
       fire("ofuda", o.x, o.y, v * 0.26 + i * TAU / n, 2, { u: b => {
@@ -118,7 +121,7 @@ R.kitsuneBarrier = function* (aw) {
 R.kitsuneSunshower = function* (aw) {
   for (let t = 0; t < 150; t++) {
     if (t % (aw ? 2 : 4) === 0) fire("fox", rand() * W, -8, PI / 2, aw ? 2.8 : 2.2, { u: b => { b.vx = sin((b.t + b.ph * 20) * 0.04) * 0.8; } });
-    if (t % 30 === 0) { const o = pt(56, 60), a = aimFrom(o); for (const d of [-0.2, 0, 0.2]) fire("ofuda", o.x, o.y, a + d, 2.6); }
+    if (t % 30 === 0) { const o = KROOT(), a = aimFrom(o); for (const d of [-0.2, 0, 0.2]) fire("ofuda", o.x, o.y, a + d, 2.6); }
     yield 1;
   }
 };
@@ -126,7 +129,7 @@ R.kitsuneTorii = function* (aw) {
   let gx = 180;
   for (let row = 0; row < 8; row++) {
     gx = clamp(gx + (rand() < 0.5 ? -1 : 1) * (30 + rand() * 30), 50, 310);
-    const gap = aw ? 48 : 60, y0 = pt(56, 60).y, wall = { gx, ref: null, sway: aw };
+    const gap = aw ? 48 : 60, y0 = KROOT().y, wall = { gx, ref: null, sway: aw };
     for (let x = 8; x < W; x += 16) {
       if (Math.abs(x - gx) < gap / 2) continue;
       const b = fire("ofuda", x, y0, PI / 2, 1.4, aw ? { u: b => { b.vx = sin(b.t * 0.05 + row) * 0.6; } } : {});
@@ -148,8 +151,10 @@ R.kitsuneDance = function* (aw) {
   }
 };
 // 深海の魔女
-const TENT = [10, 34, 58, 80, 100, 122, 146, 170];
-const tentTip = j => { const a = TENT[j] * PI / 180; return pt(56 + cos(a) * 30, 64 + sin(a) * 30); };
+// 触手の先(新しい絵の位置)。TENT は付け根から見た向き(度)
+const WTIPS = [[93,67],[88,76],[76,89],[64,93],[50,93],[40,87],[23,80],[27,64]];
+const TENT = WTIPS.map(([x, y]) => atan2(y - 63, x - 56) * 180 / PI);
+const tentTip = j => pt(WTIPS[j][0], WTIPS[j][1]);
 R.witchAbyss = function* (aw) {
   G.dark = 150 + 80;
   const n = aw ? 9 : 7;
@@ -158,7 +163,7 @@ R.witchAbyss = function* (aw) {
       const x0 = (c + 0.5) * W / n;
       fire("plankton", x0, -6, PI / 2, aw ? 2.2 : 1.8, { ox: x0, cph: c, u: b => { b.x = b.ox + sin(b.t * 0.06 + b.cph) * 14; } });
     }
-    if (aw && t % 40 === 0) { const l = pt(70, 8); fire("bubble", l.x, l.y, aimFrom(l), 1.6, { r: 5 }); }
+    if (aw && t % 40 === 0) { const l = pt(77, 29); fire("bubble", l.x, l.y, aimFrom(l), 1.6, { r: 5 }); }
     yield 1;
   }
 };
@@ -191,7 +196,7 @@ R.witchTentacles = function* (aw) {
 R.witchMaelstrom = function* (aw) {
   const n = aw ? 7 : 5;
   for (let t = 0; t < 120; t++) {
-    if (t % 4 === 0) { const o = pt(56, 64); for (let a = 0; a < n; a++) {
+    if (t % 4 === 0) { const o = pt(56, 63); for (let a = 0; a < n; a++) {
       const dir = aw && a % 2 ? -1 : 1;
       fire("plankton", o.x, o.y, a * TAU / n + t * 0.02 * dir, 1.9, { u: b => rot(b, 0.012 * dir) });
     } }
@@ -211,7 +216,7 @@ R.witchInk = function* (aw) {
   yield 120;
 };
 // 機神
-const EYE = () => pt(56, 60), CANL = () => pt(19, 65), CANR = () => pt(92, 65);
+const EYE = () => pt(56, 49), CANL = () => pt(25, 46), CANR = () => pt(86, 46);
 R.mechLockOn = function* (aw) {
   for (let rep = 0; rep < 2; rep++) {
     const ret = { k: "ret", x: G.P.x, y: G.P.y, t: 0, life: 9999 }; G.marks.push(ret);
