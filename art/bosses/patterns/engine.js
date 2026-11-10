@@ -276,7 +276,7 @@ R.mechOverload = function* (aw) {
   yield 50;
 };
 // 雪の女王
-const CRYS = () => pt(56, 50);
+const CRYS = () => pt(56, 48);
 function splitter(b) {
   if (b.t === 30 && b.lv > 0) {
     b.dead = 1; const a = atan2(b.vy, b.vx), s = hypot(b.vx, b.vy);
@@ -336,7 +336,7 @@ R.iceMirror = function* (aw) {
   yield 30;
 };
 // 死神
-const SKULL = () => pt(56, 40);
+const SKULL = () => pt(66, 30);
 R.reaperScythe = function* (aw) {
   const placed = [];
   for (const [ri, R0] of (aw ? [150, 215] : [150]).entries()) {

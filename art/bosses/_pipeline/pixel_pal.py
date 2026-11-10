@@ -11,7 +11,8 @@ import sys, json
 from collections import deque, Counter, defaultdict
 from PIL import Image
 src, out, TH, cfgp = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
-PAL = json.load(open(cfgp))['palette']
+CFG = json.load(open(cfgp)); PAL = CFG['palette']
+HOLE = CFG.get('hole_min', 60)   # 閉じた白をこのドット数以上なら背景にする(白い服のキャラは 0 にして消さない)
 FRINGE = PAL.pop('_fringe', None)
 im = Image.open(src).convert('RGB'); w, h = im.size; p = im.load()
 def white(c): return min(c) > 236 and max(c) - min(c) < 18
@@ -35,7 +36,7 @@ for y0 in range(h):
                 u, v = x + dx, y + dy
                 if 0 <= u < w and 0 <= v < h and not seen[v * w + u] and not bg[v * w + u] and min(p[u, v]) > 244 and max(p[u, v]) - min(p[u, v]) < 10:
                     seen[v * w + u] = 1; st.append((u, v))
-        if len(comp) >= 60:
+        if HOLE and len(comp) >= HOLE:
             for x, y in comp: bg[y * w + x] = 1
 xs = [x for y in range(h) for x in range(w) if not bg[y * w + x]]; ys = [y for y in range(h) for x in range(w) if not bg[y * w + x]]
 box = (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
