@@ -147,8 +147,13 @@ extension NotificationService: UNUserNotificationCenterDelegate {
     }
 }
 
-/// 通知(APNs)の登録結果を Firebase Messaging に渡す
+/// 通知(APNs)の登録結果を Firebase Messaging に渡す。広告の効果計測(AppsFlyer)の準備もここ
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        MainActor.assumeIsolated { AttributionService.shared.configure(launchOptions: launchOptions) }
+        return true
+    }
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
     }
