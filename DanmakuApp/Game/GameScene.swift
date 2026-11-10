@@ -222,6 +222,43 @@ final class GameScene: SKScene {
         for i in used..<warpMarks.count where !warpMarks[i].isHidden { warpMarks[i].isHidden = true }
     }
 
+    // MARK: ボスの構え・技中・硬直(見た目だけ。計算には関わらない)
+
+    private var bossAction: BossSprites.Action?
+    private var bossActionStart = 0.0
+
+    /// 撃つ少し前に「構え」、撃っている間は「技中」(ループ)、撃ち終わると「硬直」、そのあと待機。絵がないボスは待機のまま
+    private func updateBossAction(art: BossSprites.Art) {
+        let now = sim.t, w = sim.waveT
+        let windup = Double(art.actions[.windup]?.frames.count ?? 0) * BossSprites.actionFrameDuration
+        let recover = Double(art.actions[.recover]?.frames.count ?? 0) * BossSprites.actionFrameDuration
+        let shooting = sim.lastShotWaveT >= 0 && w - sim.lastShotWaveT < 0.3
+        switch bossAction {
+        case nil:
+            if shooting, art.actions[.attack] != nil { bossAction = .attack; bossActionStart = now }
+            else if let next = sim.untilNextShot, windup > 0, next <= windup { bossAction = .windup; bossActionStart = now - max(0, windup - next) }
+        case .windup?:
+            if shooting { bossAction = .attack; bossActionStart = now }
+        case .attack?:
+            if !shooting { bossAction = recover > 0 ? .recover : nil; bossActionStart = now }
+        case .recover?:
+            if shooting { bossAction = .attack; bossActionStart = now }
+            else if now - bossActionStart >= recover { bossAction = nil }
+        }
+    }
+
+    private func bossFrames(art: BossSprites.Art) -> ([SKTexture], [SKTexture]) {
+        updateBossAction(art: art)
+        if let a = bossAction, let set = art.actions[a] { return (set.frames, set.flash) }
+        return (art.frames, art.flashFrames)
+    }
+
+    private func bossFrameIndex(count: Int) -> Int {
+        guard let a = bossAction else { return BossSprites.frameIndex(at: sim.t) }
+        let k = Int(max(0, sim.t - bossActionStart) / (a == .attack ? 0.1 : BossSprites.actionFrameDuration))
+        return a == .attack ? k % count : min(k, count - 1)
+    }
+
     private func buildNodes() {
         let W = GameScene.W, H = GameScene.H
         var rng = Mulberry32(seed: 7)
@@ -585,9 +622,10 @@ final class GameScene: SKScene {
             if let normal = characterNormal {
                 let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
                 let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
-                let i = BossSprites.frameIndex(at: sim.t)
                 bossNode.size = art.size
-                bossNode.texture = sim.flash > 0 ? art.flashFrames[i] : art.frames[i]
+                let (frames, flashFrames) = bossFrames(art: art)
+                let i = bossFrameIndex(count: frames.count)
+                bossNode.texture = sim.flash > 0 ? flashFrames[i] : frames[i]
             } else {
                 bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
             }

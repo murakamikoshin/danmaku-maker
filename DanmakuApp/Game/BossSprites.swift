@@ -14,7 +14,15 @@ enum BossSprites {
         let still: UIImage
         /// 画面に出す大きさ(元の絵の2倍)
         let size: CGSize
+        /// 構え・技中・硬直の絵(あるものだけ)。通常の姿と覚醒した姿で別。flash は、弾が当たったときの白い姿
+        var actions: [Action: (frames: [SKTexture], flash: [SKTexture])] = [:]
     }
+
+    /// 技の前後の動き: 構え → 技中(ループ)→ 硬直 → 待機。見た目だけ
+    enum Action: String, CaseIterable { case windup, attack, recover }
+
+    /// 構え(4コマ)と硬直(2コマ)の1コマの長さ(秒)。README の再生の目安(0.12秒)
+    static let actionFrameDuration = 0.12
 
     /// 元の絵を、画面で何倍に拡大するか
     static let scale: CGFloat = 2
@@ -41,7 +49,21 @@ enum BossSprites {
             frames.append(texture(ui))
             flashes.append(texture(whiteSilhouette(of: ui)))
         }
-        let art = Art(frames: frames, flashFrames: flashes, still: first!, size: CGSize(width: CGFloat(fw) * scale, height: CGFloat(fh) * scale))
+        var art = Art(frames: frames, flashFrames: flashes, still: first!, size: CGSize(width: CGFloat(fw) * scale, height: CGFloat(fh) * scale))
+        // 構え・技中・硬直の絵(<ボス>_<状態>[_awakened]_sheet.png。1コマの幅は待機と同じ)
+        let base = name.replacingOccurrences(of: "_awakened_idle_sheet", with: "").replacingOccurrences(of: "_idle_sheet", with: "")
+        for action in Action.allCases {
+            let file = "\(base)_\(action.rawValue)" + (awakened ? "_awakened" : "") + "_sheet"
+            guard let u = Bundle.main.url(forResource: file, withExtension: "png"), let img = UIImage(contentsOfFile: u.path), let c = img.cgImage else { continue }
+            let n = c.width / fw
+            var fs: [SKTexture] = [], fl: [SKTexture] = []
+            for i in 0..<n {
+                guard let part = c.cropping(to: CGRect(x: i * fw, y: 0, width: fw, height: c.height)) else { continue }
+                let ui = UIImage(cgImage: part, scale: 1, orientation: .up)
+                fs.append(texture(ui)); fl.append(texture(whiteSilhouette(of: ui)))
+            }
+            if n > 0 && fs.count == n { art.actions[action] = (fs, fl) }
+        }
         cache[name] = art
         return art
     }

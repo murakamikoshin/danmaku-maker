@@ -742,6 +742,18 @@ public struct Simulation {
     public var waveCount: Int { specs.count }
     /// いまの場面の中の経過時間(秒)。切り替えの間と、READY の間は負
     public var waveT: Double { t - waveStart }
+    /// 見た目だけ(ボスの構え・技中・硬直の絵を切り替える手がかり。計算や記録には関わらない)。いちばん最近、ボスが弾を撃った場面の経過秒(撃っていなければ -1)
+    public private(set) var lastShotWaveT = -1.0
+    /// 見た目だけ。ボスが次に弾を撃つまでの秒(今の段階で撃つ発射台がなければ nil)
+    public var untilNextShot: Double? {
+        guard isBoss, waveT >= 0 else { return nil }
+        var best: Double?
+        for (idx, m) in spec.emitters.enumerated() where m.ph == 0 || m.ph == phase {
+            let d = max(0, next[idx] - waveT)
+            if best == nil || d < best! { best = d }
+        }
+        return best
+    }
     /// 場面の切り替えの間か(2場面目以降の、開始前)
     public var isIntermission: Bool { waveIndex > 0 && waveT < 0 }
     /// いまの場面の開始前に、警告の演出を出すか
@@ -756,6 +768,7 @@ public struct Simulation {
     private mutating func advanceWave() {
         waveIndex += 1
         waveStart = t + Wave.intermissionSeconds
+        lastShotWaveT = -1
         bullets.removeAll(keepingCapacity: true)
         shots.removeAll(keepingCapacity: true)
         next = spec.emitters.map(\.s)
@@ -900,6 +913,7 @@ public struct Simulation {
                         if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
+                        lastShotWaveT = waveT
                     }
                 } else {
                     let end = min(m.e, spec.limit)
