@@ -293,3 +293,30 @@ def idle_from_still(base, top, bubbles=(), amp=1.5, c1=(150, 214, 250), c2=(255,
             put(im, x - (r > 1), yy - (r > 1), c2)
         out.append(im)
     return out
+
+def sway_region(img, phase, top, region, amp=1.5, freq=0.16):
+    """region(x, y) が True のドットだけをゆらす(体・脚は動かさない)。下に行くほど大きく、整数ドットで左右へ"""
+    o = img.copy(); P = img.load(); O = o.load(); W_, H_ = img.size
+    moved = []
+    for y in range(top, H_):
+        k = (y - top) / max(1, H_ - top); dx = round(amp * k * math.sin(phase + y * freq))
+        if not dx: continue
+        for x in range(W_):
+            if P[x, y][3] and region(x, y):
+                moved.append((x + dx, y, P[x, y])); O[x, y] = (0, 0, 0, 0)
+    for x, y, c in moved:
+        if 0 <= x < W_: O[x, y] = c
+    return o
+
+def idle_parts(base, top, region, bubbles=(), amp=1.5, c1=(150, 214, 250), c2=(255, 255, 255)):
+    """待機8コマ: 決めた部分(ひれ・リボンなど)だけゆれる + まわりで小さな粒がのぼる"""
+    out = []
+    for i in range(8):
+        ph = i / 8 * 2 * math.pi
+        im = sway_region(base, ph, top, region, amp)
+        for k, (x, y, r) in enumerate(bubbles):
+            yy = y - ((i + k * 3) % 8) * 2
+            if r > 1: ring(im, x, yy, r, c1)
+            put(im, x - (r > 1), yy - (r > 1), c2)
+        out.append(im)
+    return out
