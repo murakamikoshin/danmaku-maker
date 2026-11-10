@@ -53403,61 +53403,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bei 10, 20 und 31 Freunden gibt es je 1 Boss-Gratisticket."
+            "value": "Bei 10 und 20 Freunden gibt es je 1 Boss-Gratisticket. Beim 31. Freund wartet ein exklusiver Boss."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "At 10, 20 and 31 friends you get a free Boss ticket each."
+            "value": "At 10 and 20 friends you get a free Boss ticket each. The 31st friend unlocks an exclusive Boss."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Con 10, 20 y 31 amigos recibes un ticket de jefe gratis en cada hito."
+            "value": "Con 10 y 20 amigos recibes un ticket de jefe gratis. El amigo 31 desbloquea un jefe exclusivo."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "À 10, 20 et 31 amis, tu reçois un ticket de boss gratuit à chaque palier."
+            "value": "À 10 et 20 amis, tu reçois un ticket de boss gratuit. Le 31e ami débloque un boss exclusif."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "10人・20人・31人で、ボスの無料チケットが1枚ずつもらえます。"
+            "value": "10人・20人でボスの無料チケットが1枚ずつ。31人目には、招待限定のボスが待っています。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "10명·20명·31명을 초대하면 보스 무료 티켓을 1장씩 받아요."
+            "value": "10명·20명에게 보스 무료 티켓 1장씩. 31명째에는 초대 한정 보스가 기다려요."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Com 10, 20 e 31 amigos, você ganha 1 ticket de chefe grátis em cada marco."
+            "value": "Com 10 e 20 amigos, 1 ticket de chefe grátis cada. O 31º amigo libera um chefe exclusivo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "За 10, 20 и 31 друга вы получаете по бесплатному билету на босса."
+            "value": "За 10 и 20 друзей — по билету на босса. За 31-го друга — эксклюзивный босс."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "邀请满10、20、31位好友，各获得1张免费Boss券。"
+            "value": "邀请满10、20位好友，各获得1张免费Boss券。第31位好友解锁邀请限定Boss。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "邀請滿10、20、31位好友，各獲得1張免費Boss券。"
+            "value": "邀請滿10、20位好友，各獲得1張免費Boss券。第31位好友解鎖邀請限定Boss。"
           }
         }
       }

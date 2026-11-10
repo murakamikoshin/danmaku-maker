@@ -26,8 +26,10 @@ export const INVITER_SHIPS: readonly string[] = [
   "original_steel",
   ...["steel", "snow", "emerald", "crimson", "shadow"].flatMap((c) => ["ace", "bastion", "gemini", "lancer", "phantom", "wasp"].map((m) => `${m}_${c}`)),
 ];
-/** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で好きなボスと交換できる) */
-export const BOSS_TICKET_AT: readonly number[] = [10, 20, 31];
+/** 招待した人が、この人数に届いたときにもらう「ボスの無料チケット」(1 枚。claimBossTicket で、チケットで手に入るボスと交換できる) */
+export const BOSS_TICKET_AT: readonly number[] = [10, 20];
+/** 31 人目(上限)は、招待限定のボス(課金・チケットでは手に入らない)の枠。ボスができたら、ここで付ける */
+export const LIMITED_BOSS_AT = 31;
 /** 「初期プレイヤー」の自機 */
 export const FOUNDER_SHIP = "seraph_special";
 /** 招待した人が、この人数に届いたときにもらう称号 */
@@ -140,7 +142,7 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
       const ownedI = (it.get("titles") as string[] | undefined) ?? [];
       // 1 人目は「おそろい」の称号。以降は 3・5・10 人目で、その人数の称号
       if (t && !ownedI.includes(t)) tx.set(inviterTitles, { titles: [...ownedI, t] }, { merge: true });
-      // 10・20・31 人目で、ボスの無料チケットを 1 枚(まだユーザー情報がなければ、最低限の項目も作る)
+      // 10・20 人目で、ボスの無料チケットを 1 枚(まだユーザー情報がなければ、最低限の項目も作る)
       if (BOSS_TICKET_AT.includes(newRewarded)) {
         const base = iu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
         tx.set(inviterUser, { ...base, bossTickets: FieldValue.increment(1) }, { merge: true });
