@@ -30,6 +30,8 @@ export const INVITER_SHIPS: readonly string[] = [
 export const BOSS_TICKET_AT: readonly number[] = [10, 20];
 /** 31 人目(上限)は、招待限定のボス(課金・チケットでは手に入らない)の枠。ボスができたら、ここで付ける */
 export const LIMITED_BOSS_AT = 31;
+/** 31 人目の限定ボスの名前(アプリの BossCharacter.productKey)。ticketEligible が false で、商品にもならない */
+export const LIMITED_BOSS_KEY = "puni";
 /** 「初期プレイヤー」の自機 */
 export const FOUNDER_SHIP = "seraph_special";
 /** 招待した人が、この人数に届いたときにもらう称号 */
@@ -146,6 +148,11 @@ export async function countInvitePlays(db: Firestore, uid: string, add: number):
       if (BOSS_TICKET_AT.includes(newRewarded)) {
         const base = iu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
         tx.set(inviterUser, { ...base, bossTickets: FieldValue.increment(1) }, { merge: true });
+      }
+      // 31 人目で、招待限定のボス「ぷにまる」(買えず、チケットでも手に入らない)
+      if (newRewarded === LIMITED_BOSS_AT) {
+        const base = iu.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
+        tx.set(inviterUser, { ...base, freeBosses: FieldValue.arrayUnion(LIMITED_BOSS_KEY) }, { merge: true });
       }
     }
     tx.set(db.doc(`inviteState/${uid}`), { ships: FieldValue.arrayUnion(INVITEE_SHIP) }, { merge: true });

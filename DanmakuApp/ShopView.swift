@@ -153,7 +153,7 @@ struct ShopView: View {
         case .shots:
             ShotSection().id("shots")
         case .bosses:
-            ForEach(BossCharacter.allCases, id: \.self) { BossShopCard(boss: $0) }
+            ForEach(BossCharacter.allCases.filter(\.purchasable), id: \.self) { BossShopCard(boss: $0) }
         case .looks:
             CustomImagesCard().id("customimages")
             RewardShop()

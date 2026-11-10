@@ -196,6 +196,7 @@ struct EmitterCard: View {
         case .angelFeather, .angelHalo, .angelCross: return "angle.none"
         case .iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror: return "angle.none"
         case .witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk: return "angle.none"
+        case .puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake: return "angle.none"
         case .mechLockOn, .mechMissiles, .mechGatling, .mechGrid, .mechOverload: return "angle.none"
         case .reaperDeadline: return "angle.gap"
         case .reaperScythe, .reaperSouls, .reaperChains, .reaperRiver: return "angle.none"

@@ -76,6 +76,7 @@ public struct Bullet: Equatable, Sendable {
         case Bullet.windScript, Bullet.curveScript: u0 = -u0
         case Bullet.orbitScript: u0 = w - u0; u2 = Double.pi - u2; u3 = -u3
         case Bullet.lateralScript: u0 = Double.pi - u0; u2 = -u2
+        case Bullet.warpScript: u0 = Double.pi - u0
         default: break
         }
         if follow != nil { follow!.ox = w - follow!.ox }
@@ -582,6 +583,8 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake:
+            emitPuni(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .mechLockOn, .mechMissiles, .mechGatling, .mechGrid, .mechOverload:
             emitMech(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk:

@@ -302,6 +302,7 @@ private struct EnemyControls: View {
     @Binding var mookLook: Int
     /// 覚醒する段階(nil は覚醒しない)。専用の絵を持つボスを選んだときだけ出す
     @Binding var awaken: Int?
+    @EnvironmentObject private var cosmetics: CosmeticsStore
     /// いま置いている発射台に、キャラクターのボス専用の技があるか。見た目を変えると使えなくなるので、確認してから「放射」に置き換える
     var usesCharacterPatterns = false
     var convertCharacterPatterns: () -> Void = {}
@@ -311,11 +312,26 @@ private struct EnemyControls: View {
     private var lookChoice: Binding<Int> {
         Binding(get: { bossLook }, set: { new in
             let leaves = usesCharacterPatterns && BossCharacter.of(look: new) != BossCharacter.of(look: bossLook)
-            if leaves { pendingLook = new } else { bossLook = new }
+            if leaves { pendingLook = new } else { select(new) }
         })
     }
 
     private var isCharacter: Bool { BossCharacter.of(look: bossLook) != nil }
+
+    /// 見た目を選ぶ。ぷにまるは覚醒が秘密なので、覚醒の段階を選ばせず、はじめから覚醒するようにする(ほかのボスに替えたら戻す)
+    private func select(_ new: Int) {
+        let was = BossCharacter.of(look: bossLook) == .puni
+        bossLook = new
+        if BossCharacter.of(look: new) == .puni { awaken = 3 } else if was { awaken = nil }
+    }
+
+    /// 選べる見た目。招待限定のボス(ぷにまる)は、手に入れた人にだけ出す
+    private var lookChoices: [Int] {
+        EnemyArt.bossLookChoices.filter { l in
+            guard let b = BossCharacter.of(look: l), b.inviteLimited else { return true }
+            return cosmetics.ownership.has(b) || bossLook == l
+        }
+    }
 
     private func sizeItems() -> [(Int, String)] { [(0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))] }
 
@@ -330,8 +346,8 @@ private struct EnemyControls: View {
                     Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
                 }
                 Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                looks(selection: lookChoice, choices: EnemyArt.bossLookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
-                if isCharacter {
+                looks(selection: lookChoice, choices: lookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                if isCharacter && BossCharacter.of(look: bossLook) != .puni {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
@@ -348,7 +364,7 @@ private struct EnemyControls: View {
         }
         .confirmationDialog("editor.boss.change.title", isPresented: Binding(get: { pendingLook != nil }, set: { if !$0 { pendingLook = nil } }), titleVisibility: .visible) {
             Button("editor.boss.change.replace") {
-                if let new = pendingLook { convertCharacterPatterns(); bossLook = new }
+                if let new = pendingLook { convertCharacterPatterns(); select(new) }
                 pendingLook = nil
             }
             Button("common.cancel", role: .cancel) { pendingLook = nil }

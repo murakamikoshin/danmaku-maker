@@ -102,6 +102,8 @@ describe("3回遊んだときの付与", () => {
     expect(await getInviteInfo(db, inviter)).toMatchObject({ count: MAX_REWARDED + 2, rewarded: MAX_REWARDED });
     // ボスの無料チケットは、10・20人目で1枚ずつ(31人目は限定ボスの枠。チケットは出ない)
     expect((await db.doc(`users/${inviter}`).get()).get("bossTickets")).toBe(BOSS_TICKET_AT.length);
+    // 31人目で、招待限定のボス(ぷにまる)が手に入る
+    expect((await db.doc(`users/${inviter}`).get()).get("freeBosses")).toEqual(["puni"]);
     // 人数ごとに自機が1機ずつ増え(重複なし)、上限を超えたぶんは増えない
     expect(new Set(INVITER_SHIPS).size).toBe(MAX_REWARDED);
     expect([...(await getInviteInfo(db, inviter)).ships].sort()).toEqual([...INVITER_SHIPS].sort());

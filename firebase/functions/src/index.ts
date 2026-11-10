@@ -127,9 +127,9 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
 });
 
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
-const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech"];
+const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni"];
 /** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
-const PAID_ONLY_BOSSES: string[] = [];
+const PAID_ONLY_BOSSES: string[] = ["puni"];
 
 /**
  * 無料チケットで、ボスを1体もらう。チケットは初めて公開したときに1枚もらえる。

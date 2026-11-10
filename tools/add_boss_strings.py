@@ -52,6 +52,16 @@ BOSSES = {
             ('mechGrid', ['Hexa-Laser', 'Hexa Laser', 'Hexaláser', 'Hexa-laser', 'ヘキサ・レーザー', '헥사 레이저', 'Hexalaser', 'Гекса-лазер', '六角激光', '六角雷射']),
             ('mechOverload', ['Überlastung', 'Overload', 'Sobrecarga', 'Surcharge', 'オーバーロード', '오버로드', 'Sobrecarga', 'Перегрузка', '过载', '過載']),
         ]),
+    11: dict(
+        secret=True,
+        name=['Punimaru', 'Punimaru', 'Punimaru', 'Punimaru', 'ぷにまる', '푸니마루', 'Punimaru', 'Пунимару', '噗尼丸', '噗尼丸'],
+        moves=[
+            ('puniPoyon', ['Poyon', 'Poyon', 'Poyon', 'Poyon', 'ぽよん', '뽀용', 'Poyon', 'Пойон', '噗哟', '噗喲']),
+            ('puniShower', ['Puni-Puni-Dusche', 'Puni-Puni Shower', 'Ducha Puni-Puni', 'Douche Puni-Puni', 'ぷにぷにシャワー', '푸니푸니 샤워', 'Chuveiro Puni-Puni', 'Пуни-пуни душ', '噗尼噗尼淋浴', '噗尼噗尼淋浴']),
+            ('puniKorokoro', ['Korokoro', 'Korokoro', 'Korokoro', 'Korokoro', 'ころころ', '데굴데굴', 'Korokoro', 'Корокоро', '咕噜咕噜', '咕嚕咕嚕']),
+            ('puniPurupuru', ['Purupuru', 'Purupuru', 'Purupuru', 'Purupuru', 'ぷるぷる', '푸루푸루', 'Purupuru', 'Пурупуру', '噗噜噗噜', '噗嚕噗嚕']),
+            ('puniOsusowake', ['Osusowake', 'Osusowake', 'Osusowake', 'Osusowake', 'おすそわけ', '나눠주기', 'Osusowake', 'Осусовакэ', '分享', '分享']),
+        ]),
 }
 
 def mk(vals):
@@ -62,13 +72,14 @@ S = d['strings']
 for num, bd in BOSSES.items():
     S[f'enemy.boss.{num}'] = mk(bd['name'])
     S[f'editor.pattern.bosssection.{num}'] = mk([t.format(b=n) for t, n in zip(SECT, bd['name'])])
-    S[f'shop.boss.{num}.desc'] = mk([t.format(b=n) for t, n in zip(DESC, bd['name'])])
-    moves = []
-    for i in range(len(L)):
-        ns = [m[1][i] for m in bd['moves']]
-        sep, last = JOINS[i]
-        moves.append(sep.join(ns[:-1]) + (last or sep) + ns[-1] + TAILS[i])
-    S[f'shop.boss.{num}.moves'] = mk(moves)
+    if not bd.get('secret'):   # 覚醒が秘密のボス(ぷにまる)は、ショップの説明を作らない(ショップに出さない)
+        S[f'shop.boss.{num}.desc'] = mk([t.format(b=n) for t, n in zip(DESC, bd['name'])])
+        moves = []
+        for i in range(len(L)):
+            ns = [m[1][i] for m in bd['moves']]
+            sep, last = JOINS[i]
+            moves.append(sep.join(ns[:-1]) + (last or sep) + ns[-1] + TAILS[i])
+        S[f'shop.boss.{num}.moves'] = mk(moves)
     for key, names in bd['moves']:
         S[f'pattern.{key}'] = mk(names)
 P.write_text(json.dumps(d, ensure_ascii=False, indent=2, separators=(',', ': ')), encoding='utf-8')

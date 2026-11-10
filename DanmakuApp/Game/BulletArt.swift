@@ -46,7 +46,7 @@ enum BulletArt {
 
     /// 画面に描く大きさ。膨らむ泡は、当たる広さに合わせて大きくする
     static func drawSize(_ b: Bullet) -> CGSize {
-        if BulletLook.kind(of: b.look) == .bubble && b.radius > 0 {
+        if (BulletLook.kind(of: b.look) == .bubble || BulletLook.kind(of: b.look) == .jelly) && b.radius > 0 {
             let d = CGFloat(b.radius + 3) * 2
             return CGSize(width: d, height: d)
         }

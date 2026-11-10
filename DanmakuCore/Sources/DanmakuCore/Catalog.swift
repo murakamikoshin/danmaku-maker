@@ -117,7 +117,7 @@ public enum Product: Hashable, Sendable {
         for p in Pattern.pack2 { list.append(.pattern(p)) }
         list.append(.patternPack2)
         list.append(.patternMaker)
-        for b in BossCharacter.allCases { list.append(.boss(b)) }
+        for b in BossCharacter.allCases where b.purchasable { list.append(.boss(b)) }
         list.append(.lifetime)
         return list
     }

@@ -180,6 +180,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case mechGrid
     /// 制圧「オーバーロード」: 光子弾の輪が加速する
     case mechOverload
+    // ぷにまるだけが使える技(通常は「ぷに弾」を落とすだけ。覚醒すると、同じ枠の技が別物になる)
+    /// ぽよん(覚醒: 凝視)
+    case puniPoyon
+    /// ぷにぷにシャワー(覚醒: 螺旋の腕)
+    case puniShower
+    /// ころころ(覚醒: 歯の環)
+    case puniKorokoro
+    /// ぷるぷる(覚醒: 二色の眼光)
+    case puniPurupuru
+    /// おすそわけ(覚醒: 位相のずれ)
+    case puniOsusowake
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -201,6 +212,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public static let witch: [Pattern] = [.witchAbyss, .witchBubbles, .witchTentacles, .witchMaelstrom, .witchInk]
     /// 機神だけが使える技(並びは、出す順)
     public static let mech: [Pattern] = [.mechLockOn, .mechMissiles, .mechGatling, .mechGrid, .mechOverload]
+    /// ぷにまるだけが使える技(並びは、出す順)
+    public static let puni: [Pattern] = [.puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake]
     /// そのボスの専用の技
     public static func moves(of c: BossCharacter) -> [Pattern] {
         switch c {
@@ -210,6 +223,7 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
         case .reaper: return reaper
         case .witch: return witch
         case .mech: return mech
+        case .puni: return puni
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)

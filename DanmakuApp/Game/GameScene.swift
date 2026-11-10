@@ -50,6 +50,8 @@ final class GameScene: SKScene {
     private var bulletNodes: [SKSpriteNode] = []
     /// 深海の魔女「深淵」の暗転(提灯と自機のまわりだけ見える)。見た目だけで、計算には関わらない
     private let darkNode = SKShapeNode()
+    /// ぷにまるの瞬間移動の行き先に出す予告の印(見た目だけ)
+    private var warpMarks: [SKShapeNode] = []
     /// チャージビームの光線(外側の光と、白い芯)。使い回す
     private var beamNodes: [(glow: SKShapeNode, core: SKShapeNode)] = []
     /// 爆風(隕石・地雷の爆発)の円。使い回す
@@ -198,6 +200,26 @@ final class GameScene: SKScene {
         darkNode.path = path
         darkNode.alpha = 0.93 * fade
         darkNode.isHidden = false
+    }
+
+    /// 瞬間移動する弾の行き先(移る 0.5 秒前から)に、点滅する輪を出す
+    private func updateWarpMarks(_ bs: [Bullet]) {
+        var used = 0
+        for b in bs where b.script == Bullet.warpScript && b.homeLeft == 1 {
+            while warpMarks.count <= used {
+                let n = SKShapeNode(circleOfRadius: 12)
+                n.strokeColor = UIColor(red: 1, green: 0.35, blue: 0.5, alpha: 1); n.fillColor = .clear; n.lineWidth = 2; n.zPosition = 4.6
+                addChild(n); warpMarks.append(n)
+            }
+            let n = warpMarks[used]
+            n.isHidden = false
+            n.position = pos(b.u2, b.u3)
+            let p = max(0, min(1, (b.fuse - b.age) / 0.5))
+            n.setScale(0.5 + p)
+            n.alpha = CGFloat(0.4 + 0.6 * (1 - p))
+            used += 1
+        }
+        for i in used..<warpMarks.count where !warpMarks[i].isHidden { warpMarks[i].isHidden = true }
     }
 
     private func buildNodes() {
@@ -539,6 +561,7 @@ final class GameScene: SKScene {
         for i in blastCount..<blastNodes.count where !blastNodes[i].isHidden { blastNodes[i].isHidden = true }
 
         updateDarkness(bs)
+        updateWarpMarks(bs)
 
         if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
         if sim.defeats > shownDefeats {

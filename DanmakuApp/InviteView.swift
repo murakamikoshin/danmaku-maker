@@ -33,7 +33,7 @@ struct InviteView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .preferredColorScheme(.dark)
-        .task(id: auth.uid) { await service.refresh() }
+        .task(id: auth.uid) { await service.refresh(); await cosmetics.refreshBossTickets(uid: auth.uid) }
     }
 
     private var header: some View {
@@ -126,6 +126,9 @@ struct InviteView: View {
                 Text("ticket.where").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
             }
             Text("invite.boss.note").font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+            if cosmetics.ownership.has(.puni) {
+                Text("invite.boss.got").font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.pink))
+            }
             Text("invite.progress.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
         }
     }

@@ -3,7 +3,7 @@
  * 数値は engine.js(60fps の px/フレーム)を、秒・px/秒に直したもの。
  */
 export const HOLD_SCRIPT = 16, BRANCH_SCRIPT = 17, FREEZE_SCRIPT = 18, WIND_SCRIPT = 19, ORBIT_SCRIPT = 20, DRAG_SCRIPT = 21,
-  LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25;
+  LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25, WARP = 26;
 
 /** 専用の弾の番号(アプリの BulletLook.code と同じ: 16 + 種類 × 2 + 覚醒) */
 export const KIND = { fox: 0, ofuda: 1, plankton: 2, bubble: 3, ink: 4, missile: 5, hex: 6, shell: 7, flake: 8, icicle: 9, shard: 10, soul: 11, blade: 12, chain: 13, jelly: 14, eye: 15, tooth: 16, goo: 17 } as const;
@@ -148,6 +148,17 @@ export function stepBossScript(b: BossBullet, dt: number, px: number, py: number
     case DARK_SCRIPT:
       b.age += dt;
       return b.age >= (b.fuse ?? 0) ? "gone" : "alive";
+    case WARP: {
+      b.age += dt;
+      if (b.homeLeft === 0 && b.age >= (b.fuse ?? 0) - 0.5) {
+        b.u2 = Math.min(360 - 8, Math.max(8, px + Math.cos(b.u0 ?? 0) * (b.u1 ?? 0)));
+        b.u3 = Math.min(540 - 8, Math.max(8, py + Math.sin(b.u0 ?? 0) * (b.u1 ?? 0)));
+        b.homeLeft = 1;
+      }
+      if (b.homeLeft === 1 && b.age >= (b.fuse ?? 0)) { b.x = b.u2 ?? 0; b.y = b.u3 ?? 0; b.homeLeft = 2; }
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      return "alive";
+    }
     default:
       return null;
   }

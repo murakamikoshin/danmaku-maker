@@ -88,7 +88,9 @@ struct PublishFlowView: View {
                     GamePanel(title: "publish.boss.title") {
                         Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }
-                    if cosmetics.canClaimBossTicket && boss.ticketEligible {
+                    if boss.inviteLimited {
+                        Text("publish.boss.invite").font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                    } else if cosmetics.canClaimBossTicket && boss.ticketEligible {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
                         TicketCount()
                         GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.accent) {
@@ -153,7 +155,7 @@ struct PublishFlowView: View {
                 Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
             }
             Text("publish.done").font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
-            if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { !cosmetics.ownership.has($0) }) {
+            if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
                 // 初めての公開のごほうび: ボスの無料チケット
                 Button { gameTap(); showShop = true } label: {
                     Label("publish.done.ticket", systemImage: "ticket.fill").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)

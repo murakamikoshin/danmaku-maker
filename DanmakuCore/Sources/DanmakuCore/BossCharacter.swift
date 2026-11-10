@@ -16,6 +16,8 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     case witch = 9
     /// 機神
     case mech = 10
+    /// ぷにまる(ギャップボス。覚醒は秘密)
+    case puni = 11
 
     /// 図形のボスの数(0〜4)。bossLook がこれ以上ならキャラクター
     public static let firstCharacterLook = 5
@@ -34,6 +36,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         case .reaper: return "reaper"
         case .witch: return "witch"
         case .mech: return "mech"
+        case .puni: return "puni"
         }
     }
 
@@ -41,15 +44,21 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public var ticketEligible: Bool {
         switch self {
         case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech: return true
+        case .puni: return false
         }
     }
+
+    /// 招待限定のボスか(買えず、チケットでも手に入らない。招待の特典としてだけ手に入る)。サーバーの INVITE_ONLY_BOSSES と同じにする
+    public var inviteLimited: Bool { self == .puni }
+    /// 商品として買えるか
+    public var purchasable: Bool { !inviteLimited }
 
     public static func of(look: Int) -> BossCharacter? { BossCharacter(rawValue: look) }
 
     /// 弾(自機のショット)が当たる半径(論理px)。大きさの設定(小・中・大)は、キャラクターでは使わない
     public var hitRadius: Double {
         switch self {
-        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech: return 40
+        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni: return 40
         }
     }
 
@@ -58,7 +67,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public func position(waveT: Double) -> Point {
         let t = max(0, waveT)
         switch self {
-        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech:
+        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni:
             return Point(x: DanmakuConfig.width / 2 + sin(t * 60 * 0.012) * 30,
                          y: 128 + sin(t * 60 * 0.02) * 5)
         }

@@ -247,6 +247,20 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("mech-gatling-grid-aw", mech([(.mechGatling, 0.05, 2, 3.4, 0), (.mechGrid, 0.4, 6, 2.4, 0)], awaken: 2)))
         stages.append(("mech-overload-aw-mirror", mech([(.mechOverload, 0.3, 24, 1.2, 0), (.mechLockOn, 2.0, 2, 2.6, 0)], awaken: 3, mir: 1)))
         stages.append(("mech-damage-all", mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0), (.mechGatling, 0.05, 2, 3.4, 0), (.mechGrid, 0.4, 6, 2.4, 0), (.mechOverload, 0.3, 24, 1.2, 0)], awaken: nil, mode: .damage)))
+        // ぷにまるの専用の技(通常と覚醒、鏡写し、ダメージ勝負)。ここより前の並びは変えない
+        func puni(_ list: [(DanmakuCore.Pattern, Double, Int, Double, Int)], awaken: Int?, mode: DanmakuCore.Mode = .boss, mir: Int? = nil) -> Stage {
+            let ems = list.enumerated().map { idx, q in
+                Emitter(t: q.0, x: 0.5, y: 0.2, s: 0, e: 60, i: q.1, c: q.2, v: q.3, r: Double(q.4), k: idx % 5, ph: 0, p: 0, mir: mir)
+            }
+            return Stage(name: "p", mode: mode, durationSec: 60, bossHp: mode == .boss ? 300 : nil, emitters: ems, lifeMode: .hp, lifeCount: 20, bossLook: 11, awaken: awaken).sanitized()
+        }
+        let puniAll: [(DanmakuCore.Pattern, Double, Int, Double, Int)] = [(.puniPoyon, 0.05, 1, 1.0, 0), (.puniShower, 0.05, 3, 1.2, 0), (.puniKorokoro, 0.05, 2, 2.0, 0), (.puniPurupuru, 0.05, 8, 1.0, 0), (.puniOsusowake, 0.05, 1, 1.0, 0)]
+        stages.append(("puni-normal", puni(puniAll, awaken: nil)))
+        stages.append(("puni-awakened", puni(puniAll, awaken: 2)))
+        stages.append(("puni-gaze-shower-aw", puni([puniAll[0], puniAll[1]], awaken: 2)))
+        stages.append(("puni-teeth-lasers-aw", puni([puniAll[2], puniAll[3]], awaken: 2)))
+        stages.append(("puni-phase-aw-mirror", puni([puniAll[4], puniAll[0]], awaken: 3, mir: 1)))
+        stages.append(("puni-damage-all", puni(puniAll, awaken: nil, mode: .damage)))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

@@ -47,7 +47,8 @@ final class PatternSimilarityTests: XCTestCase {
     /// 広告・弾幕パック2・新しい渦巻きは、どのパターンとも、動いたあとの弾の位置の分布が十分に違う
     /// (距離は 0=同じ 〜 1=重ならない。2026-11-01 時点の最小は 0.47)。前から配信している花と星・自機狙いと反射などは対象外
     func testNewPatternsMoveDifferentlyFromEveryOther() {
-        let all = DanmakuCore.Pattern.allCases.filter { $0 != .custom && $0 != .spiral }
+        // ボス専用の技は、そのボスを選んだときだけ置けるので、ふつうの技との比較には入れない
+        let all = DanmakuCore.Pattern.allCases.filter { $0 != .custom && $0 != .spiral && $0.bossCharacter == nil }
         let fresh = Set(DanmakuCore.Pattern.ad + DanmakuCore.Pattern.pack2 + [.swirl])
         var sigs: [DanmakuCore.Pattern: [Double]] = [:]
         for p in all { sigs[p] = signature(p, px: 180) + signature(p, px: 60) }

@@ -25,6 +25,8 @@ extension Bullet {
     public static let missileScript = 24
     /// 画面を暗くする印(深淵)。動かず、見えず、当たらない。fuse 秒で消える。(x, y) が提灯の位置
     public static let darkScript = 25
+    /// 瞬間移動する弾(位相のずれ)。fuse 秒で、自機から u1 px・向き u0 の場所へ移る。移る 0.5 秒前に行き先が決まり(u2, u3)、予告の印が出る。homeLeft は段階(0/1/2)
+    public static let warpScript = 26
 
     /// 見えず、当たらない(待機中の弾・暗転の印)
     public var isDormant: Bool { ((script == Bullet.holdScript || script == Bullet.missileScript) && age < fuse) || script == Bullet.darkScript }
@@ -130,6 +132,16 @@ extension Bullet {
         case Bullet.darkScript:
             age += dt
             return age >= fuse ? .gone : .alive
+        case Bullet.warpScript:
+            age += dt
+            if homeLeft == 0 && age >= fuse - 0.5 {
+                u2 = min(DanmakuConfig.width - 8, max(8, playerX + cos(u0) * u1))
+                u3 = min(DanmakuConfig.height - 8, max(8, playerY + sin(u0) * u1))
+                homeLeft = 1
+            }
+            if homeLeft == 1 && age >= fuse { x = u2; y = u3; homeLeft = 2 }
+            x += vx * dt; y += vy * dt
+            return .alive
         default:
             return nil
         }

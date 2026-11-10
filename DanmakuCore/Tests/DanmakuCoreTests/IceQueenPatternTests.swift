@@ -18,7 +18,7 @@ final class IceQueenPatternTests: XCTestCase {
         XCTAssertEqual(Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: em, bossLook: 6).sanitized().emitters.map(\.t), [.ring, .ring])
         XCTAssertEqual(Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: em, bossLook: 7).sanitized().emitters.map(\.t), [.iceCage, .ring])
         XCTAssertEqual(Pattern.iceQueen.map(\.bossCharacter), Array(repeating: .iceQueen, count: 5))
-        XCTAssertEqual(BossCharacter.maxLook, 7)
+        XCTAssertGreaterThanOrEqual(BossCharacter.maxLook, 7)
     }
 
     func testCageBranchesTwiceIntoFlakes() {
