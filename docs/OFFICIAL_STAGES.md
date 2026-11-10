@@ -1,6 +1,6 @@
 # 公式サンプルステージ 確認用一覧
 
-全 33 本。アプリの「サンプル」タブに、易しい→難しい順で並びます。
+全 34 本。アプリの「サンプル」タブに、易しい→難しい順で並びます。
 データ: `DanmakuApp/Resources/official_stages.json`（`python3 tools/make_official_stages.py` で再生成）。
 
 **ボットの結果について**: 自動プレイのボットで「クリアできる並びか」を確認しました（`DanmakuCore` の `StageBot`）。
@@ -45,3 +45,4 @@
 | o31 | ★★★★★ 激ムズ | 堕天使の裁き<br><sub>Judgment of the Fallen Angel</sub> | ボス HP500・90秒 | 堕天使の5つの技。HPが減ると覚醒して、技が強くなる。 | — | ☐ |
 | o32 | ★★★★★ 激ムズ | 九尾の巫女の舞<br><sub>Dance of the Nine-Tailed Shrine Maiden</sub> | ボス HP500・90秒 | 九尾の巫女の5つの技。HPが減ると覚醒して、技が強くなる。 | — | ☐ |
 | o33 | ★★★★★ 激ムズ | 雪の女王の氷晶<br><sub>Crystals of the Snow Queen</sub> | ボス HP500・90秒 | 雪の女王の5つの技。HPが減ると覚醒して、技が強くなる。 | — | ☐ |
+| o34 | ★★★★★ 激ムズ | 死神の収穫<br><sub>The Reaper's Harvest</sub> | ボス HP500・90秒 | 死神の5つの技。HPが減ると覚醒して、技が強くなる。 | — | ☐ |

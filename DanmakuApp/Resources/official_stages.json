@@ -2225,5 +2225,107 @@
    "formatVersion": 1,
    "name": "o33"
   }
+ },
+ {
+  "id": "o34",
+  "difficulty": 5,
+  "name": {
+   "ja": "死神の収穫",
+   "en": "The Reaper's Harvest"
+  },
+  "aim": {
+   "ja": "死神の5つの技。HPが減ると覚醒して、技が強くなる。",
+   "en": "The Reaper's five moves. He awakens and grows stronger as his HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 500,
+   "bossMove": 0,
+   "bossLook": 8,
+   "awaken": 3,
+   "emitters": [
+    {
+     "t": "reaperScythe",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2.5,
+     "c": 28,
+     "v": 1,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "reaperSouls",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 3.5,
+     "c": 10,
+     "v": 1.4,
+     "r": 0,
+     "k": 1,
+     "ph": 1
+    },
+    {
+     "t": "reaperDeadline",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 1.15,
+     "c": 14,
+     "v": 1,
+     "r": 56,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "reaperChains",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 1.15,
+     "c": 3,
+     "v": 4,
+     "r": 0,
+     "k": 3,
+     "ph": 2
+    },
+    {
+     "t": "reaperRiver",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.15,
+     "c": 5,
+     "v": 2.4,
+     "r": 0,
+     "k": 4,
+     "ph": 3
+    },
+    {
+     "t": "reaperScythe",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2.5,
+     "c": 28,
+     "v": 1,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "name": "o34"
+  }
  }
 ]

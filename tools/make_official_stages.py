@@ -105,7 +105,12 @@ add(5, "雪の女王の氷晶", "Crystals of the Snow Queen", "雪の女王の5�
     angel_boss(90, 500, 3, [E("iceCage", i=.85, c=6, v=2, k=0, ph=1), E("iceIcicles", i=.85, c=6, v=1, k=1, ph=1), E("iceMirror", i=.35, c=5, v=3, k=2, ph=2),
                            E("iceBlizzard", i=.05, c=8, v=1.6, k=3, ph=2), E("iceFreeze", i=.5, c=20, v=2.5, k=4, ph=3), E("iceCage", i=.85, c=6, v=2, k=0, ph=3)], look=7))
 
-assert len(S) == 33, len(S)
+# ---- ボス「死神」の見本 ----
+add(5, "死神の収穫", "The Reaper's Harvest", "死神の5つの技。HPが減ると覚醒して、技が強くなる。", "The Reaper's five moves. He awakens and grows stronger as his HP drops.",
+    angel_boss(90, 500, 3, [E("reaperScythe", i=2.5, c=28, v=1, k=0, ph=1), E("reaperSouls", i=3.5, c=10, v=1.4, k=1, ph=1), E("reaperDeadline", i=1.15, c=14, v=1, r=56, k=2, ph=2),
+                           E("reaperChains", i=1.15, c=3, v=4, k=3, ph=2), E("reaperRiver", i=.15, c=5, v=2.4, k=4, ph=3), E("reaperScythe", i=2.5, c=28, v=1, k=0, ph=3)], look=8))
+
+assert len(S) == 34, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))

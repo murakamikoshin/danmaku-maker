@@ -147,6 +147,17 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case iceFreeze
     /// 氷鏡「ダイヤモンドダスト」: 自機狙いの氷片の扇が、壁で跳ね返る
     case iceMirror
+    // 死神だけが使える技
+    /// 刈取「三日月の大鎌」: 刃が弧の形に並んで止まり、いっせいに落ちてくる
+    case reaperScythe
+    /// 魂魄「さまよう魂」: 魂が死神のまわりを回って広がり、自機のほうへ漂ってくる
+    case reaperSouls
+    /// 鎖「冥府の鎖」: 画面の端から、自機のいた場所へ鎖が伸びる
+    case reaperChains
+    /// 宣告「デッドライン」: 刃の壁がゆっくり下りてくる。通り道は1か所
+    case reaperDeadline
+    /// 冥途「三途の渡し」: 魂の流れが、1本ごとに逆向きに流れる
+    case reaperRiver
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -162,12 +173,15 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public var bossCharacter: BossCharacter? { BossCharacter.allCases.first { Pattern.moves(of: $0).contains(self) } }
     /// 雪の女王だけが使える技(並びは、出す順)
     public static let iceQueen: [Pattern] = [.iceCage, .iceIcicles, .iceBlizzard, .iceFreeze, .iceMirror]
+    /// 死神だけが使える技(並びは、出す順)
+    public static let reaper: [Pattern] = [.reaperScythe, .reaperSouls, .reaperChains, .reaperDeadline, .reaperRiver]
     /// そのボスの専用の技
     public static func moves(of c: BossCharacter) -> [Pattern] {
         switch c {
         case .fallenAngel: return fallenAngel
         case .kitsune: return kitsune
         case .iceQueen: return iceQueen
+        case .reaper: return reaper
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)

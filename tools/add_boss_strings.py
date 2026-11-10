@@ -25,6 +25,15 @@ BOSSES = {
             ('iceFreeze', ['Eisstarre der Zeit', 'Frozen Time', 'Congelación del tiempo', 'Gel du temps', '時の氷結', '시간의 빙결', 'Congelamento do tempo', 'Заморозка времени', '时之冰结', '時之冰結']),
             ('iceMirror', ['Eisspiegel', 'Diamond Dust', 'Espejo de hielo', 'Miroir de glace', '氷鏡', '얼음 거울', 'Espelho de gelo', 'Ледяное зеркало', '冰镜', '冰鏡']),
         ]),
+    8: dict(
+        name=['Sensenmann', 'Reaper', 'Segador', 'Faucheuse', '死神', '사신', 'Ceifador', 'Жнец', '死神', '死神'],
+        moves=[
+            ('reaperScythe', ['Mondsichelsense', 'Crescent Scythe', 'Guadaña creciente', 'Faux croissant', '三日月の大鎌', '초승달 대낫', 'Foice crescente', 'Серп-коса', '新月大镰', '新月大鐮']),
+            ('reaperSouls', ['Wandernde Seelen', 'Wandering Souls', 'Almas errantes', 'Âmes errantes', 'さまよう魂', '떠도는 영혼', 'Almas errantes', 'Блуждающие души', '游荡之魂', '遊蕩之魂']),
+            ('reaperChains', ['Ketten der Unterwelt', 'Chains of the Underworld', 'Cadenas del inframundo', 'Chaînes des enfers', '冥府の鎖', '명부의 사슬', 'Correntes do submundo', 'Цепи подземного мира', '冥府之锁', '冥府之鎖']),
+            ('reaperDeadline', ['Deadline', 'Deadline', 'Fecha límite', 'Date limite', 'デッドライン', '데드라인', 'Prazo final', 'Крайний срок', '死线', '死線']),
+            ('reaperRiver', ['Überfahrt über den Styx', 'Crossing the Styx', 'Cruce del Estigia', 'Traversée du Styx', '三途の渡し', '삼도천 건너기', 'Travessia do Estige', 'Переправа через Стикс', '渡过三途川', '渡過三途川']),
+        ]),
 }
 
 def mk(vals):

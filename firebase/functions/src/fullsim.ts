@@ -3,6 +3,7 @@ import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT,
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
 import { CURVE_SCRIPT, HOLD_SCRIPT, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
+import { emitReaper, isReaperPattern } from "./reaper.js";
 import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
 import { BOSS_MOVE_COUNT, PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
@@ -76,7 +77,7 @@ export function beamHits(b: { x: number; y: number; vx: number; vy: number; age:
 const BOSS_RADII = [17, 24, 34] as const;
 /** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
 /** 専用の絵を持つボス(堕天使 5・九尾 6)。位置と当たり判定はアプリの BossCharacter と同じ */
-const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7;
+const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7, REAPER_LOOK = 8;
 const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 /** ボスの動き(Swift の Simulation.bossPoint と同じ式) */
@@ -367,6 +368,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       break;
     }
     default: {
+      if (isReaperPattern(m.t)) { emitReaper(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isIceQueenPattern(m.t)) { emitIceQueen(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isKitsunePattern(m.t)) { emitKitsune(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isFallenAngelPattern(m.t)) { emitFallenAngel(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
@@ -465,7 +467,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK;
+    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK || sp.look === REAPER_LOOK;
     const wt = Math.max(0, waveT);
     let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
