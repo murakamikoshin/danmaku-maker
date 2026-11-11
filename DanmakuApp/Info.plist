@@ -33,7 +33,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>広告を表示するために使用します。許可しなくても遊べます。</string>
+	<string>許可すると、あなたに合った広告が表示されやすくなります。許可しなくても、すべての機能で遊べます。</string>
 	<key>REVENUECAT_API_KEY</key>
 	<string>$(REVENUECAT_API_KEY)</string>
 	<key>SKAdNetworkItems</key>

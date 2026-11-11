@@ -58,6 +58,8 @@ struct SwipeHomeView: View {
             #endif
         }
         .onChange(of: model.phase) { p in
+            // 遊んでいる間(読み込み〜被弾まで)はバナーを消す。タイトルと結果の画面では出す
+            ads.setPlaying(tab: "swipe", p != .title && p != .over)
             if p == .title || p == .over { SwipeAudio.shared.stop() }
             if p == .over { ads.countPlay() }   // 全画面広告の間隔の数え方に、スワイプ弾幕の1プレイも入れる
         }

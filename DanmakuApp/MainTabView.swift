@@ -34,8 +34,8 @@ struct MainTabView: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
-                // 広告削除の購入者・同意が取れていないとき・画面確認用の起動では、出さない
-                if !purchases.isPremium && ads.canShowBanner {
+                // 広告削除の購入者・SDK を始められていないとき・画面確認用の起動・遊んでいる最中のタブでは、出さない
+                if !purchases.isPremium && ads.canShowBanner && !ads.playingTabs.contains(tab.id) {
                     let width = UIScreen.main.bounds.width
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
                         .frame(width: width, height: BannerAdView.adSize(width: width).size.height)

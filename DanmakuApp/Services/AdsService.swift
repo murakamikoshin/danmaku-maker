@@ -22,6 +22,14 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// ヨーロッパなどで、せっていに「広告の同意の設定」を出す必要があるか
     @Published private(set) var privacyOptionsRequired = false
     private var primerContinuation: CheckedContinuation<Void, Never>?
+    /// 遊んでいる最中のタブ(スワイプ弾幕・バトル)。その間はバナーを出さない
+    /// (指の近くの広告は誤タップを招き、Google の規約違反や単価の低下につながる。見られない広告は単価も低い)
+    @Published private(set) var playingTabs: Set<String> = []
+
+    func setPlaying(tab: String, _ playing: Bool) {
+        guard playingTabs.contains(tab) != playing else { return }
+        if playing { playingTabs.insert(tab) } else { playingTabs.remove(tab) }
+    }
 
     private var rewarded: GADRewardedAd?
     private var interstitial: GADInterstitialAd?

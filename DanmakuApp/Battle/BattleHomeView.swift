@@ -6,6 +6,7 @@ import SwiftUI
 /// 入口(ランク・レート・戦績・対戦する) → 相手を探す → 3・2・1 → 対戦 → 結果。仕様書「弾幕バトル 仕様書」
 struct BattleHomeView: View {
     @StateObject private var model = BattleModel()
+    @EnvironmentObject private var ads: AdsService
 
     var body: some View {
         ZStack {
@@ -19,6 +20,13 @@ struct BattleHomeView: View {
         }
         .task { await model.loadStatus() }
         .onDisappear { if case .searching = model.phase { model.cancel() } }
+        // 3・2・1 から自分が落ちたあとの待ちまでは、バナーを消す(入口と結果の画面では出す)
+        .onChange(of: model.phase) { p in
+            switch p {
+            case .found, .playing, .waiting: ads.setPlaying(tab: "battle", true)
+            default: ads.setPlaying(tab: "battle", false)
+            }
+        }
     }
 
     // MARK: 入口
