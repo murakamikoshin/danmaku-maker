@@ -752,15 +752,19 @@ public struct Simulation {
     /// 場面の始めに、倒せる雑魚の体力を入れ直す
     private mutating func resetMooks() {
         let sp = spec
-        mookHP = sp.emitters.map { sp.mooksBreakable && Simulation.hasMook($0, boss: sp.boss) ? DanmakuConfig.mookHp : 0 }
+        mookHP = sp.emitters.map { sp.mooksBreakable && Simulation.hasMook($0, boss: sp.boss) ? sp.mookHits : 0 }
         mookFlash = Array(repeating: 0, count: sp.emitters.count)
     }
     /// いまの場面の、倒せる雑魚がいるか(いれば、耐久のステージでも自機が撃つ)
     private var breakableMooks: Bool { spec.mooksBreakable && spec.mooks != nil }
+    /// 「雑魚を全部倒したら次へ」で、場面を抜けた回数(画面の演出用)
+    public private(set) var mookClears = 0
+    /// いまの場面が「雑魚を全部倒したら次へ」か
+    public var clearsByMooks: Bool { spec.mooksClear }
     /// その発射台の雑魚が倒されたか
     public func mookDestroyed(_ idx: Int) -> Bool { breakableMooks && idx < mookHP.count && mookHP[idx] <= 0 && Simulation.hasMook(spec.emitters[idx], boss: spec.boss) }
 
-    /// 自機の弾が雑魚に当たったか。当たったら体力を減らして true(弾は消える)
+    /// 自機の弾が雑魚に当たったか。当たったら残りの回数を1減らして true(弾は消える)
     private mutating func hitMook(_ s: PlayerShot) -> Bool {
         guard breakableMooks, let size = spec.mooks else { return false }
         let r = Simulation.mookRadius(size: size)
@@ -768,7 +772,7 @@ public struct Simulation {
         for (idx, m) in spec.emitters.enumerated() where idx < mookHP.count && mookHP[idx] > 0 {
             let dx = s.x - m.x * W, dy = s.y - m.y * H
             if dx * dx + dy * dy < r * r {
-                mookHP[idx] -= s.damage
+                mookHP[idx] -= 1   // 撃ち方に関係なく、1発で1回
                 mookFlash[idx] = 0.06
                 return true
             }
@@ -978,6 +982,12 @@ public struct Simulation {
                 shots[w] = s; w += 1
             }
             shots.removeSubrange(w...)
+            // 雑魚を全部倒したら次の場面へ(最後の場面ならクリア)
+            if spec.mooksClear && spec.emitters.indices.allSatisfy({ !Simulation.hasMook(spec.emitters[$0], boss: false) || mookDestroyed($0) }) {
+                mookClears += 1
+                if waveIndex + 1 < specs.count { advanceWave() } else { outcome = .cleared }
+                return
+            }
         }
         for j in mookFlash.indices where mookFlash[j] > 0 { mookFlash[j] -= dt }
 
@@ -1075,9 +1085,10 @@ public struct Simulation {
         if waveT >= spec.limit {
             if waveIndex + 1 < specs.count {
                 // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ
-                if spec.boss && !spec.damage { outcome = .timeUp } else { advanceWave() }
+                // 「雑魚を全部倒したら次へ」の場面も、倒しきれなければ失敗
+                if (spec.boss && !spec.damage) || spec.mooksClear { outcome = .timeUp } else { advanceWave() }
             } else {
-                outcome = (isBoss && !isDamageRace) ? .timeUp : .cleared
+                outcome = ((isBoss && !isDamageRace) || spec.mooksClear) ? .timeUp : .cleared
             }
         }
     }

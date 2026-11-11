@@ -51,6 +51,8 @@ final class GameScene: SKScene {
     private var mookEmitterIndex: [Int] = []
     /// 倒されて、もう消した雑魚(発射台の番号)
     private var mookGone: Set<Int> = []
+    /// 「雑魚を全部倒したら次へ」で場面を抜けた回数(画面に出したぶん)
+    private var shownMookClears = 0
     private var bulletNodes: [SKSpriteNode] = []
     /// 深海の魔女「深淵」の暗転(提灯と自機のまわりだけ見える)。見た目だけで、計算には関わらない
     private let darkNode = SKShapeNode()
@@ -517,6 +519,11 @@ final class GameScene: SKScene {
         render(currentTime)
         if !finished && sim.outcome != .playing {
             // 最後のボスを倒したときは、爆発を少し見せてから結果を出す(演出がオフなら、すぐ)
+            // 雑魚を全部倒してクリアしたときも、弾けるのを少し見せる
+            if sim.outcome == .cleared && sim.clearsByMooks && effectsOn && finishDelay < 0.5 {
+                finishDelay += 1.0 / 60.0
+                return
+            }
             if sim.outcome == .cleared && sim.defeats > 0 && effectsOn && sim.lastDefeatEffect != .none && finishDelay < 1.4 {
                 finishDelay += 1.0 / 60.0
                 return
@@ -837,26 +844,40 @@ extension GameScene {
 
     /// 倒せる雑魚: 弾が当たると白く光り、倒されると小さく弾けて消える(見た目だけ。計算は Simulation)
     private func renderMooks() {
+        // 雑魚を全部倒して場面を抜けた: 最後の1体も、ほかと同じく弾けて消える(場面が切り替わる前に)
+        if sim.mookClears > shownMookClears {
+            shownMookClears = sim.mookClears
+            for (k, n) in mookNodes.enumerated() where k < mookEmitterIndex.count && !mookGone.contains(mookEmitterIndex[k]) {
+                mookGone.insert(mookEmitterIndex[k])
+                burstMook(n)
+            }
+            return
+        }
         for (k, n) in mookNodes.enumerated() where k < mookEmitterIndex.count {
             let idx = mookEmitterIndex[k]
             if sim.mookDestroyed(idx) {
                 guard !mookGone.contains(idx) else { continue }
                 mookGone.insert(idx)
-                if effectsOn {
-                    let burst = SKSpriteNode(texture: n.texture, size: n.size)
-                    burst.position = n.position; burst.zPosition = 6
-                    burst.color = .white; burst.colorBlendFactor = 1
-                    addChild(burst)
-                    burst.run(.sequence([.group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]), .removeFromParent()]))
-                }
-                n.isHidden = true
-                AudioManager.shared.se(.boom)
+                burstMook(n)
                 continue
             }
             let lit = idx < sim.mookFlash.count && sim.mookFlash[idx] > 0
             n.color = .white
             n.colorBlendFactor = lit ? 0.85 : 0
         }
+    }
+
+    /// 倒した雑魚を、白く光って広がりながら消す
+    private func burstMook(_ n: SKSpriteNode) {
+        if effectsOn {
+            let burst = SKSpriteNode(texture: n.texture, size: n.size)
+            burst.position = n.position; burst.zPosition = 6
+            burst.color = .white; burst.colorBlendFactor = 1
+            addChild(burst)
+            burst.run(.sequence([.group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]), .removeFromParent()]))
+        }
+        n.isHidden = true
+        AudioManager.shared.se(.boom)
     }
 
     fileprivate func renderRewardFX() {

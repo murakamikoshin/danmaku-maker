@@ -61265,61 +61265,646 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "自機の弾が当たると、雑魚の体力が減ります。倒すと、その発射台はこの場面では撃たなくなります。耐えきるステージでも、オンのときは自機が撃ちます。"
+            "value": "決めた回数だけ自機の弾を当てると、雑魚が倒れて消えます(撃ち方に関係なく、1発で1回)。倒すと、その発射台はこの場面では撃たなくなります。耐えきるステージでも、オンのときは自機が撃ちます。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your shots wear minions down. A destroyed minion’s emitter stops firing for this scene. In Survive stages, your ship also fires while this is on."
+            "value": "A minion is destroyed after the set number of hits (each shot counts as one, whatever your shot type). A destroyed minion’s emitter stops firing for this scene. In Survive stages, your ship also fires while this is on."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Deine Schüsse schwächen Gegner. Ein zerstörter Gegner feuert in dieser Szene nicht mehr. In Überleben-Leveln schießt dein Schiff, solange dies an ist."
+            "value": "Ein Gegner wird nach der eingestellten Zahl an Treffern zerstört (jeder Schuss zählt als einer, egal welche Schussart). Ein zerstörter Gegner feuert in dieser Szene nicht mehr. In Überleben-Leveln schießt dein Schiff, solange dies an ist."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tus disparos dañan a los esbirros. El emisor de uno destruido deja de disparar en esta escena. En fases de Resistir, tu nave también dispara si está activado."
+            "value": "Un esbirro se destruye tras el número de impactos elegido (cada disparo cuenta como uno, sea cual sea tu tipo de disparo). El emisor de uno destruido deja de disparar en esta escena. En fases de Resistir, tu nave también dispara si está activado."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tes tirs affaiblissent les sbires. Un sbire détruit ne tire plus pendant cette scène. En mode Survie, ton vaisseau tire aussi quand c’est activé."
+            "value": "Un sbire est détruit après le nombre de coups choisi (chaque tir compte pour un, quel que soit ton type de tir). Un sbire détruit ne tire plus pendant cette scène. En mode Survie, ton vaisseau tire aussi quand c’est activé."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "내 탄이 맞으면 잡몹의 체력이 줄어요. 쓰러뜨리면 그 발사대는 이 장면에서 더 이상 쏘지 않아요. 버티기 스테이지에서도 켜 두면 기체가 쏩니다."
+            "value": "정한 횟수만큼 내 탄을 맞히면 잡몹이 쓰러져 사라져요(사격 방식과 상관없이 1발에 1회). 쓰러뜨리면 그 발사대는 이 장면에서 더 이상 쏘지 않아요. 버티기 스테이지에서도 켜 두면 기체가 쏩니다."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seus tiros desgastam os capangas. O emissor de um capanga destruído para de atirar nesta cena. Em fases de Sobreviver, sua nave também atira quando ativado."
+            "value": "Um capanga é destruído após o número de acertos escolhido (cada tiro conta como um, seja qual for o tipo de tiro). O emissor de um capanga destruído para de atirar nesta cena. Em fases de Sobreviver, sua nave também atira quando ativado."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ваши выстрелы ослабляют приспешников. Уничтоженный перестаёт стрелять в этой сцене. В уровнях на выживание ваш корабль тоже стреляет, пока это включено."
+            "value": "Приспешник уничтожается после заданного числа попаданий (каждый выстрел считается за одно, при любом типе стрельбы). Уничтоженный перестаёт стрелять в этой сцене. В уровнях на выживание ваш корабль тоже стреляет, пока это включено."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "自机的子弹会削减小怪的体力。击倒后，该发射台在这个场景里不再射击。开启时，在坚持型关卡中自机也会射击。"
+            "value": "自机的子弹命中设定的次数后，小怪会被击倒并消失(不论射击方式，1发算1次)。击倒后，该发射台在这个场景里不再射击。开启时，在坚持型关卡中自机也会射击。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "自機的子彈會削減小怪的體力。擊倒後，該發射台在這個場景裡不再射擊。開啟時，在堅持型關卡中自機也會射擊。"
+            "value": "自機的子彈命中設定的次數後，小怪會被擊倒並消失(不論射擊方式，1發算1次)。擊倒後，該發射台在這個場景裡不再射擊。開啟時，在堅持型關卡中自機也會射擊。"
+          }
+        }
+      }
+    },
+    "editor.mooks.hits": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒すまでに当てる回数"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hits to destroy"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Treffer bis zerstört"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactos para destruir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coups pour détruire"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "쓰러뜨리는 데 필요한 명중 수"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acertos para destruir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попаданий до уничтожения"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "击倒所需命中次数"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擊倒所需命中次數"
+          }
+        }
+      }
+    },
+    "editor.mooks.hits.value": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d回"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d회"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d次"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d次"
+          }
+        }
+      }
+    },
+    "editor.mooks.clear.stage": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚を全部倒したらクリア"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear by destroying all minions"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieg, wenn alle Gegner zerstört sind"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gana al destruir a todos los esbirros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Victoire en détruisant tous les sbires"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잡몹을 전부 쓰러뜨리면 클리어"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vença destruindo todos os capangas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Победа после уничтожения всех приспешников"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "击倒全部小怪即过关"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擊倒全部小怪即過關"
+          }
+        }
+      }
+    },
+    "editor.mooks.clear.stage.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間内に全部倒せないと失敗です。画面の端から撃つ発射台には雑魚がいないので、数えません。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If any remain when time runs out, you fail. Emitters firing from the screen edge have no minion and don’t count."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bleiben bei Zeitablauf Gegner übrig, scheiterst du. Emitter am Bildschirmrand haben keinen Gegner und zählen nicht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si queda alguno al acabar el tiempo, pierdes. Los emisores del borde de la pantalla no tienen esbirro y no cuentan."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S’il en reste à la fin du temps, c’est perdu. Les émetteurs au bord de l’écran n’ont pas de sbire et ne comptent pas."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 안에 전부 쓰러뜨리지 못하면 실패예요. 화면 가장자리에서 쏘는 발사대에는 잡몹이 없어서 세지 않아요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se sobrar algum quando o tempo acabar, você perde. Emissores na borda da tela não têm capanga e não contam."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если к концу времени кто-то остался — поражение. Излучатели у края экрана без приспешников и не считаются."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时间内没全部击倒就算失败。从画面边缘射击的发射台没有小怪，不计算在内。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間內沒全部擊倒就算失敗。從畫面邊緣射擊的發射台沒有小怪，不計算在內。"
+          }
+        }
+      }
+    },
+    "editor.mooks.clear.wave": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚を全部倒したら次の場面へ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next scene after all minions are destroyed"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Szene, wenn alle Gegner zerstört sind"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente escena al destruir a todos los esbirros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scène suivante une fois tous les sbires détruits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잡몹을 전부 쓰러뜨리면 다음 장면으로"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próxima cena ao destruir todos os capangas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующая сцена после уничтожения всех приспешников"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "击倒全部小怪后进入下一场景"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擊倒全部小怪後進入下一場景"
+          }
+        }
+      }
+    },
+    "editor.mooks.clear.wave.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間内に全部倒せないと失敗です。次の場面をボスにすると、雑魚を倒したらボスが出てきます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If any remain when time runs out, you fail. Make the next scene a boss and it appears once the minions are down."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bleiben bei Zeitablauf Gegner übrig, scheiterst du. Ist die nächste Szene ein Boss, erscheint er, sobald die Gegner besiegt sind."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si queda alguno al acabar el tiempo, pierdes. Si la siguiente escena es un jefe, aparecerá al caer los esbirros."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S’il en reste à la fin du temps, c’est perdu. Si la scène suivante est un boss, il apparaît une fois les sbires vaincus."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 안에 전부 쓰러뜨리지 못하면 실패예요. 다음 장면을 보스로 하면, 잡몹을 쓰러뜨린 뒤 보스가 나와요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se sobrar algum quando o tempo acabar, você perde. Se a próxima cena for um chefe, ele aparece quando os capangas caírem."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если к концу времени кто-то остался — поражение. Если следующая сцена — босс, он появится после приспешников."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时间内没全部击倒就算失败。把下一个场景设为BOSS，击倒小怪后BOSS就会登场。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間內沒全部擊倒就算失敗。把下一個場景設為BOSS，擊倒小怪後BOSS就會登場。"
+          }
+        }
+      }
+    },
+    "result.timeup.mooks": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚が残った…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minions remain…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gegner übrig…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quedan esbirros…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il reste des sbires…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잡몹이 남았다…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaram capangas…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приспешники остались…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小怪还有剩…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小怪還有剩…"
+          }
+        }
+      }
+    },
+    "result.msg.timeup.mooks": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間内に雑魚を全部倒せませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You couldn’t destroy every minion in time"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast nicht alle Gegner rechtzeitig zerstört"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No destruiste a todos los esbirros a tiempo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu n’as pas détruit tous les sbires à temps"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 안에 잡몹을 전부 쓰러뜨리지 못했어요"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você não destruiu todos os capangas a tempo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось уничтожить всех приспешников вовремя"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没能在时间内击倒全部小怪"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒能在時間內擊倒全部小怪"
+          }
+        }
+      }
+    },
+    "result.msg.mooks": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@秒で雑魚を全部倒した！"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All minions destroyed in %@s!"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Gegner in %@ s zerstört!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Todos los esbirros destruidos en %@ s!"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les sbires détruits en %@ s !"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@초 만에 잡몹을 전부 쓰러뜨렸다!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos os capangas destruídos em %@ s!"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все приспешники уничтожены за %@ с!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@秒击倒了全部小怪！"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@秒擊倒了全部小怪！"
           }
         }
       }

@@ -429,6 +429,28 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ mooks: 1, mooksBreakable: "yes" }))).toEqual({ ok: false, error: "look" });
   });
 
+  it("雑魚を倒すのに当てる回数は 1〜50 の整数。倒せるときだけ。標準の 20 は保存しない", () => {
+    const one = validatePublish(good({ mooks: 1, mooksBreakable: true, mookHits: 1 }));
+    expect(one.ok && [one.stage.mookHits, one.stage.needs]).toEqual([1, 2]);
+    const max = validatePublish(good({ mooks: 1, mooksBreakable: true, mookHits: 50 }));
+    expect(max.ok && max.stage.mookHits).toBe(50);
+    const std = validatePublish(good({ mooks: 1, mooksBreakable: true, mookHits: 20 }));
+    expect(std.ok && "mookHits" in std.stage).toBe(false);
+    for (const bad of [0, 51, 2.5, "3"]) {
+      expect(validatePublish(good({ mooks: 1, mooksBreakable: true, mookHits: bad }))).toEqual({ ok: false, error: "look" });
+    }
+    expect(validatePublish(good({ mooks: 1, mookHits: 3 }))).toEqual({ ok: false, error: "look" });   // 倒せないのに回数だけは付けられない
+  });
+
+  it("雑魚を全部倒したらクリア/次へ は、耐える場面で倒せる雑魚がいるときだけ", () => {
+    const ok = validatePublish(good({ mooks: 1, mooksBreakable: true, mooksClear: true }));
+    expect(ok.ok && [ok.stage.mooksClear, ok.stage.needs]).toEqual([true, 2]);
+    const off = validatePublish(good({ mooks: 1, mooksBreakable: true, mooksClear: false }));
+    expect(off.ok && "mooksClear" in off.stage).toBe(false);
+    expect(validatePublish(good({ mooks: 1, mooksClear: true }))).toEqual({ ok: false, error: "look" });   // 倒せないのに
+    expect(validatePublish(good({ mooks: 1, mooksBreakable: true, mooksClear: "yes" }))).toEqual({ ok: false, error: "look" });
+  });
+
   it("キャラクターのボス(堕天使など)も、1.2.0 から動き・位置・大きさ(半径20〜60px)を選べる。そのステージは 1.2.0 以降が必要", () => {
     const a = validatePublish(boss({ bossLook: 5, bossMove: 0 }));
     expect(a.ok && a.stage.bossLook).toBe(5);

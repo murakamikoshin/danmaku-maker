@@ -65,6 +65,8 @@ struct EditorView: View {
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
                                               mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken,
                                               mooksBreakable: $model.draft.mooksBreakable,
+                                              mookHits: $model.draft.mookHits,
+                                              mooksClear: model.draft.mode == .survive ? $model.draft.mooksClear : nil,
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
@@ -311,6 +313,12 @@ private struct EnemyControls: View {
     @Binding var awaken: Int?
     /// 雑魚を倒せるか(雑魚を出すときだけ選べる)
     @Binding var mooksBreakable: Bool
+    /// 倒せる雑魚を倒すのに当てる回数(1〜50)
+    @Binding var mookHits: Int
+    /// 雑魚を全部倒したら次へ(耐える場面だけ。nil は出さない)
+    var mooksClear: Binding<Bool>? = nil
+    /// 連戦の場面か(説明の文を「次の場面へ」にする)
+    var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
     /// いま置いている発射台に、キャラクターのボス専用の技があるか。見た目を変えると使えなくなるので、確認してから「放射」に置き換える
     var usesCharacterPatterns = false
@@ -418,6 +426,25 @@ private struct EnemyControls: View {
                     GameToggle(isOn: $mooksBreakable)
                 }
                 .accessibilityIdentifier("editor.mooks.breakable")
+                if mooksBreakable {
+                    let r = DanmakuConfig.mookHitsRange
+                    SliderRow(label: "editor.mooks.hits",
+                              value: Binding(get: { Double(min(max(mookHits, r.lowerBound), r.upperBound)) }, set: { mookHits = Int($0.rounded()) }),
+                              range: Double(r.lowerBound)...Double(r.upperBound), step: 1) { String(format: L("editor.mooks.hits.value"), Int($0)) }
+                        .accessibilityIdentifier("editor.mooks.hits")
+                    if let mooksClear {
+                        // 雑魚を全部倒したら次へ(最後ならクリア)。時間内に倒しきれないと失敗
+                        HStack(spacing: 10) {
+                            Image(systemName: "flag.checkered").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 22)
+                            Text(inSequence ? "editor.mooks.clear.wave" : "editor.mooks.clear.stage").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer()
+                            GameToggle(isOn: mooksClear)
+                        }
+                        .accessibilityIdentifier("editor.mooks.clear")
+                        Text(inSequence ? "editor.mooks.clear.wave.note" : "editor.mooks.clear.stage.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
                 Text("editor.mooks.breakable.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look", trial: { _ in false }, locked: { _ in false }) { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
@@ -976,7 +1003,7 @@ private struct WaveCard: View {
             Text(wave.kind == .boss ? "editor.wave.limit" : "editor.endure").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: wave.durations.map { ($0, String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { wave.duration }, set: { model.draft.waves[i].setDuration($0) }), idPrefix: "editor.wave.duration.\(i)")
-            if wave.kind == .boss { bossControls }
+            if wave.kind == .boss { bossControls } else { mookControls }
             ForEach(Array(wave.emitters.indices), id: \.self) { e in
                 EmitterCard(index: e, emitter: Binding(get: { model.draft.waves[i].emitters[e] }, set: { model.draft.waves[i].emitters[e] = $0 }),
                             isBoss: wave.kind == .boss, look: look, advanced: advanced, duration: wave.duration,
@@ -1008,6 +1035,7 @@ private struct WaveCard: View {
                                   mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }),
                                   awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }),
                                   mooksBreakable: Binding(get: { wave.mooksBreakable == true }, set: { model.draft.waves[i].mooksBreakable = $0 }),
+                                  mookHits: Binding(get: { wave.mookHits ?? DanmakuConfig.mookHp }, set: { model.draft.waves[i].mookHits = $0 }),
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {
@@ -1020,6 +1048,19 @@ private struct WaveCard: View {
                     }
                     DefeatPicker(selection: Binding(get: { wave.defeat }, set: { model.draft.waves[i].defeat = $0 }))
                 }
+    }
+
+    /// 耐える場面の雑魚(姿・倒せるか・回数・全部倒したら次へ)。連戦で「雑魚を倒したらボスが出る」を作れるように、かんたんでも出す
+    private var mookControls: some View {
+        EnemyControls(showBoss: false,
+                      bossSize: .constant(1), bossLook: .constant(0),
+                      mooks: Binding(get: { wave.mooks }, set: { model.draft.waves[i].mooks = $0 }),
+                      mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }),
+                      awaken: .constant(nil),
+                      mooksBreakable: Binding(get: { wave.mooksBreakable == true }, set: { model.draft.waves[i].mooksBreakable = $0 }),
+                      mookHits: Binding(get: { wave.mookHits ?? DanmakuConfig.mookHp }, set: { model.draft.waves[i].mookHits = $0 }),
+                      mooksClear: Binding(get: { wave.mooksClear == true }, set: { model.draft.waves[i].mooksClear = $0 }),
+                      inSequence: true)
     }
 
     private func iconButton(_ symbol: String, enabled: Bool, tint: Color = GameStyle.text, action: @escaping () -> Void) -> some View {

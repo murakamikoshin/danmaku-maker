@@ -301,6 +301,42 @@ final class FixtureExportTests: XCTestCase {
         seq.waves![0].mooksBreakable = true; seq.waves![1].mooksBreakable = true
         stages.append(("mooks-sequence-breakable", seq.sanitized()))
         stages.append(("puni-damage-all", puni(puniAll, awaken: nil, mode: .damage)))
+        // 1.2.0: 雑魚を倒すのに当てる回数(1〜50)。ここより前の並びは変えない
+        func hits(_ st: Stage, _ n: Int) -> Stage { var s = st; s.mooksBreakable = true; s.mookHits = n; return s.sanitized() }
+        stages.append(("mooks-survive-hits1-heavy", hits(Stage(name: "h1", mode: .survive, durationSec: 30, emitters: mookEms, mooks: 1, shot: .heavy), 1)))
+        stages.append(("mooks-boss-hits50", hits(Stage(name: "h50", mode: .boss, durationSec: 60, bossHp: 300,
+            emitters: mookEms.map { var m = $0; m.p = 1; return m }, mooks: 2), 50)))
+        var seqH = Stage(name: "hq", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .survive, durationSec: 15, emitters: mookEms, mooks: 0),
+            Wave(kind: .boss, durationSec: 40, bossHp: 200, bossMove: 1, emitters: mookEms.map { var m = $0; m.p = 1; return m }, mooks: 1)])
+        seqH.waves![0].mooksBreakable = true; seqH.waves![0].mookHits = 3
+        seqH.waves![1].mooksBreakable = true; seqH.waves![1].mookHits = 8
+        stages.append(("mooks-sequence-hits3-8", seqH.sanitized()))
+        // 1.2.0: 雑魚を全部倒したら次へ / クリア(時間切れは失敗)。ここより前の並びは変えない
+        var clearSt = Stage(name: "c1", mode: .survive, durationSec: 30, emitters: mookEms + [Emitter(t: .rain, x: 0.5, y: 0, s: 0, e: 30, i: 0.5, c: 3, v: 2, r: 0, k: 0)], mooks: 1, shot: .spread)
+        clearSt.mooksBreakable = true; clearSt.mookHits = 2; clearSt.mooksClear = true
+        stages.append(("mooks-survive-clear", clearSt.sanitized()))
+        var clearHard = clearSt; clearHard.mookHits = 50; clearHard.durationSec = 10
+        stages.append(("mooks-survive-clear-timeup", clearHard.sanitized()))
+        var seqC = Stage(name: "cq", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .survive, durationSec: 30, emitters: mookEms, mooks: 1),
+            Wave(kind: .survive, durationSec: 20, emitters: mookEms, mooks: 2),
+            Wave(kind: .boss, durationSec: 40, bossHp: 200, bossMove: 2, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 40, i: 0.7, c: 12, v: 2, r: 4, k: 0)])])
+        seqC.waves![0].mooksBreakable = true; seqC.waves![0].mookHits = 1; seqC.waves![0].mooksClear = true
+        seqC.waves![1].mooksBreakable = true; seqC.waves![1].mookHits = 4; seqC.waves![1].mooksClear = true
+        stages.append(("mooks-sequence-clear-then-boss", seqC.sanitized()))
+        // 弾が少なく HP が多い: ボットが生き残って「全部倒したら」の終わり方まで進むもの
+        let easyEms = [Emitter(t: .ring, x: 0.5, y: 0.3, s: 0, e: 30, i: 2.5, c: 4, v: 1.2, r: 0, k: 0),
+                       Emitter(t: .ring, x: 0.42, y: 0.25, s: 0, e: 30, i: 3, c: 3, v: 1.2, r: 0, k: 1),
+                       Emitter(t: .ring, x: 0.58, y: 0.25, s: 0, e: 30, i: 3, c: 3, v: 1.2, r: 0, k: 2)]
+        var easy = Stage(name: "ce", mode: .survive, durationSec: 30, emitters: easyEms, lifeMode: .hp, lifeCount: 20, mooks: 2)
+        easy.mooksBreakable = true; easy.mookHits = 1; easy.mooksClear = true
+        stages.append(("mooks-survive-clear-easy", easy.sanitized()))
+        var seqE = Stage(name: "qe", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 20, waves: [
+            Wave(kind: .survive, durationSec: 30, emitters: easyEms, mooks: 2),
+            Wave(kind: .boss, durationSec: 40, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 40, i: 3, c: 4, v: 1.2, r: 0, k: 0)])])
+        seqE.waves![0].mooksBreakable = true; seqE.waves![0].mookHits = 2; seqE.waves![0].mooksClear = true
+        stages.append(("mooks-sequence-clear-easy", seqE.sanitized()))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

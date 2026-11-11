@@ -95,6 +95,10 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var mookLook: Int?
     /// 雑魚を倒せるか(nil・false は倒せない)
     var mooksBreakable: Bool?
+    /// 倒せる雑魚を倒すのに当てる回数(nil は標準の 20)
+    var mookHits: Int?
+    /// 雑魚を全部倒したら次の場面へ(耐える場面だけ)
+    var mooksClear: Bool?
     /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
     var bossX: Double?
     var bossY: Double?
@@ -115,6 +119,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
              bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil,
              bossX: kind == .boss ? bossX : nil, bossY: kind == .boss ? bossY : nil)
         w.mooksBreakable = mooksBreakable == true ? true : nil
+        w.mookHits = mooksBreakable == true ? mookHits : nil
+        w.mooksClear = (kind == .survive && mooksBreakable == true && mooksClear == true) ? true : nil
         return w
     }
 
@@ -178,6 +184,10 @@ struct Draft: Codable, Equatable {
     var mookLook = 0
     /// 雑魚を倒せるか
     var mooksBreakable = false
+    /// 倒せる雑魚を倒すのに当てる回数
+    var mookHits = DanmakuConfig.mookHp
+    /// 雑魚を全部倒したらクリア(耐久だけ)
+    var mooksClear = false
     /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
     var bossX: Double?
     var bossY: Double?
@@ -188,7 +198,7 @@ struct Draft: Codable, Equatable {
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -218,6 +228,8 @@ struct Draft: Codable, Equatable {
         mooks = try c.decodeIfPresent(Int.self, forKey: .mooks)
         mookLook = try c.decodeIfPresent(Int.self, forKey: .mookLook) ?? 0
         mooksBreakable = try c.decodeIfPresent(Bool.self, forKey: .mooksBreakable) ?? false
+        mookHits = try c.decodeIfPresent(Int.self, forKey: .mookHits) ?? DanmakuConfig.mookHp
+        mooksClear = try c.decodeIfPresent(Bool.self, forKey: .mooksClear) ?? false
         awaken = try c.decodeIfPresent(Int.self, forKey: .awaken)
         bossX = try c.decodeIfPresent(Double.self, forKey: .bossX)
         bossY = try c.decodeIfPresent(Double.self, forKey: .bossY)
@@ -242,6 +254,8 @@ struct Draft: Codable, Equatable {
               previewStart: previewStart > 0 ? previewStart : nil, noPreview: noPreview ? true : nil,
               bossX: bossX, bossY: bossY)
         st.mooksBreakable = (!isSeq && mooksBreakable) ? true : nil
+        st.mookHits = (!isSeq && mooksBreakable) ? mookHits : nil
+        st.mooksClear = (mode == .survive && mooksBreakable && mooksClear) ? true : nil
         return st.sanitized()
     }
 

@@ -59,4 +59,81 @@ final class MooksBreakableTests: XCTestCase {
         XCTAssertFalse(Simulation.hasMook(em(), boss: true), "ボスから撃つ発射台には雑魚がいない")
         XCTAssertTrue(Simulation.hasMook(em(p: 1), boss: true))
     }
+
+    /// 当てる回数を決められる(1〜50)。撃ち方に関係なく、1発で1回。標準(20)と範囲外は整える
+    func testMookHits() {
+        func st(_ n: Int?, breakable: Bool? = true) -> Stage {
+            var s = Stage(name: "m", mode: .survive, durationSec: 20, emitters: [em(), em(x: 0.1)], mooks: 1, shot: .heavy)
+            s.mooksBreakable = breakable; s.mookHits = n
+            return s.sanitized()
+        }
+        XCTAssertEqual(st(1).mookHits, 1)
+        XCTAssertEqual(st(50).mookHits, 50)
+        XCTAssertEqual(st(99).mookHits, 50)
+        XCTAssertEqual(st(0).mookHits, 1)
+        XCTAssertNil(st(20).mookHits, "標準は保存しない")
+        XCTAssertNil(st(5, breakable: nil).mookHits, "倒せないなら使わない")
+        let back = try? JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(st(3)))
+        XCTAssertEqual(back?.mookHits, 3)
+
+        var one = Simulation(stage: st(1)); one.invincible = true
+        XCTAssertEqual(one.mookHP, [1, 1])
+        var n = 0
+        while !one.mookDestroyed(0) && n < 120 * 4 { one.step(.zero); n += 1 }
+        XCTAssertTrue(one.mookDestroyed(0), "1回で倒れる(重い弾でも1発は1回)")
+        XCTAssertEqual(one.mookHP[0], 0)
+
+        var many = Simulation(stage: st(50)); many.invincible = true
+        for _ in 0..<n { many.step(.zero) }
+        XCTAssertFalse(many.mookDestroyed(0), "50回なら、同じ時間ではまだ倒れない")
+        XCTAssertLessThan(many.mookHP[0], 50)
+    }
+
+    /// 雑魚を全部倒したら次へ / クリア。倒しきれずに時間切れなら失敗。耐える場面で、倒せる雑魚がいるときだけ使える
+    func testMooksClear() {
+        func st(hits: Int, sec: Int = 20, clear: Bool? = true, breakable: Bool? = true, ems: [Emitter]? = nil) -> Stage {
+            var s = Stage(name: "c", mode: .survive, durationSec: sec, emitters: ems ?? [em()], mooks: 1)
+            s.mooksBreakable = breakable; s.mookHits = hits; s.mooksClear = clear
+            return s.sanitized()
+        }
+        XCTAssertEqual(st(hits: 1).mooksClear, true)
+        XCTAssertNil(st(hits: 1, breakable: nil).mooksClear, "倒せないなら使えない")
+        let edgeOnly = [Emitter(t: .rain, x: 0.5, y: 0, s: 0, e: 20, i: 0.5, c: 3, v: 2, r: 0, k: 0)]
+        XCTAssertNil(st(hits: 1, ems: edgeOnly).mooksClear, "雑魚がいない(画面の端から撃つだけ)なら使えない")
+        var bossSt = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, emitters: [em(p: 1)], mooks: 1)
+        bossSt.mooksBreakable = true; bossSt.mooksClear = true
+        XCTAssertNil(bossSt.sanitized().mooksClear, "ボス戦では使わない(ボスを倒すとクリア)")
+
+        // 1回で倒れる雑魚(真上)を倒すと、時間より前にクリア
+        var a = Simulation(stage: st(hits: 1)); a.invincible = true
+        while a.outcome == .playing && a.tick < 120 * 30 { a.step(.zero) }
+        XCTAssertEqual(a.outcome, .cleared)
+        XCTAssertLessThan(a.t, 5, "時間切れよりずっと早く終わる")
+        XCTAssertEqual(a.mookClears, 1)
+        // 横の雑魚は真上にいないので倒せず、時間切れで失敗
+        var b = Simulation(stage: st(hits: 1, sec: 10, ems: [em(), em(x: 0.1)])); b.invincible = true
+        while b.outcome == .playing && b.tick < 120 * 30 { b.step(.zero) }
+        XCTAssertEqual(b.outcome, .timeUp)
+        // オフなら、これまでどおり時間まで耐えてクリア
+        var c = Simulation(stage: st(hits: 1, sec: 10, clear: nil)); c.invincible = true
+        while c.outcome == .playing && c.tick < 120 * 30 { c.step(.zero) }
+        XCTAssertEqual(c.outcome, .cleared)
+        XCTAssertGreaterThanOrEqual(c.t, 10)
+    }
+
+    /// 連戦: 雑魚を全部倒すと、次の場面(ボス)へ進む
+    func testMooksClearAdvancesToBoss() {
+        var s = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .survive, durationSec: 30, emitters: [em()], mooks: 1),
+            Wave(kind: .boss, durationSec: 40, bossHp: 100, emitters: [em(p: 1)])])
+        s.waves![0].mooksBreakable = true; s.waves![0].mookHits = 1; s.waves![0].mooksClear = true
+        let clean = s.sanitized()
+        XCTAssertEqual(clean.waves?[0].mooksClear, true)
+        var sim = Simulation(stage: clean); sim.invincible = true
+        while sim.waveIndex == 0 && sim.tick < 120 * 40 { sim.step(.zero) }
+        XCTAssertEqual(sim.waveIndex, 1)
+        XCTAssertLessThan(sim.t, 5, "30秒待たずにボスへ")
+        let back = try? JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(clean))
+        XCTAssertEqual(back?.waves?[0].mooksClear, true)
+    }
 }

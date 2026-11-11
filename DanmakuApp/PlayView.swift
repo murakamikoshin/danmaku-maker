@@ -15,6 +15,8 @@ struct PlayResult {
     var shot: ShotType
     /// 復活を使ったか(使ったクリアは、ランキングとクリア数に数えない)
     var revived = false
+    /// 「雑魚を全部倒したら次へ」の場面で終わったか(クリア・時間切れの文を変える)
+    var byMooks = false
 }
 
 /// ランキングに記録するために必要な情報(世界のステージを遊んでいるとき)
@@ -70,7 +72,7 @@ final class PlayModel: ObservableObject {
             guard let self else { return }
             let r = PlayResult(outcome: sim.outcome, time: max(0, sim.t), ticks: sim.tick, hp: sim.hp,
                                duration: sim.stage.durationSec, isBoss: sim.stage.hasRanking, isDamage: sim.stage.mode == .damage,
-                               damage: sim.damageDealt, shot: sim.shotType, revived: self.revivedThisRun)
+                               damage: sim.damageDealt, shot: sim.shotType, revived: self.revivedThisRun, byMooks: sim.clearsByMooks)
             if sim.outcome == .hit { AudioManager.shared.se(.hit) }
             if sim.outcome == .hit, self.canRevive() {
                 self.pending = r; self.pendingMoves = moves
@@ -314,7 +316,7 @@ struct ResultView: View {
     private var headline: String {
         switch result.outcome {
         case .cleared: return L(result.isDamage ? "result.damage.win" : result.isBoss ? "result.boss.win" : "result.clear")
-        case .timeUp: return L("result.timeup")
+        case .timeUp: return L(result.byMooks ? "result.timeup.mooks" : "result.timeup")
         default: return L("result.hit")
         }
     }
@@ -324,9 +326,9 @@ struct ResultView: View {
         switch result.outcome {
         case .cleared:
             if result.isDamage { return L("result.msg.damage") }
-            return result.isBoss ? String(format: L("result.msg.boss"), RankingService.clearSecondsText(ticks: result.ticks))   // ランキングの記録と同じ表示
-                                 : String(format: L("result.msg.survive"), result.duration)
-        case .timeUp: return String(format: L("result.msg.timeup"), result.hp)
+            if result.isBoss { return String(format: L("result.msg.boss"), RankingService.clearSecondsText(ticks: result.ticks)) }   // ランキングの記録と同じ表示
+            return result.byMooks ? String(format: L("result.msg.mooks"), timeText) : String(format: L("result.msg.survive"), result.duration)
+        case .timeUp: return result.byMooks ? L("result.msg.timeup.mooks") : String(format: L("result.msg.timeup"), result.hp)
         default: return String(format: L("result.msg.hit"), timeText)
         }
     }

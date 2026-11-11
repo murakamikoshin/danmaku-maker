@@ -49,6 +49,10 @@ export interface Wave {
   mooks?: number;
   /** 雑魚を倒せる(true だけ入れる)。雑魚を出すときだけ。1.2.0 から */
   mooksBreakable?: true;
+  /** 倒せる雑魚を倒すのに当てる回数(1〜50。標準の 20 は入れない)。倒せるときだけ */
+  mookHits?: number;
+  /** 雑魚を全部倒したら次へ(クリア)。耐える場面で、倒せる雑魚がいるときだけ。1.2.0 から */
+  mooksClear?: true;
   /** ボスの見た目(1〜5。標準=0は入れない。5 は堕天使で、位置と当たる範囲が変わる)・雑魚の見た目(1〜4)。図形のボスと雑魚は見た目だけ */
   bossLook?: number;
   mookLook?: number;
@@ -92,6 +96,10 @@ export interface Stage {
   mooks?: number;
   /** 雑魚を倒せる(true だけ入れる)。雑魚を出すときだけ。1.2.0 から */
   mooksBreakable?: true;
+  /** 倒せる雑魚を倒すのに当てる回数(1〜50。標準の 20 は入れない)。倒せるときだけ */
+  mookHits?: number;
+  /** 雑魚を全部倒したら次へ(クリア)。耐える場面で、倒せる雑魚がいるときだけ。1.2.0 から */
+  mooksClear?: true;
   bossLook?: number;
   mookLook?: number;
   /** 覚醒する段階(2 か 3)。ボス戦・ダメージ勝負だけ */
@@ -180,6 +188,18 @@ const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
  * 新しいボス(bossLook 6 以上。堕天使の次から)を使うステージに付ける。古いアプリには届かないが、これからのアプリは、自分より大きいレベルのステージを「アップデートが必要」と案内できる
  */
 export const NEW_BOSS_LOOK_MIN = 6;
+/** 雑魚を倒すのに当てる回数: 無し、または 1〜50 の整数(倒せるときだけ)。20(標準)は入れない */
+function mookHitsVal(v: unknown, breakable: boolean): { ok: boolean; v?: number } {
+  if (v === undefined || v === null) return { ok: true };
+  if (!breakable || typeof v !== "number" || !Number.isInteger(v) || v < 1 || v > 50) return { ok: false };
+  return { ok: true, v: v === 20 ? undefined : v };
+}
+/** 雑魚を全部倒したら次へ: true / false / 無し。true は、耐える場面で倒せる雑魚が1体以上いるときだけ(画面の端から撃つ種類には雑魚が出ない) */
+function mooksClearVal(v: unknown, allowed: boolean, ems: readonly Emitter[]): { ok: boolean; v?: true } {
+  if (v === undefined || v === null || v === false) return { ok: true };
+  if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner"].includes(m.t))) return { ok: false };
+  return { ok: true, v: true };
+}
 type LevelPart = { bossLook?: number; bossSize?: number; bossMove?: number | null; bossX?: number; bossY?: number; mooksBreakable?: true };
 /** 1 つの場面(または 1 面のステージ)が、1.2.0 以降の内容を使うか */
 const needsNew = (p: LevelPart): boolean =>
@@ -295,9 +315,13 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wBreak = w.mooksBreakable;
     if (wBreak !== undefined && wBreak !== null && wBreak !== true && wBreak !== false) return { ok: false, error: "wave-look" };
     if (wBreak === true && w.mooks === undefined) return { ok: false, error: "wave-look" };
+    const wHits = mookHitsVal(w.mookHits, wBreak === true);
+    if (!wHits.ok) return { ok: false, error: "wave-look" };
+    const wClear = mooksClearVal(w.mooksClear, kind === "survive" && wBreak === true, em.list);
+    if (!wClear.ok) return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
-      ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}), ...(w.mooksBreakable === true && wMooks.v !== undefined ? { mooksBreakable: true as const } : {}),
+      ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}), ...(w.mooksBreakable === true && wMooks.v !== undefined ? { mooksBreakable: true as const, ...(wHits.v !== undefined ? { mookHits: wHits.v } : {}), ...(wClear.v ? { mooksClear: true as const } : {}) } : {}),
       ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}),
       ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}),
       ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}) });
@@ -419,6 +443,10 @@ export function validatePublish(input: unknown): Validated {
   const bBreak = input.mooksBreakable;
   if (bBreak !== undefined && bBreak !== null && bBreak !== true && bBreak !== false) return { ok: false, error: "look" };
   if (bBreak === true && input.mooks === undefined) return { ok: false, error: "look" };
+  const bHits = mookHitsVal(input.mookHits, bBreak === true);
+  if (!bHits.ok) return { ok: false, error: "look" };
+  const bClear = mooksClearVal(input.mooksClear, mode === "survive" && bBreak === true, emitters);
+  if (!bClear.ok) return { ok: false, error: "look" };
 
   let shot: "spread" | "heavy" | undefined;
   if (input.shot !== undefined && input.shot !== null && input.shot !== "standard") {
@@ -463,7 +491,7 @@ export function validatePublish(input: unknown): Validated {
     ok: true,
     clearReplay: replay,
     stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) }) > 1 ? { needs: 2 } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
-      ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}), ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}),
+      ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}), ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const, ...(bHits.v !== undefined ? { mookHits: bHits.v } : {}), ...(bClear.v ? { mooksClear: true as const } : {}) } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),
       ...(bHx.v !== undefined ? { bossX: bHx.v } : {}), ...(bHy.v !== undefined ? { bossY: bHy.v } : {}),

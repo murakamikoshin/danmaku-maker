@@ -142,12 +142,16 @@ export interface SimStage {
   bossY?: number | null;
   mooks?: number | null;
   mooksBreakable?: boolean | null;
+  mookHits?: number | null;
+  mooksClear?: boolean | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean }
 /** 倒せる雑魚の体力・当たる半径(アプリの DanmakuConfig.mookHp / Simulation.mookRadius と同じ) */
 const MOOK_HP = 20;
+/** 雑魚を倒すのに当てる回数(1〜50、無ければ 20)。アプリの Wave.sanitizedMookHits と同じ */
+const mookHitsOf = (v: number | null | undefined): number => (typeof v === "number" && Number.isFinite(v) ? Math.min(Math.max(Math.trunc(v), 1), 50) : MOOK_HP);
 const MOOK_RADII = [9, 13, 18];
 /** 雑魚が出る発射台か(アプリの Simulation.hasMook と同じ) */
 const hasMook = (m: Emitter, boss: boolean): boolean => !["rain", "sideL", "sideR", "corner"].includes(m.t) && (!boss || m.p === 1);
@@ -155,9 +159,9 @@ const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -447,7 +451,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   let next = specs[0]!.emitters.map((m) => m.s);
   let shotCount = specs[0]!.emitters.map(() => 0);
   /** 倒せる雑魚の残りの体力(発射台ごと。いない・倒せないものは 0) */
-  const mookHPOf = (sp: Spec): number[] => sp.emitters.map((m) => (sp.breakable && hasMook(m, sp.boss) ? MOOK_HP : 0));
+  const mookHPOf = (sp: Spec): number[] => sp.emitters.map((m) => (sp.breakable && hasMook(m, sp.boss) ? sp.mookHits : 0));
   let mookHP = mookHPOf(specs[0]!);
   let bullets: Bullet[] = [];
   let shots: Shot[] = [];
@@ -474,7 +478,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       if (!(mookHP[idx]! > 0)) continue;
       const m = sp.emitters[idx]!;
       const dx = s.x - m.x * W, dy = s.y - m.y * H;
-      if (dx * dx + dy * dy < r * r) { mookHP[idx]! -= s.damage; return true; }
+      if (dx * dx + dy * dy < r * r) { mookHP[idx]! -= 1; return true; }
     }
     return false;
   };
@@ -580,6 +584,11 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         shots[w++] = s;
       }
       shots.length = w;
+      // 雑魚を全部倒したら次の場面へ(最後の場面ならクリア)。アプリと同じ
+      if (sp.mooksClear && sp.emitters.every((m, idx) => !hasMook(m, false) || mookDestroyed(idx))) {
+        if (wi + 1 < specs.length) advanceWave(dt); else outcome = "cleared";
+        return;
+      }
     }
 
     if (waveT >= 0) {
@@ -849,9 +858,9 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (waveT >= sp.limit) {
       if (wi + 1 < specs.length) {
         // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ
-        if (sp.boss && !sp.damage) outcome = "timeUp"; else advanceWave(dt);
+        if ((sp.boss && !sp.damage) || sp.mooksClear) outcome = "timeUp"; else advanceWave(dt);
       } else {
-        outcome = sp.boss && !sp.damage ? "timeUp" : "cleared";
+        outcome = (sp.boss && !sp.damage) || sp.mooksClear ? "timeUp" : "cleared";
       }
     }
   };

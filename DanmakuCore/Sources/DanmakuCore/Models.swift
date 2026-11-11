@@ -18,8 +18,9 @@ public enum DanmakuConfig {
     public static let bossRadii: [Double] = [17, 24, 34]
     /// ボスの大きさの指定(Stage.bossSize)。0〜2 は小・中・大(上の半径)。10〜44 は、半径そのもの(px)。スライダーで細かく決める
     public static let bossRadiusRange = 10...44
-    /// 倒せる雑魚の体力(ふつうの撃ち方で、当て続けて約1秒)
+    /// 倒せる雑魚を倒すのに当てる回数の標準(どの撃ち方でも、1発当たるごとに1減る)。作者が 1〜50 回で決められる(Stage.mookHits)
     public static let mookHp = 20
+    public static let mookHitsRange = 1...50
     /// キャラクターのボスの大きさ(当たり判定の半径 px)。標準は 40(これまでの大きさ)。絵と技の出る場所も、同じ倍率で変わる
     public static let characterRadiusRange = 20...60
     public static let characterBaseRadius = 40.0
@@ -315,6 +316,10 @@ public struct Wave: Codable, Equatable, Sendable {
     public var mooks: Int?
     /// 雑魚を倒せるか(自機の弾が当たると体力が減り、倒すとその発射台は撃たなくなる)。雑魚を出すときだけ。nil は倒せない(これまで通り)
     public var mooksBreakable: Bool?
+    /// 倒せる雑魚を倒すのに当てる回数(1〜50)。nil は標準(20)。倒せるときだけ
+    public var mookHits: Int?
+    /// 雑魚を全部倒したら次の場面へ(最後の場面ならクリア)。時間内に倒しきれないと失敗。耐える場面で、倒せる雑魚がいるときだけ
+    public var mooksClear: Bool?
     /// ボス・雑魚の見た目(0〜4、nil は標準)。見た目だけ
     public var bossLook: Int?
     public var mookLook: Int?
@@ -399,6 +404,17 @@ public struct Wave: Codable, Equatable, Sendable {
         guard let v, (0...2).contains(v) else { return nil }
         return v
     }
+    /// 「雑魚を全部倒したら次へ」を使えるか: 耐える場面で、倒せる雑魚が1体以上いる
+    static func canClearByMooks(survive: Bool, breakable: Bool, emitters: [Emitter]) -> Bool {
+        survive && breakable && emitters.contains { Simulation.hasMook($0, boss: false) }
+    }
+    /// 雑魚を倒すのに当てる回数。範囲に収め、標準(20)なら nil
+    static func sanitizedMookHits(_ v: Int?) -> Int? {
+        guard let v else { return nil }
+        let r = DanmakuConfig.mookHitsRange
+        let c = min(max(v, r.lowerBound), r.upperBound)
+        return c == DanmakuConfig.mookHp ? nil : c
+    }
 
     /// 実際に使う撃破の演出
     public var defeatEffect: DefeatEffect { defeat.flatMap(DefeatEffect.init(rawValue:)) ?? .standard }
@@ -446,6 +462,8 @@ public struct Wave: Codable, Equatable, Sendable {
                     bossX: isBoss ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
                     bossY: isBoss ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
         out.mooksBreakable = (out.mooks != nil && mooksBreakable == true) ? true : nil
+        out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
+        out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: kind == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
         return out
     }
 }
@@ -556,6 +574,10 @@ struct WaveSpec {
     var mookLook = 0
     /// 雑魚を倒せるか(雑魚を出すときだけ true になる)
     var mooksBreakable = false
+    /// 倒せる雑魚を倒すのに当てる回数
+    var mookHits = DanmakuConfig.mookHp
+    /// 雑魚を全部倒したら次へ(時間切れは失敗)
+    var mooksClear = false
     /// 覚醒する段階(nil は覚醒しない)
     var awaken: Int?
     /// ボスの位置のずらし量(px。標準の位置からの差)
@@ -599,6 +621,10 @@ public struct Stage: Codable, Equatable, Sendable {
     public var mooks: Int?
     /// 雑魚を倒せるか(Wave.mooksBreakable と同じ。連戦以外のステージ全体の設定)
     public var mooksBreakable: Bool?
+    /// 倒せる雑魚を倒すのに当てる回数(Wave.mookHits と同じ)
+    public var mookHits: Int?
+    /// 雑魚を全部倒したらクリア(Wave.mooksClear と同じ。耐久のステージだけ)
+    public var mooksClear: Bool?
     public var bossLook: Int?
     public var mookLook: Int?
     /// 覚醒する段階(2 か 3)。nil は覚醒しない。ボス戦・ダメージ勝負だけ(連戦は場面ごとの Wave.awaken)
@@ -675,7 +701,7 @@ public struct Stage: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
         case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
-        case mooksBreakable
+        case mooksBreakable, mookHits, mooksClear
     }
 
     static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
@@ -684,10 +710,10 @@ public struct Stage: Codable, Equatable, Sendable {
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height))
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height))
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height))]
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height))]
     }
 
     /// 連戦のとき、最後まで通しての所要時間の上限(秒)。場面の合計と、切り替えの時間
@@ -749,6 +775,8 @@ public struct Stage: Codable, Equatable, Sendable {
         bossX = try d.decodeIfPresent(Double.self, forKey: .bossX)
         bossY = try d.decodeIfPresent(Double.self, forKey: .bossY)
         mooksBreakable = try d.decodeIfPresent(Bool.self, forKey: .mooksBreakable)
+        mookHits = try d.decodeIfPresent(Int.self, forKey: .mookHits)
+        mooksClear = try d.decodeIfPresent(Bool.self, forKey: .mooksClear)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -761,6 +789,8 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(bossX, forKey: .bossX)
         try c.encodeIfPresent(bossY, forKey: .bossY)
         try c.encodeIfPresent(mooksBreakable, forKey: .mooksBreakable)
+        try c.encodeIfPresent(mookHits, forKey: .mookHits)
+        try c.encodeIfPresent(mooksClear, forKey: .mooksClear)
         try c.encode(emitters, forKey: .emitters)
         try c.encode(formatVersion, forKey: .formatVersion)
         try c.encodeIfPresent(lifeMode, forKey: .lifeMode)
@@ -876,6 +906,8 @@ public struct Stage: Codable, Equatable, Sendable {
                      bossX: isBossMode ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
                      bossY: isBossMode ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
         out.mooksBreakable = (out.mooks != nil && mooksBreakable == true) ? true : nil
+        out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
+        out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: mode == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
         return out
     }
 }
