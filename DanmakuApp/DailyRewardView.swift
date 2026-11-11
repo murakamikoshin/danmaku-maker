@@ -157,7 +157,7 @@ struct DailyRewardBanner: View {
                 HStack(spacing: 12) {
                     RewardSwatch(reward: next, size: 52)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("daily.title").font(.system(size: 15, weight: .heavy))
+                        Text("daily.title").font(.system(size: 15, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.8)
                         Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                     }
                     Spacer(minLength: 4)
@@ -165,11 +165,14 @@ struct DailyRewardBanner: View {
                         Task { await claim() }
                     } label: {
                         Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                            .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink).lineLimit(1)
+                            .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                            .lineLimit(2).minimumScaleFactor(0.8).multilineTextAlignment(.center)
                             .padding(.vertical, 8).padding(.horizontal, 12)
                             .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
                     }
                     .buttonStyle(.plain)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
                     .disabled(!ready || busy).opacity(ready && !busy ? 1 : 0.5)
                     .accessibilityIdentifier("home.daily.claim")
                 }

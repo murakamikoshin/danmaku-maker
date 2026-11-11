@@ -77,6 +77,10 @@ jobs:
           shot gensou_shop_patterns ja 16 -ui-theme gensou -open-shop -shop-focus patterns
           shot classic_shop_patterns ja 16 -ui-theme classic -open-shop -shop-focus patterns
           shot home en 14
+          shot home de 14
+          shot home ru 14
+          shot classic_home en 14 -ui-theme classic
+          shot gensou_home de 14 -ui-theme gensou
           shot editor de 16 -open-editor
           shot shop ko 14 -open-shop
           xcrun simctl shutdown "$UDID" || true
