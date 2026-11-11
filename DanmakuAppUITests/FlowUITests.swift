@@ -4,7 +4,7 @@ import XCTest
 /// 1 画面進むごとにスクリーンショットを撮り、結果(xcresult)に残す(CI が画像にして保存する)。
 /// 課金と投稿は「手前」で止める(購入ボタン・投稿ボタンは押さない)。
 /// テーマは環境変数 UI_THEME(classic / arcade / gensou。CI は TEST_RUNNER_UI_THEME で渡す)、
-/// サーバーは環境変数 UI_BACKEND=emulator のときだけエミュレーターにつなぐ(本番には書き込まない)。
+/// サーバーは環境変数 UI_BACKEND=emulator のときだけエミュレーターにつなぐ(本番には書き込まない。偽の設定で起動する)。
 final class FlowUITests: XCTestCase {
     private var app: XCUIApplication!
     private var theme: String { ProcessInfo.processInfo.environment["UI_THEME"] ?? "classic" }

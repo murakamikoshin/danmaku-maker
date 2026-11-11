@@ -17,7 +17,8 @@ enum Backend {
             // エミュレーター用のダミー設定（ホストは `-emulator-host <host>`、既定は localhost）
             let options = FirebaseOptions(googleAppID: "1:1234567890:ios:abcdef", gcmSenderID: "1234567890")
             options.projectID = "demo-danmaku"
-            options.apiKey = "demo-key"
+            // Firebase の部品(Installations など)は、API キーの形(AIza で始まる 39 文字)を起動時に確かめて、違うと落ちる。形だけ本物に合わせた偽物にする
+            options.apiKey = "AIzaSyDemoDemoDemoDemoDemoDemoDemo00000"
             FirebaseApp.configure(options: options)
             let host = args.firstIndex(of: "-emulator-host").flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil } ?? "localhost"
             Auth.auth().useEmulator(withHost: host, port: 9099)
