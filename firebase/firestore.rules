@@ -95,6 +95,12 @@ service cloud.firestore {
     match /titleState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /publicProfiles/{uid} { allow read: if signedIn(); allow write: if false; }
 
+    // ランク戦: 自分の戦績と、自分が出た対戦だけ読める。書き込みは Cloud Functions だけ
+    match /rankedPlayers/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
+    match /rankedMatches/{id} { allow read: if signedIn() && request.auth.uid in resource.data.players; allow write: if false; }
+    match /rankedRuns/{id} { allow read, write: if false; }
+    match /rankedBots/{id} { allow read, write: if false; }
+
     // 要望(アプリの「要望を送る」)は、クライアントから一切触れない。書き込みは Cloud Functions だけ
     match /feedback/{id} { allow read, write: if false; }
     match /feedbackLimits/{id} { allow read, write: if false; }

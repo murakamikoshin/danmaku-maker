@@ -14,6 +14,7 @@ import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, ge
 import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
+import { prepareWeek, rankedBot, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { pickLang, renderSharePage } from "./share.js";
@@ -627,6 +628,20 @@ export const searchStages = onCall(async (req) => {
   return { stages };
 });
 
+
+// ---------- ランク戦(リアルタイム対戦。仕様書「ランク戦 仕様書(リアルタイム対戦)」) ----------
+export const rankedGetStatus = onCall(async (req) => rankedStatus(requireAny(req)));
+export const rankedJoinQueue = onCall(async (req) => rankedJoin(requireAny(req)));
+export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
+export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => rankedBot(requireAny(req), req.data?.lang));
+export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => rankedSubmit(requireAny(req), req.data));
+export const rankedSweep = onSchedule({ schedule: "every 5 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 120, memory: "256MiB" }, async () => {
+  const r = await sweepRanked();
+  if (r.closed || r.roomsRemoved) logger.info("rankedSweep", r);
+});
+export const rankedPrepareBots = onSchedule({ schedule: "every 60 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "1GiB" }, async () => {
+  await prepareWeek(Date.now(), 420_000, (m) => logger.info(m));
+});
 
 // ---------- スワイプ弾幕(仕様書 docs/SWIPE_MODE.md) ----------
 export const swipeGetStamina = onCall(async (req) => getStamina(requireAny(req)));
