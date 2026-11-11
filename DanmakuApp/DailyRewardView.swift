@@ -15,7 +15,7 @@ struct DailyRewardCard: View {
                 Text("daily.title").font(.display(20))
                 Spacer()
                 Text(String(format: L("daily.progress"), rewards.state.claimed, DailyRewards.total))
-                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                    .font(.footnote.bold()).foregroundStyle(GameStyle.yellow)
             }
             .padding(.horizontal, 4)
 
@@ -49,7 +49,7 @@ struct DailyRewardCard: View {
                 Spacer(minLength: 0)
             }
         } else {
-            Label("daily.complete", systemImage: "crown.fill").font(.headline).foregroundStyle(Color(Palette.gold))
+            Label("daily.complete", systemImage: "crown.fill").font(.headline).foregroundStyle(GameStyle.yellow)
         }
     }
 
@@ -175,7 +175,7 @@ struct DailyRewardBanner: View {
                 }
                 .padding(12)
                 .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
-                .overlay(PixelRect(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.5)))
+                .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.yellow.opacity(0.5)))
             }
         }
         .onAppear { rewards.refreshDay() }

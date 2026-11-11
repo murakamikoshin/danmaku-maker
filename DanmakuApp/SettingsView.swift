@@ -15,7 +15,7 @@ struct SignInButton: View {
             .frame(height: 50)
             .clipShape(PixelRect(cornerRadius: 14))
             .accessibilityIdentifier("signin.apple")
-            if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(Color(Palette.pink)) }
+            if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(GameStyle.pinkColor) }
         }
     }
 }
@@ -27,13 +27,13 @@ struct MiniSheet<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Text(title).font(.display(20)).foregroundStyle(Color(Palette.text)).padding(.top, 8)
+            Text(title).font(.display(20)).foregroundStyle(GameStyle.text).padding(.top, 8)
             content
             Spacer(minLength: 0)
         }
         .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .presentationDetents([.medium])
         .preferredColorScheme(.dark)
     }
@@ -73,7 +73,7 @@ struct SettingsView: View {
             ScreenHeader(title: "settings.title") { Color.clear.frame(width: 38, height: 38) } trailing: { Color.clear.frame(width: 38, height: 38) }
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    GamePanel(title: "settings.audio", tint: Color(UIColor(hex: 0x5CE1E6))) {
+                    GamePanel(title: "settings.audio", tint: GameStyle.cyanColor) {
                         toggleRow("settings.bgm", "music.note", $audio.bgmOn)
                         toggleRow("settings.se", "speaker.wave.2.fill", $audio.seOn)
                     }
@@ -83,11 +83,27 @@ struct SettingsView: View {
                         Text("settings.stagelook.note").font(.caption).foregroundStyle(.secondary)
                         toggleRow("settings.effects", "sparkles", $cosmetics.effectsOn)
                         Text("settings.effects.note").font(.caption).foregroundStyle(.secondary)
+                        // メニューの見た目のテーマ
+                        HStack(spacing: 10) {
+                            Image(systemName: "paintbrush.fill").font(.system(size: 16, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 24)
+                            Text("settings.theme").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            Spacer()
+                        }
+                        HStack(spacing: 8) {
+                            ForEach(UITheme.allCases, id: \.self) { t in
+                                Button { gameTap(); UIThemeStore.shared.select(t) } label: {
+                                    Chip(title: L(t.titleKey), selected: UITheme.current == t)
+                                }
+                                .buttonStyle(BounceButtonStyle())
+                                .accessibilityIdentifier("settings.theme.\(t.rawValue)")
+                            }
+                        }
+                        Text("settings.theme.note").font(.caption).foregroundStyle(.secondary)
                     }
 
                     notificationPanel
 
-                    GamePanel(title: "settings.store", tint: Color(Palette.pink)) {
+                    GamePanel(title: "settings.store", tint: GameStyle.pinkColor) {
                         if purchases.isPremium {
                             Label("store.purchased", systemImage: "checkmark.seal.fill").font(.system(size: 14, weight: .heavy))
                                 .foregroundStyle(Color(Palette.bullets[4]))
@@ -98,7 +114,7 @@ struct SettingsView: View {
                         if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary) }
                     }
 
-                    GamePanel(title: "settings.ranking.name", tint: Color(Palette.gold)) {
+                    GamePanel(title: "settings.ranking.name", tint: GameStyle.yellow) {
                         Button { gameTap(); showHandle = true } label: {
                             HStack {
                                 Text(names.label(handles.handle))
@@ -111,10 +127,10 @@ struct SettingsView: View {
                         .buttonStyle(BounceButtonStyle())
                     }
 
-                    GamePanel(title: "settings.account", tint: Color(UIColor(hex: 0xB28DFF))) {
+                    GamePanel(title: "settings.account", tint: GameStyle.violet) {
                         if auth.isMember {
                             Label("settings.signedin", systemImage: "person.crop.circle.badge.checkmark").font(.system(size: 14, weight: .heavy))
-                                .foregroundStyle(Color(Palette.text))
+                                .foregroundStyle(GameStyle.text)
                             actionRow("settings.signout", "rectangle.portrait.and.arrow.right") { auth.signOut() }
                             actionRow("settings.delete", "trash", danger: true) { showDelete = true }.accessibilityIdentifier("settings.delete")
                         } else {
@@ -144,7 +160,7 @@ struct SettingsView: View {
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
                             }
-                            .foregroundStyle(Color(Palette.text))
+                            .foregroundStyle(GameStyle.text)
                             .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
@@ -156,7 +172,7 @@ struct SettingsView: View {
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
                             }
-                            .foregroundStyle(Color(Palette.text))
+                            .foregroundStyle(GameStyle.text)
                             .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
@@ -167,14 +183,14 @@ struct SettingsView: View {
                             Text("settings.version").font(.system(size: 14, weight: .semibold)).foregroundStyle(.secondary)
                             Spacer()
                             Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
-                                .font(.system(size: 14, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
+                                .font(.system(size: 14, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                         }
                     }
                 }
                 .padding(16)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .sheet(isPresented: $showDelete) { DeleteAccountSheet() }
         .sheet(isPresented: $showStore) { StoreView() }
         .sheet(isPresented: $showHandle) { HandleSheet() }
@@ -185,7 +201,7 @@ struct SettingsView: View {
 
     /// 自分のステージへの反応の通知。全体のオン/オフと、種類ごとのオン/オフ
     private var notificationPanel: some View {
-        GamePanel(title: "settings.notify", tint: Color(Palette.gold)) {
+        GamePanel(title: "settings.notify", tint: GameStyle.yellow) {
             toggleRow("settings.notify.enabled", "bell.fill", Binding(
                 get: { notify.enabled },
                 set: { on in Task { if !(await notify.setEnabled(on)) { notifyDenied = true } } }))
@@ -198,7 +214,7 @@ struct SettingsView: View {
                     // 端末の設定で通知が切られていると、ここでオンにしても届かない
                     Button { gameTap(); openSystemSettings() } label: {
                         Label("settings.notify.denied", systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption.weight(.bold)).foregroundStyle(Color(Palette.gold))
+                            .font(.caption.weight(.bold)).foregroundStyle(GameStyle.yellow)
                     }
                 }
             }
@@ -216,8 +232,8 @@ struct SettingsView: View {
 
     private func toggleRow(_ title: LocalizedStringKey, _ symbol: String, _ binding: Binding<Bool>) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: symbol).font(.system(size: 16, weight: .bold)).foregroundStyle(Color(Palette.text).opacity(0.8)).frame(width: 24)
-            Text(title).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+            Image(systemName: symbol).font(.system(size: 16, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 24)
+            Text(title).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
             Spacer()
             GameToggle(isOn: binding)
         }
@@ -231,7 +247,7 @@ struct SettingsView: View {
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).opacity(0.5)
             }
-            .foregroundStyle(danger ? Color(Palette.pink) : Color(Palette.text))
+            .foregroundStyle(danger ? GameStyle.pinkColor : GameStyle.text)
             .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
         }
         .buttonStyle(BounceButtonStyle())
@@ -245,7 +261,7 @@ struct SettingsView: View {
                 Spacer()
                 Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
             }
-            .foregroundStyle(Color(Palette.text))
+            .foregroundStyle(GameStyle.text)
             .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
         }
     }
@@ -264,7 +280,7 @@ struct DeleteAccountSheet: View {
                 GameActionButton(title: "editor.close", systemImage: "checkmark", fill: GameStyle.accent) { dismiss() }
             } else {
                 Text("delete.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                if auth.isBusy { ProgressView().tint(Color(Palette.pink)) } else {
+                if auth.isBusy { ProgressView().tint(GameStyle.pinkColor) } else {
                     SignInWithAppleButton(.continue, onRequest: { auth.prepare($0) }, onCompletion: { result in
                         Task { if await auth.deleteAccount(result) { done = true } }
                     })
@@ -273,7 +289,7 @@ struct DeleteAccountSheet: View {
                     .clipShape(PixelRect(cornerRadius: 14))
                     .accessibilityIdentifier("delete.apple")
                 }
-                if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(Color(Palette.pink)) }
+                if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(GameStyle.pinkColor) }
                 Button { gameTap(); dismiss() } label: { Text("common.cancel").font(.system(size: 14, weight: .bold)).foregroundStyle(.secondary) }
                     .disabled(auth.isBusy)
             }

@@ -9,6 +9,7 @@ struct DanmakuApp: App {
     @StateObject private var ads = AdsService()
     @StateObject private var purchases = PurchaseService()
     @StateObject private var swipeConfig = SwipeConfig()
+    @ObservedObject private var uiTheme = UIThemeStore.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init() { Backend.configure() }
@@ -25,6 +26,8 @@ struct DanmakuApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                // メニューのテーマが変わったら、画面を作り直す(色・字体・角の形が、すべて入れ替わる)
+                .id(uiTheme.theme)
                 .preferredColorScheme(.dark)
                 .environmentObject(auth)
                 .environmentObject(blocks)

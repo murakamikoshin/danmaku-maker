@@ -111,7 +111,7 @@ struct RemoteShopSection: View {
 
     @ViewBuilder private func action(_ item: RemoteCatalog.Item) -> some View {
         if cosmetics.ownedSkins.contains(item.id) {
-            Label("shop.new.owned", systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+            Label("shop.new.owned", systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.yellow)
         } else if item.free {
             Button { gameTap(); cosmetics.claimRemoteShip(item.id) } label: { pill(L("shop.new.free")) }.buttonStyle(.plain)
         } else if let pid = item.productId {

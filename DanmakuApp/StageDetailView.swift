@@ -35,7 +35,7 @@ struct StageDetailView: View {
                     if remote.needsNewerApp {
                         // このアプリより新しい内容(新しいボスなど)が要るステージは、遊ばせない
                         Label("detail.needsupdate", systemImage: "arrow.down.app.fill")
-                            .font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                            .font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                             .frame(maxWidth: .infinity).padding(.vertical, 14)
                             .background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
                             .accessibilityIdentifier("detail.needsupdate")
@@ -60,7 +60,7 @@ struct StageDetailView: View {
                 .padding(16)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .sheet(isPresented: $needSignIn) { SignInSheet() }
         .confirmationDialog("detail.report.title", isPresented: $confirmReport, titleVisibility: .visible) {
@@ -100,16 +100,16 @@ struct StageDetailView: View {
                         ModeBadge(mode: remote.stage.mode)
                         Text(detailText(remote.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                     }
-                    Text(remote.name).font(.system(size: 24, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                    Text(remote.name).font(.system(size: 24, weight: .heavy)).foregroundStyle(GameStyle.text)
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 8) {
                         BadgedName(name: "by \(remote.authorName)", badge: ProfileBadgeStore.shared.badge(remote.authorUid), size: 12, weight: .semibold, baseColor: .secondary, inlineChip: true)
                         if let onShowAuthor {
                             Button { gameTap(); onShowAuthor(remote) } label: {
                                 Label("detail.author.more", systemImage: "person.crop.rectangle.stack").labelStyle(.titleAndIcon)
-                                    .font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                                    .font(.system(size: 10, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                                     .padding(.horizontal, 8).padding(.vertical, 3)
-                                    .background(Color(Palette.gold).opacity(0.14), in: PixelRect(cornerRadius: 8))
+                                    .background(GameStyle.yellow.opacity(0.14), in: PixelRect(cornerRadius: 8))
                             }
                             .buttonStyle(BounceButtonStyle())
                             .accessibilityIdentifier("detail.author.more")
@@ -132,7 +132,7 @@ struct StageDetailView: View {
     private func statTile(value: String? = nil, ring: Int? = nil, label: LocalizedStringKey, mono: Bool = false) -> some View {
         VStack(spacing: 4) {
             if value != nil {
-                Text(value!).font(.system(size: mono ? 13 : 18, weight: .heavy, design: mono ? .monospaced : .default)).foregroundStyle(Color(Palette.gold))
+                Text(value!).font(.system(size: mono ? 13 : 18, weight: .heavy, design: mono ? .monospaced : .default)).foregroundStyle(GameStyle.yellow)
                     .frame(height: 34).minimumScaleFactor(0.6).lineLimit(1)
             } else {
                 PercentRing(percent: ring).scaleEffect(0.7).frame(height: 34)
@@ -155,10 +155,10 @@ struct StageDetailView: View {
             Button { gameTap(); Task { await like() } } label: {
                 Label("\(remote.likes)", systemImage: liked ? "heart.fill" : "heart")
                     .font(.system(size: 14, weight: .heavy))
-                    .foregroundStyle(liked ? Color(Palette.pink) : Color(Palette.text))
+                    .foregroundStyle(liked ? GameStyle.pinkColor : GameStyle.text)
                     .padding(.vertical, 9).padding(.horizontal, 14)
-                    .background((liked ? Color(Palette.pink).opacity(0.18) : Color.white.opacity(0.08)), in: PixelRect(cornerRadius: 8))
-                    .overlay(PixelRect(cornerRadius: 8).stroke(liked ? Color(Palette.pink) : Color.white.opacity(0.15)))
+                    .background((liked ? GameStyle.pinkColor.opacity(0.18) : Color.white.opacity(0.08)), in: PixelRect(cornerRadius: 8))
+                    .overlay(PixelRect(cornerRadius: 8).stroke(liked ? GameStyle.pinkColor : Color.white.opacity(0.15)))
             }
             .buttonStyle(BounceButtonStyle()).disabled(busy)
             ShareLink(item: stageShareText) { shareChip("detail.share", "square.and.arrow.up") }
@@ -170,7 +170,7 @@ struct StageDetailView: View {
     }
 
     private func shareChip(_ title: LocalizedStringKey, _ image: String) -> some View {
-        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
+        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
             .padding(.vertical, 9).padding(.horizontal, 12)
             .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
             .overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.edge))
@@ -178,9 +178,9 @@ struct StageDetailView: View {
 
     private func smallDanger(_ title: LocalizedStringKey, _ image: String, action: @escaping () -> Void) -> some View {
         Button { gameTap(); action() } label: {
-            Label(title, systemImage: image).font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.pink).opacity(0.9))
+            Label(title, systemImage: image).font(.system(size: 12, weight: .bold)).foregroundStyle(GameStyle.pinkColor.opacity(0.9))
                 .padding(.vertical, 7).padding(.horizontal, 12)
-                .background(Color(Palette.pink).opacity(0.1), in: PixelRect(cornerRadius: 8))
+                .background(GameStyle.pinkColor.opacity(0.1), in: PixelRect(cornerRadius: 8))
         }
         .buttonStyle(BounceButtonStyle())
     }

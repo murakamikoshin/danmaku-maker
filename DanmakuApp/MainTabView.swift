@@ -45,6 +45,8 @@ struct MainTabView: View {
         .task { await notice.check() }
         .onAppear {
             AudioManager.shared.play(.menu)
+            // テーマを変えた直後は、設定の画面へ戻す
+            if UIThemeStore.shared.consumeReturnToSettings() { tab = .settings; opened.insert(.settings) }
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }
@@ -84,8 +86,8 @@ private struct TabBar: View {
                             .scaleEffect(selected ? 1.08 : 0.94)
                             .overlay(alignment: .topTrailing) {
                                 if tab == .shop && shopBadge {
-                                    Rectangle().fill(Color(Palette.pink)).frame(width: 9, height: 9)
-                                        .overlay(Rectangle().stroke(Color(Palette.background), lineWidth: 2))
+                                    Rectangle().fill(GameStyle.pinkColor).frame(width: 9, height: 9)
+                                        .overlay(Rectangle().stroke(GameStyle.night, lineWidth: 2))
                                         .offset(x: 2, y: 2)
                                 }
                             }
@@ -109,7 +111,7 @@ private struct TabBar: View {
         }
         .padding(.top, 8).padding(.bottom, 2)
         .background(
-            Color(UIColor(hex: 0x0D0B1F))
+            GameStyle.nightDeep
                 .overlay(alignment: .top) { Rectangle().fill(GameStyle.edge).frame(height: 2) }
                 .ignoresSafeArea(edges: .bottom)
         )
@@ -131,7 +133,7 @@ private struct TabIcon: View {
         case .play:
             // 自機: シアンの三角と白い芯
             ZStack {
-                GameShipShape().fill(Color(UIColor(hex: 0x5CE1E6)))
+                GameShipShape().fill(GameStyle.cyanColor)
                 Circle().fill(Color.white).frame(width: 7, height: 7)
             }
             .frame(width: 26, height: 31)
@@ -145,7 +147,7 @@ private struct TabIcon: View {
         case .shop:
             // ボス: ピンクの星(中央に穴)
             GameBossShape()
-                .fill(Color(Palette.pink), style: FillStyle(eoFill: true))
+                .fill(GameStyle.pinkColor, style: FillStyle(eoFill: true))
                 .frame(width: 32, height: 32)
         case .settings:
             // 弾の輪: 色とりどりの弾が円に並ぶ

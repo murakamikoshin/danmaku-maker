@@ -69,8 +69,8 @@ struct ShopView: View {
                     }
                 }
             }
-            .background(Color(Palette.background).ignoresSafeArea())
-            .overlay(alignment: .top) { Color(Palette.background).ignoresSafeArea(edges: .top).frame(height: 1) }
+            .background(GameStyle.night.ignoresSafeArea())
+            .overlay(alignment: .top) { GameStyle.night.ignoresSafeArea(edges: .top).frame(height: 1) }
             .toolbar(.hidden, for: .navigationBar)
             .task { await purchases.refresh() }
             .overlay {
@@ -111,7 +111,7 @@ struct ShopView: View {
     private var header: some View {
         VStack(spacing: 4) {
             HStack {
-                Text("tab.shop").font(.display(24)).foregroundStyle(Color(Palette.text))
+                Text("tab.shop").font(.display(24)).foregroundStyle(GameStyle.text)
                 Spacer()
                 Button { gameTap(); Task { await purchases.restore() } } label: {
                     Label("store.restore", systemImage: "arrow.clockwise")
@@ -284,7 +284,7 @@ private struct ShotTile: View {
         VStack(alignment: .leading, spacing: 8) {
             ShotPreviewView(shot: shot)
                 .frame(height: 190)
-                .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                 .clipShape(PixelRect(cornerRadius: 12))
             Text(LocalizedStringKey(shot.nameKey)).font(.display(16))
             Text(LocalizedStringKey(shot.detailKey)).font(.caption).foregroundStyle(.secondary)
@@ -315,7 +315,7 @@ private struct RewardShop: View {
         ShopCard(title: "shop.reward.title", footer: "shop.reward.footer") {
             CardBody {
                 Text(String(format: L("shop.reward.count"), cosmetics.ownership.posts))
-                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                    .font(.footnote.bold()).foregroundStyle(GameStyle.yellow)
                     .frame(maxWidth: .infinity, alignment: .leading).padding(14)
                 ForEach(Theme.reward, id: \.self) { t in
                     CardDivider()
@@ -333,7 +333,7 @@ private struct RewardShop: View {
                             let need = (t.unlockPosts ?? 0)
                             VStack(alignment: .trailing, spacing: 2) {
                                 Label(String(format: L("shop.reward.need"), max(0, need - cosmetics.ownership.posts)), systemImage: "lock.fill")
-                                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                                    .font(.footnote.bold()).foregroundStyle(GameStyle.yellow)
                                 Text(String(format: L("shop.reward.condition"), need)).font(.caption2).foregroundStyle(.secondary)
                             }
                         }
@@ -367,7 +367,7 @@ private struct ThemeCard: View {
                         Text(String(format: L("shop.off"), offPercent))
                             .font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.ink)
                             .padding(.vertical, 4).padding(.horizontal, 10)
-                            .background(Color(Palette.pink), in: PixelRect(cornerRadius: 8))
+                            .background(GameStyle.pinkColor, in: PixelRect(cornerRadius: 8))
                     }
                 }
                 .padding(14)
@@ -396,7 +396,7 @@ private struct ThemeCard: View {
                     HStack(spacing: 6) {
                         Text(total).strikethrough().foregroundStyle(.secondary)
                         Text("→").foregroundStyle(.secondary)
-                        Text(price).foregroundStyle(Color(Palette.gold)).bold()
+                        Text(price).foregroundStyle(GameStyle.yellow).bold()
                     }.font(.caption)
                 }
             }
@@ -476,7 +476,7 @@ private struct CustomImagesCard: View {
                                     ZStack {
                                         Circle().fill(Color.white.opacity(0.1))
                                         Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])).foregroundStyle(Color.white.opacity(0.35))
-                                        Image(systemName: "sparkles").foregroundStyle(Color(Palette.gold))
+                                        Image(systemName: "sparkles").foregroundStyle(GameStyle.yellow)
                                     }.frame(width: 46, height: 46)
                                     Text(LocalizedStringKey(slot.nameKey)).font(.caption2.bold()).foregroundStyle(.secondary)
                                 }
@@ -556,10 +556,10 @@ private struct LifetimeCard: View {
         ShopCard(title: "lifetime.title", footer: "lifetime.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("lifetime.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                    Text("lifetime.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                     ForEach(items, id: \.self) { k in
                         Label(LocalizedStringKey(k), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Color(Palette.text))
+                            .foregroundStyle(GameStyle.text)
                     }
                     HStack {
                         Spacer()
@@ -584,10 +584,10 @@ private struct MakerCard: View {
         ShopCard(title: "maker.title", footer: "maker.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("maker.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                    Text("maker.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                     MakerDemo()
                         .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
-                        .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                        .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                         .clipShape(PixelRect(cornerRadius: 12))
                     Text("maker.how").font(.caption).foregroundStyle(.secondary)
                     HStack {
@@ -634,11 +634,11 @@ private struct MakerDemo: View {
                 var line = Path()
                 line.move(to: pt(0))
                 for i in 1..<shown { line.addLine(to: pt(i)) }
-                ctx.stroke(line, with: .color(Color(Palette.gold).opacity(drawing ? 0.9 : 0.35)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: drawing ? [] : [4, 4]))
+                ctx.stroke(line, with: .color(GameStyle.yellow.opacity(drawing ? 0.9 : 0.35)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: drawing ? [] : [4, 4]))
                 // 発射位置
                 let bossSide = 38 * s
                 ctx.fill(GameBossShape().path(in: CGRect(x: origin.x * s - bossSide / 2, y: origin.y * s - bossSide / 2, width: bossSide, height: bossSide)),
-                         with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                         with: .color(GameStyle.pinkColor), style: FillStyle(eoFill: true))
                 if drawing {
                     // 線を描いている指
                     let f = pt(shown - 1)
@@ -677,7 +677,7 @@ private struct AdPatternCard: View {
                 Text("shop.adpattern.title").font(.display(20))
                 Spacer()
                 Text(String(format: L("shop.adpattern.progress"), all ? Pattern.ad.count : adPatterns.state.claimed, Pattern.ad.count))
-                    .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
+                    .font(.footnote.bold()).foregroundStyle(GameStyle.yellow)
             }
             .padding(.horizontal, 4)
 
@@ -687,7 +687,7 @@ private struct AdPatternCard: View {
                         PatternDemo(pattern: next)
                             .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                             .frame(width: 150)
-                            .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                            .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                             .clipShape(PixelRect(cornerRadius: 12))
                         VStack(alignment: .leading, spacing: 8) {
                             Text("shop.adpattern.next").font(.caption.bold()).foregroundStyle(.secondary)
@@ -698,7 +698,7 @@ private struct AdPatternCard: View {
                     }
                 } else {
                     Label(all ? "shop.adpattern.lifetime" : "shop.adpattern.complete", systemImage: "crown.fill")
-                        .font(.headline).foregroundStyle(Color(Palette.gold))
+                        .font(.headline).foregroundStyle(GameStyle.yellow)
                 }
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
@@ -708,12 +708,12 @@ private struct AdPatternCard: View {
                                 PatternDemo(pattern: p)
                                     .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                                     .frame(width: 92)
-                                    .background(Color(Palette.background), in: PixelRect(cornerRadius: 10))
+                                    .background(GameStyle.night, in: PixelRect(cornerRadius: 10))
                                     .clipShape(PixelRect(cornerRadius: 10))
                                     .opacity(open ? 1 : 0.4)
-                                    .overlay { if !open { Image(systemName: "lock.fill").foregroundStyle(Color(Palette.gold)) } }
+                                    .overlay { if !open { Image(systemName: "lock.fill").foregroundStyle(GameStyle.yellow) } }
                                 Text(L("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(open ? Color(Palette.text) : .secondary).lineLimit(1).minimumScaleFactor(0.7)
+                                    .foregroundStyle(open ? GameStyle.text : .secondary).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .frame(width: 92)
                         }
@@ -794,7 +794,7 @@ private struct PatternShop: View {
                                 HStack(spacing: 6) {
                                     Text(total).strikethrough().foregroundStyle(.secondary)
                                     Text("→").foregroundStyle(.secondary)
-                                    Text(price).foregroundStyle(Color(Palette.gold)).bold()
+                                    Text(price).foregroundStyle(GameStyle.yellow).bold()
                                 }.font(.caption)
                             }
                         }
@@ -818,7 +818,7 @@ private struct PatternTile: View {
         VStack(alignment: .leading, spacing: 8) {
             PatternDemo(pattern: pattern)
                 .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
-                .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                 .clipShape(PixelRect(cornerRadius: 12))
             Text(L("pattern.\(pattern.rawValue)")).font(.display(16))
             Text(L("shop.pattern.\(pattern.rawValue)")).font(.caption).foregroundStyle(.secondary)
@@ -857,7 +857,7 @@ private struct PatternDemo: View {
                 let c = engine.source
                 let bossSide = EnemyArt.bossPoints(size: 1) * s
                 ctx.fill(GameBossShape().path(in: CGRect(x: c.x * s - bossSide / 2, y: c.y * s - bossSide / 2, width: bossSide, height: bossSide)),
-                         with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                         with: .color(GameStyle.pinkColor), style: FillStyle(eoFill: true))
                 let p = engine.player
                 ctx.draw(Image(uiImage: ship), in: CGRect(x: p.x * s - 10 * s, y: p.y * s - 12 * s, width: 20 * s, height: 24 * s))
                 for b in engine.bullets {
@@ -945,32 +945,37 @@ private struct BossShopCard: View {
         ShopCard(title: LocalizedStringKey(L("enemy.boss.\(boss.rawValue)")), footer: "shop.boss.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(L("shop.boss.\(boss.rawValue).desc")).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                    Text(L("shop.boss.\(boss.rawValue).desc")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                     HStack(spacing: 0) {
                         sprite(awakened: false)
                         sprite(awakened: true)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                    .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                     Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
-                    HStack {
-                        Spacer()
+                    // チケットの枚数は上の行に分ける(ボタン 2 つと同じ行だと、狭い画面で文字が縦に折れる)
+                    VStack(alignment: .trailing, spacing: 8) {
                         if cosmetics.ownership.has(boss) {
                             EquippedLabel()
                         } else {
-                            if cosmetics.canClaimBossTicket && boss.ticketEligible {
-                                TicketCount()
-                                Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
-                                    HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket") }.font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
-                                        .padding(.vertical, 8).padding(.horizontal, 12)
-                                        .background(KeyCap(fill: GameStyle.green, radius: 10, depth: 3)).padding(.bottom, 3)
+                            let ticket = cosmetics.canClaimBossTicket && boss.ticketEligible
+                            if ticket { TicketCount() }
+                            HStack(spacing: 10) {
+                                if ticket {
+                                    Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
+                                        HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket").lineLimit(1).minimumScaleFactor(0.6) }
+                                            .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                                            .padding(.vertical, 8).padding(.horizontal, 12)
+                                            .background(KeyCap(fill: GameStyle.green, radius: 10, depth: 3)).padding(.bottom, 3)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityIdentifier("shop.boss.ticket")
                                 }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("shop.boss.ticket")
+                                PriceButton(product: .boss(boss))
                             }
-                            PriceButton(product: .boss(boss))
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .padding(14)
             }

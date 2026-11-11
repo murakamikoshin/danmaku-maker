@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 import DanmakuCore
 
-// アプリ全体の見た目の決まり(色・字体・形)。
+// アプリ全体の見た目の決まり(色・字体・形)。テーマは 2 つ(アーケード・幻想)で、設定で選べる。下の説明は、アーケード。
 //
 // - 形: 角は丸めず、ドット絵の角(2 段の階段)にする(ボスや自機のドット絵に合わせる)。`PixelRect`
 // - 色: ぼかした光やグラデーションは使わず、べた塗り。いちばん大事なボタンと「選択中」は黄色に黒い文字
@@ -10,31 +10,90 @@ import DanmakuCore
 // - 字体: 見出し・ボタン・大きい数字は Dela Gothic One(`Font.display`)。小さい文字と、
 //   プレイヤーが付けた名前(ステージ名・作者名)は、どの言語でも読めるように標準の字体のまま
 
+/// メニューの見た目のテーマ。設定で選べる
+enum UITheme: String, CaseIterable {
+    /// ドット絵の角・黄色のボタン・太いゴシック
+    case arcade
+    /// 斜めに落とした角・金と朱・明朝の見出し
+    case gensou
+
+    var titleKey: String { "settings.theme.\(rawValue)" }
+
+    private static let key = "ui.theme"
+
+    /// 今のテーマ。色や字体は、ここを見て決まる(変えたら、画面全体を作り直す。`UIThemeStore`)
+    static var current: UITheme {
+        get { stored }
+        set { stored = newValue; UserDefaults.standard.set(newValue.rawValue, forKey: key) }
+    }
+
+    private static var stored: UITheme = load()
+
+    private static func load() -> UITheme {
+        #if DEBUG
+        // 画面確認用: -ui-theme gensou
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-ui-theme"), args.indices.contains(i + 1), let t = UITheme(rawValue: args[i + 1]) { return t }
+        #endif
+        return UserDefaults.standard.string(forKey: key).flatMap { UITheme(rawValue: $0) } ?? .arcade
+    }
+}
+
+/// テーマの切り替え。変わると、いちばん外側の画面を作り直して、すべての色と字体を新しくする
+final class UIThemeStore: ObservableObject {
+    static let shared = UIThemeStore()
+    @Published private(set) var theme = UITheme.current
+    /// 作り直した直後に、設定のタブへ戻すための印(テーマは設定の画面で変えるので)
+    private var returnToSettings = false
+
+    func select(_ t: UITheme) {
+        guard t != theme else { return }
+        UITheme.current = t
+        returnToSettings = true
+        theme = t
+    }
+
+    func consumeReturnToSettings() -> Bool {
+        defer { returnToSettings = false }
+        return returnToSettings
+    }
+}
+
 enum GameStyle {
-    /// 黄色の上に乗せる文字の色(背景と同じ、黒に近い紺)
-    static let ink = Color(Palette.background)
-    static let panel = Color(UIColor(hex: 0x16132E))
+    private static var gensou: Bool { UITheme.current == .gensou }
+    private static func pick(_ arcade: UInt32, _ gensouHex: UInt32) -> Color { Color(UIColor(hex: gensou ? gensouHex : arcade)) }
+
+    /// 画面の地の色
+    static var night: Color { pick(0x0A0818, 0x0B0E22) }
+    /// 地より一段暗い面(下のタブ・見出しの絵の後ろ)
+    static var nightDeep: Color { pick(0x0D0B1F, 0x080A1A) }
+    /// 主役の色(黄・金)の上に乗せる文字の色
+    static var ink: Color { pick(0x0A0818, 0x14101C) }
+    static var text: Color { pick(0xEFEAFF, 0xF4EEDD) }
+    static var panel: Color { pick(0x16132E, 0x151935) }
     /// パネルの上に乗せる、一段明るい面(選べる札・入力欄など)
-    static let panelHi = Color(UIColor(hex: 0x231F4A))
-    static let edge = Color(UIColor(hex: 0x35306A))
-    static let dim = Color(UIColor(hex: 0xA49DCB))
-    static let yellow = Color(Palette.gold)
-    static let pinkColor = Color(Palette.pink)
-    static let cyanColor = Color(UIColor(hex: 0x5CE1E6))
-    static let green = Color(Palette.bullets[4])
-    static let violet = Color(Palette.bullets[3])
+    static var panelHi: Color { pick(0x231F4A, 0x21264D) }
+    static var edge: Color { pick(0x35306A, 0x4A4368) }
+    static var dim: Color { pick(0xA49DCB, 0xA9A7C4) }
+    /// 主役の色: いちばん大事なボタンと「選択中」。アーケードは黄色、幻想は金
+    static var yellow: Color { pick(0xFFD23F, 0xE6BE6A) }
+    /// 脇役の色: ボス・ハート・注意。アーケードはピンク、幻想は朱
+    static var pinkColor: Color { pick(0xFF6B9D, 0xE8554E) }
+    static var cyanColor: Color { pick(0x5CE1E6, 0x7FD3CF) }
+    static var green: Color { pick(0x7CF29C, 0x9AD8A0) }
+    static var violet: Color { pick(0xB28DFF, 0xB7A3F2) }
     /// 厚みのある文字の、下に敷く濃い色
-    static let yellowShade = Color(UIColor(hex: 0x9A4A12))
-    static let pinkShade = Color(UIColor(hex: 0x8E2148))
+    static var yellowShade: Color { pick(0x9A4A12, 0x6E4F1C) }
+    static var pinkShade: Color { pick(0x8E2148, 0x7A2226) }
 
     /// べた塗り(以前はグラデーションだった。呼び出し側の型を変えないため、同じ色 2 つのグラデーションにしてある)
     static func solid(_ c: Color) -> LinearGradient { LinearGradient(colors: [c, c], startPoint: .leading, endPoint: .trailing) }
     /// いちばん大事なボタン・選択中
-    static let accent = solid(yellow)
-    static let cyan = solid(cyanColor)
-    static let gold = solid(yellow)
+    static var accent: LinearGradient { solid(yellow) }
+    static var cyan: LinearGradient { solid(cyanColor) }
+    static var gold: LinearGradient { solid(yellow) }
     /// 広告を見てもらう・無料でもらう
-    static let reward = solid(green)
+    static var reward: LinearGradient { solid(green) }
 
     /// クリア条件ごとの色
     static func tint(_ mode: Mode) -> Color {
@@ -46,21 +105,26 @@ enum GameStyle {
         }
     }
 
-    /// 見出しの字体(Dela Gothic One)が使える言語か。韓国語・中国語は文字が足りないので、標準の太字にする
-    static let usesDisplayFont: Bool = {
-        let lang = Bundle.main.preferredLocalizations.first ?? "ja"
-        return !(lang.hasPrefix("ko") || lang.hasPrefix("zh"))
-    }()
+    /// 端末の言語
+    static let language: String = Bundle.main.preferredLocalizations.first ?? "ja"
 }
 
 extension Font {
-    /// 見出し・ボタン・大きい数字の字体
+    /// 見出し・ボタン・大きい数字の字体。
+    /// アーケード: Dela Gothic One(韓国語・中国語は文字が足りないので、標準の太字)。
+    /// 幻想: 明朝(日本語はヒラギノ明朝、ほかの言語は標準のセリフ体)
     static func display(_ size: CGFloat) -> Font {
-        GameStyle.usesDisplayFont ? .custom("DelaGothicOne-Regular", fixedSize: size) : .system(size: size, weight: .black)
+        let lang = GameStyle.language
+        switch UITheme.current {
+        case .arcade:
+            return lang.hasPrefix("ko") || lang.hasPrefix("zh") ? .system(size: size, weight: .black) : .custom("DelaGothicOne-Regular", fixedSize: size)
+        case .gensou:
+            return lang.hasPrefix("ja") ? .custom("HiraMinProN-W6", fixedSize: size * 1.06) : .system(size: size, weight: .heavy, design: .serif)
+        }
     }
 }
 
-/// ドット絵の角の四角(角を 2 段の階段で落とす)。`RoundedRectangle(cornerRadius:)` と同じ書き方で使える
+/// 角を落とした四角。アーケードは 2 段の階段(ドット絵の角)、幻想は斜め。`RoundedRectangle(cornerRadius:)` と同じ書き方で使える
 struct PixelRect: InsettableShape {
     var cornerRadius: CGFloat
     private var insetAmount: CGFloat = 0
@@ -81,6 +145,20 @@ struct PixelRect: InsettableShape {
         guard u > 0 else { return Path(r) }
         let x0 = r.minX, x1 = r.maxX, y0 = r.minY, y1 = r.maxY
         var p = Path()
+        if UITheme.current == .gensou {
+            // 幻想: 角を斜めに落とす(額やお札の形)
+            let k = u * 2.5
+            p.move(to: CGPoint(x: x0 + k, y: y0))
+            p.addLine(to: CGPoint(x: x1 - k, y: y0))
+            p.addLine(to: CGPoint(x: x1, y: y0 + k))
+            p.addLine(to: CGPoint(x: x1, y: y1 - k))
+            p.addLine(to: CGPoint(x: x1 - k, y: y1))
+            p.addLine(to: CGPoint(x: x0 + k, y: y1))
+            p.addLine(to: CGPoint(x: x0, y: y1 - k))
+            p.addLine(to: CGPoint(x: x0, y: y0 + k))
+            p.closeSubpath()
+            return p
+        }
         p.move(to: CGPoint(x: x0 + 2 * u, y: y0))
         p.addLine(to: CGPoint(x: x1 - 2 * u, y: y0))
         p.addLine(to: CGPoint(x: x1 - 2 * u, y: y0 + u))

@@ -22,11 +22,11 @@ struct CommentsSection: View {
     private var visible: [StageComment] { comments.filter { !blocks.isBlocked($0.uid) } }
 
     var body: some View {
-        GamePanel(title: "comment.title", tint: Color(UIColor(hex: 0x5CE1E6))) {
+        GamePanel(title: "comment.title", tint: GameStyle.cyanColor) {
             composer
-            if let errorKey { Text(LocalizedStringKey(errorKey)).font(.system(size: 12, weight: .semibold)).foregroundStyle(Color(Palette.pink)) }
+            if let errorKey { Text(LocalizedStringKey(errorKey)).font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.pinkColor) }
             if loading {
-                HStack { Spacer(); ProgressView().tint(Color(Palette.pink)); Spacer() }.padding(.vertical, 8)
+                HStack { Spacer(); ProgressView().tint(GameStyle.pinkColor); Spacer() }.padding(.vertical, 8)
             } else if failed {
                 Text("error.network").font(.footnote).foregroundStyle(.secondary)
             } else if visible.isEmpty {
@@ -82,10 +82,10 @@ struct CommentsSection: View {
         let mine = c.uid == auth.uid
         return VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                BadgedName(name: c.displayName, badge: badges.badge(c.uid), size: 12, weight: .heavy, baseColor: Color(Palette.gold), inlineChip: true)
+                BadgedName(name: c.displayName, badge: badges.badge(c.uid), size: 12, weight: .heavy, baseColor: GameStyle.yellow, inlineChip: true)
                 if c.uid == authorUid {
                     Text("comment.author").font(.system(size: 9, weight: .heavy)).foregroundStyle(GameStyle.ink)
-                        .padding(.horizontal, 6).padding(.vertical, 1).background(Color(Palette.pink), in: PixelRect(cornerRadius: 8))
+                        .padding(.horizontal, 6).padding(.vertical, 1).background(GameStyle.pinkColor, in: PixelRect(cornerRadius: 8))
                 }
                 Spacer()
                 if let d = c.createdAt { Text(d, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary) }
@@ -101,11 +101,11 @@ struct CommentsSection: View {
                     Image(systemName: "ellipsis").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).frame(width: 28, height: 22)
                 }
             }
-            Text(c.text).font(.system(size: 14, weight: .medium)).foregroundStyle(Color(Palette.text))
+            Text(c.text).font(.system(size: 14, weight: .medium)).foregroundStyle(GameStyle.text)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(10)
-        .background(mine ? Color(Palette.pink).opacity(0.12) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
+        .background(mine ? GameStyle.pinkColor.opacity(0.12) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
     }
 
     private func load() async {

@@ -21,7 +21,7 @@ struct RankingSubmitPanel: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "trophy.fill").foregroundStyle(Color(Palette.gold))
+                Image(systemName: "trophy.fill").foregroundStyle(GameStyle.yellow)
                 Text("ranking.title").font(.system(size: 14, weight: .heavy))
             }
             if !standard {
@@ -32,7 +32,7 @@ struct RankingSubmitPanel: View {
                     Button { gameTap(); editing = true } label: {
                         HStack(spacing: 6) {
                             Text(names.label(handles.handle))
-                                .font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                                .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
                             Image(systemName: "pencil").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 6).padding(.horizontal, 12)
@@ -41,9 +41,9 @@ struct RankingSubmitPanel: View {
                     .buttonStyle(BounceButtonStyle())
                     GameActionButton(title: "ranking.submit", systemImage: "paperplane.fill", fill: GameStyle.gold) { Task { await send() } }
                         .accessibilityIdentifier("ranking.submit")
-                    if case .failed(let key) = state { Text(LocalizedStringKey(key)).font(.system(size: 12)).foregroundStyle(Color(Palette.pink)) }
+                    if case .failed(let key) = state { Text(LocalizedStringKey(key)).font(.system(size: 12)).foregroundStyle(GameStyle.pinkColor) }
                 case .sending:
-                    ProgressView().tint(Color(Palette.gold))
+                    ProgressView().tint(GameStyle.yellow)
                 case .done(let s):
                     VStack(spacing: 2) {
                         Text(String(format: L("ranking.rank"), s.rank)).font(.display(23)).foregroundStyle(GameStyle.gold)
@@ -56,7 +56,7 @@ struct RankingSubmitPanel: View {
         .padding(12)
         .frame(maxWidth: .infinity)
         .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 16))
-        .overlay(PixelRect(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.35)))
+        .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.yellow.opacity(0.35)))
         .sheet(isPresented: $editing) { HandleSheet() }
     }
 
@@ -105,7 +105,7 @@ struct HandleSheet: View {
                                 }
                                 .accessibilityIdentifier("handle.author")
                             if authorName.trimmingCharacters(in: .whitespaces).isEmpty {
-                                Text("handle.author.empty").font(.caption.bold()).foregroundStyle(Color(Palette.gold))
+                                Text("handle.author.empty").font(.caption.bold()).foregroundStyle(GameStyle.yellow)
                             }
                         }
                         Text("handle.mode.note").font(.caption).foregroundStyle(.secondary)
@@ -120,7 +120,7 @@ struct HandleSheet: View {
                     }
                     Button { gameTap(); handles.handle = .random() } label: {
                         Label("handle.random", systemImage: "dice.fill").font(.system(size: 15, weight: .heavy))
-                            .foregroundStyle(Color(Palette.text)).frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .foregroundStyle(GameStyle.text).frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 14))
                     }
                     .buttonStyle(BounceButtonStyle())
@@ -129,7 +129,7 @@ struct HandleSheet: View {
                 .padding(16)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .presentationDetents([.large])
     }
@@ -145,10 +145,10 @@ struct RankingSection: View {
     @State private var failed = false
 
     var body: some View {
-        GamePanel(title: "ranking.title", tint: Color(Palette.gold)) {
+        GamePanel(title: "ranking.title", tint: GameStyle.yellow) {
             Text(RankingService.byTime(mode) ? "ranking.sub.boss" : "ranking.sub.damage").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             if loading {
-                HStack { Spacer(); ProgressView().tint(Color(Palette.gold)); Spacer() }.padding(.vertical, 10)
+                HStack { Spacer(); ProgressView().tint(GameStyle.yellow); Spacer() }.padding(.vertical, 10)
             } else if failed {
                 Text("error.network").font(.footnote).foregroundStyle(.secondary)
             } else if entries.isEmpty {
@@ -168,19 +168,19 @@ struct RankingSection: View {
             ZStack {
                 if rank <= 3 {
                     Image(systemName: "medal.fill").font(.system(size: 20))
-                        .foregroundStyle([Color(Palette.gold), Color(white: 0.8), Color(UIColor(hex: 0xCD7F32))][rank - 1])
+                        .foregroundStyle([GameStyle.yellow, Color(white: 0.8), Color(UIColor(hex: 0xCD7F32))][rank - 1])
                 } else {
                     Text("\(rank)").font(.system(size: 14, weight: .heavy)).foregroundStyle(.secondary)
                 }
             }
             .frame(width: 28)
-            Text(e.displayName).font(.system(size: 14, weight: .bold)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+            Text(e.displayName).font(.system(size: 14, weight: .bold)).foregroundStyle(GameStyle.text).lineLimit(1)
             Spacer()
-            Text(RankingService.format(e.value, mode: mode)).font(.system(size: 15, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.gold))
+            Text(RankingService.format(e.value, mode: mode)).font(.system(size: 15, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.yellow)
         }
         .padding(.vertical, 6).padding(.horizontal, 10)
-        .background(mine ? Color(Palette.gold).opacity(0.16) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
-        .overlay(PixelRect(cornerRadius: 12).stroke(mine ? Color(Palette.gold) : Color.clear, lineWidth: 1.5))
+        .background(mine ? GameStyle.yellow.opacity(0.16) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
+        .overlay(PixelRect(cornerRadius: 12).stroke(mine ? GameStyle.yellow : Color.clear, lineWidth: 1.5))
     }
 
     private func load() async {

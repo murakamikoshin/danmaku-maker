@@ -49,7 +49,7 @@ struct RewardSwatch: View {
     var body: some View {
         let c = RewardArt.color(reward)
         ZStack {
-            PixelRect(cornerRadius: size * 0.22).fill(Color(Palette.background))
+            PixelRect(cornerRadius: size * 0.22).fill(GameStyle.night)
             PixelRect(cornerRadius: size * 0.22).stroke(c.opacity(0.6), lineWidth: 1.5)
             Canvas { ctx, sz in
                 let mid = CGPoint(x: sz.width / 2, y: sz.height / 2)

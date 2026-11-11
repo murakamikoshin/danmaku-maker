@@ -18,12 +18,12 @@ struct FeedbackView: View {
 
     var body: some View {
         ZStack {
-            Color(Palette.background).ignoresSafeArea()
+            GameStyle.night.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 12) {
                     HStack {
                         Text("feedback.title").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(
-                            LinearGradient(colors: [.white, Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
+                            LinearGradient(colors: [.white, GameStyle.yellow], startPoint: .top, endPoint: .bottom))
                         Spacer()
                         Button { gameTap(); dismiss() } label: {
                             Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
@@ -37,11 +37,11 @@ struct FeedbackView: View {
                         GamePanel(tint: Color(Palette.bullets[4])) {
                             VStack(spacing: 10) {
                                 Image(systemName: "checkmark.circle.fill").font(.system(size: 40)).foregroundStyle(Color(Palette.bullets[4]))
-                                Text("feedback.sent").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text)).multilineTextAlignment(.center)
+                                Text("feedback.sent").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text).multilineTextAlignment(.center)
                             }.frame(maxWidth: .infinity).padding(.vertical, 12)
                         }
                     } else {
-                        GamePanel(title: "feedback.prompt", tint: Color(Palette.pink)) {
+                        GamePanel(title: "feedback.prompt", tint: GameStyle.pinkColor) {
                             ZStack(alignment: .topLeading) {
                                 TextEditor(text: $text)
                                     .scrollContentBackground(.hidden)
@@ -74,7 +74,7 @@ struct FeedbackView: View {
                             Text("feedback.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
                         }
                         if let errorKey {
-                            Text(LocalizedStringKey(errorKey)).font(.system(size: 12, weight: .semibold)).foregroundStyle(Color(Palette.pink))
+                            Text(LocalizedStringKey(errorKey)).font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.pinkColor)
                         }
                         GameActionButton(title: "feedback.send", systemImage: sending ? "hourglass" : "paperplane.fill", fill: GameStyle.accent, enabled: canSend) {
                             focused = false

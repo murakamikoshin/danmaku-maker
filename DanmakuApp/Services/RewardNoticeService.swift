@@ -64,10 +64,10 @@ struct RewardNoticeView: View {
 
     var body: some View {
         ZStack {
-            Color(Palette.background).ignoresSafeArea()
+            GameStyle.night.ignoresSafeArea()
             VStack(spacing: 14) {
                 Text("reward.notice.title").font(.custom("DelaGothicOne-Regular", size: 22))
-                    .foregroundStyle(LinearGradient(colors: [.white, Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
+                    .foregroundStyle(LinearGradient(colors: [.white, GameStyle.yellow], startPoint: .top, endPoint: .bottom))
                     .padding(.top, 24)
                 ScrollView {
                     VStack(spacing: 8) { ForEach(items) { row($0) } }
@@ -84,12 +84,12 @@ struct RewardNoticeView: View {
         HStack(spacing: 12) {
             switch item.kind {
             case .ship(let id): SkinThumb(id: id).frame(width: 48, height: 48)
-            case .title: Image(systemName: "rosette").font(.system(size: 24, weight: .bold)).foregroundStyle(Color(Palette.gold)).frame(width: 48, height: 48)
+            case .title: Image(systemName: "rosette").font(.system(size: 24, weight: .bold)).foregroundStyle(GameStyle.yellow).frame(width: 48, height: 48)
             case .ticket: TicketArtView(height: 24).frame(width: 64, height: 48)
             case .drink: Image(systemName: "drop.fill").font(.system(size: 24, weight: .bold)).foregroundStyle(Color(Palette.bullets[2])).frame(width: 48, height: 48)
             case .boss(let b): Image(uiImage: BossSprites.art(b, awakened: false)?.still ?? UIImage()).resizable().interpolation(.none).scaledToFit().frame(width: 48, height: 48)
             }
-            Text(text(item)).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+            Text(text(item)).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
             Spacer(minLength: 0)
         }
         .padding(.vertical, 8).padding(.horizontal, 12)

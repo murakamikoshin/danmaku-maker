@@ -25,7 +25,7 @@ struct EditorView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "editor.title") {
+            ScreenHeader(title: "editor.title", leadingTitle: true) {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") {
                     // 試聴した BGM は、エディタを閉じるまで流し続ける(スクロールで項目が画面外に出ても切り替えない)
                     AudioManager.shared.play(.menu)
@@ -35,7 +35,7 @@ struct EditorView: View {
             } trailing: {
                 Button { confirmRevert = true } label: {
                     Label("editor.revert", systemImage: "arrow.uturn.backward").font(.system(size: 11, weight: .heavy))
-                        .foregroundStyle(Color(Palette.gold)).labelStyle(.titleAndIcon)
+                        .foregroundStyle(GameStyle.yellow).labelStyle(.titleAndIcon)
                 }
                 .disabled(!model.canRevert).opacity(model.canRevert ? 1 : 0.35)
                 .accessibilityIdentifier("editor.revert")
@@ -49,7 +49,7 @@ struct EditorView: View {
                     GamePanel(title: "editor.condition") {
                         ModeCards(mode: model.draft.mode, onSelect: model.setMode)
                     }
-                    GamePanel(title: "editor.section.basic", tint: Color(UIColor(hex: 0x5CE1E6))) {
+                    GamePanel(title: "editor.section.basic", tint: GameStyle.cyanColor) {
                         NameFields(draft: $model.draft)
                     }
                     ShotPanel(model: model)
@@ -92,10 +92,10 @@ struct EditorView: View {
                                         .frame(maxHeight: 200)
                                         .frame(maxWidth: .infinity)
                                         .padding(6)
-                                        .background(Color(Palette.background), in: PixelRect(cornerRadius: 14))
+                                        .background(GameStyle.night, in: PixelRect(cornerRadius: 14))
                                         .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
                                         .padding(.vertical, 4)
-                                        .background(Color(Palette.background))
+                                        .background(GameStyle.night)
                                 }
                             }
                         }
@@ -125,7 +125,7 @@ struct EditorView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onChange(of: model.draft) { _ in model.save() }
         .confirmationDialog("editor.revert.title", isPresented: $confirmRevert, titleVisibility: .visible) {
@@ -187,7 +187,7 @@ private struct NamePromptSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("editor.namePrompt.title").font(.display(18)).foregroundStyle(Color(Palette.text))
+            Text("editor.namePrompt.title").font(.display(18)).foregroundStyle(GameStyle.text)
             Text("editor.namePrompt.note").font(.caption.bold()).foregroundStyle(.secondary)
             NameFields(draft: $draft)
             GameActionButton(title: "editor.namePrompt.go", systemImage: "paperplane.fill", fill: GameStyle.accent, enabled: canPublish, action: onContinue)
@@ -195,7 +195,7 @@ private struct NamePromptSheet: View {
             Spacer(minLength: 0)
         }
         .padding(20)
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .presentationDetents([.medium])
     }
@@ -266,7 +266,7 @@ private struct ShotPanel: View {
     @State private var showShop = false
 
     var body: some View {
-        GamePanel(title: "editor.shot", tint: Color(Palette.gold)) {
+        GamePanel(title: "editor.shot", tint: GameStyle.yellow) {
             Text("editor.shot.note").font(.caption).foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 ForEach(ShotType.allCases, id: \.self) { shot in
@@ -278,7 +278,7 @@ private struct ShotPanel: View {
                         VStack(spacing: 4) {
                             ZStack(alignment: .topTrailing) {
                                 Chip(title: L(shot.nameKey), selected: model.draft.shot == shot)
-                                if !owned { Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(Color(Palette.gold)).padding(4) }
+                                if !owned { Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(GameStyle.yellow).padding(4) }
                             }
                         }
                         .opacity(owned ? 1 : 0.7)
@@ -386,7 +386,7 @@ private struct EnemyControls: View {
                         VStack(spacing: 4) {
                             Image(uiImage: image(n)).resizable().frame(width: 36, height: 36)
                             Text(name(n)).font(.system(size: 11, weight: .heavy))
-                                .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
+                                .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
                         }
                         .padding(.vertical, 8).padding(.horizontal, 10)
                         .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
@@ -406,7 +406,7 @@ private struct LifePanel: View {
 
     var body: some View {
         let range = model.draft.lifeMode == .lives ? Stage.livesRange : Stage.hpRange
-        GamePanel(title: "editor.life", tint: Color(Palette.pink)) {
+        GamePanel(title: "editor.life", tint: GameStyle.pinkColor) {
             ChipGrid(items: [(LifeMode.lives, L("editor.life.lives")), (LifeMode.hp, L("editor.life.hp"))],
                      selection: Binding(get: { model.draft.lifeMode }, set: model.setLifeMode),
                      idPrefix: "editor.life.mode", minimum: 110)
@@ -455,10 +455,10 @@ private struct StatusBox: View {
         HStack(spacing: 10) {
             Image(systemName: verified ? "checkmark.seal.fill" : "flag.checkered")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(verified ? Color(Palette.bullets[4]) : Color(Palette.gold))
+                .foregroundStyle(verified ? Color(Palette.bullets[4]) : GameStyle.yellow)
             Text(verified ? "editor.status.ok" : "editor.status.need")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(verified ? Color(Palette.bullets[4]) : Color(Palette.text))
+                .foregroundStyle(verified ? Color(Palette.bullets[4]) : GameStyle.text)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
@@ -474,7 +474,7 @@ private struct BGMPanel: View {
     @ObservedObject var model: EditorModel
     @ObservedObject private var audio = AudioManager.shared
     private let names = ["bgm.0", "bgm.1", "bgm.2", "bgm.3", "bgm.4"]
-    private let tints: [Color] = [Color(Palette.pink), Color(UIColor(hex: 0x8E5CFF)), Color(UIColor(hex: 0x5CE1E6)), Color(Palette.gold), Color(Palette.bullets[3])]
+    private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, Color(Palette.bullets[3])]
 
     private var selected: Int {
         model.draft.bgm ?? (model.draft.mode == .survive ? 0 : 1)
@@ -498,7 +498,7 @@ private struct BGMPanel: View {
                             }
                             .frame(width: 34, height: 34)
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(LocalizedStringKey(names[i])).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                                Text(LocalizedStringKey(names[i])).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                                 Text(L("\(names[i]).sub")).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                             }
                             Spacer()
@@ -526,7 +526,7 @@ private struct RewardFxPanel: View {
     @State private var showShop = false
 
     var body: some View {
-        GamePanel(title: "editor.rewardfx", tint: Color(Palette.gold)) {
+        GamePanel(title: "editor.rewardfx", tint: GameStyle.yellow) {
             Text("editor.rewardfx.note").font(.caption).foregroundStyle(.secondary)
             ForEach(Reward.stageKinds, id: \.self) { kind in
                 let owned = rewards.state.owned(kind)
@@ -554,7 +554,7 @@ private struct RewardFxPanel: View {
                 }
             }
             if rewards.state.claimed == 0 {
-                Text("editor.rewardfx.empty").font(.caption.bold()).foregroundStyle(Color(Palette.gold))
+                Text("editor.rewardfx.empty").font(.caption.bold()).foregroundStyle(GameStyle.yellow)
             }
             Button { gameTap(); showShop = true } label: { Chip(title: L("editor.rewardfx.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
         }
@@ -581,7 +581,7 @@ private struct LookPanel: View {
     @State private var rewardHint: Theme?
 
     var body: some View {
-        GamePanel(title: "editor.look", tint: Color(Palette.pink)) {
+        GamePanel(title: "editor.look", tint: GameStyle.pinkColor) {
             Text("editor.look.note").font(.caption).foregroundStyle(.secondary)
             ForEach(ThemePart.allCases, id: \.self) { part in
                 VStack(alignment: .leading, spacing: 6) {
@@ -593,7 +593,7 @@ private struct LookPanel: View {
             }
             if let t = rewardHint, let need = t.unlockPosts, !cosmetics.ownership.hasUnlocked(t) {
                 Text(String(format: L("editor.look.rewardhint"), max(0, need - cosmetics.ownership.posts)))
-                    .font(.caption.bold()).foregroundStyle(Color(Palette.gold))
+                    .font(.caption.bold()).foregroundStyle(GameStyle.yellow)
             }
             if Theme.paid.contains(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
                 Button { gameTap(); showShop = true } label: { Chip(title: L("editor.look.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
@@ -642,14 +642,14 @@ private struct LookPanel: View {
                 }
                 .frame(width: 56, height: 36)
                 Text(LocalizedStringKey(t.nameKey)).font(.system(size: 11, weight: .heavy))
-                    .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
+                    .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
             }
             .padding(.vertical, 8).padding(.horizontal, 8)
             .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
             .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
             .overlay(alignment: .topTrailing) {
                 if !owned {
-                    Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                    Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                         .padding(4).background(Color.black.opacity(0.55), in: Circle()).offset(x: 3, y: -3)
                 }
             }
@@ -673,7 +673,7 @@ private struct WorldPreviewPanel: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.preview.off").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text("editor.preview.off").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Text("editor.preview.off.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -681,9 +681,9 @@ private struct WorldPreviewPanel: View {
                 }
                 if !model.draft.noPreview {
                     HStack {
-                        Text("editor.preview.start").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text("editor.preview.start").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Spacer()
-                        Text(String(format: L("editor.preview.seconds"), start)).font(.system(size: 15, weight: .heavy)).monospacedDigit().foregroundStyle(Color(Palette.text))
+                        Text(String(format: L("editor.preview.seconds"), start)).font(.system(size: 15, weight: .heavy)).monospacedDigit().foregroundStyle(GameStyle.text)
                     }
                     if maxStart > 0 {
                         GameSlider(value: Binding(get: { Double(start) }, set: { model.draft.previewStart = Int($0) }),
@@ -712,7 +712,7 @@ private struct MarkerPanel: View {
             GamePanel(title: "editor.markers", tint: Color(Palette.bullets[4])) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.markers.show").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text("editor.markers.show").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Text("editor.markers.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -741,7 +741,7 @@ private struct CustomLookPanel: View {
 
     var body: some View {
         let _ = cosmetics.customImageRevision
-        GamePanel(title: "editor.custom", tint: Color(Palette.gold)) {
+        GamePanel(title: "editor.custom", tint: GameStyle.yellow) {
             Text("editor.custom.note").font(.caption).foregroundStyle(.secondary)
             if cosmetics.ownership.hasCustomImages {
                 ForEach(CustomSlot.allCases) { slot in
@@ -752,7 +752,7 @@ private struct CustomLookPanel: View {
                             if let image { Image(uiImage: image).resizable().scaledToFill().clipShape(Circle()) }
                             else { Image(systemName: "photo").foregroundStyle(.secondary) }
                         }.frame(width: 40, height: 40)
-                        Text(LocalizedStringKey(slot.nameKey)).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text(LocalizedStringKey(slot.nameKey)).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Spacer()
                         if image == nil {
                             Button { gameTap(); showShop = true } label: { Chip(title: L("editor.custom.pick"), selected: false) }.buttonStyle(BounceButtonStyle())
@@ -781,9 +781,9 @@ private struct AddButton: View {
                 Image(systemName: "plus.circle.fill").font(.system(size: 20))
                 Text(title).font(.display(14))
             }
-            .foregroundStyle(Color(Palette.gold))
+            .foregroundStyle(GameStyle.yellow)
             .frame(maxWidth: .infinity).padding(.vertical, 14)
-            .overlay(PixelRect(cornerRadius: 16).strokeBorder(Color(Palette.gold).opacity(0.7), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+            .overlay(PixelRect(cornerRadius: 16).strokeBorder(GameStyle.yellow.opacity(0.7), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
         }
         .buttonStyle(BounceButtonStyle())
         .opacity(enabled ? 1 : 0.4)
@@ -797,10 +797,10 @@ private struct EffectsPanel: View {
 
     var body: some View {
         if model.draft.mode == .boss || model.draft.mode == .damage {
-            GamePanel(title: "editor.effects", tint: Color(Palette.pink)) {
+            GamePanel(title: "editor.effects", tint: GameStyle.pinkColor) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.warning").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text("editor.warning").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Text("editor.warning.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -818,8 +818,8 @@ private struct EffectsPanel: View {
 struct DefeatPicker: View {
     @Binding var selection: Int
     private let items: [(DefeatEffect, String, Color)] = [
-        (.none, "defeat.none", .gray), (.explosion, "defeat.explosion", Color(Palette.gold)), (.fireworks, "defeat.fireworks", Color(Palette.bullets[1])),
-        (.hearts, "defeat.hearts", Color(Palette.pink)), (.stardust, "defeat.stardust", Color(Palette.bullets[3])),
+        (.none, "defeat.none", .gray), (.explosion, "defeat.explosion", GameStyle.yellow), (.fireworks, "defeat.fireworks", Color(Palette.bullets[1])),
+        (.hearts, "defeat.hearts", GameStyle.pinkColor), (.stardust, "defeat.stardust", Color(Palette.bullets[3])),
     ]
 
     var body: some View {
@@ -848,9 +848,9 @@ private struct WavesSection: View {
                     ForEach(Array(model.draft.waves.enumerated()), id: \.element.id) { idx, w in
                         VStack(spacing: 2) {
                             ZStack {
-                                Circle().fill((w.kind == .boss ? Color(Palette.pink) : Color(UIColor(hex: 0x5CE1E6))).opacity(0.2)).frame(width: 34, height: 34)
-                                if w.kind == .boss { GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 24, height: 24) }
-                                else { GameShipShape().fill(Color(UIColor(hex: 0x5CE1E6))).frame(width: 14, height: 18) }
+                                Circle().fill((w.kind == .boss ? GameStyle.pinkColor : GameStyle.cyanColor).opacity(0.2)).frame(width: 34, height: 34)
+                                if w.kind == .boss { GameBossShape().fill(GameStyle.pinkColor, style: FillStyle(eoFill: true)).frame(width: 24, height: 24) }
+                                else { GameShipShape().fill(GameStyle.cyanColor).frame(width: 14, height: 18) }
                             }
                             Text("\(idx + 1)").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
                         }
@@ -892,12 +892,12 @@ private struct WaveCard: View {
         look.bossSize = wave.bossSize ?? 1; look.bossLook = wave.bossLook ?? 0; look.mooks = wave.mooks; look.mookLook = wave.mookLook ?? 0
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(String(format: L("editor.wave.title"), i + 1)).font(.display(15)).foregroundStyle(Color(Palette.gold))
+                Text(String(format: L("editor.wave.title"), i + 1)).font(.display(15)).foregroundStyle(GameStyle.yellow)
                 Spacer()
                 if model.draft.waves.count > 1 {
                     iconButton("chevron.up", enabled: i > 0) { model.moveWave(waveID, by: -1) }
                     iconButton("chevron.down", enabled: i < model.draft.waves.count - 1) { model.moveWave(waveID, by: 1) }
-                    iconButton("trash.fill", enabled: true, tint: Color(Palette.pink)) { model.removeWave(waveID) }
+                    iconButton("trash.fill", enabled: true, tint: GameStyle.pinkColor) { model.removeWave(waveID) }
                         .accessibilityIdentifier("editor.wave.delete.\(i)")
                 }
             }
@@ -942,7 +942,7 @@ private struct WaveCard: View {
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("editor.warning").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                            Text("editor.warning").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                             Text("editor.warning.note").font(.caption2).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -952,7 +952,7 @@ private struct WaveCard: View {
                 }
     }
 
-    private func iconButton(_ symbol: String, enabled: Bool, tint: Color = Color(Palette.text), action: @escaping () -> Void) -> some View {
+    private func iconButton(_ symbol: String, enabled: Bool, tint: Color = GameStyle.text, action: @escaping () -> Void) -> some View {
         Button { gameTap(); action() } label: {
             Image(systemName: symbol).font(.system(size: 13, weight: .heavy)).foregroundStyle(tint)
                 .frame(width: 32, height: 32).background(GameStyle.panelHi, in: Circle())

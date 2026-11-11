@@ -36,17 +36,17 @@ struct PublishFlowView: View {
                     case .start: start
                     case .publishing:
                         VStack(spacing: 12) {
-                            ProgressView().tint(Color(Palette.pink)).scaleEffect(1.4)
+                            ProgressView().tint(GameStyle.pinkColor).scaleEffect(1.4)
                             Text("publish.publishing").font(.system(size: 15, weight: .heavy)).foregroundStyle(.secondary)
                         }.padding(.top, 50)
                     case .done(let id): done(id)
                     }
-                    if let error { Text(error).font(.footnote).foregroundStyle(Color(Palette.pink)).multilineTextAlignment(.center) }
+                    if let error { Text(error).font(.footnote).foregroundStyle(GameStyle.pinkColor).multilineTextAlignment(.center) }
                 }
                 .padding(20)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
         .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses) }
         .task(id: auth.isMember) { await refreshQuota() }
@@ -73,7 +73,7 @@ struct PublishFlowView: View {
             VStack(spacing: 14) {
                 StageCardShell(mode: stage.mode) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(stage.name).font(.system(size: 18, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(2)
+                        Text(stage.name).font(.system(size: 18, weight: .heavy)).foregroundStyle(GameStyle.text).lineLimit(2)
                         Text("by \(authorName)").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
                         Text(detailText(stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
                     }
@@ -130,7 +130,7 @@ struct PublishFlowView: View {
                 Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.bullets[4]))
             } else if let r = remaining {
                 Text(r > 0 ? String(format: L("publish.quota.left"), r) : String(format: L("publish.quota.none"), PostQuota.free))
-                    .font(.system(size: 12, weight: .bold)).foregroundStyle(r > 0 ? Color.secondary : Color(Palette.gold)).multilineTextAlignment(.center)
+                    .font(.system(size: 12, weight: .bold)).foregroundStyle(r > 0 ? Color.secondary : GameStyle.yellow).multilineTextAlignment(.center)
             }
         }
     }
@@ -151,7 +151,7 @@ struct PublishFlowView: View {
     private func done(_ id: String) -> some View {
         VStack(spacing: 16) {
             ZStack {
-                Circle().fill(Color(Palette.gold).opacity(0.18)).frame(width: 96, height: 96)
+                Circle().fill(GameStyle.yellow.opacity(0.18)).frame(width: 96, height: 96)
                 Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
             }
             Text("publish.done").font(.display(23)).foregroundStyle(GameStyle.gold)
@@ -164,7 +164,7 @@ struct PublishFlowView: View {
                 }
                 .accessibilityIdentifier("publish.done.ticket")
             }
-            Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
+            Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                 .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
             let text = ShareText.author(name: stage.name, id: id)
             ShareLink(item: text) {

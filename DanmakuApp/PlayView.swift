@@ -171,7 +171,7 @@ struct PlayView: View {
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 8)
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear {
             if !startedOnce { startedOnce = true; onStart?() }
@@ -192,7 +192,7 @@ struct PlayView: View {
     private var topBar: some View {
         HStack(spacing: 10) {
             Button { gameTap(); onExit() } label: {
-                Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                     .frame(width: 36, height: 36)
                     .gamePanel(radius: 10, fill: GameStyle.panelHi)
             }
@@ -202,12 +202,12 @@ struct PlayView: View {
             Text(title).font(.system(size: 16, weight: .heavy)).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
             Text((model.stage.isUnlimitedTime ? "∞ " : "") + String(format: "%.1f", model.remaining))
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
-                .foregroundStyle(Color(Palette.gold))
+                .foregroundStyle(GameStyle.yellow)
                 .padding(.vertical, 5).padding(.horizontal, 12)
                 .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                 .overlay(PixelRect(cornerRadius: 8).strokeBorder(GameStyle.edge, lineWidth: 2))
         }
-        .foregroundStyle(Color(Palette.text))
+        .foregroundStyle(GameStyle.text)
         .padding(.horizontal, 16).padding(.vertical, 8)
     }
 
@@ -222,9 +222,9 @@ struct PlayView: View {
                 Spacer(minLength: 0)
                 if showDamage {
                     HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill").foregroundStyle(Color(Palette.gold))
+                        Image(systemName: "bolt.fill").foregroundStyle(GameStyle.yellow)
                         Text(model.damage, format: .number)
-                            .font(.system(size: 20, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                            .font(.system(size: 20, weight: .heavy)).foregroundStyle(GameStyle.text)
                             .contentTransition(.numericText())
                     }
                     .padding(.vertical, 4).padding(.horizontal, 12)
@@ -243,7 +243,7 @@ struct PlayView: View {
                 ForEach(0..<max, id: \.self) { i in
                     Image(systemName: i < model.lifeLeft ? "heart.fill" : "heart")
                         .font(.system(size: 18))
-                        .foregroundStyle(i < model.lifeLeft ? Color(Palette.pink) : Color.white.opacity(0.3))
+                        .foregroundStyle(i < model.lifeLeft ? GameStyle.pinkColor : Color.white.opacity(0.3))
                 }
             }
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: model.lifeLeft)
@@ -333,7 +333,7 @@ struct ResultView: View {
 
     var body: some View {
         ZStack {
-            Color(Palette.background).opacity(0.78)
+            GameStyle.night.opacity(0.78)
             ScrollView {
                 VStack(spacing: 14) {
                     // 広告でもらった称号(自分の画面だけ)
@@ -352,12 +352,12 @@ struct ResultView: View {
                         VStack(spacing: 0) {
                             Text("result.damage.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                             Text(result.damage, format: .number)
-                                .font(.display(41)).foregroundStyle(Color(Palette.text))
+                                .font(.display(41)).foregroundStyle(GameStyle.text)
                         }
                     } else if win && result.isBoss {
                         VStack(spacing: 0) {
                             Text("result.time.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                            Text(timeText + L("unit.s")).font(.display(41)).foregroundStyle(Color(Palette.text))
+                            Text(timeText + L("unit.s")).font(.display(41)).foregroundStyle(GameStyle.text)
                         }
                     }
                     Text(message).font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -407,7 +407,7 @@ struct ResultView: View {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                             .accessibilityIdentifier("result.retry")
                         Button { gameTap(); back() } label: {
-                            Text("result.back").font(.display(14)).foregroundStyle(Color(Palette.text))
+                            Text("result.back").font(.display(14)).foregroundStyle(GameStyle.text)
                                 .frame(maxWidth: .infinity).padding(.vertical, 13)
                                 .background(KeyCap(fill: GameStyle.panelHi, radius: 14)).padding(.bottom, 4)
                         }
@@ -439,7 +439,7 @@ struct ResultView: View {
     }
 
     private func smallButton(_ title: LocalizedStringKey, _ image: String) -> some View {
-        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
+        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
             .padding(.vertical, 8).padding(.horizontal, 14)
             .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
             .overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.edge))
@@ -455,7 +455,7 @@ struct ReviveView: View {
 
     var body: some View {
         ZStack {
-            Color(Palette.background).opacity(0.78)
+            GameStyle.night.opacity(0.78)
             VStack(spacing: 14) {
                 Text("result.hit")
                     .font(.display(34)).multilineTextAlignment(.center).minimumScaleFactor(0.6)
@@ -463,7 +463,7 @@ struct ReviveView: View {
                 GameActionButton(title: isPremium ? "revive.free" : "revive.ad", systemImage: "play.rectangle.fill", fill: GameStyle.cyan, action: onRevive)
                     .accessibilityIdentifier("revive.button")
                 Button { gameTap(); onGiveUp() } label: {
-                    Text("revive.giveup").font(.display(14)).foregroundStyle(Color(Palette.text))
+                    Text("revive.giveup").font(.display(14)).foregroundStyle(GameStyle.text)
                         .frame(maxWidth: .infinity).padding(.vertical, 13)
                         .background(KeyCap(fill: GameStyle.panelHi, radius: 14)).padding(.bottom, 4)
                 }
@@ -471,7 +471,7 @@ struct ReviveView: View {
                 .accessibilityIdentifier("revive.giveup")
                 if !isPremium {
                     Button(action: onStore) {
-                        Text("revive.removeads").font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).underline()
+                        Text("revive.removeads").font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow).underline()
                     }
                 }
             }

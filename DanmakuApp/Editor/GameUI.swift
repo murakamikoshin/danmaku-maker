@@ -48,7 +48,7 @@ struct GameActionButton: View {
 /// 見出しつきのパネル
 struct GamePanel<Content: View>: View {
     var title: LocalizedStringKey?
-    var tint: Color = Color(Palette.gold)
+    var tint: Color = GameStyle.yellow
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -56,7 +56,7 @@ struct GamePanel<Content: View>: View {
             if let title {
                 HStack(spacing: 8) {
                     Rectangle().fill(tint).frame(width: 8, height: 8)
-                    Text(title).font(.display(15)).foregroundStyle(Color(Palette.text))
+                    Text(title).font(.display(15)).foregroundStyle(GameStyle.text)
                 }
             }
             content
@@ -75,7 +75,7 @@ struct Chip: View {
     var body: some View {
         Text(title)
             .font(.system(size: 13, weight: .heavy))
-            .foregroundStyle(selected ? GameStyle.ink : Color(Palette.text).opacity(0.85))
+            .foregroundStyle(selected ? GameStyle.ink : GameStyle.text.opacity(0.85))
             .padding(.vertical, 8).padding(.horizontal, 13)
             .background(selected ? GameStyle.yellow : GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
     }
@@ -158,7 +158,7 @@ struct CountStepper: View {
                 .accessibilityIdentifier("\(idPrefix).minus")
             Text("\(value)")
                 .font(.display(34))
-                .foregroundStyle(Color(Palette.text))
+                .foregroundStyle(GameStyle.text)
                 .frame(minWidth: 64)
                 .contentTransition(.numericText())
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: value)
@@ -198,7 +198,7 @@ struct LifePreview: View {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, n in
                     HStack(spacing: 6) {
                         ForEach(0..<n, id: \.self) { _ in
-                            Image(systemName: "heart.fill").font(.system(size: 22)).foregroundStyle(Color(Palette.pink))
+                            Image(systemName: "heart.fill").font(.system(size: 22)).foregroundStyle(GameStyle.pinkColor)
                         }
                     }
                 }
@@ -245,7 +245,7 @@ struct ModeCards: View {
                 ModeGlyph(mode: m, size: 32, color: selected ? GameStyle.ink : nil,
                           core: selected ? GameStyle.yellow : (m == .damage ? GameStyle.panelHi : .white))
                     .frame(height: 36)
-                Text(title).font(.display(14)).foregroundStyle(selected ? GameStyle.ink : Color(Palette.text))
+                Text(title).font(.display(14)).foregroundStyle(selected ? GameStyle.ink : GameStyle.text)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 Text(sub).font(.system(size: 10, weight: .bold)).foregroundStyle(selected ? GameStyle.ink.opacity(0.75) : GameStyle.dim)
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
@@ -278,8 +278,8 @@ struct BossMoveCards: View {
             grid
             if canReverse {
                 HStack {
-                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
-                    Text("editor.boss.reverse").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
+                    Text("editor.boss.reverse").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                     Spacer()
                     GameToggle(isOn: Binding(get: { reversed }, set: { move = $0 ? (Self.reversePairs[base] ?? base) : base }))
                 }
@@ -317,12 +317,12 @@ struct BossMoveCards: View {
                                 ctx.stroke(track, with: .color(Color.white.opacity(0.18)), style: StrokeStyle(lineWidth: 2, dash: [3, 3]))
                                 let c = at(Simulation.bossPoint(move: shown(i), t: t))
                                 let rect = CGRect(x: c.x - 9, y: c.y - 9, width: 18, height: 18)
-                                ctx.fill(GameBossShape().path(in: rect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                                ctx.fill(GameBossShape().path(in: rect), with: .color(GameStyle.pinkColor), style: FillStyle(eoFill: true))
                             }
                         }
                         .frame(height: 40)
                         Text(L("editor.boss.move.\(i)")).font(.system(size: 11, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.6)
-                            .foregroundStyle(Color(Palette.text))
+                            .foregroundStyle(GameStyle.text)
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 6).padding(.horizontal, 3)
                     .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
@@ -357,12 +357,12 @@ struct BossPositionPad: View {
             ZStack(alignment: .topLeading) {
                 PixelRect(cornerRadius: 12).fill(Color.black.opacity(0.35))
                 // 置ける範囲
-                PixelRect(cornerRadius: 8).fill(Color(Palette.pink).opacity(0.10))
-                    .overlay(PixelRect(cornerRadius: 8).stroke(Color(Palette.pink).opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                PixelRect(cornerRadius: 8).fill(GameStyle.pinkColor.opacity(0.10))
+                    .overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.pinkColor.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
                     .frame(width: w * CGFloat(Self.xr.upperBound - Self.xr.lowerBound), height: h * CGFloat((Self.yr.upperBound - Self.yr.lowerBound) / 0.5))
                     .offset(x: w * CGFloat(Self.xr.lowerBound), y: h * CGFloat(Self.yr.lowerBound / 0.5))
                 // 動きの道すじは出さない(動きは上のカードで選ぶ)。ここは「中心」だけ
-                GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true))
+                GameBossShape().fill(GameStyle.pinkColor, style: FillStyle(eoFill: true))
                     .frame(width: 26, height: 26)
                     .offset(x: w * CGFloat(cx) - 13, y: h * CGFloat(cy / 0.5) - 13)
             }
@@ -379,7 +379,7 @@ struct BossPositionPad: View {
             .accessibilityIdentifier("editor.boss.position")
             Button { gameTap(); x = nil; y = nil } label: {
                 Text("editor.boss.position.reset").font(.system(size: 12, weight: .heavy))
-                    .foregroundStyle(isStandard ? Color(Palette.text).opacity(0.4) : Color(Palette.text))
+                    .foregroundStyle(isStandard ? GameStyle.text.opacity(0.4) : GameStyle.text)
                     .padding(.vertical, 6).padding(.horizontal, 14)
                     .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8)).overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.edge))
             }
@@ -459,7 +459,7 @@ struct PatternTiles: View {
                         VStack(spacing: 3) {
                             CustomPatternIcon(path: item.path).frame(width: 40, height: 40)
                             Text(item.name).font(.system(size: 10, weight: .heavy))
-                                .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
+                                .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 6)
                         .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
@@ -484,7 +484,7 @@ struct PatternTiles: View {
                     VStack(spacing: 3) {
                         PatternIcon(pattern: p, selected: selected).frame(width: 40, height: 40)
                         Text(LocalizedStringKey(keys[p] ?? "pattern.\(p.rawValue)")).font(.system(size: 10, weight: .heavy))
-                            .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
+                            .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
                             .lineLimit(1).minimumScaleFactor(0.7)
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
@@ -492,7 +492,7 @@ struct PatternTiles: View {
                     .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
                     .overlay(alignment: .topTrailing) {
                         if locked {
-                            Image(systemName: "lock.fill").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.gold))
+                            Image(systemName: "lock.fill").font(.system(size: 10, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                                 .padding(4).background(Color.black.opacity(0.55), in: Circle()).offset(x: 3, y: -3)
                         }
                     }
@@ -541,7 +541,7 @@ struct PatternIcon: View {
 
     var body: some View {
         Canvas { ctx, size in
-            let col = selected ? GameStyle.yellow : Color(Palette.text).opacity(0.6)
+            let col = selected ? GameStyle.yellow : GameStyle.text.opacity(0.6)
             let c = CGPoint(x: size.width / 2, y: size.height / 2)
             func dot(_ x: Double, _ y: Double, _ r: Double = 2.6) {
                 ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(col))
@@ -750,15 +750,24 @@ struct LogoTitle: View {
 struct ScreenHeader<Leading: View, Trailing: View>: View {
     var title: LocalizedStringKey?
     var logo: LocalizedStringKey?
+    /// 見出しを、左のボタンのすぐ右に置く(右側にボタンや表示が多い画面で、重ならないように)
+    var leadingTitle = false
     @ViewBuilder var leading: Leading
     @ViewBuilder var trailing: Trailing
 
     var body: some View {
         ZStack {
-            HStack { leading; Spacer(minLength: 0); trailing }
+            HStack(spacing: 10) {
+                leading
+                if leadingTitle, let title {
+                    Text(title).font(.display(19)).foregroundStyle(GameStyle.text).lineLimit(1).minimumScaleFactor(0.6).layoutPriority(1)
+                }
+                Spacer(minLength: 0)
+                trailing
+            }
             if let logo { LogoTitle(text: logo) }
-            if let title {
-                Text(title).font(.display(19)).foregroundStyle(Color(Palette.text))
+            if let title, !leadingTitle {
+                Text(title).font(.display(19)).foregroundStyle(GameStyle.text)
                     .lineLimit(1).minimumScaleFactor(0.6).padding(.horizontal, 50)
             }
         }
@@ -770,7 +779,7 @@ struct ScreenHeader<Leading: View, Trailing: View>: View {
 struct RoundIconButton: View {
     let systemImage: String
     let label: LocalizedStringKey
-    var tint: Color = Color(Palette.text)
+    var tint: Color = GameStyle.text
     let action: () -> Void
 
     var body: some View {
@@ -807,7 +816,7 @@ struct GameTabs<T: Hashable>: View {
                         .frame(maxWidth: .infinity).padding(.vertical, 9).padding(.horizontal, 4)
                         .overlay(alignment: .topTrailing) {
                             if badges.contains(item.0) {
-                                Rectangle().fill(Color(Palette.pink)).frame(width: 8, height: 8).padding(.top, 4).padding(.trailing, 5)
+                                Rectangle().fill(GameStyle.pinkColor).frame(width: 8, height: 8).padding(.top, 4).padding(.trailing, 5)
                             }
                         }
                         .background {
@@ -913,7 +922,7 @@ struct PercentRing: View {
                     .rotationEffect(.degrees(-90))
             }
             Text(percent.map { "\($0)%" } ?? "—")
-                .font(.system(size: 12, weight: .black)).foregroundStyle(Color(Palette.text))
+                .font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.text)
         }
         .frame(width: 48, height: 48)
     }

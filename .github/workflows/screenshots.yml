@@ -59,6 +59,13 @@ jobs:
           shot store ja 14 -open-store
           shot swipe ja 14 -open-swipe
           shot swipe_stamina ja 14 -open-swipe -swipe-stamina-sheet
+          # メニューのテーマ「幻想」
+          shot gensou_home ja 14 -ui-theme gensou
+          shot gensou_editor ja 16 -ui-theme gensou -open-editor
+          shot gensou_shop_bosses ja 14 -ui-theme gensou -open-shop -shop-bosses
+          shot gensou_settings ja 14 -ui-theme gensou -open-settings
+          shot gensou_result ja 40 -ui-theme gensou -open-stage o01
+          shot gensou_home en 14 -ui-theme gensou
           shot home en 14
           shot editor de 16 -open-editor
           shot shop ko 14 -open-shop

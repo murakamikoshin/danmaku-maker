@@ -55,7 +55,7 @@ struct HomeView: View {
             .trackListScrolling($listScrolling)
             .environment(\.listScrolling, listScrolling)
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: s.title) { playing = nil }
@@ -132,11 +132,11 @@ struct HomeView: View {
     /// マイステージ: 作ったステージを、投稿しなくても保存して、いつでも遊べる・直せる
     private var mine: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("home.mine").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
+            Text("home.mine").font(.display(17)).foregroundStyle(GameStyle.text).padding(.horizontal, 4)
             Text("home.mine.note").font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary).padding(.horizontal, 4)
             if saved.stages.isEmpty {
                 VStack(spacing: 12) {
-                    Image(systemName: "square.and.pencil").font(.system(size: 34)).foregroundStyle(Color(Palette.pink))
+                    Image(systemName: "square.and.pencil").font(.system(size: 34)).foregroundStyle(GameStyle.pinkColor)
                     Text("home.mine.empty").font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     GameActionButton(title: "home.create", systemImage: "plus", fill: GameStyle.accent) { newStage() }
                 }
@@ -157,11 +157,11 @@ struct HomeView: View {
     @ViewBuilder private var postedSection: some View {
         if auth.isMember && postedLoaded && !posted.list.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Text("mystats.title").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
+                Text("mystats.title").font(.display(17)).foregroundStyle(GameStyle.text).padding(.horizontal, 4)
                 HStack(spacing: 0) {
-                    statCell("heart.fill", posted.likes, "mystats.likes", Color(Palette.pink))
-                    statCell("gamecontroller.fill", posted.plays, "mystats.plays", Color(UIColor(hex: 0x5CE1E6)))
-                    statCell("flag.checkered", posted.clears, "mystats.clears", Color(Palette.gold))
+                    statCell("heart.fill", posted.likes, "mystats.likes", GameStyle.pinkColor)
+                    statCell("gamecontroller.fill", posted.plays, "mystats.plays", GameStyle.cyanColor)
+                    statCell("flag.checkered", posted.clears, "mystats.clears", GameStyle.yellow)
                     statCell("bubble.left.fill", posted.comments, "mystats.comments", Color(Palette.bullets[4]))
                 }
                 .padding(.vertical, 12)
@@ -179,7 +179,7 @@ struct HomeView: View {
     private func statCell(_ icon: String, _ value: Int, _ label: LocalizedStringKey, _ tint: Color) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon).foregroundStyle(tint)
-            Text("\(value)").font(.display(19)).foregroundStyle(Color(Palette.text))
+            Text("\(value)").font(.display(19)).foregroundStyle(GameStyle.text)
             Text(label).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -187,7 +187,7 @@ struct HomeView: View {
 
     private var samples: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("home.samples").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
+            Text("home.samples").font(.display(17)).foregroundStyle(GameStyle.text).padding(.horizontal, 4)
             ForEach(SampleStages.all) { s in
                 Button { gameTap(); playing = s } label: { SampleRow(sample: s) }
                     .buttonStyle(BounceButtonStyle())
@@ -209,7 +209,7 @@ struct HomeView: View {
             // 作者で絞り込み中(解除すると、ふつうの一覧に戻る)
             HStack {
                 Label(String(format: L("world.author.filter"), a.name), systemImage: "person.crop.rectangle.stack")
-                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow).lineLimit(1)
                 Spacer()
                 Button { gameTap(); world.author = nil; Task { await world.reload() } } label: { Chip(title: L("world.author.clear"), selected: false) }
                     .buttonStyle(BounceButtonStyle())
@@ -219,7 +219,7 @@ struct HomeView: View {
         if world.searching {
             HStack {
                 Label(String(format: L("world.search.result"), world.query), systemImage: "magnifyingglass")
-                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow).lineLimit(1)
                 Spacer()
                 Button { gameTap(); query = ""; world.query = ""; Task { await world.reload() } } label: { Chip(title: L("world.search.clear"), selected: false) }
                     .buttonStyle(BounceButtonStyle())
@@ -245,7 +245,7 @@ struct HomeView: View {
                     // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
                     .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
             }
-            if world.isLoading { HStack { Spacer(); ProgressView().tint(Color(Palette.pink)); Spacer() }.padding(.vertical, 8) }
+            if world.isLoading { HStack { Spacer(); ProgressView().tint(GameStyle.pinkColor); Spacer() }.padding(.vertical, 8) }
             // 念のため、続きがあるときは「もっと見る」も出す(自動で読まれなかったときに、古いステージまでたどれるように)
             if !world.isLoading && !world.reachedEnd && !world.failed && !world.searching && !visible.isEmpty {
                 Button { gameTap(); Task { await loadMoreWorld() } } label: { Chip(title: L("world.more"), selected: false) }
@@ -290,7 +290,7 @@ struct HomeView: View {
             sectionLabel("world.filter.difficulty", "gauge.with.dots.needle.67percent")
             ChipGrid(items: [(nil as WorldDifficulty?, L("world.filter.all"))] + WorldDifficulty.allCases.map { ($0 as WorldDifficulty?, L($0.titleKey)) },
                      selection: $world.difficulty, idPrefix: "home.diff", minimum: 70)
-            if world.difficulty != nil { Text("world.diff.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.55)) }
+            if world.difficulty != nil { Text("world.diff.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.55)) }
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
         .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
@@ -300,7 +300,7 @@ struct HomeView: View {
     private func sectionLabel(_ key: LocalizedStringKey, _ symbol: String) -> some View {
         Label(key, systemImage: symbol)
             .font(.system(size: 13, weight: .heavy))
-            .foregroundStyle(Color(Palette.text).opacity(0.8))
+            .foregroundStyle(GameStyle.text.opacity(0.8))
     }
 
     #if DEBUG
@@ -387,16 +387,16 @@ struct SampleRow: View {
     var body: some View {
         StageCardShell(mode: sample.stage.mode) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(sample.title).font(.system(size: 16, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                Text(sample.title).font(.system(size: 16, weight: .heavy)).foregroundStyle(GameStyle.text).lineLimit(1)
                 HStack(spacing: 6) {
                     ModeBadge(mode: sample.stage.mode)
                     Text(detailText(sample.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                 }
-                Text(String(repeating: "★", count: sample.difficulty)).font(.system(size: 12)).foregroundStyle(Color(Palette.gold))
+                Text(String(repeating: "★", count: sample.difficulty)).font(.system(size: 12)).foregroundStyle(GameStyle.yellow)
                 Text(sample.aim).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2).multilineTextAlignment(.leading)
             }
             Spacer(minLength: 0)
-            Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.5))
+            Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.5))
         }
     }
 }
@@ -443,7 +443,7 @@ struct RemoteRow: View {
                            : AnyView(StageMiniPreview(stage: stage.stage, playing: playing, visible: visible))) {
             VStack(alignment: .leading, spacing: 4) {
                 MarqueeTitle(text: stage.name, font: .system(size: 16, weight: .heavy), playing: playing, visible: visible)
-                    .foregroundStyle(Color(Palette.text))
+                    .foregroundStyle(GameStyle.text)
                 HStack(spacing: 6) {
                     ModeBadge(mode: stage.stage.mode)
                     // 作者の名前の横に、称号と王冠(あれば)
@@ -485,29 +485,29 @@ struct MyStageRow: View {
             Button { gameTap(); onPlay() } label: {
                 StageCardShell(mode: entry.stage.mode) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(entry.displayName).font(.system(size: 16, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                        Text(entry.displayName).font(.system(size: 16, weight: .heavy)).foregroundStyle(GameStyle.text).lineLimit(1)
                         HStack(spacing: 6) {
                             ModeBadge(mode: entry.stage.mode)
                             Text(detailText(entry.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                         }
                         HStack(spacing: 6) {
-                            if entry.isPublished { tag("mystage.posted", Color(Palette.gold)) }
+                            if entry.isPublished { tag("mystage.posted", GameStyle.yellow) }
                             else if entry.isVerified { tag("mystage.cleared", Color(Palette.bullets[4])) }
                             else { tag("mystage.notcleared", Color.white.opacity(0.5)) }
                             Text(entry.updatedAt, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary)
                         }
                     }
                     Spacer(minLength: 0)
-                    Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                    Image(systemName: "play.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.5))
                 }
             }
             .buttonStyle(BounceButtonStyle())
             HStack(spacing: 8) {
-                action("mystage.edit", "pencil", Color(UIColor(hex: 0x5CE1E6)), onEdit)
-                action(entry.isPublished ? "mystage.posted" : (entry.isVerified ? "mystage.publish" : "mystage.publish.unlisted"), "paperplane.fill", Color(Palette.pink), onPublish)
+                action("mystage.edit", "pencil", GameStyle.cyanColor, onEdit)
+                action(entry.isPublished ? "mystage.posted" : (entry.isVerified ? "mystage.publish" : "mystage.publish.unlisted"), "paperplane.fill", GameStyle.pinkColor, onPublish)
                     .opacity(entry.isPublished ? 0.4 : 1)
                     .disabled(entry.isPublished)
-                action("mystage.delete", "trash", Color(Palette.pink).opacity(0.8), onDelete)
+                action("mystage.delete", "trash", GameStyle.pinkColor.opacity(0.8), onDelete)
             }
             .padding(.horizontal, 4)
         }
@@ -534,7 +534,7 @@ struct CreateHero: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("home.hero.tagline").font(.display(19)).foregroundStyle(Color(Palette.text))
+            Text("home.hero.tagline").font(.display(19)).foregroundStyle(GameStyle.text)
                 .lineSpacing(3).fixedSize(horizontal: false, vertical: true)
                 .padding(.trailing, 96)
             Button { gameTap(); action() } label: {
@@ -551,7 +551,7 @@ struct CreateHero: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background { HeroBullets() }
-        .background(Color(UIColor(hex: 0x0E0B24)))
+        .background(GameStyle.nightDeep)
         .clipShape(PixelRect(cornerRadius: 18))
         .overlay(PixelRect(cornerRadius: 18).strokeBorder(GameStyle.edge, lineWidth: 2))
         .hardShadow(radius: 18)

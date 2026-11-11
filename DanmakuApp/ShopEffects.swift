@@ -85,7 +85,7 @@ struct BulletBurstView: View {
                 // ボス(中サイズの 48)と自機(20×24)
                 let bossSide = EnemyArt.bossPoints(size: 1) * s
                 let bossRect = CGRect(x: ox + engine.source.x * s - bossSide / 2, y: engine.source.y * s - bossSide / 2, width: bossSide, height: bossSide)
-                ctx.fill(GameBossShape().path(in: bossRect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                ctx.fill(GameBossShape().path(in: bossRect), with: .color(GameStyle.pinkColor), style: FillStyle(eoFill: true))
                 let p = engine.player
                 ctx.draw(Image(uiImage: ship), in: CGRect(x: ox + p.x * s - 10 * s, y: p.y * s - 12 * s, width: 20 * s, height: 24 * s))
             }
@@ -119,14 +119,14 @@ struct ShotPreviewView: View {
                         let heavy = v.damage > 1
                         // ゲームの弾の大きさ(通常 3×10、ヘビー 6×14)。小さくなりすぎないように、見えるだけ太くする
                         let w = max(2.0, (heavy ? 6 : 3) * sc * 1.6), h = max(5.0, (heavy ? 14 : 10) * sc * 1.6)
-                        let color: Color = heavy ? Color(UIColor(hex: 0x5CE1E6)) : Color(Palette.gold)
+                        let color: Color = heavy ? GameStyle.cyanColor : GameStyle.yellow
                         ctx.fill(Path(roundedRect: CGRect(x: x - w / 2, y: y - h / 2, width: w, height: h), cornerRadius: 1.5), with: .color(color))
                     }
                 }
                 // ボスの当たる範囲(中)と同じ大きさ
                 let r = DanmakuConfig.bossRadii[1] * sc
                 let bossRect = CGRect(x: bossP.x - r, y: bossP.y - r, width: r * 2, height: r * 2)
-                ctx.fill(GameBossShape().path(in: bossRect), with: .color(Color(Palette.pink)), style: FillStyle(eoFill: true))
+                ctx.fill(GameBossShape().path(in: bossRect), with: .color(GameStyle.pinkColor), style: FillStyle(eoFill: true))
                 ctx.draw(Image(uiImage: ship), in: CGRect(x: shipP.x - 10 * sc * 1.2, y: shipP.y - 12 * sc * 1.2, width: 20 * sc * 1.2, height: 24 * sc * 1.2))
             }
         }

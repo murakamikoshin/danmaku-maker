@@ -53,21 +53,21 @@ struct EmitterCard: View {
             HStack {
                 HStack(spacing: 8) {
                     bulletBadge
-                    Text(String(format: L("editor.emitter"), index + 1)).font(.display(14)).foregroundStyle(Color(Palette.gold))
+                    Text(String(format: L("editor.emitter"), index + 1)).font(.display(14)).foregroundStyle(GameStyle.yellow)
                 }
                 Spacer()
                 Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { collapsed.toggle() } } label: {
                     Image(systemName: collapsed ? "chevron.down.circle.fill" : "chevron.up.circle.fill")
-                        .font(.system(size: 22)).foregroundStyle(Color(Palette.text).opacity(0.6))
+                        .font(.system(size: 22)).foregroundStyle(GameStyle.text.opacity(0.6))
                 }
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityIdentifier("emitter.collapse.\(index)")
                 if canDelete {
                     Button { gameTap(); onDelete() } label: {
                         Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy))
-                            .foregroundStyle(Color(Palette.pink))
+                            .foregroundStyle(GameStyle.pinkColor)
                             .padding(.vertical, 6).padding(.horizontal, 10)
-                            .background(Color(Palette.pink).opacity(0.15), in: PixelRect(cornerRadius: 8))
+                            .background(GameStyle.pinkColor.opacity(0.15), in: PixelRect(cornerRadius: 8))
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("emitter.delete.\(index)")
@@ -88,7 +88,7 @@ struct EmitterCard: View {
                     // 一覧は大きいので、選んだら畳む。いまのパターンだけを見せて、下の設定に早く行けるようにする
                     Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { patternOpen.toggle() } } label: {
                         HStack(spacing: 4) {
-                            Text(L("pattern.\(emitter.t.rawValue)")).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                            Text(L("pattern.\(emitter.t.rawValue)")).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
                             Image(systemName: patternOpen ? "chevron.up" : "chevron.down").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 5).padding(.horizontal, 10)
@@ -117,8 +117,8 @@ struct EmitterCard: View {
                 }
                 // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ
                 HStack {
-                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
-                    Text("editor.mirror").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
+                    Text("editor.mirror").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                     Spacer()
                     GameToggle(isOn: Binding(get: { emitter.mir == 1 }, set: { emitter.mir = $0 ? 1 : nil }))
                 }

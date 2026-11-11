@@ -59,17 +59,17 @@ enum TitleID {
             case "rank1": return CrownStyle.gold
             case "rank2": return CrownStyle.silver
             case "rank3": return CrownStyle.bronze
-            case "top10": return Color(Palette.pink)
+            case "top10": return GameStyle.pinkColor
             default: return Color(Palette.bullets[2])
             }
         }
         switch id {
         case "inv10", "founder": return CrownStyle.gold
-        case "inv5": return Color(Palette.pink)
+        case "inv5": return GameStyle.pinkColor
         case "inv3": return Color(Palette.bullets[2])
         case "invited", "inv1": return Color(Palette.bullets[0])
         case "score4": return CrownStyle.gold
-        case "score3": return Color(Palette.pink)
+        case "score3": return GameStyle.pinkColor
         case "score2": return Color(Palette.bullets[2])
         default: return Color(Palette.bullets[4])
         }
@@ -151,7 +151,7 @@ struct BadgedName: View {
                 Image(systemName: "crown.fill").font(.system(size: size * 0.95)).foregroundStyle(c)
                     .accessibilityLabel(Text("title.crown"))
             } else if badge.medal {
-                Image(systemName: "medal.fill").font(.system(size: size * 0.85)).foregroundStyle(Color(Palette.pink))
+                Image(systemName: "medal.fill").font(.system(size: size * 0.85)).foregroundStyle(GameStyle.pinkColor)
                     .accessibilityLabel(Text("title.medal"))
             }
             Text(name).font(.system(size: size, weight: weight)).lineLimit(1)
@@ -293,12 +293,12 @@ struct TitlePickerView: View {
 
     var body: some View {
         ZStack {
-            Color(Palette.background).ignoresSafeArea()
+            GameStyle.night.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 12) {
                     HStack {
                         Text("title.button").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(
-                            LinearGradient(colors: [.white, Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
+                            LinearGradient(colors: [.white, GameStyle.yellow], startPoint: .top, endPoint: .bottom))
                         Spacer()
                         Button { gameTap(); dismiss() } label: {
                             Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
@@ -308,18 +308,18 @@ struct TitlePickerView: View {
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityLabel(Text("swipe.close"))
                     }
-                    GamePanel(title: "title.section.score", tint: Color(Palette.gold)) {
+                    GamePanel(title: "title.section.score", tint: GameStyle.yellow) {
                         VStack(spacing: 8) {
                             ForEach(TitleID.scoreIDs, id: \.self) { id in
                                 if service.owned.contains(id) {
                                     row(id)
                                 } else {
                                     HStack {
-                                        Text(TitleID.text(id) ?? "").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.45))
+                                        Text(TitleID.text(id) ?? "").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.45))
                                         Spacer()
                                         Text(String(format: L("title.need"), ScoreFormat.short(BigScore(TitleID.scoreMin[id] ?? "0") ?? .zero, SwipePalette.scoreStyle)))
-                                            .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
-                                        Image(systemName: "lock.fill").font(.system(size: 11)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                                            .font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.5))
+                                        Image(systemName: "lock.fill").font(.system(size: 11)).foregroundStyle(GameStyle.text.opacity(0.5))
                                     }
                                     .padding(.vertical, 10).padding(.horizontal, 12)
                                     .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
@@ -328,28 +328,28 @@ struct TitlePickerView: View {
                         }
                     }
                     let monthly = TitleID.monthSorted(service.owned)
-                    GamePanel(title: "title.section.month", tint: Color(Palette.pink)) {
+                    GamePanel(title: "title.section.month", tint: GameStyle.pinkColor) {
                         if monthly.isEmpty {
-                            Text("title.month.empty").font(.footnote).foregroundStyle(Color(Palette.text).opacity(0.6))
+                            Text("title.month.empty").font(.footnote).foregroundStyle(GameStyle.text.opacity(0.6))
                         } else {
                             VStack(spacing: 8) { ForEach(monthly, id: \.self) { row($0) } }
                         }
-                        Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                        Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.5))
                     }
                     GamePanel(title: "title.section.crown", tint: Color(CrownStyle.gold)) {
                         let crowns = TitleID.crownSorted(service.owned)
                         VStack(spacing: 8) {
-                            crownRow(title: L("title.crown.auto"), on: service.crownAuto, id: "auto", icon: "wand.and.stars", color: Color(Palette.text)) { pickCrown(nil, auto: true) }
+                            crownRow(title: L("title.crown.auto"), on: service.crownAuto, id: "auto", icon: "wand.and.stars", color: GameStyle.text) { pickCrown(nil, auto: true) }
                             ForEach(crowns, id: \.self) { id in
                                 let c = TitleID.crown(id)
                                 crownRow(title: TitleID.text(id) ?? "", on: !service.crownAuto && service.crownSel == id, id: id,
                                          icon: (c?.crown ?? 0) > 0 ? "crown.fill" : "medal.fill",
-                                         color: CrownStyle.color(c?.crown ?? 0) ?? Color(Palette.pink)) { pickCrown(id, auto: false) }
+                                         color: CrownStyle.color(c?.crown ?? 0) ?? GameStyle.pinkColor) { pickCrown(id, auto: false) }
                             }
-                            crownRow(title: L("title.crown.none"), on: !service.crownAuto && service.crownSel == nil, id: "none", icon: "nosign", color: Color(Palette.text).opacity(0.6)) { pickCrown(nil, auto: false) }
+                            crownRow(title: L("title.crown.none"), on: !service.crownAuto && service.crownSel == nil, id: "none", icon: "nosign", color: GameStyle.text.opacity(0.6)) { pickCrown(nil, auto: false) }
                         }
-                        if crowns.isEmpty { Text("title.crown.empty").font(.footnote).foregroundStyle(Color(Palette.text).opacity(0.6)) }
-                        Text("title.crown.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
+                        if crowns.isEmpty { Text("title.crown.empty").font(.footnote).foregroundStyle(GameStyle.text.opacity(0.6)) }
+                        Text("title.crown.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.5))
                     }
                     let invites = TitleID.inviteSorted(service.owned)
                     if !invites.isEmpty {
@@ -359,12 +359,12 @@ struct TitlePickerView: View {
                     }
                     Button { gameTap(); pick(nil) } label: {
                         HStack {
-                            Text("title.none").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                            Text("title.none").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                             Spacer()
-                            if service.selected == nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+                            if service.selected == nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(GameStyle.pinkColor) }
                         }
                         .padding(14).background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
-                        .overlay(PixelRect(cornerRadius: 16).stroke(service.selected == nil ? Color(Palette.pink) : GameStyle.edge, lineWidth: service.selected == nil ? 2 : 1))
+                        .overlay(PixelRect(cornerRadius: 16).stroke(service.selected == nil ? GameStyle.pinkColor : GameStyle.edge, lineWidth: service.selected == nil ? 2 : 1))
                     }
                     .buttonStyle(BounceButtonStyle())
                     if failed { Text("swipe.error.network").font(.footnote).foregroundStyle(.secondary) }
@@ -380,12 +380,12 @@ struct TitlePickerView: View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon).font(.system(size: 16, weight: .bold)).foregroundStyle(color).frame(width: 24)
-                Text(title).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                Text(title).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
                 Spacer()
-                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(GameStyle.pinkColor) }
             }
             .padding(.vertical, 10).padding(.horizontal, 12)
-            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
+            .background(on ? GameStyle.pinkColor.opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
             .overlay(PixelRect(cornerRadius: 12).strokeBorder(on ? GameStyle.yellow : GameStyle.edge, lineWidth: 2))
         }
         .buttonStyle(BounceButtonStyle())
@@ -402,10 +402,10 @@ struct TitlePickerView: View {
             HStack {
                 TitleChip(id: id, size: 13)
                 Spacer()
-                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
+                if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(GameStyle.pinkColor) }
             }
             .padding(.vertical, 10).padding(.horizontal, 12)
-            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
+            .background(on ? GameStyle.pinkColor.opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
             .overlay(PixelRect(cornerRadius: 12).strokeBorder(on ? GameStyle.yellow : GameStyle.edge, lineWidth: 2))
         }
         .buttonStyle(BounceButtonStyle())

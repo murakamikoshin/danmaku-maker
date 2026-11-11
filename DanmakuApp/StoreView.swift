@@ -13,7 +13,7 @@ struct StoreView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ZStack {
-                        Circle().fill(Color(Palette.pink).opacity(0.18)).frame(width: 110, height: 110)
+                        Circle().fill(GameStyle.pinkColor.opacity(0.18)).frame(width: 110, height: 110)
                         Image(systemName: "nosign").font(.system(size: 52, weight: .heavy)).foregroundStyle(GameStyle.accent)
                     }
                     .padding(.top, 8)
@@ -35,7 +35,7 @@ struct StoreView: View {
                             .accessibilityIdentifier("store.buy")
                     }
                     Button { gameTap(); Task { await purchases.restore() } } label: {
-                        Text("store.restore").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text("store.restore").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 14))
                     }
@@ -46,13 +46,13 @@ struct StoreView: View {
                 .padding(20)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .task { await purchases.refresh() }
         .preferredColorScheme(.dark)
     }
 
     private func benefit(_ key: LocalizedStringKey, _ symbol: String) -> some View {
-        Label { Text(key).font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(Palette.text)) }
-            icon: { Image(systemName: symbol).foregroundStyle(Color(Palette.gold)).frame(width: 24) }
+        Label { Text(key).font(.system(size: 15, weight: .semibold)).foregroundStyle(GameStyle.text) }
+            icon: { Image(systemName: symbol).foregroundStyle(GameStyle.yellow).frame(width: 24) }
     }
 }

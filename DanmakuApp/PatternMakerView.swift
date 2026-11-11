@@ -41,7 +41,7 @@ struct PatternMakerView: View {
                 .padding(16)
             }
         }
-        .background(Color(Palette.background).ignoresSafeArea())
+        .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 
@@ -62,7 +62,7 @@ struct PatternMakerView: View {
                         var line = Path()
                         line.move(to: CGPoint(x: pts[0].x * s, y: pts[0].y * s))
                         for q in pts.dropFirst() { line.addLine(to: CGPoint(x: q.x * s, y: q.y * s)) }
-                        ctx.stroke(line, with: .color(Color(Palette.gold).opacity(0.5)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: drawing ? [] : [4, 4]))
+                        ctx.stroke(line, with: .color(GameStyle.yellow.opacity(0.5)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: drawing ? [] : [4, 4]))
                     }
                     // 弾(ゲームと同じ 12×12)
                     let bs = 12 * s
@@ -73,7 +73,7 @@ struct PatternMakerView: View {
                     if !path.isEmpty || drawing {
                         let o = CGPoint(x: origin.x * s, y: origin.y * s)
                         ctx.fill(GameBossShape().path(in: CGRect(x: o.x - 14 * s * 1.6, y: o.y - 14 * s * 1.6, width: 28 * s * 1.6, height: 28 * s * 1.6)),
-                                 with: .color(Color(Palette.pink).opacity(0.85)), style: FillStyle(eoFill: true))
+                                 with: .color(GameStyle.pinkColor.opacity(0.85)), style: FillStyle(eoFill: true))
                     }
                 }
             }
@@ -87,7 +87,7 @@ struct PatternMakerView: View {
                 .onEnded { _ in finishDrawing() })
         }
         .aspectRatio(fieldW / fieldH, contentMode: .fit)
-        .background(Color(Palette.background), in: PixelRect(cornerRadius: 14))
+        .background(GameStyle.night, in: PixelRect(cornerRadius: 14))
         .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
         .clipShape(PixelRect(cornerRadius: 14))
         .overlay {
@@ -126,7 +126,7 @@ struct PatternMakerView: View {
     /// ゲーム風の「文字  −  ＋」の行(標準のステッパーの代わり)
     private func stepRow(_ text: String, minus: @escaping () -> Void, plus: @escaping () -> Void, canMinus: Bool, canPlus: Bool) -> some View {
         HStack(spacing: 10) {
-            Text(text).font(.system(size: 14, weight: .bold)).foregroundStyle(Color(Palette.text))
+            Text(text).font(.system(size: 14, weight: .bold)).foregroundStyle(GameStyle.text)
             Spacer()
             ForEach([(false, "minus"), (true, "plus")], id: \.1) { item in
                 let enabled = item.0 ? canPlus : canMinus
@@ -156,7 +156,7 @@ struct PatternMakerView: View {
                 .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                 .onChange(of: name) { v in if v.count > CustomPattern.maxNameLength { name = String(v.prefix(CustomPattern.maxNameLength)) } }
                 .accessibilityIdentifier("maker.name")
-            if let message { Text(message).font(.caption.bold()).foregroundStyle(Color(Palette.gold)) }
+            if let message { Text(message).font(.caption.bold()).foregroundStyle(GameStyle.yellow) }
             HStack(spacing: 10) {
                 Button { gameTap(); clear() } label: { Chip(title: L("maker.clear"), selected: false) }.buttonStyle(BounceButtonStyle())
                 GameActionButton(title: "maker.save", systemImage: "square.and.arrow.down.fill", fill: GameStyle.accent) { save() }
@@ -186,12 +186,12 @@ struct PatternMakerView: View {
                 HStack(spacing: 10) {
                     CustomPatternIcon(path: item.path).frame(width: 40, height: 40)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(item.name).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
+                        Text(item.name).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         Text(String(format: L("maker.item.detail"), item.copies, Double(item.path.count / 2 - 1) * PathData.step)).font(.caption2).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Button { gameTap(); load(item) } label: { Chip(title: L("maker.edit"), selected: false) }.buttonStyle(BounceButtonStyle())
-                    Button { gameTap(); library.delete(id: item.id) } label: { Image(systemName: "trash").foregroundStyle(Color(Palette.pink)) }.buttonStyle(.plain)
+                    Button { gameTap(); library.delete(id: item.id) } label: { Image(systemName: "trash").foregroundStyle(GameStyle.pinkColor) }.buttonStyle(.plain)
                 }
                 .padding(10).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
             }
@@ -228,9 +228,9 @@ struct CustomPatternIcon: View {
             var line = Path()
             line.move(to: pt(0))
             for i in 1..<n { line.addLine(to: pt(i)) }
-            ctx.stroke(line, with: .color(Color(Palette.gold).opacity(0.8)), style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
+            ctx.stroke(line, with: .color(GameStyle.yellow.opacity(0.8)), style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
             let s = pt(0)
-            ctx.fill(Path(ellipseIn: CGRect(x: s.x - 3, y: s.y - 3, width: 6, height: 6)), with: .color(Color(Palette.pink)))
+            ctx.fill(Path(ellipseIn: CGRect(x: s.x - 3, y: s.y - 3, width: 6, height: 6)), with: .color(GameStyle.pinkColor))
         }
     }
 }
