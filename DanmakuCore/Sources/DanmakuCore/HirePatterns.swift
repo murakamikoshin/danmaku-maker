@@ -4,8 +4,8 @@ import Foundation
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を px/秒に直したもの。(cx, cy) はボスの中心。絵は 112×112
 extension Emit {
     /// ポイ(絵の中の (39,33))、金魚をのせた手 (73,42)
-    static func hirePoi(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx - 34, cy - 46) }
-    static func hireHand(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 34, cy - 28) }
+    static func hirePoi(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx - 34 * Emit.anchorScale, cy - 46 * Emit.anchorScale) }
+    static func hireHand(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 34 * Emit.anchorScale, cy - 28 * Emit.anchorScale) }
 
     static func emitHire(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                          rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool, salt: UInt32) {

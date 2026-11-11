@@ -76,6 +76,9 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         }
     }
 
+    /// 動きを指定したときの、図形のボスの動きからの下へのずれ(px)。絵が大きいので、画面の上に切れないよう、定位置と同じ高さに下げる
+    public static let moveYOffset = 128 - DanmakuConfig.height * 0.18
+
     /// 覚醒する段階として選べる値(第2段階・第3段階)
     public static let awakenPhases = [2, 3]
 }

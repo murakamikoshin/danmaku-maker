@@ -171,6 +171,11 @@ struct PreviewLook: Equatable {
     var bossLook = 0
     var mooks: Int?
     var mookLook = 0
+    /// キャラクターのボスの大きさの倍率(半径 ÷ 40。図形のボスは 1)
+    var characterScale: Double {
+        guard BossCharacter.of(look: bossLook) != nil, DanmakuConfig.characterRadiusRange.contains(bossSize) else { return 1 }
+        return Double(bossSize) / DanmakuConfig.characterBaseRadius
+    }
 
     init() {}
     init(draft: Draft) {
@@ -240,7 +245,7 @@ private struct TimingPanel: View {
             ChipGrid(items: model.durations.map { ($0, $0 == 0 ? L("editor.unlimited") : String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { model.draft.duration }, set: model.setDuration),
                      idPrefix: "editor.duration")
-            if model.draft.mode != .survive && BossCharacter.of(look: model.draft.bossLook) == nil {
+            if model.draft.mode != .survive {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("editor.boss.move").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     BossMoveCards(move: $model.draft.bossMove)
@@ -336,6 +341,8 @@ private struct EnemyControls: View {
     /// 見た目を選ぶ。ぷにまるは覚醒が秘密なので、覚醒の段階を選ばせず、はじめから覚醒するようにする(ほかのボスに替えたら戻す)
     private func select(_ new: Int) {
         let was = BossCharacter.of(look: bossLook) == .puni
+        // 図形のボスとキャラクターのボスでは、大きさの範囲が違う。行き来したら標準の大きさに戻す
+        if (BossCharacter.of(look: bossLook) == nil) != (BossCharacter.of(look: new) == nil) { bossSize = 1 }
         bossLook = new
         if BossCharacter.of(look: new) == .puni { awaken = 3 } else if was { awaken = nil }
     }
@@ -349,7 +356,14 @@ private struct EnemyControls: View {
         VStack(alignment: .leading, spacing: 10) {
             if showBoss {
                 if isCharacter {
-                    Text("editor.enemy.character.note").font(.caption2).foregroundStyle(.secondary)
+                    Text("editor.enemy.size").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    // キャラクターのボス: 半径 20〜60px(標準 40)。絵と、技の弾が出る場所も、同じ倍率で変わる
+                    SliderRow(label: "editor.enemy.size.radius",
+                              value: Binding(get: { DanmakuConfig.characterRadiusRange.contains(bossSize) ? Double(bossSize) : DanmakuConfig.characterBaseRadius },
+                                             set: { let v = Int($0.rounded()); bossSize = Double(v) == DanmakuConfig.characterBaseRadius ? 1 : v }),
+                              range: Double(DanmakuConfig.characterRadiusRange.lowerBound)...Double(DanmakuConfig.characterRadiusRange.upperBound), step: 1) { "\(Int($0))px" }
+                        .accessibilityIdentifier("editor.boss.size")
+                    Text("editor.enemy.character.size.note").font(.caption2).foregroundStyle(.secondary)
                 } else {
                     Text("editor.enemy.size").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     // スライダーで半径(px)を決める。小・中・大と同じ値は、保存のときに 0・1・2 に戻る
@@ -964,14 +978,13 @@ private struct WaveCard: View {
     }
 
     @ViewBuilder private var bossControls: some View {
-                if BossCharacter.of(look: wave.bossLook ?? 0) == nil {
-                    Text("editor.boss.move").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
-                    if advanced {
-                        Text("editor.boss.position").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                        BossPositionPad(x: Binding(get: { wave.bossX }, set: { model.draft.waves[i].bossX = $0 }),
-                                        y: Binding(get: { wave.bossY }, set: { model.draft.waves[i].bossY = $0 }))
-                    }
+                // キャラクターのボスも、1.2.0 から動きと位置を選べる
+                Text("editor.boss.move").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
+                if advanced {
+                    Text("editor.boss.position").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    BossPositionPad(x: Binding(get: { wave.bossX }, set: { model.draft.waves[i].bossX = $0 }),
+                                    y: Binding(get: { wave.bossY }, set: { model.draft.waves[i].bossY = $0 }))
                 }
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
                           range: 100...1000, step: 50) { String(Int($0)) }

@@ -16,10 +16,14 @@ final class BossCharacterTests: XCTestCase {
         XCTAssertEqual(boss(look: 3).bossLook, 3, "図形のボスは、これまでどおり")
     }
 
-    func testCharacterIgnoresSizeAndMove() {
+    /// 1.2.0 から、キャラクターのボスも動きと大きさ(半径 20〜60px)を選べる。図形のボスの 0〜2 は、キャラクターでは使わない
+    func testCharacterKeepsMoveAndCharacterSize() {
         let s = boss(look: 5, size: 2, move: 2)
-        XCTAssertNil(s.bossSize)
-        XCTAssertEqual(s.bossMove, 0)
+        XCTAssertNil(s.bossSize, "図形のボスの大きさ(0〜2)は、キャラクターでは使わない")
+        XCTAssertEqual(s.bossMove, 2)
+        XCTAssertEqual(boss(look: 5, size: 52, move: 0).bossSize, 52)
+        XCTAssertNil(boss(look: 5, size: 40, move: 0).bossSize, "標準(40)は保存しない")
+        XCTAssertNil(boss(look: 5, size: 61, move: 0).bossSize, "範囲外は標準に戻す")
         let shape = boss(look: 3, size: 2, move: 2)
         XCTAssertEqual(shape.bossSize, 2)
         XCTAssertEqual(shape.bossMove, 2)
@@ -32,7 +36,7 @@ final class BossCharacterTests: XCTestCase {
         XCTAssertNil(boss(look: 5, awaken: 4).awaken)
         XCTAssertNil(Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], awaken: 3).sanitized().awaken)
         let w = Wave(kind: .boss, durationSec: 60, bossHp: 200, bossMove: 1, emitters: [], bossLook: 5, awaken: 2).sanitized()
-        XCTAssertEqual(w.awaken, 2); XCTAssertEqual(w.bossMove, 0)
+        XCTAssertEqual(w.awaken, 2); XCTAssertEqual(w.bossMove, 1)
         XCTAssertNil(Wave(kind: .survive, durationSec: 20, emitters: [], awaken: 2).sanitized().awaken)
     }
 
@@ -45,7 +49,29 @@ final class BossCharacterTests: XCTestCase {
     }
 
     func testSeedDoesNotDependOnLook() {
-        XCTAssertEqual(boss(look: 5).seed, boss(look: nil, move: 0).seed)
+        XCTAssertEqual(boss(look: 5, move: 0).seed, boss(look: nil, move: 0).seed)
+    }
+
+    /// 動き・位置・大きさを選んだキャラクターのボス: 位置は図形のボスと同じ動き(キャラクターの高さ)、当たり判定と技の出る場所は大きさの倍率
+    func testCharacterMoveAndScale() {
+        var big = boss(look: 9, size: 60, move: 4); big.bossX = 0.4
+        let sim = Simulation(stage: big.sanitized())
+        XCTAssertEqual(sim.bossHitRadius, 60, accuracy: 1e-9)
+        XCTAssertEqual(sim.bossScale, 1.5, accuracy: 1e-9)
+        let still = Simulation(stage: boss(look: 9, move: 0).sanitized())
+        XCTAssertEqual(still.bossScale, 1)
+        XCTAssertEqual(still.bossPosition.x, BossCharacter.witch.position(waveT: 0).x, accuracy: 1e-9, "何も選ばなければ、これまで通りの定位置")
+        // 円の動き(4)を、キャラクターの高さで。位置の指定(左へ 0.1)も効く
+        let q = Simulation.bossPoint(move: 4, t: 0)
+        XCTAssertEqual(sim.bossPosition.x, q.x - 0.1 * DanmakuConfig.width, accuracy: 1e-6)
+        XCTAssertEqual(sim.bossPosition.y, q.y + BossCharacter.moveYOffset, accuracy: 1e-6)
+        // 技の出る場所(魔女の提灯)は、中心から 1.5 倍の位置になる
+        Emit.anchorScale = 1.5
+        let lantern = Emit.witchLantern(100, 200)
+        Emit.anchorScale = 1
+        XCTAssertEqual(lantern.x, 100 + 42 * 1.5, accuracy: 1e-9)
+        XCTAssertEqual(lantern.y, 200 - 54 * 1.5, accuracy: 1e-9)
+        XCTAssertEqual(Emit.witchLantern(100, 200).x, 142, "撃ち終わったら、倍率は 1 に戻る")
     }
 
     func testFallenAngelPositionAndRadius() {

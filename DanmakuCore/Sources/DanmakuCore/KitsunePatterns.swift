@@ -5,10 +5,10 @@ import Foundation
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒(×60)に直したもの。(cx, cy) はボスの中心
 extension Emit {
     /// 尻尾の付け根(絵の中の (56,51))と、尻尾の先の狐火 k=0〜8(左下 → 上 → 右下。絵のドット位置を、画面の位置にした差)。新しい絵(2026-11-11)の位置
-    static func kitsuneRoot(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 10) }
+    static func kitsuneRoot(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 10 * Emit.anchorScale) }
     static let kitsuneTips: [(Double, Double)] = [(-64, 30), (-70, -4), (-60, -40), (-32, -64), (32, -70), (56, -48), (70, -28), (76, 2), (66, 34)]
     static func kitsuneTip(_ k: Int, _ cx: Double, _ cy: Double) -> (x: Double, y: Double) {
-        (cx + kitsuneTips[k].0, cy + kitsuneTips[k].1)
+        (cx + kitsuneTips[k].0 * Emit.anchorScale, cy + kitsuneTips[k].1 * Emit.anchorScale)
     }
 
     static func emitKitsune(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,

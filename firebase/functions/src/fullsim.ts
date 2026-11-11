@@ -2,7 +2,7 @@ import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
-import { CURVE_SCRIPT, HOLD_SCRIPT, KAIYU_SCRIPT, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, WOBBLE_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
+import { CHARACTER_MOVE_Y_OFFSET, CURVE_SCRIPT, HOLD_SCRIPT, KAIYU_SCRIPT, characterScaleOf, setAnchorScale, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, WOBBLE_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
 import { WARP_SCRIPT, emitPuni, isPuniPattern } from "./puni.js";
 import { emitHire, isHirePattern } from "./hire.js";
 import { emitMech, isMechPattern } from "./mech.js";
@@ -486,9 +486,18 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
       bp = { x: Math.min(Math.max(bp.x + sp.homeDX, 24), W - 24), y: Math.min(Math.max(bp.y + sp.homeDY, 24), H * 0.5) };
     }
-    const bx = !sp.boss ? 0 : angel ? W / 2 + Math.sin(wt * 60 * 0.012) * 30 : bp.x;
-    const by = !sp.boss ? 0 : angel ? 128 + Math.sin(wt * 60 * 0.02) * 5 : bp.y;
-    const bossRadius = angel ? FALLEN_ANGEL_RADIUS : bossRadiusOf(sp.size);
+    if (sp.boss && angel) {
+      // キャラクターのボス: 動きの指定がなければ定位置のゆれ。指定があれば、図形のボスと同じ動きを、キャラクターの高さで(アプリの bossPosition と同じ)
+      let base: { x: number; y: number };
+      if (sp.move === 0) base = { x: W / 2 + Math.sin(wt * 60 * 0.012) * 30, y: 128 + Math.sin(wt * 60 * 0.02) * 5 };
+      else { const q = bossPoint(sp.move, wt); base = { x: q.x, y: q.y + CHARACTER_MOVE_Y_OFFSET }; }
+      bp = sp.move === 0 && sp.homeDX === 0 && sp.homeDY === 0 ? base
+        : { x: Math.min(Math.max(base.x + sp.homeDX, 40), W - 40), y: Math.min(Math.max(base.y + sp.homeDY, 60), H * 0.5) };
+    }
+    const bx = !sp.boss ? 0 : bp.x;
+    const by = !sp.boss ? 0 : bp.y;
+    const charScale = angel ? characterScaleOf(sp.size) : 1;
+    const bossRadius = angel ? FALLEN_ANGEL_RADIUS * charScale : bossRadiusOf(sp.size);
     if (sp.boss) {
       const ph = phaseOf(waveT);
       if (ph !== phase) {
@@ -525,6 +534,8 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     }
 
     if (waveT >= 0) {
+      // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
+      if (sp.boss) setAnchorScale(charScale);
       sp.emitters.forEach((m, idx) => {
         if (sp.boss) {
           if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = waveT; return; }
@@ -543,6 +554,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
           }
         }
       });
+      setAnchorScale(1);
     }
 
     let w = 0;

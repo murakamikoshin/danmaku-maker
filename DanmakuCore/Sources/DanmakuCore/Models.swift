@@ -18,6 +18,9 @@ public enum DanmakuConfig {
     public static let bossRadii: [Double] = [17, 24, 34]
     /// ボスの大きさの指定(Stage.bossSize)。0〜2 は小・中・大(上の半径)。10〜44 は、半径そのもの(px)。スライダーで細かく決める
     public static let bossRadiusRange = 10...44
+    /// キャラクターのボスの大きさ(当たり判定の半径 px)。標準は 40(これまでの大きさ)。絵と技の出る場所も、同じ倍率で変わる
+    public static let characterRadiusRange = 20...60
+    public static let characterBaseRadius = 40.0
     /// 大きさの指定から、弾が当たる半径(論理px)を出す。範囲外は中
     public static func bossRadius(size: Int) -> Double {
         if bossRadiusRange.contains(size) { return Double(size) }
@@ -382,6 +385,11 @@ public struct Wave: Codable, Equatable, Sendable {
         return v
     }
     /// キャラクターのボスは、大きさ・動きの設定を使わない(絵と判定が決まっている)ので、保存しない
+    /// キャラクターのボスの大きさ(半径 px)。範囲外と標準(40)は保存しない
+    static func sanitizedCharacterSize(_ v: Int?) -> Int? {
+        guard let v, DanmakuConfig.characterRadiusRange.contains(v), Double(v) != DanmakuConfig.characterBaseRadius else { return nil }
+        return v
+    }
     static func isCharacter(_ look: Int?) -> Bool { look.flatMap(BossCharacter.of(look:)) != nil }
     static func sanitizedMooks(_ v: Int?) -> Int? {
         guard let v, (0...2).contains(v) else { return nil }
@@ -413,7 +421,7 @@ public struct Wave: Codable, Equatable, Sendable {
         let d = allowed.contains(durationSec) ? durationSec : (isBoss ? 60 : 20)
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let look = isBoss ? Wave.sanitizedBossLook(bossLook) : nil
-        let mv = isBoss ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded())) : nil
+        let mv = isBoss ? Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded()) : nil
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
@@ -428,11 +436,11 @@ public struct Wave: Codable, Equatable, Sendable {
         }
         return Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
-                    bossSize: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedSize(bossSize) : nil, mooks: Wave.sanitizedMooks(mooks),
+                    bossSize: isBoss ? (Wave.isCharacter(look) ? Wave.sanitizedCharacterSize(bossSize) : Wave.sanitizedSize(bossSize)) : nil, mooks: Wave.sanitizedMooks(mooks),
                     bossLook: look, mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
                     awaken: isBoss ? Wave.sanitizedAwaken(awaken) : nil,
-                    bossX: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
-                    bossY: (isBoss && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
+                    bossX: isBoss ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
+                    bossY: isBoss ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
     }
 }
 
@@ -547,6 +555,11 @@ struct WaveSpec {
     var homeDY = 0.0
     /// 専用の絵・動き・当たり判定を持つボス(nil は図形のボス)
     var character: BossCharacter? { BossCharacter.of(look: look) }
+    /// キャラクターのボスの大きさの倍率(当たり判定の半径 ÷ 40)。指定がなければ 1。図形のボスは 1
+    var characterScale: Double {
+        guard character != nil, DanmakuConfig.characterRadiusRange.contains(size) else { return 1 }
+        return Double(size) / DanmakuConfig.characterBaseRadius
+    }
 }
 
 public struct Stage: Codable, Equatable, Sendable {
@@ -808,7 +821,7 @@ public struct Stage: Codable, Equatable, Sendable {
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let isBossMode = mode == .boss || mode == .damage
         let look = isBossMode ? Wave.sanitizedBossLook(bossLook) : nil
-        let mv = isBossMode ? (Wave.isCharacter(look) ? 0 : Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded())) : nil
+        let mv = isBossMode ? Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded()) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
         let pStart = Stage.sanitizedPreviewStart(previewStart, durationSec: d)
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
@@ -839,7 +852,7 @@ public struct Stage: Codable, Equatable, Sendable {
                      hideMarkers: (hideMarkers == true && mode == .survive) ? true : nil,
                      bossWarning: (bossWarning == true && (mode == .boss || mode == .damage)) ? true : nil,
                      bossDefeat: mode == .boss ? Wave.sanitizedDefeat(bossDefeat) : nil,
-                     bossSize: (isBossMode && !Wave.isCharacter(look)) ? Wave.sanitizedSize(bossSize) : nil,
+                     bossSize: isBossMode ? (Wave.isCharacter(look) ? Wave.sanitizedCharacterSize(bossSize) : Wave.sanitizedSize(bossSize)) : nil,
                      mooks: Wave.sanitizedMooks(mooks),
                      bossLook: look,
                      mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
@@ -847,7 +860,7 @@ public struct Stage: Codable, Equatable, Sendable {
                      rewardFx: Reward.sanitizedFx(rewardFx),
                      awaken: isBossMode ? Wave.sanitizedAwaken(awaken) : nil,
                      previewStart: pStart, noPreview: noPreview == true ? true : nil,
-                     bossX: (isBossMode && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
-                     bossY: (isBossMode && !Wave.isCharacter(look)) ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
+                     bossX: isBossMode ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
+                     bossY: isBossMode ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
     }
 }

@@ -327,7 +327,7 @@ final class GameScene: SKScene {
             characterAwakened = BossSprites.art(c, awakened: true)
             bossTexture = art.frames[0]; bossFlashTexture = art.flashFrames[0]
             bossNode.texture = bossTexture
-            bossNode.size = art.size
+            bossNode.size = CGSize(width: art.size.width * sim.bossScale, height: art.size.height * sim.bossScale)
         } else if let c = customBossTextures {
             bossTexture = c.0; bossFlashTexture = c.1
         } else {
@@ -622,7 +622,8 @@ final class GameScene: SKScene {
             if let normal = characterNormal {
                 let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
                 let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
-                bossNode.size = art.size
+                // キャラクターのボスの大きさ(当たり判定と同じ倍率)
+                bossNode.size = CGSize(width: art.size.width * sim.bossScale, height: art.size.height * sim.bossScale)
                 let (frames, flashFrames) = bossFrames(art: art)
                 let i = bossFrameIndex(count: frames.count)
                 bossNode.texture = sim.flash > 0 ? flashFrames[i] : frames[i]

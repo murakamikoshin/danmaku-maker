@@ -4,7 +4,7 @@ import Foundation
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒に直したもの。(cx, cy) はボスの中心
 extension Emit {
     /// フードのドクロ(絵の中の (66,30))。新しい絵(2026-11-11)の位置
-    static func reaperSkull(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 20, cy - 52) }
+    static func reaperSkull(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx + 20 * Emit.anchorScale, cy - 52 * Emit.anchorScale) }
 
     static func emitReaper(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                            rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool, salt: UInt32) {
@@ -21,7 +21,7 @@ extension Emit {
             // 刈取「三日月の大鎌」: 大鎌の跡に刃が弧の形に並んで止まり、あとでいっせいに落ちる。ゆっくり追う魂も2つ。覚醒は弧が2重で、刃の列に隙間が2か所
             let release = awakened ? 64.0 / 60 : 44.0 / 60
             let a0 = 160.0 * Double.pi / 180, a1 = 20.0 * Double.pi / 180
-            let ax = cx, ay = cy + 20
+            let ax = cx, ay = cy + 20 * Emit.anchorScale
             for radius in (awakened ? [150.0, 215.0] : [150.0]) {
                 let count = Int((radius * (a0 - a1) / 13).rounded(.down))
                 var gaps: [Int] = []

@@ -4,8 +4,8 @@ import Foundation
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒に直したもの。(cx, cy) はボスの中心
 extension Emit {
     /// コアアイ(絵の中の (56,49))と、肩のキャノン 左 (25,46) / 右 (86,46)。新しい絵(2026-11-11)の位置
-    static func mechEye(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 14) }
-    static func mechCannon(_ left: Bool, _ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (left ? cx - 62 : cx + 60, cy - 20) }
+    static func mechEye(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 14 * Emit.anchorScale) }
+    static func mechCannon(_ left: Bool, _ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (left ? cx - 62 * Emit.anchorScale : cx + 60 * Emit.anchorScale, cy - 20 * Emit.anchorScale) }
 
     /// ミサイルを作る。delay 秒は待機(見えず、当たらない)。そのあと decelEnd 秒まで減速、steerEnd 秒まで自機のほうへ向きを変える
     static func missileBullet(x: Double, y: Double, angle: Double, speed: Double, delay: Double, decelEnd: Double, steerEnd: Double,

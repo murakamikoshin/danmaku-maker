@@ -120,6 +120,16 @@ function bossSizeVal(v: unknown): { ok: true; v: number | undefined } | { ok: fa
   return { ok: true, v: n === 1 ? undefined : n };
 }
 
+/** キャラクターのボスの大きさの指定(半径 px、20〜60)。標準(40)は保存しない(アプリの Wave.sanitizedCharacterSize と同じ) */
+export const CHARACTER_RADIUS_MIN = 20, CHARACTER_RADIUS_MAX = 60, CHARACTER_RADIUS_STD = 40;
+function characterSizeVal(v: unknown): { ok: true; v: number | undefined } | { ok: false } {
+  if (v === undefined || v === null) return { ok: true, v: undefined };
+  if (typeof v !== "number" || !Number.isInteger(v) || v < CHARACTER_RADIUS_MIN || v > CHARACTER_RADIUS_MAX) return { ok: false };
+  return { ok: true, v: v === CHARACTER_RADIUS_STD ? undefined : v };
+}
+/** 見た目の番号に合わせて、大きさを検査する(キャラクターのボスと、図形のボスで範囲が違う) */
+const sizeValFor = (look: number | undefined, v: unknown) => ((look ?? 0) >= BOSS_CHARACTER_MIN ? characterSizeVal(v) : bossSizeVal(v));
+
 function optInt(v: unknown, lo: number, hi: number, std: number | null): { ok: true; v: number | undefined } | { ok: false } {
   if (v === undefined || v === null) return { ok: true, v: undefined };
   const n = int(v, lo, hi);
@@ -166,10 +176,16 @@ const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
  * 新しいボス(bossLook 6 以上。堕天使の次から)を使うステージに付ける。古いアプリには届かないが、これからのアプリは、自分より大きいレベルのステージを「アップデートが必要」と案内できる
  */
 export const NEW_BOSS_LOOK_MIN = 6;
-export function contentLevelOf(bossLook: number | undefined, waves: readonly { bossLook?: number; bossSize?: number }[] | undefined, bossSize?: number): number {
-  // 新しいボス、または半径で決めた大きさ(10〜44)を使うステージは、レベル2
-  if ((bossLook ?? 0) >= NEW_BOSS_LOOK_MIN || (bossSize ?? 0) >= BOSS_RADIUS_MIN) return 2;
-  return (waves ?? []).some((w) => (w.bossLook ?? 0) >= NEW_BOSS_LOOK_MIN || (w.bossSize ?? 0) >= BOSS_RADIUS_MIN) ? 2 : 1;
+type LevelPart = { bossLook?: number; bossSize?: number; bossMove?: number | null; bossX?: number; bossY?: number };
+/** 1 つの場面(または 1 面のステージ)が、1.2.0 以降の内容を使うか */
+const needsNew = (p: LevelPart): boolean =>
+  (p.bossLook ?? 0) >= NEW_BOSS_LOOK_MIN || (p.bossSize ?? 0) >= BOSS_RADIUS_MIN ||
+  // 堕天使(1.1.2 からある)でも、動き・位置・大きさを変えたものは、1.2.0 以降でないと同じに動かない
+  ((p.bossLook ?? 0) >= BOSS_CHARACTER_MIN && ((p.bossMove ?? 0) !== 0 || p.bossX !== undefined || p.bossY !== undefined || p.bossSize !== undefined));
+export function contentLevelOf(bossLook: number | undefined, waves: readonly LevelPart[] | undefined, bossSize?: number, extra: Omit<LevelPart, "bossLook" | "bossSize"> = {}): number {
+  // 新しいボス、半径で決めた大きさ(10〜44)、キャラクターのボスの動き・位置・大きさを使うステージは、レベル2
+  if (needsNew({ bossLook, bossSize, ...extra })) return 2;
+  return (waves ?? []).some(needsNew) ? 2 : 1;
 }
 
 /** 時間無制限のボス戦を打ち切る長さ(秒)。アプリの Stage.unlimitedCapSec と同じ */
@@ -257,17 +273,16 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       if (dv === null || kind !== "boss") return { ok: false, error: "wave-defeat" };
       if (dv !== 1) defeat = dv;   // 1(爆発)は標準なので、保存しない
     }
-    const wSize = bossSizeVal(w.bossSize);
     const wMooks = optInt(w.mooks, 0, 2, null);
     const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
+    const wSize = sizeValFor(wBossLook.ok ? wBossLook.v : undefined, w.bossSize);
     const wMookLook = optInt(w.mookLook, 0, 4, 0);
     const wAwaken = optInt(w.awaken, 2, 3, null);
     const wHx = homeVal(w.bossX, 0.2, 0.8, 0.5), wHy = homeVal(w.bossY, 0.1, 0.3, 0.2);
-    if (!wHx.ok || !wHy.ok || ((wHx.v !== undefined || wHy.v !== undefined) && (kind !== "boss" || ((wBossLook as { v?: number }).v ?? 0) >= BOSS_CHARACTER_MIN))) return { ok: false, error: "wave-look" };
+    if (!wHx.ok || !wHy.ok || ((wHx.v !== undefined || wHy.v !== undefined) && kind !== "boss")) return { ok: false, error: "wave-look" };
     if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok || !wAwaken.ok) return { ok: false, error: "wave-look" };
     if (wAwaken.v !== undefined && kind !== "boss") return { ok: false, error: "wave-look" };
-    // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
-    if ((wBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (wSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "wave-look" };
+    // 専用の絵を持つボスも、1.2.0 から動き・位置・大きさを選べる(大きさの範囲は sizeValFor で検査済み)
     if ((wSize.v !== undefined || wBossLook.v !== undefined) && kind !== "boss") return { ok: false, error: "wave-look" };
     // 堕天使・九尾の技は、そのボスの場面にだけ置ける
     if (wrongBossPattern(em.list, kind === "boss" ? wBossLook.v : undefined)) return { ok: false, error: "emitter-pattern" };
@@ -378,17 +393,16 @@ export function validatePublish(input: unknown): Validated {
     if (dv !== 1) bossDefeat = dv;
   }
 
-  const bSize = bossSizeVal(input.bossSize);
   const bMooks = optInt(input.mooks, 0, 2, null);
   const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
+  const bSize = sizeValFor(bBossLook.ok ? bBossLook.v : undefined, input.bossSize);
   const bMookLook = optInt(input.mookLook, 0, 4, 0);
   const bAwaken = optInt(input.awaken, 2, 3, null);
   const bHx = homeVal(input.bossX, 0.2, 0.8, 0.5), bHy = homeVal(input.bossY, 0.1, 0.3, 0.2);
-  if (!bHx.ok || !bHy.ok || ((bHx.v !== undefined || bHy.v !== undefined) && ((mode !== "boss" && mode !== "damage") || ((bBossLook as { v?: number }).v ?? 0) >= BOSS_CHARACTER_MIN))) return { ok: false, error: "look" };
+  if (!bHx.ok || !bHy.ok || ((bHx.v !== undefined || bHy.v !== undefined) && mode !== "boss" && mode !== "damage")) return { ok: false, error: "look" };
   if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok || !bAwaken.ok) return { ok: false, error: "look" };
   if (bAwaken.v !== undefined && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
-  // 専用の絵を持つボスは、大きさ・動きを使わない(アプリが保存しない値)
-  if ((bBossLook.v ?? 0) >= BOSS_CHARACTER_MIN && (bSize.v !== undefined || bossMove !== 0)) return { ok: false, error: "look" };
+  // 専用の絵を持つボスも、1.2.0 から動き・位置・大きさを選べる(大きさの範囲は sizeValFor で検査済み)
   if ((bSize.v !== undefined || bBossLook.v !== undefined) && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
   // 堕天使・九尾の技は、そのボスにだけ置ける
   if (wrongBossPattern(emitters, mode === "boss" || mode === "damage" ? bBossLook.v : undefined)) return { ok: false, error: "emitter-pattern" };
@@ -437,7 +451,7 @@ export function validatePublish(input: unknown): Validated {
   return {
     ok: true,
     clearReplay: replay,
-    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves, bSize.v) > 1 ? { needs: contentLevelOf(bBossLook.v, waves, bSize.v) } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
+    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v }) > 1 ? { needs: contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v }) } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),

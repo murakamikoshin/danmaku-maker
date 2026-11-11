@@ -12,7 +12,7 @@ final class PreviewEngine {
     private(set) var bullets: [Bullet] = []
     private(set) var player = Point(x: 180, y: PreviewEngine.height - 40)
 
-    func advance(to now: Date, emitter m: Emitter, boss: Bool, character: BossCharacter? = nil) {
+    func advance(to now: Date, emitter m: Emitter, boss: Bool, character: BossCharacter? = nil, characterScale: Double = 1) {
         let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
         last = now
         t += dt
@@ -22,6 +22,9 @@ final class PreviewEngine {
         let home = character?.position(waveT: 0)
         let cx = atBoss ? (home?.x ?? 180) : m.x * DanmakuConfig.width
         let cy = atBoss ? (home?.y ?? DanmakuConfig.height * 0.18) : m.y * DanmakuConfig.height
+        // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(ゲームと同じ)
+        if character != nil { Emit.anchorScale = characterScale }
+        defer { Emit.anchorScale = 1 }
         while t >= next {
             let before = bullets.count
             Emit.emit(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, rng: &rng, into: &bullets)
@@ -69,7 +72,7 @@ struct EmitterPreview: View {
         let bossImage = (own && look.customs.boss) ? CustomImageStore.load(.boss) : nil
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
-                engine.advance(to: timeline.date, emitter: emitter, boss: isBoss, character: BossCharacter.of(look: look.bossLook))
+                engine.advance(to: timeline.date, emitter: emitter, boss: isBoss, character: BossCharacter.of(look: look.bossLook), characterScale: look.characterScale)
                 let s = size.width / DanmakuConfig.width
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
                 ctx.scaleBy(x: s, y: s)
@@ -98,8 +101,9 @@ struct EmitterPreview: View {
             // 専用の絵を持つボスは、実際のゲームと同じ位置・大きさで描く
             if let c = BossCharacter.of(look: look.bossLook), let art = BossSprites.art(c, awakened: false) {
                 let p = c.position(waveT: 0)
+                let k = look.characterScale
                 ctx.draw(Image(uiImage: art.still).interpolation(.none),
-                         in: CGRect(x: p.x - art.size.width / 2, y: p.y - art.size.height / 2, width: art.size.width, height: art.size.height))
+                         in: CGRect(x: p.x - art.size.width * k / 2, y: p.y - art.size.height * k / 2, width: art.size.width * k, height: art.size.height * k))
             } else {
                 // ボスの大きさは、当たる範囲と同じ比率(小・中・大)
                 let side = EnemyArt.bossPoints(size: look.bossSize)
@@ -430,7 +434,7 @@ struct StageMiniPreview: View {
             let p = sim.bossPosition
             let c = CGPoint(x: CGFloat(p.x) * s, y: CGFloat(p.y) * s)
             if let ch = sim.bossCharacter, let art = BossSprites.art(ch, awakened: false) {
-                let w = art.size.width * s * 1.3, h = art.size.height * s * 1.3
+                let w = art.size.width * s * 1.3 * sim.bossScale, h = art.size.height * s * 1.3 * sim.bossScale
                 ctx.draw(Image(uiImage: art.still).interpolation(.none), in: CGRect(x: c.x - w / 2, y: c.y - h / 2, width: w, height: h))
             } else {
                 let side = EnemyArt.bossPoints(size: sim.bossSizeIndex) * s * 1.3

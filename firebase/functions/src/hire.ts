@@ -1,6 +1,6 @@
 import { HIRE_PATTERNS, type Emitter } from "./validate.js";
 import { type AngelBullet } from "./fallenangel.js";
-import { KIND, WOBBLE_SCRIPT, YOYO_SCRIPT, KAIYU_SCRIPT, holdBullet, lookCode, plainBullet } from "./bossscripts.js";
+import { KIND, WOBBLE_SCRIPT, YOYO_SCRIPT, KAIYU_SCRIPT, holdBullet, lookCode, plainBullet, anchorScale } from "./bossscripts.js";
 
 /** 金魚姫の5つの技の弾の出し方。アプリの HirePatterns.swift と同じ計算。 */
 export const isHirePattern = (t: string): boolean => (HIRE_PATTERNS as readonly string[]).includes(t);
@@ -20,7 +20,7 @@ export function emitHire(m: Emitter, k: number, cx: number, cy: number, px: numb
     if (d < -Math.PI) d += twoPi;
     return Math.abs(d);
   };
-  const hand = { x: cx + 34, y: cy - 28 }, poi = { x: cx - 34, y: cy - 46 };
+  const hand = { x: cx + 34 * anchorScale, y: cy - 28 * anchorScale }, poi = { x: cx - 34 * anchorScale, y: cy - 46 * anchorScale };
   switch (m.t as string) {
     case "hireSukui": {
       const volleys = awakened ? 4 : 3;

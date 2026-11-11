@@ -4,7 +4,7 @@ import Foundation
 /// 数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を、px/秒に直したもの。(cx, cy) はボスの中心
 extension Emit {
     /// 胸の氷の宝石(絵の中の (56,48))。新しい絵(2026-11-11)の位置
-    static func iceCenter(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 16) }
+    static func iceCenter(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy - 16 * Emit.anchorScale) }
 
     static func emitIceQueen(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,
                              rng: inout Mulberry32, into out: inout [Bullet], awakened: Bool, salt: UInt32) {

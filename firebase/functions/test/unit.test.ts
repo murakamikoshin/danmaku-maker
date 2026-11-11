@@ -420,11 +420,18 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
-  it("堕天使(ボスの見た目5)は、大きさ・動きを使わないものだけ受け付ける。ボスのないステージには付けられない", () => {
+  it("キャラクターのボス(堕天使など)も、1.2.0 から動き・位置・大きさ(半径20〜60px)を選べる。そのステージは 1.2.0 以降が必要", () => {
     const a = validatePublish(boss({ bossLook: 5, bossMove: 0 }));
     expect(a.ok && a.stage.bossLook).toBe(5);
-    expect(validatePublish(boss({ bossLook: 5, bossMove: 1 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 5, bossMove: 0, bossSize: 2 }))).toEqual({ ok: false, error: "look" });
+    expect(a.ok && "needs" in a.stage).toBe(false);   // 何も変えていない堕天使は、1.1.2 でも遊べる
+    const moved = validatePublish(boss({ bossLook: 5, bossMove: 4, bossX: 0.3, bossSize: 52 }));
+    expect(moved.ok && [moved.stage.bossMove, moved.stage.bossX, moved.stage.bossSize, moved.stage.needs]).toEqual([4, 0.3, 52, 2]);
+    // 標準の大きさ(40)は保存しない
+    const std = validatePublish(boss({ bossLook: 5, bossMove: 0, bossSize: 40 }));
+    expect(std.ok && "bossSize" in std.stage).toBe(false);
+    // キャラクターの大きさは 20〜60 だけ(図形のボスの 0〜2 や、範囲外は不正)
+    for (const bad of [2, 19, 61, 44.5]) expect(validatePublish(boss({ bossLook: 5, bossMove: 0, bossSize: bad }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 5, bossMove: 11 }))).toEqual({ ok: false, error: "boss-move" });
     expect(validatePublish(good({ bossLook: 5 }))).toEqual({ ok: false, error: "look" });
   });
 
@@ -467,8 +474,9 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       expect(validatePublish(good(pat(t)))).toEqual({ ok: false, error: "emitter-pattern" });
     }
     expect(validatePublish(boss({ ...pat("angelHalo"), bossLook: 6, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
-    // 九尾は、堕天使と同じく大きさ・動きの設定を持たない
-    expect(validatePublish(boss({ ...pat("kitsuneTorii"), bossLook: 6, bossMove: 1 }))).toEqual({ ok: false, error: "look" });
+    // 九尾も、1.2.0 から動きを選べる
+    const moved = validatePublish(boss({ ...pat("kitsuneTorii"), bossLook: 6, bossMove: 1 }));
+    expect(moved.ok && moved.stage.bossMove).toBe(1);
   });
 
   it("雪の女王の技は、雪の女王(bossLook 7)のボスにだけ置ける", () => {

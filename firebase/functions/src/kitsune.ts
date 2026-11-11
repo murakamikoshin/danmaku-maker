@@ -1,5 +1,6 @@
 import { KITSUNE_PATTERNS, type Emitter } from "./validate.js";
 import { mulberry, type AngelBullet } from "./fallenangel.js";
+import { anchorScale } from "./bossscripts.js";
 
 /**
  * 九尾の巫女の5つの技の弾の出し方。アプリの KitsunePatterns.swift と同じ計算。
@@ -13,10 +14,10 @@ const lookCode = (kind: number, awakened: boolean) => 16 + kind * 2 + (awakened 
 const FOX = 0, OFUDA = 1;
 const W = 360;
 
-const root = (cx: number, cy: number) => ({ x: cx, y: cy - 10 });
+const root = (cx: number, cy: number) => ({ x: cx, y: cy - 10 * anchorScale });
 const TIPS: ReadonlyArray<readonly [number, number]> = [[-64, 30], [-70, -4], [-60, -40], [-32, -64], [32, -70], [56, -48], [70, -28], [76, 2], [66, 34]];
 function tip(k: number, cx: number, cy: number) {
-  return { x: cx + TIPS[k]![0], y: cy + TIPS[k]![1] };
+  return { x: cx + TIPS[k]![0] * anchorScale, y: cy + TIPS[k]![1] * anchorScale };
 }
 
 export function emitKitsune(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: AngelBullet[],

@@ -1,6 +1,6 @@
 import { ICE_QUEEN_PATTERNS, type Emitter } from "./validate.js";
 import { type AngelBullet } from "./fallenangel.js";
-import { BRANCH_SCRIPT, FREEZE_SCRIPT, KIND, WIND_SCRIPT, holdBullet, lookCode, plainBullet } from "./bossscripts.js";
+import { BRANCH_SCRIPT, FREEZE_SCRIPT, KIND, WIND_SCRIPT, holdBullet, lookCode, plainBullet, anchorScale } from "./bossscripts.js";
 
 /** 雪の女王の5つの技の弾の出し方。アプリの IceQueenPatterns.swift と同じ計算。 */
 export const isIceQueenPattern = (t: string): boolean => (ICE_QUEEN_PATTERNS as readonly string[]).includes(t);
@@ -11,7 +11,7 @@ export function emitIceQueen(m: Emitter, k: number, cx: number, cy: number, px: 
   const n = Math.max(1, m.c);
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
-  const c = { x: cx, y: cy - 16 };
+  const c = { x: cx, y: cy - 16 * anchorScale };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   const plain = (x: number, y: number, a: number, speed: number, kind: number): AngelBullet => plainBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, m.k, look(kind));

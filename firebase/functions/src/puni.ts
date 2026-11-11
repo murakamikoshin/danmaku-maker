@@ -1,6 +1,6 @@
 import { PUNI_PATTERNS, type Emitter } from "./validate.js";
 import { type AngelBullet } from "./fallenangel.js";
-import { CURVE_SCRIPT, KIND, WARP, holdBullet, lookCode, plainBullet, type BossBullet } from "./bossscripts.js";
+import { CURVE_SCRIPT, KIND, WARP, holdBullet, lookCode, plainBullet, type BossBullet, anchorScale } from "./bossscripts.js";
 
 /** ぷにまるの5つの技の弾の出し方。アプリの PuniPatterns.swift と同じ計算。 */
 export const isPuniPattern = (t: string): boolean => (PUNI_PATTERNS as readonly string[]).includes(t);
@@ -21,7 +21,7 @@ export function emitPuni(m: Emitter, k: number, cx: number, cy: number, px: numb
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   const bullet = (x: number, y: number, a: number, speed: number, kind: number): BossBullet => plainBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, m.k, look(kind));
-  const body = { x: cx - 4, y: cy + 64 }, core = { x: cx, y: cy };
+  const body = { x: cx - 4 * anchorScale, y: cy + 64 * anchorScale }, core = { x: cx, y: cy };
   switch (m.t as string) {
     case "puniPoyon": {
       if (!awakened) {
@@ -32,7 +32,7 @@ export function emitPuni(m: Emitter, k: number, cx: number, cy: number, px: numb
         const cyc = k % 73;
         if (!(cyc < 58 && cyc % 4 !== 3 && room())) break;
         const idx = (cyc - Math.floor((cyc + 1) / 4)) % 22;
-        const ex = cx - 136 + EYES[idx]![0] * 2, ey = cy - 112 + EYES[idx]![1] * 2;
+        const ex = cx + (-136 + EYES[idx]![0] * 2) * anchorScale, ey = cy + (-112 + EYES[idx]![1] * 2) * anchorScale;
         out.push(bullet(ex, ey, Math.atan2(py - ey, px - ex) + off, sp * 3.0, KIND.eye));
       }
       break;

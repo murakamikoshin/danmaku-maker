@@ -45,9 +45,11 @@ final class BossRadiusSliderTests: XCTestCase {
         XCTAssertEqual(Simulation(stage: stage(nil).sanitized()).bossHitRadius, 24)
         XCTAssertEqual(Simulation(stage: stage(17).sanitized()).bossHitRadius, 17)
         XCTAssertEqual(Simulation(stage: stage(44).sanitized()).bossHitRadius, 44)
-        // キャラクターのボスは、大きさを使わない
+        // キャラクターのボスは、1.2.0 から自分の範囲(20〜60px、標準 40)で大きさを選べる
         let ch = Stage(name: "c", mode: .boss, durationSec: 30, bossHp: 200, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 1, c: 8, v: 2, r: 0, k: 0)], bossSize: 30, bossLook: 5).sanitized()
-        XCTAssertNil(ch.bossSize)
-        XCTAssertEqual(Simulation(stage: ch).bossHitRadius, 40)
+        XCTAssertEqual(ch.bossSize, 30)
+        XCTAssertEqual(Simulation(stage: ch).bossHitRadius, 30)
+        let std = Stage(name: "c", mode: .boss, durationSec: 30, bossHp: 200, emitters: [], bossLook: 5).sanitized()
+        XCTAssertEqual(Simulation(stage: std).bossHitRadius, 40)
     }
 }

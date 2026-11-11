@@ -274,6 +274,17 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("hire-hanabi-ripple-aw-mirror", hire([hireAll[2], hireAll[3]], awaken: 3, mir: 1)))
         stages.append(("hire-kaiyu-sukui-mirror", hire([hireAll[4], hireAll[0]], awaken: nil, mir: 1)))
         stages.append(("hire-damage-all", hire(hireAll, awaken: nil, mode: .damage)))
+        // 1.2.0: キャラクターのボスの動き・位置・大きさ(倍率で、当たり判定と技の出る場所が変わる)。ここより前の並びは変えない
+        func moved(_ base: Stage, move: Int, size: Int?, x: Double? = nil, y: Double? = nil) -> Stage {
+            var st = base; st.bossMove = move; st.bossSize = size; st.bossX = x; st.bossY = y
+            return st.sanitized()
+        }
+        stages.append(("char-angel-big-circle", moved(angel([(.angelTwin, 0.3, 4, 2.3, 10), (.angelFeather, 0.5, 7, 3.8, 0), (.angelHalo, 2.0, 22, 4.2, 0), (.angelCross, 2.0, 1, 2.0, 0)], awaken: 2), move: 4, size: 60)))
+        stages.append(("char-hire-small-warp-aw", moved(hire(hireAll, awaken: 2), move: 6, size: 24, x: 0.35)))
+        stages.append(("char-hire-big-figure8-mirror", moved(hire([hireAll[0], hireAll[2]], awaken: 3, mir: 1), move: 8, size: 56, y: 0.25)))
+        stages.append(("char-mech-big-sway", moved(mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0), (.mechGatling, 0.05, 2, 3.4, 0)], awaken: 2), move: 2, size: 52)))
+        stages.append(("char-puni-small-updown", moved(puni(puniAll, awaken: 2), move: 3, size: 28)))
+        stages.append(("char-witch-home-only-damage", moved(witch([(.witchAbyss, 0.15, 7, 1.8, 0), (.witchTentacles, 0.05, 8, 2.0, 0)], awaken: nil, mode: .damage), move: 0, size: nil, x: 0.7, y: 0.15)))
         stages.append(("puni-damage-all", puni(puniAll, awaken: nil, mode: .damage)))
 
         var cases: [Case] = []

@@ -33,7 +33,7 @@ extension Emit {
             let arms = n + (awakened ? 2 : 0)
             let turned = Double(k) * m.r * deg
             for (side, orb) in [(-1.0, angelOrbL), (1.0, angelOrbR)] {
-                let ox = cx + orb.dx, oy = cy + orb.dy
+                let ox = cx + orb.dx * Emit.anchorScale, oy = cy + orb.dy * Emit.anchorScale
                 for j in 0..<arms where room() {
                     let a = side * turned + off + Double(j) * twoPi / Double(arms)
                     out.append(Bullet(x: ox, y: oy, vx: cos(a) * sp, vy: sin(a) * sp, color: side < 0 ? m.k : (m.k + 2) % 5))
@@ -44,8 +44,8 @@ extension Emit {
             for side in [-1.0, 1.0] {
                 for i in 0..<n {
                     let a = side > 0 ? (-0.1 - Double(i) * 0.16) : (Double.pi + 0.1 + Double(i) * 0.16)
-                    let ox = cx + side * (40 + rng.next() * 30)
-                    let oy = cy - rng.next() * 40
+                    let ox = cx + side * (40 + rng.next() * 30) * Emit.anchorScale
+                    let oy = cy - rng.next() * 40 * Emit.anchorScale
                     let speed = sp * (0.79 + rng.next() * 0.42)
                     let seed = rng.next() * 99
                     guard room() else { continue }
@@ -56,7 +56,7 @@ extension Emit {
                 }
             }
             if awakened {
-                let hx = cx + angelHalo.dx, hy = cy + angelHalo.dy
+                let hx = cx + angelHalo.dx * Emit.anchorScale, hy = cy + angelHalo.dy * Emit.anchorScale
                 let aim = atan2(py - hy, px - hx)
                 for d in [-0.2, 0.0, 0.2] where room() {
                     out.append(Bullet(x: hx, y: hy, vx: cos(aim + d) * sp * 1.1, vy: sin(aim + d) * sp * 1.1, color: (m.k + 1) % 5))
@@ -66,7 +66,7 @@ extension Emit {
             // 光輪から破片が輪になって広がり、回って、端から順に自機へ突進する。c が1つの輪の破片の数(覚醒すると輪が2つになる)
             let rings = awakened ? 2 : 1
             let count = awakened ? n + 4 : n
-            let hx = cx + angelHalo.dx, hy = cy + angelHalo.dy
+            let hx = cx + angelHalo.dx * Emit.anchorScale, hy = cy + angelHalo.dy * Emit.anchorScale
             for ring in 0..<rings {
                 let dir = ring == 0 ? 1.0 : -1.0
                 for i in 0..<count where room() {
@@ -82,7 +82,7 @@ extension Emit {
             }
         case .angelCross:
             // 胸を中心にした逆さ十字のレーザー。自機の方を向いて、ためてから、回りながら撃たれる。1回ごとに回る向きが入れ替わる
-            let cxp = cx + angelChest.dx, cyp = cy + angelChest.dy
+            let cxp = cx + angelChest.dx * Emit.anchorScale, cyp = cy + angelChest.dy * Emit.anchorScale
             let a0 = atan2(py - cyp, px - cxp) + off
             let va = (k % 2 == 1 ? -1.0 : 1.0) * (awakened ? 0.9 : 0.5)
             for (da, len) in [(0.0, 760.0), (Double.pi, 90.0), (Double.pi / 2, 170.0), (-Double.pi / 2, 170.0)] where room() {

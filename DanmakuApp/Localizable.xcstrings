@@ -61128,6 +61128,71 @@
           }
         }
       }
+    },
+    "editor.enemy.character.size.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの絵・当たる範囲・技の弾が出る場所が、まとめて大きく(小さく)なります。ふつうは40pxです"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Boss art, hit area and where its moves fire from all scale together. Default is 40px."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bossgrafik, Trefferbereich und Abschusspunkte skalieren gemeinsam. Standard: 40px."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El dibujo del jefe, su zona de impacto y los puntos de disparo cambian juntos. Normal: 40px."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le dessin du boss, sa zone de touche et ses points de tir changent ensemble. Normal : 40px."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보스 그림·맞는 범위·기술의 탄이 나오는 위치가 함께 커지거나 작아져요. 기본은 40px입니다"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O desenho do chefe, a área de acerto e os pontos de disparo mudam juntos. Padrão: 40px."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рисунок босса, зона попадания и точки выстрела меняются вместе. Обычно 40px."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss 的图、被击中的范围和招式发射的位置会一起变大（变小）。默认 40px"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss 的圖、被擊中的範圍和招式發射的位置會一起變大（變小）。預設 40px"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

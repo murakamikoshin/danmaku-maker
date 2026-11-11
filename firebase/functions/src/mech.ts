@@ -1,12 +1,12 @@
 import { MECH_PATTERNS, type Emitter } from "./validate.js";
 import { type AngelBullet } from "./fallenangel.js";
-import { KIND, MISSILE_SCRIPT, lookCode, plainBullet, type BossBullet } from "./bossscripts.js";
+import { KIND, MISSILE_SCRIPT, lookCode, plainBullet, type BossBullet, anchorScale } from "./bossscripts.js";
 
 /** 機神の5つの技の弾の出し方。アプリの MechPatterns.swift と同じ計算。 */
 export const isMechPattern = (t: string): boolean => (MECH_PATTERNS as readonly string[]).includes(t);
 
 const BEAM_SCRIPT = 4;
-const cannon = (left: boolean, cx: number, cy: number) => ({ x: left ? cx - 62 : cx + 60, y: cy - 20 });
+const cannon = (left: boolean, cx: number, cy: number) => ({ x: left ? cx - 62 * anchorScale : cx + 60 * anchorScale, y: cy - 20 * anchorScale });
 
 function missile(x: number, y: number, angle: number, speed: number, delay: number, decelEnd: number, steerEnd: number, turn: number, accel: number, maxSpeed: number, look: number, color: number): BossBullet {
   const b = plainBullet(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, color, look);
@@ -25,7 +25,7 @@ export function emitMech(m: Emitter, k: number, cx: number, cy: number, px: numb
   const n = Math.max(1, m.c);
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
-  const eye = { x: cx, y: cy - 14 };
+  const eye = { x: cx, y: cy - 14 * anchorScale };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {

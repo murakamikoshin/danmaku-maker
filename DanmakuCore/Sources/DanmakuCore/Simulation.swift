@@ -421,6 +421,13 @@ public enum Outcome: Equatable, Sendable {
 }
 
 public enum Emit {
+    /// キャラクターのボスの大きさの倍率。技の弾が出る場所(手・砲台など、ボスの中心からのずれ)を、この倍率で広げる・縮める。
+    /// ゲームの計算がボスの技を撃つ間だけ変える(ほかは 1)。計算はスレッドごとに独立して動くので、スレッドごとに持つ
+    public static var anchorScale: Double {
+        get { (Thread.current.threadDictionary[anchorKey] as? Double) ?? 1 }
+        set { if newValue == 1 { Thread.current.threadDictionary.removeObject(forKey: anchorKey) } else { Thread.current.threadDictionary[anchorKey] = newValue } }
+    }
+    private static let anchorKey = "danmaku.emit.anchorScale"
     /// 試作の `emit` と同じ。弾数は 1600 で頭打ち（乱数は上限でも消費する）
     /// awakened は、ボスが覚醒した状態か(堕天使の技が強くなる)。salt は、ステージごとに決まる数(失楽園の抜け道を決める)
     /// 弾を出す。mir == 1 のときは、画面の左右を反転した世界で撃って、出た弾を左右反転して戻す
@@ -734,7 +741,9 @@ public struct Simulation {
     /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
     public var bossSizeIndex: Int { spec.size }
     /// 自機の弾が当たる、ボスの半径(論理px)。キャラクターのボスは決まった値、図形のボスは大きさの指定(小・中・大 または 半径)
-    public var bossHitRadius: Double { spec.character?.hitRadius ?? DanmakuConfig.bossRadius(size: spec.size) }
+    public var bossHitRadius: Double { spec.character.map { $0.hitRadius * spec.characterScale } ?? DanmakuConfig.bossRadius(size: spec.size) }
+    /// キャラクターのボスの大きさの倍率(絵・当たり判定・技の出る場所。図形のボスは 1)
+    public var bossScale: Double { spec.characterScale }
     public var bossLookIndex: Int { spec.look }
     /// 専用の絵を持つボスか(図形のボスなら nil)
     public var bossCharacter: BossCharacter? { spec.character }
@@ -834,7 +843,13 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
-        if let c = spec.character { return c.position(waveT: waveT) }
+        if let c = spec.character {
+            // キャラクターのボス: 動きの指定がなければ、これまで通りの定位置のゆれ。指定があれば、図形のボスと同じ動きを、キャラクターの高さで
+            let base = spec.move == 0 ? c.position(waveT: waveT)
+                : { let q = Simulation.bossPoint(move: spec.move, t: waveT); return Point(x: q.x, y: q.y + BossCharacter.moveYOffset) }()
+            if spec.move == 0 && spec.homeDX == 0 && spec.homeDY == 0 { return base }
+            return Point(x: min(max(base.x + spec.homeDX, 40), DanmakuConfig.width - 40), y: min(max(base.y + spec.homeDY, 60), DanmakuConfig.height * 0.5))
+        }
         let p = Simulation.bossPoint(move: spec.move, t: waveT)
         if spec.homeDX == 0 && spec.homeDY == 0 { return p }
         // ボスの位置の指定: 動きの中心をずらす。画面の外に出ないよう、端で止める
@@ -906,6 +921,9 @@ public struct Simulation {
         }
 
         if waveT >= 0 {
+            // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
+            if isBoss { Emit.anchorScale = spec.characterScale }
+            defer { if isBoss { Emit.anchorScale = 1 } }
             for (idx, m) in spec.emitters.enumerated() {
                 if isBoss {
                     if !(m.ph == 0 || m.ph == phase) || banner > 0 { next[idx] = waveT; continue }

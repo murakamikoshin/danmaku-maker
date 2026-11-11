@@ -6,7 +6,7 @@ import Foundation
 /// (通常と覚醒で、ほしい間隔がちがうため)。数値は art/bosses/patterns/engine.js(60fps の px/フレーム)を px/秒に直したもの
 extension Emit {
     /// 通常の本体 (66,88) と、覚醒の中心 (68,56)(絵は 136×112 の2倍)
-    static func puniBody(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx - 4, cy + 64) }
+    static func puniBody(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx - 4 * Emit.anchorScale, cy + 64 * Emit.anchorScale) }
     static func puniCore(_ cx: Double, _ cy: Double) -> (x: Double, y: Double) { (cx, cy) }
     /// 覚醒の目玉22個の位置(絵の中のドット。engine.js の乱数で決めた値)
     static let puniEyes: [(Double, Double)] = [
@@ -15,7 +15,7 @@ extension Emit {
         (77.802896, 79.920395), (96.827309, 65.691207), (73.806344, 61.539982), (61.744536, 34.713954), (89.011201, 38.269815), (83.427582, 37.257611),
         (86.019359, 59.033053), (84.209776, 72.284934), (55.115329, 64.464691), (72.433984, 43.501197)]
     static func puniEye(_ i: Int, _ cx: Double, _ cy: Double) -> (x: Double, y: Double) {
-        (cx - 136 + puniEyes[i].0 * 2, cy - 112 + puniEyes[i].1 * 2)
+        (cx + (-136 + puniEyes[i].0 * 2) * Emit.anchorScale, cy + (-112 + puniEyes[i].1 * 2) * Emit.anchorScale)
     }
 
     static func emitPuni(_ m: Emitter, shot k: Int, cx: Double, cy: Double, px: Double, py: Double,

@@ -1,4 +1,5 @@
 import { FALLEN_ANGEL_PATTERNS, type Emitter } from "./validate.js";
+import { anchorScale } from "./bossscripts.js";
 
 /**
  * 堕天使の5つの技の弾の出し方。アプリの FallenAngelPatterns.swift と同じ計算。
@@ -54,7 +55,7 @@ export function emitFallenAngel(m: Emitter, k: number, cx: number, cy: number, p
       const arms = n + (awakened ? 2 : 0);
       const turned = k * m.r * deg;
       for (const [side, orb] of [[-1, ORB_L], [1, ORB_R]] as const) {
-        const ox = cx + orb.dx, oy = cy + orb.dy;
+        const ox = cx + orb.dx * anchorScale, oy = cy + orb.dy * anchorScale;
         for (let j = 0; j < arms; j++) {
           if (!room()) continue;
           const a = side * turned + off + (j * twoPi) / arms;
@@ -67,8 +68,8 @@ export function emitFallenAngel(m: Emitter, k: number, cx: number, cy: number, p
       for (const side of [-1, 1]) {
         for (let i = 0; i < n; i++) {
           const a = side > 0 ? -0.1 - i * 0.16 : Math.PI + 0.1 + i * 0.16;
-          const ox = cx + side * (40 + rng() * 30);
-          const oy = cy - rng() * 40;
+          const ox = cx + side * (40 + rng() * 30) * anchorScale;
+          const oy = cy - rng() * 40 * anchorScale;
           const speed = sp * (0.79 + rng() * 0.42);
           const seed = rng() * 99;
           if (!room()) continue;
@@ -76,7 +77,7 @@ export function emitFallenAngel(m: Emitter, k: number, cx: number, cy: number, p
         }
       }
       if (awakened) {
-        const hx = cx + HALO.dx, hy = cy + HALO.dy;
+        const hx = cx + HALO.dx * anchorScale, hy = cy + HALO.dy * anchorScale;
         const aim = Math.atan2(py - hy, px - hx);
         for (const d of [-0.2, 0, 0.2]) {
           if (!room()) continue;
@@ -88,7 +89,7 @@ export function emitFallenAngel(m: Emitter, k: number, cx: number, cy: number, p
     case "angelHalo": {
       const rings = awakened ? 2 : 1;
       const count = awakened ? n + 4 : n;
-      const hx = cx + HALO.dx, hy = cy + HALO.dy;
+      const hx = cx + HALO.dx * anchorScale, hy = cy + HALO.dy * anchorScale;
       for (let ring = 0; ring < rings; ring++) {
         const dir = ring === 0 ? 1 : -1;
         for (let i = 0; i < count; i++) {
@@ -100,7 +101,7 @@ export function emitFallenAngel(m: Emitter, k: number, cx: number, cy: number, p
       break;
     }
     case "angelCross": {
-      const cxp = cx + CHEST.dx, cyp = cy + CHEST.dy;
+      const cxp = cx + CHEST.dx * anchorScale, cyp = cy + CHEST.dy * anchorScale;
       const a0 = Math.atan2(py - cyp, px - cxp) + off;
       const va = (k % 2 === 1 ? -1 : 1) * (awakened ? 0.9 : 0.5);
       for (const [da, len] of [[0, 760], [Math.PI, 90], [Math.PI / 2, 170], [-Math.PI / 2, 170]] as const) {

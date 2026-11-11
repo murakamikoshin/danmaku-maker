@@ -1,6 +1,6 @@
 import { REAPER_PATTERNS, type Emitter } from "./validate.js";
 import { mulberry, type AngelBullet } from "./fallenangel.js";
-import { KIND, ORBIT_SCRIPT, holdBullet, lookCode, plainBullet } from "./bossscripts.js";
+import { KIND, ORBIT_SCRIPT, holdBullet, lookCode, plainBullet, anchorScale } from "./bossscripts.js";
 import { SWAY_SCRIPT } from "./kitsune.js";
 
 /** 死神の5つの技の弾の出し方。アプリの ReaperPatterns.swift と同じ計算。 */
@@ -13,14 +13,14 @@ export function emitReaper(m: Emitter, k: number, cx: number, cy: number, px: nu
   const off = ((m.a ?? 0) * Math.PI) / 180;
   const twoPi = 2 * Math.PI;
   const W = 360, H = 540;
-  const skull = { x: cx + 20, y: cy - 52 };
+  const skull = { x: cx + 20 * anchorScale, y: cy - 52 * anchorScale };
   const room = () => out.length < maxBullets;
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {
     case "reaperScythe": {
       const release = awakened ? 64 / 60 : 44 / 60;
       const a0 = (160 * Math.PI) / 180, a1 = (20 * Math.PI) / 180;
-      const ax = cx, ay = cy + 20;
+      const ax = cx, ay = cy + 20 * anchorScale;
       for (const radius of awakened ? [150, 215] : [150]) {
         const count = Math.floor((radius * (a0 - a1)) / 13);
         let gaps: number[] = [];

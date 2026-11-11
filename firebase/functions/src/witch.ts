@@ -1,6 +1,6 @@
 import { WITCH_PATTERNS, type Emitter } from "./validate.js";
 import { type AngelBullet } from "./fallenangel.js";
-import { CURVE_SCRIPT, DARK_SCRIPT, DRAG_SCRIPT, KIND, LATERAL_SCRIPT, holdBullet, lookCode, plainBullet } from "./bossscripts.js";
+import { CURVE_SCRIPT, DARK_SCRIPT, DRAG_SCRIPT, KIND, LATERAL_SCRIPT, holdBullet, lookCode, plainBullet, anchorScale } from "./bossscripts.js";
 import { SWAY_SCRIPT } from "./kitsune.js";
 
 /** 深海の魔女の5つの技の弾の出し方。アプリの WitchPatterns.swift と同じ計算。 */
@@ -10,7 +10,7 @@ const TIP_OFFSETS: ReadonlyArray<readonly [number, number]> = [[74, 22], [64, 40
 const TENT = TIP_OFFSETS.map(([x, y]) => (Math.atan2(y - 14, x) * 180) / Math.PI);
 const DARK_SECONDS = 230 / 60;
 const DRAG_DECAY = Math.sqrt(0.995);
-const tip = (j: number, cx: number, cy: number) => ({ x: cx + TIP_OFFSETS[j]![0], y: cy + TIP_OFFSETS[j]![1] });
+const tip = (j: number, cx: number, cy: number) => ({ x: cx + TIP_OFFSETS[j]![0] * anchorScale, y: cy + TIP_OFFSETS[j]![1] * anchorScale });
 
 export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: number, py: number, rng: () => number, out: AngelBullet[],
   awakened: boolean, _salt: number, maxBullets: number) {
@@ -23,7 +23,7 @@ export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: num
   const look = (kind: number) => lookCode(kind, awakened);
   switch (m.t as string) {
     case "witchAbyss": {
-      const lantern = { x: cx + 42, y: cy - 54 };
+      const lantern = { x: cx + 42 * anchorScale, y: cy - 54 * anchorScale };
       if (k % 17 === 0 && room()) {
         const d = plainBullet(lantern.x, lantern.y, 0, 0, m.k, 0);
         d.script = DARK_SCRIPT; d.fuse = DARK_SECONDS;
@@ -88,7 +88,7 @@ export function emitWitch(m: Emitter, k: number, cx: number, cy: number, px: num
     case "witchMaelstrom": {
       const cyc = k % 50;
       if (!(cyc < 40 && cyc % 4 !== 3)) break;
-      const root = { x: cx, y: cy + 14 };
+      const root = { x: cx, y: cy + 14 * anchorScale };
       const arms = awakened ? n + 2 : n;
       const t = cyc * m.i * 60;
       for (let a = 0; a < arms; a++) {

@@ -2,6 +2,16 @@
  * ボスの専用の技が使う、弾の動き(印 = script)。アプリの BossScripts.swift と同じ計算。
  * 数値は engine.js(60fps の px/フレーム)を、秒・px/秒に直したもの。
  */
+/** キャラクターのボスの大きさの倍率。技の弾が出る場所(ボスの中心からのずれ)を、この倍率で広げる・縮める(アプリの Emit.anchorScale と同じ) */
+export let anchorScale = 1;
+export const setAnchorScale = (v: number): void => { anchorScale = v; };
+/** キャラクターのボスの大きさ(当たり判定の半径 px)。アプリの DanmakuConfig.characterRadiusRange / characterBaseRadius と同じ */
+export const CHARACTER_RADIUS_MIN = 20, CHARACTER_RADIUS_MAX = 60, CHARACTER_BASE_RADIUS = 40;
+/** 動きを指定したキャラクターのボスを、図形のボスの動きから下へずらす量(アプリの BossCharacter.moveYOffset と同じ) */
+export const CHARACTER_MOVE_Y_OFFSET = 128 - 540 * 0.18;
+export const characterScaleOf = (size: number): number =>
+  size >= CHARACTER_RADIUS_MIN && size <= CHARACTER_RADIUS_MAX ? size / CHARACTER_BASE_RADIUS : 1;
+
 export const HOLD_SCRIPT = 16, BRANCH_SCRIPT = 17, FREEZE_SCRIPT = 18, WIND_SCRIPT = 19, ORBIT_SCRIPT = 20, DRAG_SCRIPT = 21,
   LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25, WARP = 26,
   WOBBLE_SCRIPT = 27, YOYO_SCRIPT = 28, KAIYU_SCRIPT = 29;
