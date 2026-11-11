@@ -550,7 +550,21 @@ struct PatternIcon: View {
     }
 
     var body: some View {
-        Canvas { ctx, size in
+        if let img = BossPatternIcon.image(pattern) {
+            // ボスの専用の技: 実際の弾の絵で描いた見本
+            Image(uiImage: img).resizable().interpolation(.none).scaledToFit()
+                .opacity(selected ? 1 : 0.85)
+        } else {
+            dots
+        }
+    }
+
+    private var dots: some View {
+        Canvas(renderer: draw)
+    }
+
+    private func draw(_ ctx: inout GraphicsContext, _ size: CGSize) {
+        do {
             let col = selected ? GameStyle.yellow : GameStyle.text.opacity(0.6)
             let c = CGPoint(x: size.width / 2, y: size.height / 2)
             func dot(_ x: Double, _ y: Double, _ r: Double = 2.6) {
