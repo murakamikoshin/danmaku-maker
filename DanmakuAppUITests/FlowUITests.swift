@@ -183,6 +183,7 @@ final class FlowUITests: XCTestCase {
         tap("tab.settings", timeout: 20)
         snap("settings")
         tap("settings.handle"); snap("settings-handle"); closeSheet()
+        tap("settings.titles"); snap("settings-titles"); closeSheet("titles.close")
         tap("settings.invite"); snap("settings-invite"); closeSheet("invite.close")
         tap("settings.feedback"); snap("settings-feedback"); closeSheet("feedback.close")
         tap("settings.removeads"); snap("settings-removeads"); closeSheet()

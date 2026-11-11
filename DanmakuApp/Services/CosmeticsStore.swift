@@ -96,8 +96,13 @@ final class CosmeticsStore: ObservableObject {
         }
         // 撃ち方はステージで決まっている(作った人が選ぶ)。テストプレイも、遊ぶ人も、同じ
         l.shot = stage.shotType
-        // ドット絵の自機は、遊ぶ人が選んだもの(見た目だけ。持っているものだけ)
-        l.shipSkin = shipSkin.flatMap { ownedSkins.contains($0) ? $0 : nil }
+        // ドット絵の自機: 作者がステージに選んだものがあれば、遊ぶ全員にそれを出す(持っていなくても見える)。
+        // 無ければ、遊ぶ人が自分で選んだもの(持っているものだけ)。見た目だけで、当たり判定は同じ
+        if showStageLook, let s = stage.shipSkin, ShipSkin.isValid(s) {
+            l.shipSkin = s
+        } else {
+            l.shipSkin = shipSkin.flatMap { ownedSkins.contains($0) ? $0 : nil }
+        }
         if ownership.hasCustomImages {
             l.customBoss = customs.boss && CustomImageStore.exists(.boss)
             l.customBullet = customs.bullet && CustomImageStore.exists(.bullet)

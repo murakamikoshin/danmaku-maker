@@ -442,6 +442,15 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ mooks: 1, mookHits: 3 }))).toEqual({ ok: false, error: "look" });   // 倒せないのに回数だけは付けられない
   });
 
+  it("ステージの自機(ドット絵)は ID の形だけ確かめて残す(持っているかは publishStage で確かめる)", () => {
+    const ok = validatePublish(good({ shipSkin: "ace_gold" }));
+    expect(ok.ok && ok.stage.shipSkin).toBe("ace_gold");
+    expect(validatePublish(good({ shipSkin: "Ace Gold" }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ shipSkin: 3 }))).toEqual({ ok: false, error: "look" });
+    const none = validatePublish(good());
+    expect(none.ok && "shipSkin" in none.stage).toBe(false);
+  });
+
   it("雑魚を全部倒したらクリア/次へ は、耐える場面で倒せる雑魚がいるときだけ", () => {
     const ok = validatePublish(good({ mooks: 1, mooksBreakable: true, mooksClear: true }));
     expect(ok.ok && [ok.stage.mooksClear, ok.stage.needs]).toEqual([true, 2]);

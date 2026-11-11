@@ -13,6 +13,20 @@
       },
       "description": "弾幕バトル(リアルタイム対戦)のタブを出す",
       "valueType": "BOOLEAN"
+    },
+    "update_latest_version": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "これより古い版に「新しいバージョンがあります」(あとで閉じられる)。空なら出さない。1.2.0 から",
+      "valueType": "STRING"
+    },
+    "update_min_version": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "これより古い版は「アップデートが必要です」(閉じられない)。古い版だと壊れるときだけ。空なら出さない。1.2.0 から",
+      "valueType": "STRING"
     }
   }
 }

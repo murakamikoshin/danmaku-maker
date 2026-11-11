@@ -8,3 +8,9 @@
 ticket_rainbow（レアチケット）
 - 64x28 / 透過PNG / 8コマ（0→7 でループ。虹色が流れ、0〜3コマ目で光の帯が横切る）
 - 拡大表示時は filteringMode = .nearest
+
+drink_rainbow（虹色の回復ドリンク）
+- 32x32 / 透過PNG / 1枚（アニメなし）。文字なし・黒い縁取りなし
+- 丸いフラスコに虹の6色の液、金のふた
+- 作り直しは _tools/make_drink_rainbow.py
+- 拡大表示時は filteringMode = .nearest

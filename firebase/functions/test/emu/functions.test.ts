@@ -72,6 +72,14 @@ describe("publishStage", () => {
     await signOut(auth); await signInAnonymously(auth);
     expect(await callErr("publishStage", stage)).toMatch(/sign-in-required/);
   });
+  it("ステージの自機(ドット絵)は、作者が持っているものだけ選べる", async () => {
+    await signUp();
+    expect(await callErr("publishStage", { ...stage, shipSkin: "ace_gold" })).toMatch(/ship-not-owned/);
+    await db.doc(`inviteState/${auth.currentUser!.uid}`).set({ ships: ["ace_gold"] }, { merge: true });
+    const { id } = (await call("publishStage", { ...stage, name: "自機つき", shipSkin: "ace_gold" })) as { id: string };
+    expect((await db.doc(`stages/${id}`).get()).get("shipSkin")).toBe("ace_gold");
+    expect(await callErr("publishStage", { ...stage, shipSkin: "Bad-ID!" })).toMatch(/look/);
+  });
   it("規約に同意していないと投稿できない", async () => {
     await signUp();
     expect(await callErr("publishStage", { ...stage, termsAccepted: false })).toMatch(/terms-not-accepted/);

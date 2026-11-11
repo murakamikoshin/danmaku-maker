@@ -86,7 +86,7 @@ struct RewardNoticeView: View {
             case .ship(let id): SkinThumb(id: id).frame(width: 48, height: 48)
             case .title: Image(systemName: "rosette").font(.system(size: 24, weight: .bold)).foregroundStyle(GameStyle.yellow).frame(width: 48, height: 48)
             case .ticket: TicketArtView(height: 24).frame(width: 64, height: 48)
-            case .drink: Image(systemName: "drop.fill").font(.system(size: 24, weight: .bold)).foregroundStyle(GameStyle.yellow).frame(width: 48, height: 48)
+            case .drink: DrinkArtView(size: 44).frame(width: 48, height: 48)
             case .boss(let b): Image(uiImage: BossSprites.shopArt(b, awakened: false).map { UIImage(cgImage: $0.frames[0], scale: 1, orientation: .up) } ?? UIImage()).resizable().interpolation(.none).scaledToFit().frame(width: 48, height: 48)
             }
             Text(text(item)).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)

@@ -69,6 +69,11 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
+  // ステージに選んだドット絵の自機は、作者が持っているものだけ(招待のごほうびなどは inviteState の ships に入っている)
+  if (v.stage.shipSkin) {
+    const ships = ((await db.doc(`inviteState/${uid}`).get()).get("ships") as string[] | undefined) ?? [];
+    if (!ships.includes(v.stage.shipSkin)) throw new HttpsError("permission-denied", "ship-not-owned");
+  }
   // 「URLを知っている人だけ」の投稿(unlisted)はクリア記録が要らず、一覧には載らない。そうでなければ、作者のクリア記録を再生して
   // 本当にクリアできるステージか確かめる(テストプレイも、ステージで決めた撃ち方)
   const unlisted = (req.data as { unlisted?: unknown }).unlisted === true;

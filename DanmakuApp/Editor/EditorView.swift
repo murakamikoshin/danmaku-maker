@@ -690,6 +690,20 @@ private struct LookPanel: View {
                     }
                 }
             }
+            // 招待などでもらったドット絵の自機。選ぶと、遊ぶ全員にその自機で出る(持っているものだけ並べる)
+            if !cosmetics.ownedSkins.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.look.skin").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            skinTile(nil)
+                            ForEach(cosmetics.ownedSkins, id: \.self) { skinTile($0) }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    Text("editor.look.skin.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
             if let t = rewardHint, let need = t.unlockPosts, !cosmetics.ownership.hasUnlocked(t) {
                 Text(String(format: L("editor.look.rewardhint"), max(0, need - cosmetics.ownership.posts)))
                     .font(.caption.bold()).foregroundStyle(GameStyle.yellow)
@@ -699,6 +713,34 @@ private struct LookPanel: View {
             }
         }
         .sheet(isPresented: $showShop) { ShopView(focus: lookFocus) }
+    }
+
+    private func skinTile(_ id: String?) -> some View {
+        let selected = model.draft.shipSkin == id
+        return Button {
+            gameTap()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { model.draft.shipSkin = id }
+        } label: {
+            VStack(spacing: 6) {
+                Group {
+                    if let id, let img = ShipSkin.frames(id).first {
+                        Image(uiImage: img).resizable().interpolation(.none).frame(width: 30, height: 30)
+                    } else {
+                        Image(systemName: "nosign").font(.system(size: 18, weight: .bold)).foregroundStyle(GameStyle.dim)
+                    }
+                }
+                .frame(width: 56, height: 36)
+                Text(id.map(ShipSkin.name) ?? L("editor.look.skin.none")).font(.system(size: 11, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                    .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
+                    .frame(maxWidth: 72)
+            }
+            .padding(.vertical, 8).padding(.horizontal, 8)
+            .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
+        }
+        .buttonStyle(BounceButtonStyle())
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("editor.look.skin.\(id ?? "none")")
     }
 
     private func current(_ part: ThemePart) -> Theme {
