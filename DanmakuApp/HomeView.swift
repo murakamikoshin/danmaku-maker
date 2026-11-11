@@ -198,7 +198,7 @@ struct HomeView: View {
     }
 
     private var samples: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        LazyVStack(alignment: .leading, spacing: 10) {
             Text("home.samples").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
             ForEach(SampleStages.all) { s in
                 Button { gameTap(); playing = s } label: { SampleRow(sample: s) }

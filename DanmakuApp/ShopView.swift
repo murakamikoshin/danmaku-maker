@@ -49,7 +49,7 @@ struct ShopView: View {
                     .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 8)
                 ScrollViewReader { proxy in
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 26) {
+                        LazyVStack(alignment: .leading, spacing: 26) {
                             content
                         }
                         // 下のタブに隠れないように、タブの高さぶん空ける
@@ -625,7 +625,7 @@ private struct MakerDemo: View {
 
     var body: some View {
         let images = SpriteFactory.bulletImages(.classic)
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+        VisibleTimeline(interval: 1.0 / 30.0) { tl in
             Canvas { ctx, size in
                 let s = size.width / CGFloat(PatternDemoEngine.fieldWidth)
                 let now = tl.date.timeIntervalSinceReferenceDate
@@ -852,7 +852,7 @@ private struct PatternDemo: View {
         let images = SpriteFactory.bulletImages(.classic)
         let boomerangs = SpriteFactory.boomerangImages(.classic)
         let ship = SpriteFactory.shipImage(.classic)
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+        VisibleTimeline(interval: 1.0 / 30.0) { tl in
             Canvas { ctx, size in
                 engine.advance(to: tl.date, pattern: pattern)
                 // 縦横同じ倍率で描く(実際の画面の一部。幅 360 を枠いっぱいに使う)
@@ -960,7 +960,9 @@ private struct BossShopCard: View {
                     HStack {
                         Spacer()
                         if cosmetics.ownership.has(boss) {
-                            EquippedLabel()
+                            // ボスは「使用中」ではなく「購入済み」(ステージを作るときに選ぶもので、装備するものではない)
+                            Label("shop.owned", systemImage: "checkmark.circle.fill")
+                                .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
                         } else {
                             if cosmetics.canClaimBossTicket && boss.ticketEligible {
                                 TicketCount()
@@ -983,10 +985,10 @@ private struct BossShopCard: View {
     }
 
     private func sprite(awakened: Bool) -> some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 15.0)) { tl in
-            if let art = BossSprites.art(boss, awakened: awakened) {
+        VisibleTimeline(interval: BossSprites.frameDuration) { tl in
+            if let art = BossSprites.shopArt(boss, awakened: awakened) {
                 let i = BossSprites.frameIndex(at: tl.date.timeIntervalSinceReferenceDate)
-                Image(decorative: art.frames[i].cgImage(), scale: 1)
+                Image(decorative: art.frames[i], scale: 1)
                     .interpolation(.none).resizable().aspectRatio(art.size, contentMode: .fit)
                     .frame(maxWidth: .infinity)
             }

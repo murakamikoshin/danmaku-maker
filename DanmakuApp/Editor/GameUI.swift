@@ -328,7 +328,7 @@ struct BossMoveCards: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { move = (reversed ? Self.reversePairs[i] : nil) ?? i }
                 } label: {
                     VStack(spacing: 4) {
-                        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+                        VisibleTimeline(interval: 1.0 / 30.0) { tl in
                             Canvas { ctx, size in
                                 // ゲームと同じ式(Simulation.bossPoint)で、ボスの位置と動く道すじを描く
                                 let t = tl.date.timeIntervalSinceReferenceDate * Self.demoSpeed

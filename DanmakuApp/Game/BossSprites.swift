@@ -68,6 +68,23 @@ enum BossSprites {
         return art
     }
 
+    /// ショップの見本用の、軽い待機の絵(8コマ)。構え・技中・白い影などは作らない(ショップの一覧で全ボスぶんを一度に読み込んでも重くならないように)。
+    /// 絵の読み込みは最初の1回だけで、以降は取り出すだけ
+    struct ShopArt { let frames: [CGImage]; let size: CGSize }
+    private static var shopCache: [String: ShopArt] = [:]
+    static func shopArt(_ c: BossCharacter, awakened: Bool) -> ShopArt? {
+        guard let name = awakened ? c.awakenedSheet : c.sheet else { return nil }
+        if let a = shopCache[name] { return a }
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
+              let image = UIImage(contentsOfFile: url.path), let cg = image.cgImage else { return nil }
+        let fw = cg.width / frameCount, fh = cg.height
+        let frames = (0..<frameCount).compactMap { cg.cropping(to: CGRect(x: $0 * fw, y: 0, width: fw, height: fh)) }
+        guard frames.count == frameCount else { return nil }
+        let art = ShopArt(frames: frames, size: CGSize(width: fw, height: fh))
+        shopCache[name] = art
+        return art
+    }
+
     /// 時刻(ステージの経過秒)に合わせたコマの番号。ループする
     static func frameIndex(at t: Double) -> Int {
         Int(max(0, t) / frameDuration) % frameCount

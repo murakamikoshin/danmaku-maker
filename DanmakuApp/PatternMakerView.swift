@@ -51,7 +51,7 @@ struct PatternMakerView: View {
         let images = SpriteFactory.bulletImages(.classic)
         return GeometryReader { geo in
             let s = geo.size.width / fieldW
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+            VisibleTimeline(interval: 1.0 / 30.0) { tl in
                 Canvas { ctx, size in
                     if let m = emitterForPreview {
                         engine.advance(to: tl.date, emitters: [m], key: PreviewKey(path: path, copies: copies, speed: speed, ox: origin.x, oy: origin.y))
