@@ -941,6 +941,8 @@ final class PatternDemoEngine {
 private struct BossShopCard: View {
     let boss: BossCharacter
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    /// チケットを使う前の確認(チケットは1枚しかないので、押し間違いを防ぐ)
+    @State private var confirmTicket = false
 
     var body: some View {
         ShopCard(title: LocalizedStringKey(L("enemy.boss.\(boss.rawValue)")), footer: "shop.boss.footer") {
@@ -965,7 +967,7 @@ private struct BossShopCard: View {
                             if ticket { TicketCount() }
                             HStack(spacing: 10) {
                                 if ticket {
-                                    Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
+                                    Button { gameTap(); confirmTicket = true } label: {
                                         HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket").lineLimit(1).minimumScaleFactor(0.6) }
                                             .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                                             .padding(.vertical, 8).padding(.horizontal, 12)
@@ -984,6 +986,9 @@ private struct BossShopCard: View {
             }
         }
         .accessibilityIdentifier("shop.boss.\(boss.productKey)")
+        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: "ticket.confirm.message") {
+            [GameDialogAction(title: "ticket.confirm.use") { Task { await cosmetics.claimBossTicket(boss) } }, .cancel()]
+        }
     }
 
     private func sprite(awakened: Bool) -> some View {

@@ -58,7 +58,7 @@ struct HomeView: View {
             .environment(\.listScrolling, listScrolling)
         }
         .background(GameStyle.night.ignoresSafeArea())
-        .alert("home.search.notfound", isPresented: $searchError) { Button("OK", role: .cancel) {} }
+        .gameDialog("home.search.notfound", isPresented: $searchError) { [.ok()] }
         .fullScreenCover(item: $playing) { s in
             PlayView(stage: s.stage, title: s.title) { playing = nil }
         }
@@ -85,17 +85,17 @@ struct HomeView: View {
                 Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid); await CosmeticsStore.shared.refreshBossTickets(uid: auth.uid) }
             }
         }
-        .confirmationDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }), titleVisibility: .visible) {
-            if let e = deletingEntry, e.publishedID != nil {
+        .gameDialog("mystage.delete.title", isPresented: Binding(get: { deletingEntry != nil }, set: { if !$0 { deletingEntry = nil } }),
+                    message: deletingEntry?.publishedID != nil ? "mystage.delete.world.message" : "mystage.delete.message") {
+            guard let e = deletingEntry else { return [.cancel()] }
+            if e.publishedID != nil {
                 // 投稿済み: 世界から消すか、端末のコピーだけ消すかを選ぶ
-                Button("mystage.delete.world", role: .destructive) { Task { await deleteFromWorld(e) } }
-                Button("mystage.delete.local", role: .destructive) { saved.delete(id: e.id) }
-            } else {
-                Button("mystage.delete", role: .destructive) { if let e = deletingEntry { saved.delete(id: e.id) } }
+                return [GameDialogAction(title: "mystage.delete.world", role: .destructive) { Task { await deleteFromWorld(e) } },
+                        GameDialogAction(title: "mystage.delete.local", role: .destructive) { saved.delete(id: e.id) }, .cancel()]
             }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text(deletingEntry?.publishedID != nil ? "mystage.delete.world.message" : "mystage.delete.message") }
-        .alert("mystage.delete.failed", isPresented: $worldDeleteFailed) { Button("OK", role: .cancel) {} }
+            return [GameDialogAction(title: "mystage.delete", role: .destructive) { saved.delete(id: e.id) }, .cancel()]
+        }
+        .gameDialog("mystage.delete.failed", isPresented: $worldDeleteFailed) { [.ok()] }
         .sheet(item: $detail) { s in StageDetailView(remote: s, onShowAuthor: { showAuthor($0) }) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
@@ -193,6 +193,7 @@ struct HomeView: View {
             ForEach(SampleStages.all) { s in
                 Button { gameTap(); playing = s } label: { SampleRow(sample: s) }
                     .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("home.sample.\(s.id)")
             }
         }
     }

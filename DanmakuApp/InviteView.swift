@@ -1,4 +1,5 @@
 import SwiftUI
+import DanmakuCore
 
 /// 「友達を招待」。自分のコードとリンク、人数とごほうび、友達のコードの入力
 struct InviteView: View {
@@ -19,6 +20,23 @@ struct InviteView: View {
     private static let shipSteps = [1, 3, 5, 10, 20, 31]
     private static let steps: [(need: Int, title: String)] = [(1, "inv1"), (3, "inv3"), (5, "inv5"), (10, "inv10")]
 
+    /// 人数ごとのごほうび(サーバーの SHIP_REWARDS・INVITER_TITLES・BOSS_TICKET_AT・LIMITED_BOSS_AT と同じ)
+    private struct Milestone { let need: Int; let ships: [String]; let title: String?; let ticket: Bool; let secretBoss: Bool }
+    private static let milestones: [Milestone] = {
+        let models = ShipSkin.models
+        func set(_ c: String, except: String? = nil) -> [String] { models.filter { $0 != except }.map { "\($0)_\(c)" } }
+        return [
+            Milestone(need: 1, ships: [ShipSkin.original, "ace_steel"], title: "inv1", ticket: false, secretBoss: false),
+            Milestone(need: 3, ships: set("steel", except: "ace"), title: "inv3", ticket: false, secretBoss: false),
+            Milestone(need: 5, ships: set("snow"), title: "inv5", ticket: false, secretBoss: false),
+            Milestone(need: 10, ships: set("emerald"), title: "inv10", ticket: true, secretBoss: false),
+            Milestone(need: 20, ships: set("crimson"), title: nil, ticket: true, secretBoss: false),
+            Milestone(need: 31, ships: set("shadow"), title: nil, ticket: false, secretBoss: true),
+        ]
+    }()
+    /// 招待された友達がもらうもの(サーバーの INVITEE_SHIP・INVITEE_DRINKS・称号 invited と同じ)
+    private static let friendDrinks = 2
+
     var body: some View {
         ZStack {
             GameStyle.night.ignoresSafeArea()
@@ -26,6 +44,7 @@ struct InviteView: View {
                 VStack(spacing: 12) {
                     header
                     sharePanel
+                    rewardsPanel
                     progressPanel
                     shipPanel
                     enterPanel
@@ -48,6 +67,7 @@ struct InviteView: View {
                     .overlay(Circle().stroke(GameStyle.edge))
             }
             .buttonStyle(BounceButtonStyle())
+            .accessibilityIdentifier("invite.close")
             .accessibilityLabel(Text("swipe.close"))
         }
     }
@@ -98,21 +118,76 @@ struct InviteView: View {
         }
     }
 
+    /// 招待でもらえるもの(絵つき)。友達がもらうものと、人数ごとに自分がもらうもの
+    private var rewardsPanel: some View {
+        let rewarded = service.info?.rewarded ?? 0
+        return GamePanel(title: "invite.rewards.section", tint: GameStyle.green) {
+            Text("invite.rewards.howto").font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+            // 友達がもらうもの
+            VStack(alignment: .leading, spacing: 6) {
+                Text("invite.rewards.friend").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
+                HStack(spacing: 10) {
+                    SkinThumb(id: ShipSkin.original).frame(width: 40, height: 40)
+                    TitleChip(id: "invited", size: 11)
+                    Label(String(format: L("invite.rewards.drinks"), Self.friendDrinks), systemImage: "drop.fill")
+                        .font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                    Spacer(minLength: 0)
+                }
+            }
+            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+            // 自分がもらうもの(人数ごと)
+            Text("invite.rewards.you").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text).padding(.top, 2)
+            ForEach(Self.milestones, id: \.need) { m in milestoneRow(m, got: rewarded >= m.need) }
+        }
+    }
+
+    private func milestoneRow(_ m: Milestone, got: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: got ? "checkmark.circle.fill" : "circle").foregroundStyle(got ? GameStyle.yellow : GameStyle.text.opacity(0.4))
+                Text(String(format: L("invite.progress.step"), m.need)).font(.display(14)).foregroundStyle(GameStyle.text)
+                Spacer(minLength: 4)
+                if let t = m.title { TitleChip(id: t, size: 11) }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(m.ships, id: \.self) { id in
+                        SkinThumb(id: id).frame(width: 36, height: 36)
+                            .padding(3).background(Color.white.opacity(0.06), in: PixelRect(cornerRadius: 8))
+                    }
+                    if m.ticket {
+                        HStack(spacing: 4) { TicketArtView(height: 18); Text("invite.rewards.ticket").font(.system(size: 11, weight: .heavy)) }
+                            .foregroundStyle(GameStyle.green).padding(.horizontal, 6)
+                    }
+                    if m.secretBoss {
+                        // 招待限定のボスは、手に入れるまで影だけ見せる
+                        HStack(spacing: 4) {
+                            Image(uiImage: EnemyArt.bossImage(look: BossCharacter.puni.rawValue, size: 1, flash: false))
+                                .interpolation(.none).resizable().scaledToFit().frame(width: 42, height: 42)
+                                .colorMultiply(cosmetics.ownership.has(.puni) ? .white : .black)
+                                .overlay(cosmetics.ownership.has(.puni) ? nil : Text("?").font(.display(16)).foregroundStyle(GameStyle.yellow))
+                            Text("invite.rewards.secret").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                        }
+                        .padding(.horizontal, 6)
+                    }
+                }
+            }
+            Text(String(format: L("invite.rewards.ships"), m.ships.count)).font(.system(size: 10, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.55))
+        }
+        .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+        .background(got ? GameStyle.yellow.opacity(0.10) : GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+        .overlay(PixelRect(cornerRadius: 12).strokeBorder(got ? GameStyle.yellow.opacity(0.7) : GameStyle.edge, lineWidth: 1.5))
+        .opacity(got ? 1 : 0.92)
+    }
+
     private var progressPanel: some View {
         let count = service.info?.count ?? 0
         let rewarded = service.info?.rewarded ?? 0
         let next = Self.steps.first { $0.need > rewarded }
         return GamePanel(title: "invite.progress.section", tint: GameStyle.yellow) {
             Text(String(format: L("invite.progress.count"), count)).font(.display(15)).foregroundStyle(GameStyle.text)
-            ForEach(Self.steps, id: \.need) { step in
-                let got = rewarded >= step.need
-                HStack(spacing: 10) {
-                    Image(systemName: got ? "checkmark.circle.fill" : "circle").foregroundStyle(got ? GameStyle.yellow : GameStyle.text.opacity(0.4))
-                    Text(String(format: L("invite.progress.step"), step.need)).font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(got ? 1 : 0.6))
-                    Spacer()
-                    TitleChip(id: step.title, size: 12).opacity(got ? 1 : 0.5)
-                }
-            }
             Text(String(format: L("invite.ship.progress"), min(cosmetics.ownedSkins.count, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
             if let nextShip = Self.shipSteps.first(where: { $0 > rewarded }) {
                 Text(String(format: L("invite.ship.next"), nextShip - rewarded)).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
@@ -126,7 +201,6 @@ struct InviteView: View {
                 TicketCount()
                 Text("ticket.where").font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.5))
             }
-            Text("invite.boss.note").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.yellow)
             if cosmetics.ownership.has(.puni) {
                 Text("invite.boss.got").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
             }

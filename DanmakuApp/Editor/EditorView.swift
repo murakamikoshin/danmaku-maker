@@ -128,10 +128,9 @@ struct EditorView: View {
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onChange(of: model.draft) { _ in model.save() }
-        .confirmationDialog("editor.revert.title", isPresented: $confirmRevert, titleVisibility: .visible) {
-            Button("editor.revert.do", role: .destructive) { model.revert() }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text("editor.revert.message") }
+        .gameDialog("editor.revert.title", isPresented: $confirmRevert, message: "editor.revert.message") {
+            [GameDialogAction(title: "editor.revert.do", role: .destructive) { model.revert() }, .cancel()]
+        }
         .fullScreenCover(item: $testRun, onDismiss: {
             // テストプレイから戻ったら、試聴していた BGM を流し直す
             if let i = model.previewingBGM { AudioManager.shared.preview(.forNumber(i)) }
@@ -366,14 +365,13 @@ private struct EnemyControls: View {
                 looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
         }
-        .confirmationDialog("editor.boss.change.title", isPresented: Binding(get: { pendingLook != nil }, set: { if !$0 { pendingLook = nil } }), titleVisibility: .visible) {
-            Button("editor.boss.change.replace") {
-                if let new = pendingLook { convertCharacterPatterns(); select(new) }
-                pendingLook = nil
-            }
-            Button("common.cancel", role: .cancel) { pendingLook = nil }
-        } message: {
-            Text("editor.boss.change.message")
+        .gameDialog("editor.boss.change.title", isPresented: Binding(get: { pendingLook != nil }, set: { if !$0 { pendingLook = nil } }),
+                    message: "editor.boss.change.message") {
+            let new = pendingLook
+            return [GameDialogAction(title: "editor.boss.change.replace") {
+                        if let new { convertCharacterPatterns(); select(new) }
+                        pendingLook = nil
+                    }, .cancel { pendingLook = nil }]
         }
     }
 

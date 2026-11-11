@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 import DanmakuCore
 
-/// 「スワイプ弾幕 β」の画面（タイトル → プレイ → 結果）。仕様書 7 章
+/// 「スワイプ弾幕」の画面（タイトル → プレイ → 結果）。仕様書 7 章
 struct SwipeHomeView: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
@@ -115,14 +115,13 @@ private struct TitleView: View {
             Text("swipe.title.eyebrow").font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
             Text("swipe.title.name").font(.display(40)).multilineTextAlignment(.center).minimumScaleFactor(0.6)
                 .thick(GameStyle.yellow, shade: GameStyle.yellowShade, depth: 4)
-            Text("swipe.beta").font(.system(size: 11, weight: .black)).padding(.horizontal, 8).padding(.vertical, 2)
-                .background(PixelRect(cornerRadius: 8).fill(Color(uiColor: SwipePalette.pink))).foregroundStyle(.white)
             VStack(alignment: .leading, spacing: 5) {
                 ForEach(["swipe.rule.1", "swipe.rule.2", "swipe.rule.3", "swipe.rule.4", "swipe.rule.5"], id: \.self) { k in
                     Text(LocalizedStringKey(k)).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Color(uiColor: SwipePalette.text).opacity(0.9))
                 }
             }.padding(.horizontal, 28)
             StaminaBar(info: service.stamina).onTapGesture(perform: openStamina)
+                .accessibilityAddTraits(.isButton).accessibilityIdentifier("swipe.stamina")
             Button(action: start) {
                 VStack(spacing: 1) {
                     Text("swipe.start").font(.display(22))
@@ -133,10 +132,12 @@ private struct TitleView: View {
                 .scaleEffect(pulse ? 1.05 : 1)
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("swipe.start")
             .onAppear { withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) { pulse = true } }
             HStack(spacing: 18) {
                 if model.bestStreak > 0 { Text(String(format: L("swipe.best.streak"), model.bestStreak)).font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }
                 Button(action: ranking) { Label("swipe.ranking", systemImage: "trophy.fill").font(.system(size: 12, weight: .heavy)) }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                    .accessibilityIdentifier("swipe.ranking")
             }
             Spacer(minLength: 30)
         }

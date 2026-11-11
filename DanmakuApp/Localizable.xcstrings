@@ -42281,71 +42281,6 @@
         }
       }
     },
-    "swipe.beta": {
-      "extractionState": "manual",
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "β版"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BETA"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试版"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "測試版"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "베타"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BETA"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BÊTA"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BETA"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BETA"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "БЕТА"
-          }
-        }
-      }
-    },
     "swipe.rule.1": {
       "extractionState": "manual",
       "localizations": {
@@ -50411,64 +50346,64 @@
     "invite.share.body": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schick den Link an einen Freund. Spielt er 3-mal, bekommt ihr beide eine Belohnung."
+            "value": "リンクかコードを友達に送ろう。友達があなたの招待コードを入力して3回遊ぶと、2人にごほうびが届きます。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Send the link to a friend. When they play 3 times, you both get a reward."
+            "value": "Send the link or code to a friend. When they enter your invite code and play 3 times, you both get rewards."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schick Link oder Code an Freunde. Geben sie deinen Einladungscode ein und spielen 3-mal, bekommt ihr beide Belohnungen."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Envía el enlace a un amigo. Cuando juegue 3 veces, los dos recibiréis una recompensa."
+            "value": "Envía el enlace o el código a un amigo. Cuando introduzca tu código de invitación y juegue 3 veces, los dos recibiréis recompensas."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Envoie le lien à un ami. Quand il a joué 3 fois, vous recevez tous les deux une récompense."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リンクを友達に送ろう。友達が3回遊ぶと、2人にごほうびが届きます。"
+            "value": "Envoie le lien ou le code à un ami. Quand il saisit ton code d'invitation et joue 3 fois, vous recevez tous les deux des récompenses."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "친구에게 링크를 보내세요. 친구가 3번 플레이하면 두 사람 모두 보상을 받아요."
+            "value": "링크나 코드를 친구에게 보내세요. 친구가 내 초대 코드를 입력하고 3번 플레이하면, 두 사람 모두 보상을 받아요."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Envie o link a um amigo. Quando ele jogar 3 vezes, vocês dois ganham uma recompensa."
+            "value": "Envie o link ou o código a um amigo. Quando ele digitar seu código de convite e jogar 3 vezes, vocês dois ganham recompensas."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Отправьте ссылку другу. Когда он сыграет 3 раза, вы оба получите награду."
+            "value": "Отправьте ссылку или код другу. Когда он введёт ваш код приглашения и сыграет 3 раза, вы оба получите награды."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "把链接发给好友。好友玩满3次后，你们都能获得奖励。"
+            "value": "把链接或邀请码发给好友。好友输入你的邀请码并玩 3 次后，你们两人都能获得奖励。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "把連結傳給好友。好友玩滿3次後，你們都能獲得獎勵。"
+            "value": "把連結或邀請碼傳給好友。好友輸入你的邀請碼並玩 3 次後，你們兩人都能獲得獎勵。"
           }
         }
       }
@@ -50801,64 +50736,64 @@
     "invite.progress.count": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld Freunde sind dabei"
+            "value": "招待コードで%lld人が参加"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld friends joined"
+            "value": "%lld friend(s) joined with your code"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Freund(e) mit deinem Code dabei"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld amigos se unieron"
+            "value": "%lld amigo(s) se unieron con tu código"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld amis ont rejoint"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld人が遊んでくれました"
+            "value": "%lld ami(s) inscrit(s) avec ton code"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld명이 참여했어요"
+            "value": "내 코드로 %lld명 참가"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld amigos entraram"
+            "value": "%lld amigo(s) entraram com seu código"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Присоединились: %lld"
+            "value": "По вашему коду: %lld"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已有%lld位好友加入"
+            "value": "已有 %lld 人用你的邀请码参加"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "已有%lld位好友加入"
+            "value": "已有 %lld 人用你的邀請碼參加"
           }
         }
       }
@@ -50996,64 +50931,64 @@
     "invite.progress.note": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zählt, sobald ein Freund 3-mal gespielt hat. Belohnungen gibt es für bis zu 31 Freunde."
+            "value": "友達が招待コードを入力して3回遊んだ時点で数えます。ごほうびは31人分までです。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Counts once a friend has played 3 times. Rewards are given for up to 31 friends."
+            "value": "A friend counts once they enter your code and play 3 times. Rewards go up to 31 friends."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Freund zählt, sobald er deinen Code eingibt und 3-mal spielt. Belohnungen bis 31 Freunde."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cuenta cuando un amigo ha jugado 3 veces. Hay recompensas hasta 31 amigos."
+            "value": "Un amigo cuenta cuando introduce tu código y juega 3 veces. Recompensas hasta 31 amigos."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compte dès qu’un ami a joué 3 fois. Récompenses jusqu’à 31 amis."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "友達が3回遊んだ時点で数えます。ごほうびは31人分までです。"
+            "value": "Un ami compte quand il saisit ton code et joue 3 fois. Récompenses jusqu'à 31 amis."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "친구가 3번 플레이하면 집계돼요. 보상은 최대 31명까지예요."
+            "value": "친구가 초대 코드를 입력하고 3번 플레이했을 때 셉니다. 보상은 31명까지."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Conta quando o amigo jogou 3 vezes. Recompensas para até 31 amigos."
+            "value": "Um amigo conta quando digita seu código e joga 3 vezes. Recompensas até 31 amigos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Засчитывается, когда друг сыграет 3 раза. Награды — за 31 друзей."
+            "value": "Друг засчитывается, когда введёт ваш код и сыграет 3 раза. Награды — до 31 друга."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友玩满3次后计入。奖励最多31位好友。"
+            "value": "好友输入你的邀请码并玩 3 次后计入。奖励最多 31 人。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友玩滿3次後計入。獎勵最多31位好友。"
+            "value": "好友輸入你的邀請碼並玩 3 次後計入。獎勵最多 31 人。"
           }
         }
       }
@@ -51061,52 +50996,52 @@
     "invite.enter.section": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Code eines Freundes"
+            "value": "友達の招待コードを入力"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A friend’s code"
+            "value": "Enter a friend’s invite code"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einladungscode eines Freundes eingeben"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Código de un amigo"
+            "value": "Introduce el código de un amigo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Code d’un ami"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "友達のコードを入力"
+            "value": "Saisir le code d'un ami"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "친구 코드 입력"
+            "value": "친구의 초대 코드 입력"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Código de um amigo"
+            "value": "Digite o código de um amigo"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Код друга"
+            "value": "Введите код друга"
           }
         },
         "zh-Hans": {
@@ -52101,64 +52036,64 @@
     "invite.progress.step": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
+        "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld Freunde"
+            "value": "%lld人目"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld friend(s) joined"
+            "value": "Friend #%lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freund Nr. %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld amigo(s)"
+            "value": "Amigo n.º %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld ami(s)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld人が遊んだら"
+            "value": "Ami n° %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld명 참여 시"
+            "value": "%lld번째"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld amigo(s)"
+            "value": "Amigo nº %lld"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld друг(а)"
+            "value": "%lld-й друг"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld位好友加入"
+            "value": "第 %lld 人"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld位好友加入"
+            "value": "第 %lld 人"
           }
         }
       }
@@ -59890,6 +59825,786 @@
           "stringUnit": {
             "state": "translated",
             "value": "經典"
+          }
+        }
+      }
+    },
+    "invite.rewards.section": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "招待でもらえるもの"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invite rewards"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einladungsbelohnungen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recompensas por invitar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récompenses d'invitation"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초대 보상"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recompensas de convite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Награды за приглашения"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邀请奖励"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邀請獎勵"
+          }
+        }
+      }
+    },
+    "invite.rewards.howto": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 上の「リンクを送る」で友達に送る ② 友達が招待コードを入力する(リンクからアプリを入れると、自動で入ります。あとからは せってい → 友達を招待 で入力) ③ 友達が3回遊ぶと、2人にごほうび"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Send the link above ② Your friend enters your invite code (it's filled in automatically if they install from the link; otherwise Settings → Invite friends) ③ When they play 3 times, you both get rewards"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Link oben senden ② Dein Freund gibt deinen Code ein (über den Link automatisch, sonst Einstellungen → Freunde einladen) ③ Nach 3 Runden bekommt ihr beide Belohnungen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Envía el enlace de arriba ② Tu amigo introduce tu código (con el enlace se rellena solo; si no, Ajustes → Invitar amigos) ③ Cuando juegue 3 veces, los dos recibís recompensas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Envoie le lien ci-dessus ② Ton ami saisit ton code (automatique via le lien, sinon Réglages → Inviter des amis) ③ Après 3 parties, vous êtes récompensés tous les deux"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 위의 「링크 보내기」로 친구에게 보내기 ② 친구가 초대 코드 입력 (링크로 설치하면 자동 입력, 나중에는 설정 → 친구 초대) ③ 친구가 3번 플레이하면 두 사람 모두 보상"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Envie o link acima ② Seu amigo digita o código (automático pelo link; senão Ajustes → Convidar amigos) ③ Quando ele jogar 3 vezes, os dois ganham recompensas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Отправьте ссылку выше ② Друг вводит ваш код (по ссылке — автоматически, иначе Настройки → Пригласить друзей) ③ После 3 игр вы оба получите награды"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 用上方的「发送链接」发给好友 ② 好友输入邀请码（从链接安装会自动填入，之后可在 设置 → 邀请好友 输入）③ 好友玩 3 次后，两人都能获得奖励"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 用上方的「傳送連結」傳給好友 ② 好友輸入邀請碼（從連結安裝會自動填入，之後可在 設定 → 邀請好友 輸入）③ 好友玩 3 次後，兩人都能獲得獎勵"
+          }
+        }
+      }
+    },
+    "invite.rewards.friend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "友達がもらうもの"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What your friend gets"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das bekommt dein Freund"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que recibe tu amigo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce que reçoit ton ami"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "친구가 받는 것"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que seu amigo ganha"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что получит друг"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好友获得"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好友獲得"
+          }
+        }
+      }
+    },
+    "invite.rewards.you": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あなたがもらうもの(参加した人数ごと)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you get (by number of friends)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das bekommst du (je nach Anzahl)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que recibes tú (según el número de amigos)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce que tu reçois (selon le nombre)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내가 받는 것 (참가한 인원별)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que você ganha (por número de amigos)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что получите вы (по числу друзей)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你获得（按参加人数）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你獲得（依參加人數）"
+          }
+        }
+      }
+    },
+    "invite.rewards.drinks": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回復ドリンク×%lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery Drink ×%lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erholungsgetränk ×%lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bebida de recuperación ×%lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boisson de récupération ×%lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "회복 드링크 ×%lld"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bebida de recuperação ×%lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напиток восстановления ×%lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复饮料×%lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢復飲料×%lld"
+          }
+        }
+      }
+    },
+    "invite.rewards.ships": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機 %lld機"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ship(s)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Schiff(e)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nave(s)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld vaisseau(x)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기체 %lld기"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nave(s)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кораблей: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "机体 %lld 架"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "機體 %lld 架"
+          }
+        }
+      }
+    },
+    "invite.rewards.ticket": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボスの無料チケット"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free Boss ticket"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis-Bossticket"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket de jefe gratis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket de boss gratuit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보스 무료 티켓"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket de chefe grátis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бесплатный билет на босса"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss 免费券"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss 免費券"
+          }
+        }
+      }
+    },
+    "invite.rewards.secret": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "招待限定の秘密のボス"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secret invite-only Boss"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geheimer Einladungs-Boss"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jefe secreto exclusivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boss secret exclusif"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초대 한정 비밀 보스"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chefe secreto exclusivo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Секретный босс за приглашения"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邀请限定的秘密 Boss"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邀請限定的秘密 Boss"
+          }
+        }
+      }
+    },
+    "ticket.confirm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チケットで「%@」をもらいますか?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use your ticket on “%@”?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket für „%@“ einlösen?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Usar tu ticket en «%@»?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser ton ticket pour « %@ » ?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "티켓으로 「%@」을(를) 받을까요?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar seu ticket em “%@”?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обменять билет на «%@»?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用券领取「%@」吗？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用券領取「%@」嗎？"
+          }
+        }
+      }
+    },
+    "ticket.confirm.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チケットは1枚につき、ボス1体と交換できます。交換したあとは、取り消せません。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One ticket gets you one Boss. This can’t be undone."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Ticket = ein Boss. Das lässt sich nicht rückgängig machen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un ticket equivale a un jefe. No se puede deshacer."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un ticket = un boss. C’est définitif."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "티켓 1장으로 보스 1체와 교환할 수 있어요. 교환 후에는 취소할 수 없어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um ticket vale um chefe. Não dá para desfazer."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Один билет — один босс. Отменить нельзя."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一张券可兑换一个 Boss。兑换后无法撤销。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一張券可兌換一個 Boss。兌換後無法撤銷。"
+          }
+        }
+      }
+    },
+    "ticket.confirm.use": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チケットを使う"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use ticket"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket einlösen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser le ticket"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "티켓 사용"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar ticket"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использовать билет"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用券"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用券"
+          }
+        }
+      }
+    },
+    "comment.menu.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このコメント"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This comment"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Kommentar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este comentario"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce commentaire"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 댓글"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este comentário"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот комментарий"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这条评论"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這則留言"
           }
         }
       }

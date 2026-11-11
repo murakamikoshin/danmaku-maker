@@ -1,7 +1,7 @@
 import FirebaseRemoteConfig
 import Foundation
 
-/// スワイプ弾幕 β を出すか（Remote Config の `swipe_enabled`）。取れなかったときは、前回の値（初回はオフ）。
+/// スワイプ弾幕を出すか（Remote Config の `swipe_enabled`）。取れなかったときは、前回の値（初回はオフ）。
 /// TestFlight と審査用のビルド（サンドボックスのレシート）では、設定に関わらず出す（実機確認と、Apple の審査のため）
 @MainActor
 final class SwipeConfig: ObservableObject {

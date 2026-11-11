@@ -125,6 +125,7 @@ struct SettingsView: View {
                             .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("settings.handle")
                     }
 
                     GamePanel(title: "settings.account", tint: GameStyle.violet) {
@@ -220,10 +221,9 @@ struct SettingsView: View {
             }
             Text("settings.notify.note").font(.caption).foregroundStyle(.secondary)
         }
-        .alert("settings.notify.denied.title", isPresented: $notifyDenied) {
-            Button("settings.notify.open") { openSystemSettings() }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text("settings.notify.denied") }
+        .gameDialog("settings.notify.denied.title", isPresented: $notifyDenied, message: "settings.notify.denied") {
+            [GameDialogAction(title: "settings.notify.open") { openSystemSettings() }, .cancel()]
+        }
     }
 
     private func openSystemSettings() {

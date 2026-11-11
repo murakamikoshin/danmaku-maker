@@ -15,6 +15,7 @@ struct PublishFlowView: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
     @State private var claimingTicket = false
+    @State private var confirmTicket = false
     @Environment(\.dismiss) private var dismiss
     @State private var quota: PostQuota?
     @State private var granting = false
@@ -93,15 +94,18 @@ struct PublishFlowView: View {
                     } else if cosmetics.canClaimBossTicket && boss.ticketEligible {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
                         TicketCount()
-                        GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.reward) {
-                            Task {
-                                claimingTicket = true
-                                if !(await cosmetics.claimBossTicket(boss)) { error = L("publish.boss.ticket.failed") }
-                                claimingTicket = false
-                            }
-                        }
+                        GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.reward) { confirmTicket = true }
                         .disabled(claimingTicket).opacity(claimingTicket ? 0.5 : 1)
                         .accessibilityIdentifier("publish.boss.ticket")
+                        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: "ticket.confirm.message") {
+                            [GameDialogAction(title: "ticket.confirm.use") {
+                                Task {
+                                    claimingTicket = true
+                                    if !(await cosmetics.claimBossTicket(boss)) { error = L("publish.boss.ticket.failed") }
+                                    claimingTicket = false
+                                }
+                            }, .cancel()]
+                        }
                     }
                     GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")

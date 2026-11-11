@@ -412,6 +412,7 @@ struct ResultView: View {
                                 .background(KeyCap(fill: GameStyle.panelHi, radius: 14)).padding(.bottom, 4)
                         }
                         .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("result.back")
                     }
                 }
                 .padding(20)

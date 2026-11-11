@@ -10,6 +10,8 @@ struct CommentsSection: View {
     @ObservedObject private var handles = HandleStore.shared
     @ObservedObject private var names = DisplayNameStore.shared
     @State private var comments: [StageComment] = []
+    /// 「…」を押したコメント(自前の吹き出しで、削除・通報・ブロックを選ぶ)
+    @State private var menuFor: StageComment?
     @State private var loading = true
     @State private var failed = false
     @State private var text = ""
@@ -37,15 +39,27 @@ struct CommentsSection: View {
         }
         .task { await load() }
         .sheet(isPresented: $needSignIn) { SignInSheet() }
-        .confirmationDialog("comment.report.title", isPresented: Binding(get: { reporting != nil }, set: { if !$0 { reporting = nil } }), titleVisibility: .visible) {
-            Button("report.reason.inappropriate_name") { report("inappropriate_name") }
-            Button("report.reason.other") { report("other") }
-            Button("common.cancel", role: .cancel) {}
+        .gameDialog("comment.menu.title", isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } })) {
+            guard let c = menuFor else { return [.cancel()] }
+            let mine = c.uid == auth.uid
+            var list: [GameDialogAction] = []
+            if mine || auth.uid == authorUid { list.append(GameDialogAction(title: "comment.delete", role: .destructive) { Task { await remove(c) } }) }
+            if !mine {
+                list.append(GameDialogAction(title: "comment.report") { reporting = c })
+                list.append(GameDialogAction(title: "comment.block", role: .destructive) { blocking = c })
+            }
+            return list + [.cancel()]
         }
-        .confirmationDialog("detail.block.title", isPresented: Binding(get: { blocking != nil }, set: { if !$0 { blocking = nil } }), titleVisibility: .visible) {
-            Button("detail.block", role: .destructive) { if let c = blocking { blocks.block(uid: c.uid, name: c.displayName) } }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text("detail.block.message") }
+        .gameDialog("comment.report.title", isPresented: Binding(get: { reporting != nil }, set: { if !$0 { reporting = nil } })) {
+            // 押したときの対象を、閉じる前に覚えておく(閉じると reporting が nil になるため)
+            let target = reporting
+            return [GameDialogAction(title: "report.reason.inappropriate_name") { reporting = target; report("inappropriate_name") },
+                    GameDialogAction(title: "report.reason.other") { reporting = target; report("other") }, .cancel()]
+        }
+        .gameDialog("detail.block.title", isPresented: Binding(get: { blocking != nil }, set: { if !$0 { blocking = nil } }), message: "detail.block.message") {
+            let target = blocking
+            return [GameDialogAction(title: "detail.block", role: .destructive) { if let c = target { blocks.block(uid: c.uid, name: c.displayName) } }, .cancel()]
+        }
     }
 
     @ViewBuilder private var composer: some View {
@@ -89,17 +103,11 @@ struct CommentsSection: View {
                 }
                 Spacer()
                 if let d = c.createdAt { Text(d, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary) }
-                Menu {
-                    if mine || auth.uid == authorUid {
-                        Button("comment.delete", role: .destructive) { Task { await remove(c) } }
-                    }
-                    if !mine {
-                        Button("comment.report") { reporting = c }
-                        Button("comment.block", role: .destructive) { blocking = c }
-                    }
-                } label: {
+                Button { gameTap(); menuFor = c } label: {
                     Image(systemName: "ellipsis").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).frame(width: 28, height: 22)
                 }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("comment.menu")
             }
             Text(c.text).font(.system(size: 14, weight: .medium)).foregroundStyle(GameStyle.text)
                 .frame(maxWidth: .infinity, alignment: .leading)

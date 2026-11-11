@@ -30,6 +30,7 @@ struct FeedbackView: View {
                                 .overlay(Circle().stroke(GameStyle.edge))
                         }
                         .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("feedback.close")
                         .accessibilityLabel(Text("swipe.close"))
                     }
                     if sent {

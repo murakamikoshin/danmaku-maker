@@ -305,6 +305,7 @@ struct TitlePickerView: View {
                                 .overlay(Circle().stroke(GameStyle.edge))
                         }
                         .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("titles.close")
                         .accessibilityLabel(Text("swipe.close"))
                     }
                     GamePanel(title: "title.section.score", tint: GameStyle.yellow) {

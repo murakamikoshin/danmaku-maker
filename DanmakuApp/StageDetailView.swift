@@ -63,22 +63,19 @@ struct StageDetailView: View {
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .sheet(isPresented: $needSignIn) { SignInSheet() }
-        .confirmationDialog("detail.report.title", isPresented: $confirmReport, titleVisibility: .visible) {
-            Button("report.reason.inappropriate_name") { Task { await report("inappropriate_name") } }
-            Button("report.reason.other") { Task { await report("other") } }
-            Button("common.cancel", role: .cancel) {}
+        .gameDialog("detail.report.title", isPresented: $confirmReport) {
+            [GameDialogAction(title: "report.reason.inappropriate_name") { Task { await report("inappropriate_name") } },
+             GameDialogAction(title: "report.reason.other") { Task { await report("other") } }, .cancel()]
         }
-        .confirmationDialog("detail.delete.title", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("detail.delete", role: .destructive) {
+        .gameDialog("detail.delete.title", isPresented: $confirmDelete, message: "detail.delete.message") {
+            [GameDialogAction(title: "detail.delete", role: .destructive) {
                 Task { if await StageRepository().deleteStage(id: remote.id) { dismiss() } else { deleteFailed = true } }
-            }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text("detail.delete.message") }
-        .alert("mystage.delete.failed", isPresented: $deleteFailed) { Button("OK", role: .cancel) {} }
-        .confirmationDialog("detail.block.title", isPresented: $confirmBlock, titleVisibility: .visible) {
-            Button("detail.block", role: .destructive) { blocks.block(uid: remote.authorUid, name: remote.authorName); dismiss() }
-            Button("common.cancel", role: .cancel) {}
-        } message: { Text("detail.block.message") }
+            }, .cancel()]
+        }
+        .gameDialog("mystage.delete.failed", isPresented: $deleteFailed) { [.ok()] }
+        .gameDialog("detail.block.title", isPresented: $confirmBlock, message: "detail.block.message") {
+            [GameDialogAction(title: "detail.block", role: .destructive) { blocks.block(uid: remote.authorUid, name: remote.authorName); dismiss() }, .cancel()]
+        }
         .fullScreenCover(isPresented: $playing) {
             PlayView(stage: remote.stage, title: remote.name, share: context, ranking: rankingContext,
                      onStart: { ResultsQueue.shared.recordPlay(remote.id) },
