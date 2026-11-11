@@ -60608,6 +60608,71 @@
           }
         }
       }
+    },
+    "lifetime.priceup": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "11月30日まで 3,000円。12月1日から 4,500円に値上げします"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The price goes up on December 1 (Japan time). Get it at today’s price until November 30."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ab 1. Dezember (japanische Zeit) wird es teurer. Bis 30. November zum aktuellen Preis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El precio sube el 1 de diciembre (hora de Japón). Consíguelo al precio actual hasta el 30 de noviembre."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le prix augmente le 1er décembre (heure du Japon). Profite du prix actuel jusqu’au 30 novembre."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12월 1일(일본 시간)부터 가격이 오릅니다. 11월 30일까지는 지금 가격이에요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O preço sobe em 1º de dezembro (horário do Japão). Garanta pelo preço atual até 30 de novembro."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С 1 декабря (по японскому времени) цена вырастет. До 30 ноября — по текущей цене."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12月1日（日本时间）起涨价。11月30日前仍是现价。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12月1日（日本時間）起漲價。11月30日前仍是現價。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

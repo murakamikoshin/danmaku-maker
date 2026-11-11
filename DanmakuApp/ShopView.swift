@@ -553,11 +553,28 @@ private struct LifetimeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     private let items = ["lifetime.item.1", "lifetime.item.2", "lifetime.item.3", "lifetime.item.4"]
 
+    /// 値上げの日時(2026年12月1日 0:00 日本時間)。App Store Connect の値段の変更も、この日に予約してある
+    static let priceUpDate: Date = {
+        var c = DateComponents(); c.year = 2026; c.month = 12; c.day = 1
+        var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        return cal.date(from: c)!
+    }()
+    static func beforePriceUp(now: Date = Date()) -> Bool { now < priceUpDate }
+
     var body: some View {
         ShopCard(title: "lifetime.title", footer: "lifetime.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("lifetime.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                    if cosmetics.ownership.canBuy(.lifetime) && LifetimeCard.beforePriceUp() {
+                        // 値上げのお知らせ(12月1日 0時(日本時間)を過ぎたら、自動で消える)。値段は国ごとに違うので、日本語以外は日付だけ書く
+                        Label("lifetime.priceup", systemImage: "clock.badge.exclamationmark.fill")
+                            .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                            .padding(.vertical, 8).padding(.horizontal, 10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(GameStyle.pinkColor, in: PixelRect(cornerRadius: 10))
+                            .accessibilityIdentifier("lifetime.priceup")
+                    }
                     ForEach(items, id: \.self) { k in
                         Label(LocalizedStringKey(k), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(GameStyle.text)
