@@ -1,0 +1,88 @@
+# 導線のテスト(DanmakuAppUITests/FlowUITests): ロボットが画面を押して、主な機能まで辿れるかを確かめる。
+# サーバーは Firebase エミュレーター(demo-danmaku)につなぐので、本番のデータには一切触らない。
+# テーマ 3 つ × iPhone(大きい画面・小さい画面)と iPad、文字を大きくした設定で回し、
+# 1 画面ごとのスクリーンショットを成果物(ui-flow-shots)に保存する。手動実行(Actions → UI Flow Tests → Run workflow)
+name: UI Flow Tests
+on: workflow_dispatch
+jobs:
+  flows:
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install tools
+        run: |
+          brew install xcodegen
+          npm i -g firebase-tools
+          (cd firebase/functions && npm ci && npm run build)
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build for testing
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO 2>&1 | grep -E "error:|TEST BUILD (SUCCEEDED|FAILED)" | sort -u | head -60
+      - name: Run flows on the emulator
+        env:
+          FUNCTIONS_DISCOVERY_TIMEOUT: "120"
+        run: |
+          mkdir -p flow
+          pick() { xcrun simctl list devices available | grep -E "$1" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/'; }
+          BIG=$(pick "iPhone [0-9]+ Pro Max")
+          SMALL=$(pick "iPhone (SE|16e|17e|[0-9]+ mini)")
+          [ -z "$SMALL" ] && SMALL=$(pick "iPhone [0-9]+ \(")
+          IPAD=$(pick "iPad Pro 13|iPad Pro \(12.9")
+          echo "big=$BIG small=$SMALL ipad=$IPAD"
+          cat > run_flows.sh <<'EOS'
+          #!/bin/bash
+          # 引数: 名前 端末UDID テーマ [文字の大きさ]
+          run() {
+            name=$1; udid=$2; theme=$3; size=$4
+            [ -z "$udid" ] && { echo "skip $name (no device)"; return 0; }
+            export TEST_RUNNER_UI_THEME=$theme TEST_RUNNER_UI_BACKEND=emulator
+            if [ -n "$size" ]; then export TEST_RUNNER_UI_TEXT_SIZE=$size; else unset TEST_RUNNER_UI_TEXT_SIZE; fi
+            xcodebuild test-without-building -project DanmakuMaker.xcodeproj -scheme DanmakuApp \
+              -derivedDataPath "$RUNNER_TEMP/dd" -destination "id=$udid" -only-testing:DanmakuAppUITests/FlowUITests \
+              -resultBundlePath "flow/$name.xcresult" > "flow/$name.log" 2>&1
+            echo "$name => exit $?"
+            grep -E "error: |Test Case .* (passed|failed)" "flow/$name.log" | sed -E 's/^.*(Test Case)/\1/' | head -40
+          }
+          run classic_big   "$BIG"   classic
+          run arcade_big    "$BIG"   arcade
+          run gensou_big    "$BIG"   gensou
+          run classic_small "$SMALL" classic
+          run classic_ipad  "$IPAD"  classic
+          run classic_bigtext "$BIG" classic UICTContentSizeCategoryAccessibilityL
+          exit 0
+          EOS
+          chmod +x run_flows.sh
+          export BIG SMALL IPAD
+          cd firebase && firebase emulators:exec --only auth,firestore,functions,storage --project demo-danmaku \
+            "cd .. && ./run_flows.sh" | grep -vE "^\s*$" | grep -E "=> exit|Test Case|error: |skip " | tee ../flow/summary.txt
+      - name: Export screenshots
+        if: always()
+        run: |
+          mkdir -p flow-shots
+          for r in flow/*.xcresult; do
+            [ -d "$r" ] || continue
+            n=$(basename "$r" .xcresult)
+            xcrun xcresulttool export attachments --path "$r" --output-path "flow-shots/$n" > /dev/null 2>&1 || true
+          done
+          cp flow/summary.txt flow-shots/ 2>/dev/null || true
+          cp flow/*.log flow-shots/ 2>/dev/null || true
+          find flow-shots -name "*.png" | wc -l
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-flow-shots
+          path: flow-shots
