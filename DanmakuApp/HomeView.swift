@@ -7,6 +7,8 @@ struct HomeView: View {
     @EnvironmentObject private var deepLink: DeepLink
     @StateObject private var world = WorldViewModel()
     @State private var tab: Tab = .samples
+    /// 世界のステージの絞り込み欄(クリア条件・難しさ)を開いているか。はじめは畳んでおく(場所を取るので)
+    @AppStorage("home.world.filterOpen") private var filterOpen = false
     @State private var playing: SampleStage?
     @State private var detail: RemoteStage?
     /// 自分が世界に投稿したステージと、実績の合計(マイステージの下に出す)
@@ -238,8 +240,7 @@ struct HomeView: View {
             }
         }
         // クリア条件(モード)の絞り込みは、並び順のチップとは見た目も場所も分ける(同じチップが2段続くと、どちらが何か分かりにくかった)
-        modeFilter
-        difficultyFilter
+        filters
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.sort.title", "arrow.up.arrow.down")
             ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
@@ -284,6 +285,40 @@ struct HomeView: View {
         (nil, "world.filter.all"), (.survive, "editor.mode.survive"), (.boss, "editor.mode.boss"),
         (.damage, "editor.mode.damage"), (.sequence, "editor.mode.sequence"),
     ]
+
+    /// 絞り込み(クリア条件・難しさ)。畳めるようにして、畳んでいる間は、今かけている条件を1行で見せる
+    private var filters: some View {
+        let modeText = world.mode.flatMap { m in Self.modeOptions.first { $0.0 == m }.map { L($0.1) } }
+        let diffText = world.difficulty.map { L($0.titleKey) }
+        let active = [modeText, diffText].compactMap { $0 }
+        return VStack(alignment: .leading, spacing: 10) {
+            Button {
+                gameTap()
+                withAnimation(.easeInOut(duration: 0.2)) { filterOpen.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "line.3.horizontal.decrease.circle\(active.isEmpty ? "" : ".fill")")
+                        .foregroundStyle(active.isEmpty ? Color(Palette.text).opacity(0.7) : Color(Palette.gold))
+                    Text("world.filter.toggle").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    if !filterOpen && !active.isEmpty {
+                        Text(active.joined(separator: " / ")).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.down").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.text).opacity(0.6))
+                        .rotationEffect(.degrees(filterOpen ? 180 : 0))
+                }
+                .padding(.vertical, 10).padding(.horizontal, 14)
+                .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.filter.toggle")
+            if filterOpen {
+                modeFilter
+                difficultyFilter
+            }
+        }
+    }
 
     /// クリア条件の絞り込み: 見出しと、今の条件を出すプルダウン。絞り込み中は色をつけて目立たせる
     private var modeFilter: some View {
