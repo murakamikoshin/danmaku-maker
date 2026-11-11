@@ -57,15 +57,9 @@ struct EditorView: View {
                         WavesSection(model: model, advanced: advanced)
                     } else {
                         TimingPanel(model: model)
-                        if advanced { EffectsPanel(model: model) }
-                    }
-                    if advanced {
-                        LifePanel(model: model)
-                        BGMPanel(model: model)
-                        LookPanel(model: model)
-                        RewardFxPanel(model: model)
-                        WorldPreviewPanel(model: model)
-                        if model.draft.mode != .sequence {
+                        // ボスの見た目・大きさ・覚醒(と雑魚)。ボスの動きの欄(時間の欄)のすぐ下に置く。
+                        // ボス戦では「かんたん」でも出す(奥にあって見つけにくかったため)。耐久の雑魚は「くわしく」だけ
+                        if advanced || model.draft.mode != .survive {
                             GamePanel(title: "editor.enemy", tint: GameStyle.violet) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
@@ -74,6 +68,14 @@ struct EditorView: View {
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
                         }
+                        if advanced { EffectsPanel(model: model) }
+                    }
+                    if advanced {
+                        LifePanel(model: model)
+                        BGMPanel(model: model)
+                        LookPanel(model: model)
+                        RewardFxPanel(model: model)
+                        WorldPreviewPanel(model: model)
                         MarkerPanel(model: model)
                         CustomLookPanel(model: model)
                     }
@@ -288,7 +290,7 @@ private struct ShotPanel: View {
             }
             Text(LocalizedStringKey(model.draft.shot.detailKey)).font(.caption2).foregroundStyle(.secondary)
         }
-        .sheet(isPresented: $showShop) { ShopView() }
+        .sheet(isPresented: $showShop) { ShopView(focus: "shots") }
     }
 }
 
@@ -556,7 +558,7 @@ private struct RewardFxPanel: View {
             }
             Button { gameTap(); showShop = true } label: { Chip(title: L("editor.rewardfx.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
         }
-        .sheet(isPresented: $showShop) { ShopView() }
+        .sheet(isPresented: $showShop) { ShopView(focus: "daily") }
     }
 
     private func chosen(_ kind: RewardKind) -> Reward? {
@@ -576,6 +578,8 @@ private struct LookPanel: View {
     @ObservedObject var model: EditorModel
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    /// ショップで移動する先(押した見た目のテーマ。全体の「ショップへ」は、まだ持っていない最初のテーマ)
+    @State private var lookFocus = "customimages"
     @State private var rewardHint: Theme?
 
     var body: some View {
@@ -593,11 +597,11 @@ private struct LookPanel: View {
                 Text(String(format: L("editor.look.rewardhint"), max(0, need - cosmetics.ownership.posts)))
                     .font(.caption.bold()).foregroundStyle(GameStyle.yellow)
             }
-            if Theme.paid.contains(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
-                Button { gameTap(); showShop = true } label: { Chip(title: L("editor.look.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
+            if let firstLocked = Theme.paid.first(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
+                Button { gameTap(); lookFocus = "theme.\(firstLocked.rawValue)"; showShop = true } label: { Chip(title: L("editor.look.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
             }
         }
-        .sheet(isPresented: $showShop) { ShopView() }
+        .sheet(isPresented: $showShop) { ShopView(focus: lookFocus) }
     }
 
     private func current(_ part: ThemePart) -> Theme {
@@ -624,7 +628,7 @@ private struct LookPanel: View {
             gameTap()
             if owned { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { set(part, t) } }
             else if t.unlockPosts != nil { rewardHint = t }
-            else { showShop = true }
+            else { lookFocus = "theme.\(t.rawValue)"; showShop = true }
         } label: {
             VStack(spacing: 6) {
                 ZStack {
@@ -763,7 +767,7 @@ private struct CustomLookPanel: View {
                 Button { gameTap(); showShop = true } label: { Chip(title: L("editor.custom.buy"), selected: true) }.buttonStyle(BounceButtonStyle())
             }
         }
-        .sheet(isPresented: $showShop) { ShopView() }
+        .sheet(isPresented: $showShop) { ShopView(focus: "customimages") }
     }
 }
 

@@ -11,14 +11,20 @@ struct ShopView: View {
     @State private var celebrate = false
     @State private var tab: ShopTab
 
-    init(initialTab: ShopTab = .deals) {
+    /// 開いたときに、自動で移動する商品のカード(エディタで持っていないパーツを押したとき、その商品まで連れていく)
+    private let focus: String?
+
+    init(initialTab: ShopTab = .deals, focus: String? = nil) {
+        var start = focus.flatMap(ShopTab.containing) ?? initialTab
+        var target = focus
         #if DEBUG
-        // 画面確認・審査用スクリーンショット用: -shop-bosses でボスのタブを開く(製品ビルドには入らない)
-        let tab = ProcessInfo.processInfo.arguments.contains("-shop-bosses") ? ShopTab.bosses : initialTab
-        _tab = State(initialValue: tab)
-        #else
-        _tab = State(initialValue: initialTab)
+        // 画面確認・審査用スクリーンショット用: -shop-bosses でボスのタブ、-shop-focus <カード> でそのカードまで(製品ビルドには入らない)
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-shop-bosses") { start = .bosses }
+        if let i = args.firstIndex(of: "-shop-focus"), args.indices.contains(i + 1) { target = args[i + 1]; start = ShopTab.containing(args[i + 1]) ?? start }
         #endif
+        _tab = State(initialValue: start)
+        self.focus = target
     }
 
     /// ショップの区切り。上のタブで切り替える
@@ -32,6 +38,7 @@ struct ShopView: View {
             case "adpatterns", "patterns", "patterns2", "maker": return .patterns
             case "shots": return .shots
             case "customimages": return .looks
+            case _ where id.hasPrefix("theme."): return .looks
             case "bosses": return .bosses
             case _ where id.hasPrefix("boss."): return .bosses
             default: return nil
@@ -57,15 +64,10 @@ struct ShopView: View {
                     }
                     .id(tab)
                     .onAppear {
-                        #if DEBUG
-                        // 画面確認用: 起動引数 -shop-focus patterns|shots|customimages で、そのタブへ切り替えて、そこまで自動で移動する
-                        let args = ProcessInfo.processInfo.arguments
-                        if let i = args.firstIndex(of: "-shop-focus"), args.indices.contains(i + 1) {
-                            let target = args[i + 1]
-                            if let t = ShopTab.containing(target) { tab = t }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { proxy.scrollTo(target, anchor: .top) }
+                        // 該当の商品のカードまで、自動で移動する(一覧は映るぶんだけ作るので、少し待ってから)
+                        if let focus, ShopTab.containing(focus) == tab {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { withAnimation { proxy.scrollTo(focus, anchor: .top) } }
                         }
-                        #endif
                     }
                 }
             }
@@ -165,7 +167,7 @@ struct ShopView: View {
             RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
             RewardShop()
-            ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0) }
+            ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0).id("theme.\($0.rawValue)") }
             ThemeCard(theme: .classic)
         }
     }

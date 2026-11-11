@@ -14,6 +14,8 @@ struct PublishFlowView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    /// ショップで移動する先(このステージのボスの商品)
+    @State private var shopFocus: String? = nil
     @State private var claimingTicket = false
     @State private var confirmTicket = false
     @Environment(\.dismiss) private var dismiss
@@ -49,7 +51,7 @@ struct PublishFlowView: View {
         }
         .background(GameStyle.night.ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
-        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses) }
+        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: shopFocus) }
         .task(id: auth.isMember) { await refreshQuota() }
         .preferredColorScheme(.dark)
     }
@@ -107,7 +109,7 @@ struct PublishFlowView: View {
                             }, .cancel()]
                         }
                     }
-                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
+                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { shopFocus = "boss.\(boss.productKey)"; showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")
                 } else if limitReached {
                     GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.reward) { Task { await watchForExtra() } }
@@ -161,7 +163,7 @@ struct PublishFlowView: View {
             Text("publish.done").font(.display(23)).foregroundStyle(GameStyle.gold)
             if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
                 // 初めての公開のごほうび: ボスの無料チケット
-                Button { gameTap(); showShop = true } label: {
+                Button { gameTap(); shopFocus = "bosses"; showShop = true } label: {
                     HStack(spacing: 8) { TicketArtView(height: 18); Text("publish.done.ticket") }.font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(KeyCap(fill: GameStyle.accent, radius: 14, depth: 3)).padding(.bottom, 3)

@@ -398,6 +398,16 @@ struct PatternTiles: View {
     var character: BossCharacter? = nil
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    /// ショップで移動する先(押したパターンの商品のカード)
+    @State private var shopFocus = "patterns"
+    /// パターンが入っている、ショップのカードの名札
+    static func shopCard(for p: DanmakuCore.Pattern) -> String {
+        if DanmakuCore.Pattern.ad.contains(p) { return "adpatterns" }
+        if DanmakuCore.Pattern.pack2.contains(p) { return "patterns2" }
+        if p == .custom { return "maker" }
+        if let b = p.bossCharacter { return "boss.\(b.productKey)" }
+        return "patterns"
+    }
     private let keys: [DanmakuCore.Pattern: String] = [
         .ring: "pattern.ring", .spiral: "pattern.spiral", .aim: "pattern.aim", .rain: "pattern.rain", .sweep: "pattern.sweep",
         .sideL: "pattern.sideL", .sideR: "pattern.sideR", .corner: "pattern.corner", .homing: "pattern.homing",
@@ -419,7 +429,7 @@ struct PatternTiles: View {
             grid(DanmakuCore.Pattern.pack2)
             customSection
         }
-        .sheet(isPresented: $showShop) { ShopView() }
+        .sheet(isPresented: $showShop) { ShopView(focus: shopFocus) }
     }
 
     /// 最初から使えるパターン。旧「渦巻き」(spiral)は放射と同じ計算なので出さず、新しい渦巻き(swirl)をその場所に出す
@@ -478,7 +488,7 @@ struct PatternTiles: View {
                 let locked = !cosmetics.ownership.has(p) && selection != p
                 Button {
                     gameTap()
-                    if locked { showShop = true; return }
+                    if locked { shopFocus = Self.shopCard(for: p); showShop = true; return }
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection = p }
                 } label: {
                     VStack(spacing: 3) {
