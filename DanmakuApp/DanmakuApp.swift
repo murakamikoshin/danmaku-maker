@@ -9,6 +9,7 @@ struct DanmakuApp: App {
     @StateObject private var ads = AdsService()
     @StateObject private var purchases = PurchaseService()
     @StateObject private var swipeConfig = SwipeConfig()
+    @StateObject private var battleConfig = BattleConfig()
     @ObservedObject private var uiTheme = UIThemeStore.shared
     @Environment(\.scenePhase) private var scenePhase
 
@@ -35,12 +36,13 @@ struct DanmakuApp: App {
                 .environmentObject(ads)
                 .environmentObject(purchases)
                 .environmentObject(swipeConfig)
+                .environmentObject(battleConfig)
                 .environmentObject(CosmeticsStore.shared)
                 .environmentObject(RewardStore.shared)
                 .environmentObject(AdPatternStore.shared)
                 .task {
                     auth.start()
-                    Task { await swipeConfig.refresh() }
+                    Task { await swipeConfig.refresh(); await battleConfig.refresh() }
                     // 自分のステージへの反応の通知。開いたら、そのステージを開く
                     NotificationService.shared.onOpenStage = { deepLink.stageID = $0.uppercased() }
                     NotificationService.shared.start()

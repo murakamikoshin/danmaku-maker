@@ -1,5 +1,6 @@
 import FirebaseAuth
 import FirebaseCore
+import FirebaseDatabase
 import FirebaseFirestore
 import FirebaseFunctions
 import Foundation
@@ -10,6 +11,10 @@ enum Backend {
     static let region = "asia-northeast1"
 
     static var functions: Functions { Functions.functions(region: region) }
+
+    /// 弾幕バトルの通信用(Realtime Database、シンガポール)。エミュレーターのときは configure で差し替える
+    static let databaseURL = "https://danmaku-maker-default-rtdb.asia-southeast1.firebasedatabase.app"
+    static var database: Database { Database.database(url: databaseURL) }
 
     static func configure() {
         let args = ProcessInfo.processInfo.arguments
@@ -28,6 +33,7 @@ enum Backend {
             settings.cacheSettings = MemoryCacheSettings()
             Firestore.firestore().settings = settings
             functions.useEmulator(withHost: host, port: 5001)
+            database.useEmulator(withHost: host, port: 9000)
             isAvailable = true
         } else if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
             FirebaseApp.configure()

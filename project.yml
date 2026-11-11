@@ -108,6 +108,8 @@ targets:
       - package: Firebase
         product: FirebaseFunctions
       - package: Firebase
+        product: FirebaseDatabase
+      - package: Firebase
         product: FirebaseMessaging
       - package: Firebase
         product: FirebaseRemoteConfig

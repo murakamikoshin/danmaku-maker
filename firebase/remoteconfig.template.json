@@ -1,8 +1,17 @@
 {
   "parameters": {
     "swipe_enabled": {
-      "defaultValue": { "value": "false" },
+      "defaultValue": {
+        "value": "false"
+      },
       "description": "スワイプ弾幕 β を出すか。true で全員に出る(TestFlight・審査用のビルドは、これに関わらず出る)",
+      "valueType": "BOOLEAN"
+    },
+    "battle_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "弾幕バトル(リアルタイム対戦)のタブを出す",
       "valueType": "BOOLEAN"
     }
   }

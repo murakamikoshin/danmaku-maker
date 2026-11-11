@@ -14,6 +14,12 @@ final class GameScene: SKScene {
     var onStatus: ((Int, Int, Int) -> Void)?
     private var lastStatus = (-1, -1, -1)
     var onFinish: ((Simulation, [Move]) -> Void)?
+    /// 1 ステップ進むごとに呼ぶ(弾幕バトルで、相手のボットを同じ歩調で進める・自分の位置を送るため)
+    var onStep: ((Simulation) -> Void)?
+    /// 弾幕バトルの相手の自機(薄く出す)。毎フレーム聞く。nil なら出さない。alive が false になると弾けて消える
+    var ghostPosition: (() -> (x: Double, y: Double, alive: Bool)?)?
+    private var ghostNode: SKSpriteNode?
+    private var ghostGone = false
 
     private var moves: [Move] = []
     private var accumulator = 0.0
@@ -514,6 +520,7 @@ final class GameScene: SKScene {
                 let m = takeMove()
                 moves.append(m)
                 sim.step(m)
+                onStep?(sim)
             }
         }
         render(currentTime)
@@ -539,6 +546,7 @@ final class GameScene: SKScene {
             s.node.position = pos(Double(s.node.position.x), (s.y + now * s.v).truncatingRemainder(dividingBy: Double(H)))
         }
         shipNode.position = pos(sim.player.x, sim.player.y)
+        renderGhost()
         renderMooks()
         if effectsOn { renderRewardFX() }
         shipNode.alpha = sim.isShielded ? (Int(now * 10) % 2 == 0 ? 0.35 : 1) : 1
@@ -864,6 +872,36 @@ extension GameScene {
             let lit = idx < sim.mookFlash.count && sim.mookFlash[idx] > 0
             n.color = .white
             n.colorBlendFactor = lit ? 0.85 : 0
+        }
+    }
+
+    /// 弾幕バトルの相手の自機: 自分と同じ形を薄く出す。落ちたら弾けて消える(見た目だけで、当たり判定はない)
+    private func renderGhost() {
+        guard let provider = ghostPosition, !ghostGone else { return }
+        guard let g = provider() else { ghostNode?.isHidden = true; return }
+        let node: SKSpriteNode
+        if let n = ghostNode { node = n } else {
+            node = SKSpriteNode(texture: shipNode.texture, size: shipNode.size)
+            node.alpha = 0.38
+            node.colorBlendFactor = 0.55
+            node.color = UIColor(red: 1, green: 0.42, blue: 0.62, alpha: 1)
+            node.zPosition = 2.9
+            addChild(node)
+            ghostNode = node
+        }
+        node.isHidden = false
+        node.position = pos(g.x, g.y)
+        if !g.alive {
+            ghostGone = true
+            if effectsOn {
+                let burst = SKSpriteNode(texture: node.texture, size: node.size)
+                burst.position = node.position; burst.zPosition = 6
+                burst.color = .white; burst.colorBlendFactor = 1; burst.alpha = 0.8
+                addChild(burst)
+                burst.run(.sequence([.group([.scale(to: 2.4, duration: 0.35), .fadeOut(withDuration: 0.35)]), .removeFromParent()]))
+            }
+            node.removeFromParent()
+            ghostNode = nil
         }
     }
 

@@ -5,9 +5,9 @@ import DanmakuCore
 /// 画面の下のタブ: あそぶ / ショップ / せってい。アイコンは、ゲームの部品で描いたオリジナル
 struct MainTabView: View {
     enum Tab: Int, CaseIterable {
-        case play, swipe, shop, settings
-        var titleKey: String { ["tab.play", "tab.swipe", "tab.shop", "tab.settings"][rawValue] }
-        var id: String { ["play", "swipe", "shop", "settings"][rawValue] }
+        case play, swipe, battle, shop, settings
+        var titleKey: String { ["tab.play", "tab.swipe", "tab.battle", "tab.shop", "tab.settings"][rawValue] }
+        var id: String { ["play", "swipe", "battle", "shop", "settings"][rawValue] }
     }
 
     @EnvironmentObject private var ads: AdsService
@@ -15,6 +15,9 @@ struct MainTabView: View {
     @EnvironmentObject private var adPatterns: AdPatternStore
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var swipeConfig: SwipeConfig
+    @EnvironmentObject private var battleConfig: BattleConfig
+    /// バトルのタブを一度でも開いたか(開くまで、新しい印を出す)
+    @AppStorage("battle.seen") private var battleSeen = false
     @ObservedObject private var notice = RewardNoticeService.shared
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
@@ -24,6 +27,7 @@ struct MainTabView: View {
         ZStack {
             page(.play) { HomeView() }
             if swipeConfig.enabled { page(.swipe) { SwipeHomeView() } }
+            if battleConfig.enabled { page(.battle) { BattleHomeView() } }
             page(.shop) { ShopView() }
             page(.settings) { SettingsView() }
         }
@@ -35,10 +39,11 @@ struct MainTabView: View {
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
                         .frame(width: width, height: BannerAdView.adSize(width: width).size.height)
                 }
-                TabBar(selection: $tab, showSwipe: swipeConfig.enabled, shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
+                TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
+                       shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
             }
         }
-        .onChange(of: tab) { opened.insert($0) }
+        .onChange(of: tab) { opened.insert($0); if $0 == .battle { battleSeen = true } }
         .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty }, set: { if !$0 { notice.pending = [] } })) {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
         }
@@ -50,6 +55,7 @@ struct MainTabView: View {
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }
+            if args.contains("-open-battle") { tab = .battle; opened.insert(.battle) }
             if args.contains("-open-shop") { tab = .shop; opened.insert(.shop) }
             if args.contains("-open-settings") { tab = .settings; opened.insert(.settings) }
             #endif
@@ -69,12 +75,15 @@ struct MainTabView: View {
 private struct TabBar: View {
     @Binding var selection: MainTabView.Tab
     var showSwipe: Bool
+    var showBattle: Bool
+    /// バトルのタブを、まだ開いていない(アップデートで増えたことを知らせる)
+    var battleBadge: Bool
     /// ショップに「広告を見てもらえるごほうび」が残っているとき、赤い点で知らせる
     let shopBadge: Bool
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(MainTabView.Tab.allCases.filter { showSwipe || $0 != .swipe }, id: \.self) { tab in
+            ForEach(MainTabView.Tab.allCases.filter { (showSwipe || $0 != .swipe) && (showBattle || $0 != .battle) }, id: \.self) { tab in
                 let selected = selection == tab
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -85,7 +94,7 @@ private struct TabBar: View {
                             .frame(width: 36, height: 36)
                             .scaleEffect(selected ? 1.08 : 0.94)
                             .overlay(alignment: .topTrailing) {
-                                if tab == .shop && shopBadge {
+                                if (tab == .shop && shopBadge) || (tab == .battle && battleBadge) {
                                     Rectangle().fill(GameStyle.pinkColor).frame(width: 9, height: 9)
                                         .overlay(Rectangle().stroke(GameStyle.night, lineWidth: 2))
                                         .offset(x: 2, y: 2)
@@ -143,6 +152,13 @@ private struct TabIcon: View {
                 PixelRect(cornerRadius: 5).fill(Color(SwipePalette.pink)).frame(width: 20, height: 26).rotationEffect(.degrees(-8)).offset(x: -3)
                 PixelRect(cornerRadius: 5).fill(Color(SwipePalette.cyan)).frame(width: 20, height: 26).rotationEffect(.degrees(8)).offset(x: 3)
                 Image(systemName: "chevron.up").font(.system(size: 14, weight: .black)).foregroundStyle(.white)
+            }
+        case .battle:
+            // 1 対 1: 上向きのシアンの自機と、下向きのピンクの自機。あいだに黄色の弾
+            ZStack {
+                GameShipShape().fill(GameStyle.cyanColor).frame(width: 15, height: 18).offset(x: -8, y: 5)
+                GameShipShape().fill(GameStyle.pinkColor).frame(width: 15, height: 18).rotationEffect(.degrees(180)).offset(x: 8, y: -5)
+                Rectangle().fill(GameStyle.yellow).frame(width: 5, height: 5)
             }
         case .shop:
             // ボス: ピンクの星(中央に穴)
