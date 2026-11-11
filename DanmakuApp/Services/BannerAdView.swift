@@ -8,19 +8,19 @@ struct BannerAdView: UIViewRepresentable {
     let width: CGFloat
 
     /// 画面の幅に合わせた、バナーの大きさ(高さはここで決まる)
-    static func adSize(width: CGFloat) -> GADAdSize {
-        GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
+    static func adSize(width: CGFloat) -> AdSize {
+        currentOrientationAnchoredAdaptiveBanner(width: width)
     }
 
-    func makeUIView(context: Context) -> GADBannerView {
-        let banner = GADBannerView(adSize: Self.adSize(width: width))
+    func makeUIView(context: Context) -> BannerView {
+        let banner = BannerView(adSize: Self.adSize(width: width))
         banner.adUnitID = unitID
         banner.rootViewController = AdsService.topViewController()
-        banner.load(GADRequest())
+        banner.load(Request())
         return banner
     }
 
-    func updateUIView(_ banner: GADBannerView, context: Context) {}
+    func updateUIView(_ banner: BannerView, context: Context) {}
 }
 
 /// 全画面のゲーム画面に付ける。表示している間は、メニューの下のバナーを外す

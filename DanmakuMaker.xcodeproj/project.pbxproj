@@ -36,6 +36,7 @@
 		222699FB45A5DAF959D2B820 /* witch_windup_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C9FDFF7F85C312D91AED2A5 /* witch_windup_sheet.png */; };
 		258439472FCE7575D6175586 /* ShopEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */; };
 		2A55DA44E85BB1B20F77D9DE /* RewardArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6825279BEB581088B0F51469 /* RewardArt.swift */; };
+		2ADC05061830193E4E77E275 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 7E25805402198660741F69EC /* RevenueCat */; };
 		2AFD1CC65A31EF1FF80CECE9 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */; };
 		2B5C9B80E954307FED961A37 /* mech_recover_awakened_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 1036D3BE36EA54E28492AE5D /* mech_recover_awakened_sheet.png */; };
 		2B9EB3C1FCD56A0FA19FCC4D /* fallen_angel_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D08D3E42808B6ADEAF3F86AE /* fallen_angel_awakened_idle_sheet.png */; };
@@ -70,7 +71,7 @@
 		5549B6EB85C7F640C63B343D /* puni_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 4942C7816E9B4228403DD5B3 /* puni_awakened_idle_sheet.png */; };
 		564E5BC5EA9BBB1E35B45E6D /* mech_recover_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = C068D88EB26F37285B52646A /* mech_recover_sheet.png */; };
 		587D602678B8051E03EEC3EB /* LocalStageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8FCD68D2BDEB92DFCAD920 /* LocalStageStore.swift */; };
-		5AB11705D8398935A9523221 /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = AB52EFC09A12811D950F1323 /* AppsFlyerLib */; };
+		5AB11705D8398935A9523221 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
 		5C1934DCB4B21C8BFC0C0DA6 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7535A08FF07645BA22E08A3 /* UpdateChecker.swift */; };
 		609D930516FAA26308F256AB /* witch_attack_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 193DD3ED0FBD822477DD71DD /* witch_attack_sheet.png */; };
 		60F4407E97864A330737BEA2 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD3C27E636E8B15E076F52B /* Palette.swift */; };
@@ -87,7 +88,7 @@
 		6FC2842093BC35D3483AEA1B /* SwipeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BAD28940EC30276707CFDA /* SwipeService.swift */; };
 		719CE9B25A4D4A4364874C40 /* DelaGothicOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B022E164B161AC369C1B1B4C /* DelaGothicOne-Regular.ttf */; };
 		7302878734AAA61D2F63E6F9 /* mech_attack_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 60CB88D3FCE0C8BA556495AF /* mech_attack_sheet.png */; };
-		746DFD5FFE2E149B7DDA3B08 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */; };
+		746DFD5FFE2E149B7DDA3B08 /* AppLovinAdapterTarget in Frameworks */ = {isa = PBXBuildFile; productRef = 2A9BF495BD35013A3B12BB94 /* AppLovinAdapterTarget */; };
 		7499E2A3E8F9B9C6B02D214C /* DanmakuCore in Frameworks */ = {isa = PBXBuildFile; productRef = 849C6FF0167B1B8617DAC835 /* DanmakuCore */; };
 		76B8E870201D0955907EFEAD /* reaper_windup_awakened_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 6513E27C6336C5798286BB6D /* reaper_windup_awakened_sheet.png */; };
 		7777F05C763417BDD2B9C311 /* BattleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C34523C3CEF198A693655C6D /* BattleService.swift */; };
@@ -106,6 +107,7 @@
 		8C1272F637EF66A83F1A8C31 /* kitsune_attack_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = CA6C2C5750980970FC246AF7 /* kitsune_attack_sheet.png */; };
 		8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D829E677A324B52D22AD32A /* AppConfig.swift */; };
 		8D49980961713AE110C0356B /* hire_attack_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 33EC2FFD5DE6C1144353FC32 /* hire_attack_sheet.png */; };
+		8E27FC81867610079F94E0C4 /* AdsCompat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 058D67CD93DAF6D03E898B89 /* AdsCompat.swift */; };
 		916253486151123560DAA46E /* StageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102C201E59BDBBDE5EB35C59 /* StageDetailView.swift */; };
 		91D5028EFD175507EDF538EC /* witch_recover_awakened_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A2ED60156E5E51433935A4B /* witch_recover_awakened_sheet.png */; };
 		955C030C70B07B15293C7070 /* SpriteFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77009BD8BB884EC589EDCC16 /* SpriteFactory.swift */; };
@@ -137,7 +139,8 @@
 		B26A37BED1D4E3E02FB57FAA /* hire_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = CA3CD86FD3962D449F67C0E3 /* hire_idle_sheet.png */; };
 		B29625A7B420E5FBB2C70E33 /* Titles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19084243662110CA130C11E5 /* Titles.swift */; };
 		B29AE4A401AD25C45ECE031E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCCCE535A3473E173ED76E /* MainTabView.swift */; };
-		B6C3F839660EB325FD0BF973 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 7E25805402198660741F69EC /* RevenueCat */; };
+		B2BB607D8340DED3B76CCADD /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = AB52EFC09A12811D950F1323 /* AppsFlyerLib */; };
+		B6C3F839660EB325FD0BF973 /* UnityAdapterTarget in Frameworks */ = {isa = PBXBuildFile; productRef = 292831477A6AEE2664D2AD45 /* UnityAdapterTarget */; };
 		B76065D1FACE1376B127E5E7 /* CommentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DE776EFBE3A43B7196CBB2 /* CommentViews.swift */; };
 		B94B0B95C15A8EAA333E45CB /* TicketArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC652E2B13C3DCC55382D2EB /* TicketArt.swift */; };
 		BC6FEDDAE6E24BE486E44DB3 /* PurchaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FABAD127D8EABEA2C29870E /* PurchaseService.swift */; };
@@ -205,6 +208,7 @@
 		02AE476E298CCBE62FAA3F39 /* ShopEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEffects.swift; sourceTree = "<group>"; };
 		04408E7E6ACCC985DCFCFDA8 /* reaper_awakened_idle_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = reaper_awakened_idle_sheet.png; sourceTree = "<group>"; };
 		053C262F506F47DE303F68E7 /* fallen_angel_attack_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_attack_sheet.png; sourceTree = "<group>"; };
+		058D67CD93DAF6D03E898B89 /* AdsCompat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsCompat.swift; sourceTree = "<group>"; };
 		084F59B3D178DDB070FCACBB /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
 		0959F15E82D57107F8E23729 /* fallen_angel_attack_awakened_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fallen_angel_attack_awakened_sheet.png; sourceTree = "<group>"; };
 		0EBE2F9ABB86729E670738A7 /* puni_recover_awakened_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = puni_recover_awakened_sheet.png; sourceTree = "<group>"; };
@@ -393,9 +397,11 @@
 				F60366855D1624D0C085B3B0 /* FirebaseMessaging in Frameworks */,
 				B259B87E13614269D15389E9 /* FirebaseRemoteConfig in Frameworks */,
 				2AFD1CC65A31EF1FF80CECE9 /* GoogleMobileAds in Frameworks */,
-				746DFD5FFE2E149B7DDA3B08 /* GoogleUserMessagingPlatform in Frameworks */,
-				B6C3F839660EB325FD0BF973 /* RevenueCat in Frameworks */,
-				5AB11705D8398935A9523221 /* AppsFlyerLib in Frameworks */,
+				746DFD5FFE2E149B7DDA3B08 /* AppLovinAdapterTarget in Frameworks */,
+				B6C3F839660EB325FD0BF973 /* UnityAdapterTarget in Frameworks */,
+				5AB11705D8398935A9523221 /* GoogleUserMessagingPlatform in Frameworks */,
+				2ADC05061830193E4E77E275 /* RevenueCat in Frameworks */,
+				B2BB607D8340DED3B76CCADD /* AppsFlyerLib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -533,6 +539,7 @@
 			isa = PBXGroup;
 			children = (
 				9F3E01EDC40C37D63D5BFCBB /* AdPatternStore.swift */,
+				058D67CD93DAF6D03E898B89 /* AdsCompat.swift */,
 				98A1EDA4AE924D46F4C6F8C7 /* AdsService.swift */,
 				7D829E677A324B52D22AD32A /* AppConfig.swift */,
 				E687E4070D61C14836155C91 /* AttributionService.swift */,
@@ -713,6 +720,8 @@
 				D5F7C5DF62CF369C46A7126B /* FirebaseMessaging */,
 				049F2A0011A383632E9A2287 /* FirebaseRemoteConfig */,
 				FFAE7BDBC33E6DA615561630 /* GoogleMobileAds */,
+				2A9BF495BD35013A3B12BB94 /* AppLovinAdapterTarget */,
+				292831477A6AEE2664D2AD45 /* UnityAdapterTarget */,
 				B52FBC6D56779D85C785C954 /* GoogleUserMessagingPlatform */,
 				7E25805402198660741F69EC /* RevenueCat */,
 				AB52EFC09A12811D950F1323 /* AppsFlyerLib */,
@@ -776,10 +785,12 @@
 			mainGroup = E259C44490F67C30B8FB0946;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				9B7BF89BB353B9798E1CAD36 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-applovin" */,
 				0FD38E1E474DE501A72ACBD3 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */,
 				02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				C477D248F6279A380A1DC92A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				1A5EEC864BC25E310713D277 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-unity" */,
 				A0AF8BF87E0FEE88F1A8BF69 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 				D24F205AF726535BC60BA0E5 /* XCLocalSwiftPackageReference "DanmakuCore" */,
 			);
@@ -908,6 +919,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				120FA968D44EB5A13BA9A033 /* AdPatternStore.swift in Sources */,
+				8E27FC81867610079F94E0C4 /* AdsCompat.swift in Sources */,
 				2216517C4E34F9CC5AEFD7A3 /* AdsService.swift in Sources */,
 				8CF9BBB6D17FDAE41ECEF886 /* AppConfig.swift in Sources */,
 				138B957FE4558FE900DB2D1F /* AttributionService.swift in Sources */,
@@ -1286,12 +1298,28 @@
 				version = 7.0.4;
 			};
 		};
+		1A5EEC864BC25E310713D277 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-unity" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/googleads-mobile-ios-mediation-unity";
+			requirement = {
+				kind = revision;
+				revision = 188967a5c062987496cd276b83dc25e84f87d9a6;
+			};
+		};
 		634BF9E23C572C54FF0A213E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
 			requirement = {
 				kind = exactVersion;
-				version = 11.2.0;
+				version = 13.12.0;
+			};
+		};
+		9B7BF89BB353B9798E1CAD36 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-applovin" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/googleads-mobile-ios-mediation-applovin";
+			requirement = {
+				kind = revision;
+				revision = 5a50776a706e62006135c6ee2dcc70b90c669aee;
 			};
 		};
 		A0AF8BF87E0FEE88F1A8BF69 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
@@ -1322,6 +1350,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 02ED7CED43029E851844F547 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		292831477A6AEE2664D2AD45 /* UnityAdapterTarget */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A5EEC864BC25E310713D277 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-unity" */;
+			productName = UnityAdapterTarget;
+		};
+		2A9BF495BD35013A3B12BB94 /* AppLovinAdapterTarget */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B7BF89BB353B9798E1CAD36 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-mediation-applovin" */;
+			productName = AppLovinAdapterTarget;
 		};
 		509C6FFE11E375D1FAD65EE0 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;

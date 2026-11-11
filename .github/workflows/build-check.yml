@@ -1,0 +1,33 @@
+# 提出用の構成(Xcode 26・広告 SDK 13・メディエーションの部品)で、ビルドが通るかだけを確かめる。署名しない・TestFlight に送らない
+# (証明書が増えない)。この Mac の Xcode 15.2 では、この構成をビルドできないため。
+# 手動実行は main にこのファイルが入るまで使えないので、広告まわりやこのファイルを変えて push したときにも回す
+name: Build Check
+on:
+  workflow_dispatch:
+  push:
+    branches: [ranked-match]
+    paths: [".github/workflows/build-check.yml", "project.yml", "DanmakuApp/Services/Ads*.swift", "DanmakuApp/Services/BannerAdView.swift"]
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Restore Firebase config
+        env:
+          PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: echo "$PLIST" | base64 --decode > DanmakuApp/GoogleService-Info.plist
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build (Release, no signing)
+        run: |
+          set -o pipefail
+          xcodebuild build -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Release \
+            -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO 2>&1 | tee build.log | grep -E "error:|warning: .*(GoogleMobileAds|deprecated)|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log

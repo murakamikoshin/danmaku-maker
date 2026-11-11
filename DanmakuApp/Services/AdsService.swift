@@ -13,7 +13,7 @@ import UserMessagingPlatform
 ///  2. 全画面広告: 結果画面から次へ進むときに、2回遊ぶごと・前の広告から60秒以上あいているときだけ。
 ///     広告削除の購入者・テストプレイ・ステージ開始時・プレイ中には、出さない。
 @MainActor
-final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate {
+final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     @Published private(set) var isReady = false
     /// SDK を開始できたか。バナーを出してよいかの目安
     @Published private(set) var canShowBanner = false
@@ -37,8 +37,8 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         if playing { playingTabs.insert(tab) } else { playingTabs.remove(tab) }
     }
 
-    private var rewarded: GADRewardedAd?
-    private var interstitial: GADInterstitialAd?
+    private var rewarded: RewardedAd?
+    private var interstitial: InterstitialAd?
     /// 読み込んだ時刻。読み込んだ広告は1時間で期限切れになり、出せなくなる(出そうとして失敗する)ので、
     /// 50分たったものは捨てて読み込み直す
     private var rewardedLoadedAt = Date.distantPast
@@ -97,7 +97,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         // ATT の結果が出たので、広告の効果計測(AppsFlyer)を始めてよい
         AttributionService.shared.trackingDecided()
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
-            GADMobileAds.sharedInstance().start { _ in c.resume() }
+            MobileAds.shared.start { _ in c.resume() }
         }
         sdkStarted = true
         canShowBanner = true
@@ -201,8 +201,8 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         guard sdkStarted, rewarded == nil, !loading else { return }
         loading = true
         defer { loading = false }
-        let ad: GADRewardedAd? = await withCheckedContinuation { c in
-            GADRewardedAd.load(withAdUnitID: unitID, request: GADRequest()) { ad, _ in c.resume(returning: ad) }
+        let ad: RewardedAd? = await withCheckedContinuation { c in
+            RewardedAd.load(with: unitID, request: Request()) { ad, _ in c.resume(returning: ad) }
         }
         ad?.fullScreenContentDelegate = self
         rewarded = ad
@@ -214,8 +214,8 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         guard sdkStarted, interstitial == nil, !loadingInterstitial else { return }
         loadingInterstitial = true
         defer { loadingInterstitial = false }
-        let ad: GADInterstitialAd? = await withCheckedContinuation { c in
-            GADInterstitialAd.load(withAdUnitID: interstitialUnitID, request: GADRequest()) { ad, _ in c.resume(returning: ad) }
+        let ad: InterstitialAd? = await withCheckedContinuation { c in
+            InterstitialAd.load(with: interstitialUnitID, request: Request()) { ad, _ in c.resume(returning: ad) }
         }
         ad?.fullScreenContentDelegate = self
         interstitial = ad
@@ -244,7 +244,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }
-            ad.present(fromRootViewController: vc)
+            ad.present(from: vc)
         }
         return true
     }
@@ -259,7 +259,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }
-            ad.present(fromRootViewController: vc)
+            ad.present(from: vc)
         }
         return true
     }
@@ -270,17 +270,17 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         earned = false
         return await withCheckedContinuation { cont in
             onDismiss = { cont.resume(returning: $0) }
-            ad.present(fromRootViewController: vc) { [weak self] in self?.earned = true }
+            ad.present(from: vc) { [weak self] in self?.earned = true }
         }
     }
 
-    // MARK: GADFullScreenContentDelegate
+    // MARK: FullScreenContentDelegate
 
-    nonisolated func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Task { @MainActor in await finishPresentation() }
     }
 
-    nonisolated func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+    nonisolated func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         Task { @MainActor in earned = false; await finishPresentation() }
     }
 

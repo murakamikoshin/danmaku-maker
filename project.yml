@@ -10,9 +10,19 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
     exactVersion: 11.6.0
+  # 広告 SDK。提出用(Xcode 26)は 13。この Mac の Xcode 15.2 では 13 がビルドできないので、
+  # tools/build_shots_app.sh が 11.2.0 に差し替え、メディエーションの部品を外す(違いは AdsCompat.swift で吸収)
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads
-    exactVersion: 11.2.0
+    exactVersion: 13.12.0
+  # メディエーション(AdMob の入札に AppLovin・Unity Ads も参加させて、単価を競わせる)。
+  # タグが 13.7.000 のような形で SPM の版として読めないので、タグのコミットで固定する
+  AppLovinAdapter:
+    url: https://github.com/googleads/googleads-mobile-ios-mediation-applovin
+    revision: 5a50776a706e62006135c6ee2dcc70b90c669aee  # 13.7.000(AppLovin SDK 13.7.0)
+  UnityAdapter:
+    url: https://github.com/googleads/googleads-mobile-ios-mediation-unity
+    revision: 188967a5c062987496cd276b83dc25e84f87d9a6  # 4.21.000(Unity Ads 4.21.0)
   UserMessagingPlatform:
     url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
     exactVersion: 2.3.0
@@ -45,6 +55,7 @@ targets:
         NSUserTrackingUsageDescription: 許可すると、あなたに合った広告が表示されやすくなります。許可しなくても、すべての機能で遊べます。
         ITSAppUsesNonExemptEncryption: false
         UIAppFonts: [DelaGothicOne-Regular.ttf]
+        # Google・AppLovin・Unity Ads の公式の一覧を合わせたもの(2026-11-12)。メディエーションの各社が入札するのに要る
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
           - SKAdNetworkIdentifier: 4fzdc2evr5.skadnetwork
@@ -90,6 +101,118 @@ targets:
           - SKAdNetworkIdentifier: zq492l623r.skadnetwork
           - SKAdNetworkIdentifier: 3rd42ekr43.skadnetwork
           - SKAdNetworkIdentifier: 3qcr597p9d.skadnetwork
+          - SKAdNetworkIdentifier: 238da6jt44.skadnetwork
+          - SKAdNetworkIdentifier: 24t9a8vw3c.skadnetwork
+          - SKAdNetworkIdentifier: 24zw6aqk47.skadnetwork
+          - SKAdNetworkIdentifier: 252b5q8x7y.skadnetwork
+          - SKAdNetworkIdentifier: 275upjj5gd.skadnetwork
+          - SKAdNetworkIdentifier: 294l99pt4k.skadnetwork
+          - SKAdNetworkIdentifier: 32z4fx6l9h.skadnetwork
+          - SKAdNetworkIdentifier: 3l6bd9hu43.skadnetwork
+          - SKAdNetworkIdentifier: 424m5254lk.skadnetwork
+          - SKAdNetworkIdentifier: 44jx6755aq.skadnetwork
+          - SKAdNetworkIdentifier: 44n7hlldy6.skadnetwork
+          - SKAdNetworkIdentifier: 488r3q3dtq.skadnetwork
+          - SKAdNetworkIdentifier: 4mn522wn87.skadnetwork
+          - SKAdNetworkIdentifier: 4pfyvq9l8r.skadnetwork
+          - SKAdNetworkIdentifier: 4w7y6s5ca2.skadnetwork
+          - SKAdNetworkIdentifier: 523jb4fst2.skadnetwork
+          - SKAdNetworkIdentifier: 52fl2v3hgk.skadnetwork
+          - SKAdNetworkIdentifier: 54nzkqm89y.skadnetwork
+          - SKAdNetworkIdentifier: 5a6flpkh64.skadnetwork
+          - SKAdNetworkIdentifier: 5l3tpt7t6e.skadnetwork
+          - SKAdNetworkIdentifier: 5lm9lj6jb7.skadnetwork
+          - SKAdNetworkIdentifier: 5tjdwbrq8w.skadnetwork
+          - SKAdNetworkIdentifier: 6964rsfnh4.skadnetwork
+          - SKAdNetworkIdentifier: 6g9af3uyq4.skadnetwork
+          - SKAdNetworkIdentifier: 6p4ks3rnbw.skadnetwork
+          - SKAdNetworkIdentifier: 6v7lgmsu45.skadnetwork
+          - SKAdNetworkIdentifier: 6xzpu9s2p8.skadnetwork
+          - SKAdNetworkIdentifier: 737z793b9f.skadnetwork
+          - SKAdNetworkIdentifier: 74b6s63p6l.skadnetwork
+          - SKAdNetworkIdentifier: 79pbpufp6p.skadnetwork
+          - SKAdNetworkIdentifier: 7fmhfwg9en.skadnetwork
+          - SKAdNetworkIdentifier: 7rz58n8ntl.skadnetwork
+          - SKAdNetworkIdentifier: 84993kbrcf.skadnetwork
+          - SKAdNetworkIdentifier: 89z7zv988g.skadnetwork
+          - SKAdNetworkIdentifier: 8m87ys6875.skadnetwork
+          - SKAdNetworkIdentifier: 8r8llnkz5a.skadnetwork
+          - SKAdNetworkIdentifier: 97r2b46745.skadnetwork
+          - SKAdNetworkIdentifier: 9b89h5y424.skadnetwork
+          - SKAdNetworkIdentifier: 9nlqeag3gk.skadnetwork
+          - SKAdNetworkIdentifier: 9rd848q2bz.skadnetwork
+          - SKAdNetworkIdentifier: 9vvzujtq5s.skadnetwork
+          - SKAdNetworkIdentifier: 9yg77x724h.skadnetwork
+          - SKAdNetworkIdentifier: a7xqa6mtl2.skadnetwork
+          - SKAdNetworkIdentifier: a8cz6cu7e5.skadnetwork
+          - SKAdNetworkIdentifier: av6w8kgt66.skadnetwork
+          - SKAdNetworkIdentifier: b9bk5wbcq9.skadnetwork
+          - SKAdNetworkIdentifier: bxvub5ada5.skadnetwork
+          - SKAdNetworkIdentifier: c3frkrj4fj.skadnetwork
+          - SKAdNetworkIdentifier: cg4yq2srnc.skadnetwork
+          - SKAdNetworkIdentifier: cj5566h2ga.skadnetwork
+          - SKAdNetworkIdentifier: cs644xg564.skadnetwork
+          - SKAdNetworkIdentifier: dbu4b84rxf.skadnetwork
+          - SKAdNetworkIdentifier: dkc879ngq3.skadnetwork
+          - SKAdNetworkIdentifier: dzg6xy7pwj.skadnetwork
+          - SKAdNetworkIdentifier: ecpz2srf59.skadnetwork
+          - SKAdNetworkIdentifier: eh6m2bh4zr.skadnetwork
+          - SKAdNetworkIdentifier: ejvt5qm6ak.skadnetwork
+          - SKAdNetworkIdentifier: f38h382jlk.skadnetwork
+          - SKAdNetworkIdentifier: f73kdq92p3.skadnetwork
+          - SKAdNetworkIdentifier: f7s53z58qe.skadnetwork
+          - SKAdNetworkIdentifier: feyaarzu9v.skadnetwork
+          - SKAdNetworkIdentifier: g28c52eehv.skadnetwork
+          - SKAdNetworkIdentifier: g2y4y55b64.skadnetwork
+          - SKAdNetworkIdentifier: g6gcrrvk4p.skadnetwork
+          - SKAdNetworkIdentifier: ggvn48r87g.skadnetwork
+          - SKAdNetworkIdentifier: glqzh8vgby.skadnetwork
+          - SKAdNetworkIdentifier: gta8lk7p23.skadnetwork
+          - SKAdNetworkIdentifier: hb56zgv37p.skadnetwork
+          - SKAdNetworkIdentifier: hdw39hrw9y.skadnetwork
+          - SKAdNetworkIdentifier: k674qkevps.skadnetwork
+          - SKAdNetworkIdentifier: kbmxgpxpgc.skadnetwork
+          - SKAdNetworkIdentifier: krvm3zuq6h.skadnetwork
+          - SKAdNetworkIdentifier: lr83yxwka7.skadnetwork
+          - SKAdNetworkIdentifier: m297p6643m.skadnetwork
+          - SKAdNetworkIdentifier: m5mvw97r93.skadnetwork
+          - SKAdNetworkIdentifier: m8dbw4sv7c.skadnetwork
+          - SKAdNetworkIdentifier: mj797d8u6f.skadnetwork
+          - SKAdNetworkIdentifier: mls7yz5dvl.skadnetwork
+          - SKAdNetworkIdentifier: mp6xlyr22a.skadnetwork
+          - SKAdNetworkIdentifier: mqn7fxpca7.skadnetwork
+          - SKAdNetworkIdentifier: mtkv5xtk9e.skadnetwork
+          - SKAdNetworkIdentifier: n66cz3y3bx.skadnetwork
+          - SKAdNetworkIdentifier: n9x2a789qt.skadnetwork
+          - SKAdNetworkIdentifier: nzq8sh4pbs.skadnetwork
+          - SKAdNetworkIdentifier: prcb7njmu6.skadnetwork
+          - SKAdNetworkIdentifier: pwdxu55a5a.skadnetwork
+          - SKAdNetworkIdentifier: qqp299437r.skadnetwork
+          - SKAdNetworkIdentifier: qu637u8glc.skadnetwork
+          - SKAdNetworkIdentifier: r45fhb6rf7.skadnetwork
+          - SKAdNetworkIdentifier: rvh3l7un93.skadnetwork
+          - SKAdNetworkIdentifier: rx5hdcabgc.skadnetwork
+          - SKAdNetworkIdentifier: s69wq72ugq.skadnetwork
+          - SKAdNetworkIdentifier: su67r6k2v3.skadnetwork
+          - SKAdNetworkIdentifier: tl55sbb4fm.skadnetwork
+          - SKAdNetworkIdentifier: u679fj5vs4.skadnetwork
+          - SKAdNetworkIdentifier: v79kvwwj4g.skadnetwork
+          - SKAdNetworkIdentifier: vcra2ehyfk.skadnetwork
+          - SKAdNetworkIdentifier: vhf287vqwu.skadnetwork
+          - SKAdNetworkIdentifier: w9q455wk68.skadnetwork
+          - SKAdNetworkIdentifier: wg4vff78zm.skadnetwork
+          - SKAdNetworkIdentifier: x44k69ngh6.skadnetwork
+          - SKAdNetworkIdentifier: x5l83yy675.skadnetwork
+          - SKAdNetworkIdentifier: x8jxxk4ff5.skadnetwork
+          - SKAdNetworkIdentifier: x8uqf25wch.skadnetwork
+          - SKAdNetworkIdentifier: xga6mpmplv.skadnetwork
+          - SKAdNetworkIdentifier: xy9t38ct57.skadnetwork
+          - SKAdNetworkIdentifier: y45688jllp.skadnetwork
+          - SKAdNetworkIdentifier: zmvfpc5aq8.skadnetwork
+          - SKAdNetworkIdentifier: 77y3x8wds4.skadnetwork
+          - SKAdNetworkIdentifier: 6yxyv74ff7.skadnetwork
+          - SKAdNetworkIdentifier: k6y4y55b64.skadnetwork
+          - SKAdNetworkIdentifier: 5f5u5tfb26.skadnetwork
     entitlements:
       path: DanmakuApp/DanmakuApp.entitlements
       properties:
@@ -115,6 +238,10 @@ targets:
         product: FirebaseRemoteConfig
       - package: GoogleMobileAds
         product: GoogleMobileAds
+      - package: AppLovinAdapter
+        product: AppLovinAdapterTarget
+      - package: UnityAdapter
+        product: UnityAdapterTarget
       - package: UserMessagingPlatform
         product: GoogleUserMessagingPlatform
       - package: RevenueCat
