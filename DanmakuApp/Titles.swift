@@ -336,7 +336,7 @@ struct TitlePickerView: View {
                         }
                         Text("title.month.footer").font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.5))
                     }
-                    GamePanel(title: "title.section.crown", tint: Color(CrownStyle.gold)) {
+                    GamePanel(title: "title.section.crown", tint: CrownStyle.gold) {
                         let crowns = TitleID.crownSorted(service.owned)
                         VStack(spacing: 8) {
                             crownRow(title: L("title.crown.auto"), on: service.crownAuto, id: "auto", icon: "wand.and.stars", color: GameStyle.text) { pickCrown(nil, auto: true) }

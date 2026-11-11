@@ -160,7 +160,7 @@ struct CountStepper: View {
                 .font(.display(34))
                 .foregroundStyle(GameStyle.text)
                 .frame(minWidth: 64)
-                .contentTransition(.numericText())
+                .compatNumericTransition()
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: value)
             roundButton("plus", enabled: value < range.upperBound) { value += 1 }
                 .accessibilityIdentifier("\(idPrefix).plus")
@@ -882,7 +882,7 @@ struct GameToggle: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(.isToggle)
+        .compatToggleTrait()
         .accessibilityValue(Text(isOn ? "On" : "Off"))
     }
 }

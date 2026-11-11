@@ -173,7 +173,7 @@ struct PublishFlowView: View {
             Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                 .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
             let text = ShareText.author(name: stage.name, id: id)
-            ShareLink(item: text) {
+            CompatShareLink(item: text) {
                 Label("detail.share", systemImage: "square.and.arrow.up").font(.system(size: 17, weight: .heavy)).foregroundStyle(GameStyle.ink)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
                     .background(KeyCap(fill: GameStyle.cyan, radius: 16, depth: 3)).padding(.bottom, 3)

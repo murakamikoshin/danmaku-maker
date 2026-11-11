@@ -15,7 +15,7 @@ enum ShipSkin {
 
     /// 画面に出す名前。例「エース 鋼」。オリジナル・特別機は、機種名だけ
     static func name(_ id: String) -> String {
-        if RemoteCatalog.isRemoteID(id) { return MainActor.assumeIsolated { RemoteCatalog.shared.item(id)?.name ?? id } }
+        if RemoteCatalog.isRemoteID(id) { return compatAssumeMainActor { RemoteCatalog.shared.item(id)?.name ?? id } }
         if id == original { return L("ship.original") }
         if id == special { return L("ship.special") }
         let parts = id.split(separator: "_").map(String.init)
@@ -26,7 +26,7 @@ enum ShipSkin {
     /// 再生する順のコマ(ループ)。見つからなければ空
     static func frames(_ id: String) -> [UIImage] {
         if let c = cache[id] { return c }
-        if RemoteCatalog.isRemoteID(id) { return MainActor.assumeIsolated { RemoteCatalog.shared.item(id)?.frames ?? [] } }
+        if RemoteCatalog.isRemoteID(id) { return compatAssumeMainActor { RemoteCatalog.shared.item(id)?.frames ?? [] } }
         guard isValid(id) else { return [] }
         let count = id == special ? 4 : 3
         let files = (0..<count).compactMap { n -> UIImage? in

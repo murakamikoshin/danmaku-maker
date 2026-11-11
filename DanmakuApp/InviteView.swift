@@ -51,7 +51,7 @@ struct InviteView: View {
                 }
                 .padding(.horizontal, 16).padding(.bottom, 28).padding(.top, 8)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .compatDismissKeyboardOnScroll()
         }
         .preferredColorScheme(.dark)
         .task(id: auth.uid) { await service.refresh(); await cosmetics.refreshBossTickets(uid: auth.uid) }
@@ -84,7 +84,7 @@ struct InviteView: View {
                     .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
                     .accessibilityIdentifier("invite.code")
                 HStack(spacing: 10) {
-                    ShareLink(item: InviteService.shareURL(code: info.code), message: Text(String(format: L("invite.share.message"), info.code))) {
+                    CompatShareLink(item: InviteService.shareURL(code: info.code), message: String(format: L("invite.share.message"), info.code)) {
                         HStack(spacing: 8) {
                             Image(systemName: "paperplane.fill").font(.system(size: 15, weight: .heavy))
                             Text("invite.share.button").font(.system(size: 15, weight: .heavy))

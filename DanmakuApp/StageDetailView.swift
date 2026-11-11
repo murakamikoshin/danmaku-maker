@@ -158,7 +158,7 @@ struct StageDetailView: View {
                     .overlay(PixelRect(cornerRadius: 8).stroke(liked ? GameStyle.pinkColor : Color.white.opacity(0.15)))
             }
             .buttonStyle(BounceButtonStyle()).disabled(busy)
-            ShareLink(item: stageShareText) { shareChip("detail.share", "square.and.arrow.up") }
+            CompatShareLink(item: stageShareText) { shareChip("detail.share", "square.and.arrow.up") }
             if let url = ShareText.xIntentURL(stageShareText) {
                 Link(destination: url) { shareChip("detail.share.x", "xmark") }
             }

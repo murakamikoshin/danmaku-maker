@@ -47,7 +47,7 @@ struct ShopView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatNavigationStack {
             VStack(spacing: 0) {
                 header
                 GameTabs(items: tabItems,
@@ -73,7 +73,7 @@ struct ShopView: View {
             }
             .background(GameStyle.night.ignoresSafeArea())
             .overlay(alignment: .top) { GameStyle.night.ignoresSafeArea(edges: .top).frame(height: 1) }
-            .toolbar(.hidden, for: .navigationBar)
+            .compatHideNavigationBar()
             .task { await purchases.refresh() }
             .overlay {
                 if celebrate {
@@ -399,7 +399,7 @@ private struct ThemeCard: View {
                     HStack(spacing: 6) {
                         Text(total).strikethrough().foregroundStyle(.secondary)
                         Text("→").foregroundStyle(.secondary)
-                        Text(price).foregroundStyle(GameStyle.yellow).bold()
+                        Text(price).bold().foregroundStyle(GameStyle.yellow)
                     }.font(.caption)
                 }
             }
@@ -498,7 +498,7 @@ private struct CustomImagesCard: View {
 private struct CustomSlotRow: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     let slot: CustomSlot
-    @State private var item: PhotosPickerItem?
+    @State private var picking = false
     @State private var failed = false
 
     var body: some View {
@@ -525,24 +525,21 @@ private struct CustomSlotRow: View {
                 Button(role: .destructive) { cosmetics.removeCustomImage(slot) } label: { Image(systemName: "trash") }
                     .buttonStyle(.borderless)
             }
-            PhotosPicker(selection: $item, matching: .images) {
+            Button { picking = true } label: {
                 Text(image == nil ? "shop.custom.pick" : "shop.custom.change").font(.footnote.bold())
                     .padding(.vertical, 6).padding(.horizontal, 12)
                     .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
             }
+            .buttonStyle(.borderless)
             .accessibilityIdentifier("shop.custom.pick.\(slot.rawValue)")
         }
         .padding(14)
-        .onChange(of: item) { newItem in
-            guard let newItem else { return }
-            Task {
-                let data = try? await newItem.loadTransferable(type: Data.self)
-                await MainActor.run {
-                    if let data, let ui = UIImage(data: data), cosmetics.setCustomImage(ui, for: slot) { failed = false }
-                    else { failed = true }
-                    item = nil
-                }
+        // 写真の選択は PHPicker(iOS 15 でも使える)。iOS 16 からの PhotosPicker と同じ、写真ライブラリの許可が要らない画面
+        .sheet(isPresented: $picking) {
+            PhotoPickerSheet(isPresented: $picking) { ui in
+                if let ui, cosmetics.setCustomImage(ui, for: slot) { failed = false } else { failed = true }
             }
+            .ignoresSafeArea()
         }
     }
 }
@@ -814,7 +811,7 @@ private struct PatternShop: View {
                                 HStack(spacing: 6) {
                                     Text(total).strikethrough().foregroundStyle(.secondary)
                                     Text("→").foregroundStyle(.secondary)
-                                    Text(price).foregroundStyle(GameStyle.yellow).bold()
+                                    Text(price).bold().foregroundStyle(GameStyle.yellow)
                                 }.font(.caption)
                             }
                         }

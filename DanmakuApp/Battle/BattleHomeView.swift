@@ -89,7 +89,7 @@ struct BattleHomeView: View {
             VStack(spacing: 12) {
                 ProgressView().tint(GameStyle.yellow)
                 Text("battle.searching").font(.display(17)).foregroundStyle(GameStyle.text)
-                Text("\(left)").font(.display(34)).foregroundStyle(GameStyle.yellow).contentTransition(.numericText())
+                Text("\(left)").font(.display(34)).foregroundStyle(GameStyle.yellow).compatNumericTransition()
                 Button { gameTap(); model.cancel() } label: {
                     Text("battle.cancel").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                         .padding(.vertical, 10).padding(.horizontal, 28)
@@ -183,7 +183,7 @@ struct BattleHomeView: View {
                         Text(String(format: L("battle.rating"), m.opponent.rating)).font(.system(size: 13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
                     }
                 }
-                Text("\(n)").font(.display(64)).foregroundStyle(GameStyle.yellow).contentTransition(.numericText())
+                Text("\(n)").font(.display(64)).foregroundStyle(GameStyle.yellow).compatNumericTransition()
             }
             .padding(24).gamePanel(radius: 20)
         case .waiting:

@@ -2,7 +2,7 @@ name: DanmakuMaker
 options:
   bundleIdPrefix: com.koshin
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "15.0"
   developmentLanguage: ja
 packages:
   DanmakuCore:

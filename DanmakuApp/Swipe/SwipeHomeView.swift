@@ -399,7 +399,7 @@ private struct StaminaSheet: View {
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: SwipePalette.background).ignoresSafeArea())
-        .presentationDetents([.large])
+        .compatLargeSheet()
         .task { await purchases.loadSwipeProducts(); await service.refresh() }
     }
 

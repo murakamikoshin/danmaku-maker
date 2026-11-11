@@ -131,7 +131,7 @@ struct HandleSheet: View {
         }
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
-        .presentationDetents([.large])
+        .compatLargeSheet()
     }
 }
 

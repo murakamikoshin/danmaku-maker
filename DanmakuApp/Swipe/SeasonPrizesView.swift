@@ -39,7 +39,7 @@ struct SeasonPrizesView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("season.prizes.note").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.85))

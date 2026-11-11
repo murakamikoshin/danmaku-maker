@@ -390,9 +390,7 @@ struct StageStillView: View {
 
     /// 送る PNG(168×168 を 2 倍で描く。ふつう 10〜30KB)
     @MainActor static func png(for stage: Stage) -> Data? {
-        let r = ImageRenderer(content: StageStillView(stage: stage))
-        r.scale = 2
-        return r.uiImage?.pngData()
+        compatRenderImage(StageStillView(stage: stage), scale: 2)?.pngData()
     }
 }
 
@@ -425,7 +423,7 @@ struct StageMiniPreview: View {
         .background(Color(bg))
         .clipShape(PixelRect(cornerRadius: size * 0.21))
         .overlay(PixelRect(cornerRadius: size * 0.21).stroke(GameStyle.edge, lineWidth: 1))
-        .onChange(of: visible) { _, v in if !v { holder.engine?.restart() } }
+        .onChange(of: visible) { v in if !v { holder.engine?.restart() } }
         .accessibilityHidden(true)
     }
 
@@ -526,8 +524,8 @@ struct MarqueeTitle: View {
         .clipped()
         .onPreferenceChange(TextWidthKey.self) { textWidth = $0 }
         .onPreferenceChange(BoxWidthKey.self) { boxWidth = $0 }
-        .onChange(of: visible) { _, v in if !v { clock.reset() } }
-        .onChange(of: text) { clock.reset() }
+        .onChange(of: visible) { v in if !v { clock.reset() } }
+        .onChange(of: text) { _ in clock.reset() }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(text))
     }

@@ -44,7 +44,7 @@ struct FeedbackView: View {
                         GamePanel(title: "feedback.prompt", tint: GameStyle.pinkColor) {
                             ZStack(alignment: .topLeading) {
                                 TextEditor(text: $text)
-                                    .scrollContentBackground(.hidden)
+                                    .compatHideTextEditorBackground()
                                     .font(.system(size: 15, weight: .medium))
                                     .focused($focused)
                                     .frame(minHeight: 150)
@@ -85,7 +85,7 @@ struct FeedbackView: View {
                 }
                 .padding(.horizontal, 16).padding(.bottom, 28).padding(.top, 8)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .compatDismissKeyboardOnScroll()
         }
         .preferredColorScheme(.dark)
     }

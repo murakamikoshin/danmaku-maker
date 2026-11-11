@@ -130,7 +130,7 @@ struct EditorView: View {
                 }
                 .padding(16).padding(.bottom, 80)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .compatDismissKeyboardOnScroll()
         }
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
@@ -208,7 +208,7 @@ private struct NamePromptSheet: View {
         .padding(20)
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
-        .presentationDetents([.medium])
+        .compatMediumSheet()
     }
 }
 

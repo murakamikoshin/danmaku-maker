@@ -30,7 +30,7 @@ private struct GameDialogModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.fullScreenCover(isPresented: $isPresented) {
             GameDialogView(title: title, message: message, actions: actions()) { isPresented = false }
-                .presentationBackground(.clear)
+                .compatClearPresentationBackground()
         }
         // 下からせり上がる標準の動きは使わず、その場でふわっと出す
         .transaction { if isPresented { $0.disablesAnimations = true } }

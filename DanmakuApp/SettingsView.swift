@@ -34,7 +34,7 @@ struct MiniSheet<Content: View>: View {
         .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(GameStyle.night.ignoresSafeArea())
-        .presentationDetents([.medium])
+        .compatMediumSheet()
         .preferredColorScheme(.dark)
     }
 }

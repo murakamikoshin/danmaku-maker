@@ -229,7 +229,7 @@ struct PlayView: View {
                         Image(systemName: "bolt.fill").foregroundStyle(GameStyle.yellow)
                         Text(model.damage, format: .number)
                             .font(.system(size: 20, weight: .heavy)).foregroundStyle(GameStyle.text)
-                            .contentTransition(.numericText())
+                            .compatNumericTransition()
                     }
                     .padding(.vertical, 4).padding(.horizontal, 12)
                     .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
@@ -382,7 +382,7 @@ struct ResultView: View {
                     if let share, !isTest {
                         let text = ShareText.player(share, result: result)
                         HStack(spacing: 8) {
-                            ShareLink(item: text) { smallButton("detail.share", "square.and.arrow.up") }
+                            CompatShareLink(item: text) { smallButton("detail.share", "square.and.arrow.up") }
                             if let url = ShareText.xIntentURL(text) { Link(destination: url) { smallButton("detail.share.x", "xmark") } }
                         }
                     }
@@ -424,7 +424,7 @@ struct ResultView: View {
                 .hardShadow(radius: 22, depth: 5)
                 .padding(24)
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .compatBounceBasedOnSize()
         }
         .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
     }
@@ -476,7 +476,7 @@ struct ReviveView: View {
                 .accessibilityIdentifier("revive.giveup")
                 if !isPremium {
                     Button(action: onStore) {
-                        Text("revive.removeads").font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow).underline()
+                        Text("revive.removeads").font(.system(size: 13, weight: .bold)).underline().foregroundStyle(GameStyle.yellow)
                     }
                 }
             }
