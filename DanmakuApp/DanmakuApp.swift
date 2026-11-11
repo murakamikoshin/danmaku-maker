@@ -40,6 +40,15 @@ struct DanmakuApp: App {
                 .environmentObject(CosmeticsStore.shared)
                 .environmentObject(RewardStore.shared)
                 .environmentObject(AdPatternStore.shared)
+                // トラッキング許可の前の説明画面。ほかの全画面(ごほうびのお知らせなど)と重ならないよう、重ねて出す
+                .overlay {
+                    if ads.showTrackingPrimer {
+                        TrackingPrimerView { ads.continueFromTrackingPrimer() }
+                            .preferredColorScheme(.dark)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeOut(duration: 0.25), value: ads.showTrackingPrimer)
                 .task {
                     auth.start()
                     Task { await swipeConfig.refresh(); await battleConfig.refresh() }

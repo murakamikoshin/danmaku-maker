@@ -56,6 +56,7 @@ struct SettingsView: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
     @EnvironmentObject private var purchases: PurchaseService
+    @EnvironmentObject private var ads: AdsService
     @ObservedObject private var audio = AudioManager.shared
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @ObservedObject private var handles = HandleStore.shared
@@ -113,6 +114,11 @@ struct SettingsView: View {
                             actionRow("revive.removeads", "nosign") { showStore = true }.accessibilityIdentifier("settings.removeads")
                         }
                         actionRow("store.restore", "arrow.clockwise") { Task { await purchases.restore() } }
+                        // ヨーロッパなど、同意が要る地域だけ。広告の同意をあとから変えられる(Google の決まり)
+                        if ads.privacyOptionsRequired && !purchases.isPremium {
+                            actionRow("settings.adconsent", "hand.raised.fill") { ads.presentPrivacyOptions() }
+                                .accessibilityIdentifier("settings.adconsent")
+                        }
                         if let m = purchases.message { Text(m).font(.footnote).foregroundStyle(.secondary) }
                     }
 

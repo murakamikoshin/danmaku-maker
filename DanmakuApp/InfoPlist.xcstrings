@@ -71,61 +71,61 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "広告を表示するために使用します。許可しなくても遊べます。"
+            "value" : "許可すると、あなたに合った広告が表示されやすくなります。許可しなくても、すべての機能で遊べます。"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Used to show ads. You can play without allowing it."
+            "value" : "Allowing this helps show ads that match your interests. You can use every feature without allowing it."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用于显示广告。即使不允许,也可以正常游玩。"
+            "value" : "允许后,更容易显示符合你兴趣的广告。即使不允许,也可以使用全部功能。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用於顯示廣告。即使不允許,也可以正常遊玩。"
+            "value" : "允許後,更容易顯示符合你興趣的廣告。即使不允許,也可以使用全部功能。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "광고를 표시하는 데 사용돼요. 허용하지 않아도 플레이할 수 있어요."
+            "value" : "허용하면 관심사에 맞는 광고가 표시되기 쉬워져요. 허용하지 않아도 모든 기능을 즐길 수 있어요."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se usa para mostrar anuncios. Puedes jugar sin permitirlo."
+            "value" : "Si lo permites, verás anuncios más acordes a tus intereses. Puedes usar todas las funciones sin permitirlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utilisé pour afficher des publicités. Vous pouvez jouer sans l'autoriser."
+            "value" : "Cela permet d’afficher des publicités adaptées à vos centres d’intérêt. Toutes les fonctionnalités restent disponibles sans autorisation."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wird zum Anzeigen von Werbung verwendet. Du kannst auch ohne Erlaubnis spielen."
+            "value" : "So siehst du eher Werbung, die zu deinen Interessen passt. Alle Funktionen sind auch ohne Erlaubnis nutzbar."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usado para exibir anúncios. Você pode jogar sem permitir."
+            "value" : "Permitir ajuda a mostrar anúncios de acordo com seus interesses. Você pode usar todos os recursos sem permitir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Используется для показа рекламы. Играть можно и без разрешения."
+            "value" : "Так реклама будет лучше соответствовать вашим интересам. Все функции доступны и без разрешения."
           }
         }
       }

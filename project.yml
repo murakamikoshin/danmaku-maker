@@ -42,7 +42,7 @@ targets:
         REVENUECAT_API_KEY: $(REVENUECAT_API_KEY)
         APPSFLYER_DEV_KEY: $(APPSFLYER_DEV_KEY)
         APPLE_APP_ID: $(APPLE_APP_ID)
-        NSUserTrackingUsageDescription: 広告を表示するために使用します。許可しなくても遊べます。
+        NSUserTrackingUsageDescription: 許可すると、あなたに合った広告が表示されやすくなります。許可しなくても、すべての機能で遊べます。
         ITSAppUsesNonExemptEncryption: false
         UIAppFonts: [DelaGothicOne-Regular.ttf]
         SKAdNetworkItems:
