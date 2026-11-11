@@ -139,7 +139,7 @@
 ## 2026-11-11 デザインの一新(ブランチ `design-refresh`。`swipe-mode-spec` から分岐、未合流)
 
 - 見た目の決まりは `DanmakuApp/DesignSystem.swift` にまとめた(色 `GameStyle`、字体 `Font.display`、角の形 `PixelRect`、厚みのあるボタン `KeyCap`、文字の厚み `.thick`)。新しい画面も、ここの部品と色を使う。`RoundedRectangle` / `Capsule` / ぼかした `.shadow` / グラデーションは使わない
-- メニューのテーマは 2 つ: アーケード(既定。黄色+黒文字、ドット絵の角、Dela Gothic One)と、幻想(金と朱、斜めの角、明朝)。設定 > 表示 > メニューのテーマ。保存先は UserDefaults の `ui.theme`。変えると、いちばん外側の画面を `.id` で作り直す。画面確認用の起動引数は `-ui-theme gensou`
+- メニューのテーマは 3 つ: 従来(既定。一新する前の見た目。丸い角・ピンクのグラデーション・丸ゴシック。ぼかした影もここだけ)、アーケード(黄色+黒文字、ドット絵の角、Dela Gothic One)と、幻想(金と朱、斜めの角、明朝)。設定 > 表示 > メニューのテーマ。保存先は UserDefaults の `ui.theme`。変えると、いちばん外側の画面を `.id` で作り直す。画面確認用の起動引数は `-ui-theme gensou`
 - 色は `GameStyle.yellow` などを通す(メニューで `Color(Palette.gold)` などを直接使うと、テーマが効かない)。ゲーム中(SpriteKit)は、これまで通り `Palette` と `Skin`
 - プレイヤーが付けた名前(ステージ名・作者名・ランキングの名前)には `Font.display` を使わない(どの言語でも読めるように、標準の字体)
 - 確認の状況: 1 つ目のコミット(アーケードの見た目)は、CI(UI Screenshots)でビルドが通り、主な画面のスクリーンショットを確認済み。**2 つ目のコミット(テーマの切り替え・崩れの修正)は、GitHub Actions が支払い・利用上限の理由で動かず、未ビルド**。Actions が動くようになったら、`design-refresh` で UI Screenshots を流して確かめる(幻想テーマの画面も撮るようにしてある)

@@ -13,12 +13,12 @@ import DanmakuCore
 
 /// メニューの見た目のテーマ。設定で選べる
 enum UITheme: String, CaseIterable {
+    /// 一新する前の見た目(角の丸い札・ピンクのグラデーションのボタン・丸ゴシック)。はじめの設定
+    case classic
     /// ドット絵の角・黄色のボタン・太いゴシック
     case arcade
     /// 斜めに落とした角・金と朱・明朝の見出し
     case gensou
-    /// 一新する前の見た目(角の丸い札・ピンクのグラデーションのボタン・丸ゴシック)
-    case classic
 
     var titleKey: String { "settings.theme.\(rawValue)" }
 
@@ -38,7 +38,7 @@ enum UITheme: String, CaseIterable {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-ui-theme"), args.indices.contains(i + 1), let t = UITheme(rawValue: args[i + 1]) { return t }
         #endif
-        return UserDefaults.standard.string(forKey: key).flatMap { UITheme(rawValue: $0) } ?? .arcade
+        return UserDefaults.standard.string(forKey: key).flatMap { UITheme(rawValue: $0) } ?? .classic   // はじめは従来(いまの本番の見た目)。新しいテーマは、設定で選ぶ
     }
 }
 
