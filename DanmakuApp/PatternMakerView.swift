@@ -26,7 +26,9 @@ struct PatternMakerView: View {
         return Emitter(t: .custom, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.2, c: copies, v: speed, r: 0, k: 0, path: path)
     }
 
-    var body: some View {
+    var body: some View { screenContent.hidesBannerWhileShown() }
+
+    private var screenContent: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: "maker.title") {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") { dismiss() }

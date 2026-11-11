@@ -22,3 +22,17 @@ struct BannerAdView: UIViewRepresentable {
 
     func updateUIView(_ banner: GADBannerView, context: Context) {}
 }
+
+/// 全画面のゲーム画面に付ける。表示している間は、メニューの下のバナーを外す
+private struct HidesBannerWhileShown: ViewModifier {
+    @EnvironmentObject private var ads: AdsService
+    func body(content: Content) -> some View {
+        content
+            .onAppear { ads.coverAppeared() }
+            .onDisappear { ads.coverDisappeared() }
+    }
+}
+
+extension View {
+    func hidesBannerWhileShown() -> some View { modifier(HidesBannerWhileShown()) }
+}

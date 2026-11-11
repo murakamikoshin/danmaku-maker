@@ -26,6 +26,12 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// (指の近くの広告は誤タップを招き、Google の規約違反や単価の低下につながる。見られない広告は単価も低い)
     @Published private(set) var playingTabs: Set<String> = []
 
+    /// 全画面で開いているゲームの画面(ステージのプレイ・エディタ・弾幕作成)の数。1つ以上ならバナーを外す
+    /// (画面の裏に隠れたバナーが読み込み・更新を続けると、見られない広告になり、単価が下がる)
+    @Published private(set) var coverCount = 0
+    func coverAppeared() { coverCount += 1 }
+    func coverDisappeared() { coverCount = max(0, coverCount - 1) }
+
     func setPlaying(tab: String, _ playing: Bool) {
         guard playingTabs.contains(tab) != playing else { return }
         if playing { playingTabs.insert(tab) } else { playingTabs.remove(tab) }
@@ -33,6 +39,11 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
 
     private var rewarded: GADRewardedAd?
     private var interstitial: GADInterstitialAd?
+    /// 読み込んだ時刻。読み込んだ広告は1時間で期限切れになり、出せなくなる(出そうとして失敗する)ので、
+    /// 50分たったものは捨てて読み込み直す
+    private var rewardedLoadedAt = Date.distantPast
+    private var interstitialLoadedAt = Date.distantPast
+    static let adLifetime: TimeInterval = 50 * 60
     private var loadingInterstitial = false
     private var interstitialDismiss: (() -> Void)?
     /// 全画面広告を出す間隔: 遊んだ回数と、最後に広告を出した時刻
@@ -74,6 +85,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         attemptedStart = true
         guard !starting else { return }
         if sdkStarted {
+            dropExpiredAds()
             await load()
             await loadInterstitial()
             return
@@ -167,6 +179,24 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         #endif
     }
 
+    /// 期限が近い広告を捨てる(前面に戻ったとき・出す直前)
+    private func dropExpiredAds() {
+        if rewarded != nil, Date().timeIntervalSince(rewardedLoadedAt) > Self.adLifetime, onDismiss == nil {
+            rewarded = nil
+            isReady = false
+        }
+        if interstitial != nil, Date().timeIntervalSince(interstitialLoadedAt) > Self.adLifetime, interstitialDismiss == nil {
+            interstitial = nil
+        }
+    }
+
+    /// 全画面広告が期限切れ間近なら、捨てて読み込み直す(読み込めれば、その場で出せる)
+    private func refreshExpiredInterstitial() async {
+        guard interstitial != nil, Date().timeIntervalSince(interstitialLoadedAt) > Self.adLifetime, interstitialDismiss == nil else { return }
+        interstitial = nil
+        await loadInterstitial()
+    }
+
     func load() async {
         guard sdkStarted, rewarded == nil, !loading else { return }
         loading = true
@@ -176,6 +206,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         }
         ad?.fullScreenContentDelegate = self
         rewarded = ad
+        rewardedLoadedAt = Date()
         isReady = ad != nil
     }
 
@@ -188,6 +219,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
         }
         ad?.fullScreenContentDelegate = self
         interstitial = ad
+        interstitialLoadedAt = Date()
     }
 
     /// 「もう一度」を押した回数。画面を出入りしても数え直さない(戻って入り直す抜け道をふさぐ)。3回ごとに true
@@ -204,6 +236,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// 次へ進むときに、出す条件がそろっていれば全画面広告を出す(閉じるまで待つ)。出さなかったら false
     @discardableResult
     func showInterstitialIfDue() async -> Bool {
+        await refreshExpiredInterstitial()
         guard playsSinceAd >= Self.playsBetweenInterstitials,
               Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds,
               let ad = interstitial, let vc = Self.topViewController() else { return false }
@@ -220,6 +253,7 @@ final class AdsService: NSObject, ObservableObject, GADFullScreenContentDelegate
     /// コース投稿の「アップロード待ち」のように、もともと待ち時間がある場面で使う。出さなかったら false
     @discardableResult
     func showInterstitialNow() async -> Bool {
+        await refreshExpiredInterstitial()
         guard let ad = interstitial, let vc = Self.topViewController() else { return false }
         playsSinceAd = 0
         lastAdAt = Date()

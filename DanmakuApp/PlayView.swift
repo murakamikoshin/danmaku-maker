@@ -145,7 +145,9 @@ struct PlayView: View {
         _model = StateObject(wrappedValue: m)
     }
 
-    var body: some View {
+    var body: some View { screenContent.hidesBannerWhileShown() }
+
+    private var screenContent: some View {
         VStack(spacing: 0) {
             topBar
             hud

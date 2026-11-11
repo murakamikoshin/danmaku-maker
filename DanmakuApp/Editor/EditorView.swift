@@ -23,7 +23,9 @@ struct EditorView: View {
         self.onClose = onClose
     }
 
-    var body: some View {
+    var body: some View { screenContent.hidesBannerWhileShown() }
+
+    private var screenContent: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: "editor.title", leadingTitle: true) {
                 RoundIconButton(systemImage: "xmark", label: "editor.close") {
