@@ -16,6 +16,7 @@ struct MainTabView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var swipeConfig: SwipeConfig
     @ObservedObject private var notice = RewardNoticeService.shared
+    @ObservedObject private var updates = UpdateChecker.shared
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
@@ -43,6 +44,13 @@ struct MainTabView: View {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
         }
         .task { await notice.check() }
+        .task { await updates.refresh() }
+        // 古い版: アップデートの案内。必要なら閉じられない画面、おすすめなら「あとで」で閉じられる吹き出し
+        .fullScreenCover(isPresented: Binding(get: { updates.required }, set: { _ in })) { UpdateRequiredView() }
+        .gameDialog("update.suggest.title", isPresented: Binding(get: { updates.suggested && !updates.required }, set: { if !$0 { updates.later() } }),
+                    message: "update.suggest.message") {
+            [GameDialogAction(title: "update.open") { updates.openStore() }, GameDialogAction(title: "update.later", role: .cancel) { updates.later() }]
+        }
         .onAppear {
             AudioManager.shared.play(.menu)
             // テーマを変えた直後は、設定の画面へ戻す

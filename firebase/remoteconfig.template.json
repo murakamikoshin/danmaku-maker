@@ -1,9 +1,25 @@
 {
   "parameters": {
     "swipe_enabled": {
-      "defaultValue": { "value": "false" },
+      "defaultValue": {
+        "value": "false"
+      },
       "description": "スワイプ弾幕 β を出すか。true で全員に出る(TestFlight・審査用のビルドは、これに関わらず出る)",
       "valueType": "BOOLEAN"
+    },
+    "update_latest_version": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "これより古い版に「新しいバージョンがあります」(あとで閉じられる)。空なら出さない。1.2.0 から",
+      "valueType": "STRING"
+    },
+    "update_min_version": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "これより古い版は「アップデートが必要です」(閉じられない)。古い版だと壊れるときだけ。空なら出さない。1.2.0 から",
+      "valueType": "STRING"
     }
   }
 }
