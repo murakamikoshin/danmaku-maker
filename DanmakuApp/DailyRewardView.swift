@@ -157,8 +157,8 @@ struct DailyRewardBanner: View {
                 HStack(spacing: 12) {
                     RewardSwatch(reward: next, size: 52)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("daily.title").font(.system(size: 15, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.8)
-                        Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                        Text("daily.title").font(.system(size: 15, weight: .heavy)).lineLimit(2).minimumScaleFactor(0.8)
+                        Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(2)
                     }
                     Spacer(minLength: 4)
                     Button {
@@ -166,13 +166,13 @@ struct DailyRewardBanner: View {
                     } label: {
                         Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
                             .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
-                            .lineLimit(2).minimumScaleFactor(0.8).multilineTextAlignment(.center)
+                            .lineLimit(2).minimumScaleFactor(0.75).multilineTextAlignment(.center)
+                            .frame(maxWidth: 138)
                             .padding(.vertical, 8).padding(.horizontal, 12)
                             .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
                     }
                     .buttonStyle(.plain)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
+                    .fixedSize(horizontal: true, vertical: true)
                     .disabled(!ready || busy).opacity(ready && !busy ? 1 : 0.5)
                     .accessibilityIdentifier("home.daily.claim")
                 }
