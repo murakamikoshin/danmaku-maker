@@ -1,7 +1,12 @@
 # 見た目の確認用: シミュレーター(iPhone と iPad)で主な画面を撮って、画像を成果物として保存する。署名もアップロードもしない。
 # 手動実行(Actions タブ → UI Screenshots → Run workflow)。バナーはテスト広告で、-force-banner で場所を出す。
 name: UI Screenshots
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: iphone か ipad
+        default: ipad
 jobs:
   shots:
     runs-on: macos-26
@@ -30,59 +35,38 @@ jobs:
           grep -E "error:|BUILD (SUCCEEDED|FAILED)" "$RUNNER_TEMP/build.log" | sort -u | head -80 | tee shots/build_errors.txt
           exit $rc
       - name: Take screenshots
+        env:
+          DEVICE: ${{ inputs.device }}
         run: |
           APP=$(ls -d "$RUNNER_TEMP"/dd/Build/Products/Debug-iphonesimulator/*.app | head -1)
           BID=com.koshin.danmakumaker
           mkdir -p shots
           pick() { xcrun simctl list devices available | grep "$1" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/'; }
-          UDID=$(pick "iPhone")
-          echo "iPhone => $UDID"
+          # DEVICE=ipad のときは iPad(審査と同じ iPad Air 11インチ)で、バナー(テスト広告)を出した状態を撮る
+          if [ "${DEVICE:-iphone}" = "ipad" ]; then UDID=$(pick "iPad Air 11"); [ -n "$UDID" ] || UDID=$(pick "iPad Air"); ADS="-force-banner"; else UDID=$(pick "iPhone"); ADS="-no-ads"; fi
+          echo "device => $UDID"
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP"
           shot() {  # 名前, 言語, 待つ秒数, 起動引数...
             name=$1; lang=$2; wait=$3; shift 3
             xcrun simctl terminate "$UDID" $BID || true
-            xcrun simctl launch "$UDID" $BID -no-ads -no-audio -no-debug-overlay -uitest-invincible -AppleLanguages "($lang)" "$@"
+            xcrun simctl launch "$UDID" $BID $ADS -no-audio -no-debug-overlay -uitest-invincible -AppleLanguages "($lang)" "$@"
             sleep "$wait"
-            xcrun simctl io "$UDID" screenshot "shots/${lang}_${name}.png"
+            xcrun simctl io "$UDID" screenshot "shots/${DEVICE:-iphone}_${lang}_${name}.png"
           }
-          shot home ja 14 -ui-theme arcade -swipe-on
-          shot editor ja 16 -ui-theme arcade -open-editor
-          shot editor_sequence ja 16 -ui-theme arcade -open-sequence-editor
-          shot shop ja 14 -ui-theme arcade -open-shop
-          shot shop_bosses ja 14 -ui-theme arcade -open-shop -shop-bosses
-          shot shop_patterns ja 16 -ui-theme arcade -open-shop -shop-focus patterns
-          shot settings ja 14 -ui-theme arcade -open-settings
-          shot play ja 16 -ui-theme arcade -open-stage o16
-          shot result ja 40 -ui-theme arcade -open-stage o01
-          shot store ja 14 -ui-theme arcade -open-store
-          shot swipe ja 14 -ui-theme arcade -open-swipe
-          shot swipe_stamina ja 14 -ui-theme arcade -open-swipe -swipe-stamina-sheet
-          # メニューのテーマ「幻想」
-          shot gensou_home ja 14 -swipe-on -ui-theme gensou
-          shot gensou_editor ja 16 -ui-theme gensou -open-editor
-          shot gensou_shop_bosses ja 14 -ui-theme gensou -open-shop -shop-bosses
-          shot gensou_settings ja 14 -ui-theme gensou -open-settings
-          shot gensou_result ja 40 -ui-theme gensou -open-stage o01
-          shot gensou_home en 14 -swipe-on -ui-theme gensou
-          # メニューのテーマ「従来」(一新する前の見た目)
-          shot classic_home ja 14 -swipe-on -ui-theme classic
-          shot classic_editor ja 16 -ui-theme classic -open-editor
-          shot classic_shop_bosses ja 14 -ui-theme classic -open-shop -shop-bosses
-          shot classic_settings ja 14 -ui-theme classic -open-settings
-          shot classic_result ja 40 -ui-theme classic -open-stage o01
-          shot classic_swipe ja 14 -ui-theme classic -open-swipe
-          shot gensou_swipe ja 14 -ui-theme gensou -open-swipe
-          shot gensou_shop_patterns ja 16 -ui-theme gensou -open-shop -shop-focus patterns
-          shot classic_shop_patterns ja 16 -ui-theme classic -open-shop -shop-focus patterns
-          shot home en 14 -ui-theme arcade -swipe-on
-          shot home de 14 -ui-theme arcade -swipe-on
-          shot home ru 14 -ui-theme arcade -swipe-on
-          shot classic_home en 14 -swipe-on -ui-theme classic
-          shot gensou_home de 14 -swipe-on -ui-theme gensou
-          shot editor de 16 -ui-theme arcade -open-editor
-          shot shop ko 14 -ui-theme arcade -open-shop
+          shot home ja 20 -swipe-on
+          shot shop ja 20 -open-shop
+          shot shop_bosses ja 20 -open-shop -shop-bosses
+          shot shop_patterns ja 20 -open-shop -shop-focus patterns
+          shot settings ja 20 -open-settings
+          shot editor ja 20 -open-editor
+          shot play ja 20 -open-stage o16
+          shot swipe ja 20 -open-swipe
+          shot store ja 20 -open-store
+          shot shop en 20 -open-shop
+          shot arcade_shop ja 20 -ui-theme arcade -open-shop
+          shot gensou_shop ja 20 -ui-theme gensou -open-shop
           xcrun simctl shutdown "$UDID" || true
       - uses: actions/upload-artifact@v4
         if: always()

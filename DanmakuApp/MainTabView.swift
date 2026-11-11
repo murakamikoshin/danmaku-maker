@@ -21,20 +21,38 @@ struct MainTabView: View {
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
 
+    /// メニューの画面(あそぶ・ショップ・せってい)の横幅の上限。iPad で横に引き伸ばされて読みにくくならないよう、
+    /// 真ん中にまとめる(iPhone はどの機種もこれより狭いので変わらない)。スワイプ弾幕は全画面のゲームなので対象外
+    static let maxMenuWidth: CGFloat = 640
+
+    /// 画面(ウィンドウ)の横幅。iPad のウィンドウの大きさが変わっても、バナーの大きさを合わせる
+    @State private var windowWidth: CGFloat = UIScreen.main.bounds.width
+
     var body: some View {
         ZStack {
-            page(.play) { HomeView() }
-            if swipeConfig.enabled { page(.swipe) { SwipeHomeView() } }
-            page(.shop) { ShopView() }
-            page(.settings) { SettingsView() }
+            GameStyle.night.ignoresSafeArea()
+            page(.play, limitWidth: true) { HomeView() }
+            if swipeConfig.enabled { page(.swipe, limitWidth: false) { SwipeHomeView() } }
+            page(.shop, limitWidth: true) { ShopView() }
+            page(.settings, limitWidth: true) { SettingsView() }
         }
+        .background(GeometryReader { g in
+            Color.clear
+                .onAppear { windowWidth = g.size.width }
+                .onChange(of: g.size.width) { windowWidth = $0 }
+        })
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
                 // 広告削除の購入者・同意が取れていないとき・画面確認用の起動では、出さない
-                if !purchases.isPremium && ads.canShowBanner {
-                    let width = UIScreen.main.bounds.width
+                if !purchases.isPremium && ads.canShowBanner && windowWidth > 0 {
+                    let width = windowWidth
+                    // 帯には透けない背景を敷く(広告の左右のすき間から、後ろの画面の文字が見えないように)。広告ははみ出させない
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
+                        .id(Int(width))   // 幅が変わったら、その幅の広告を読み直す
                         .frame(width: width, height: BannerAdView.adSize(width: width).size.height)
+                        .clipped()
+                        .frame(maxWidth: .infinity)
+                        .background(GameStyle.nightDeep)
                 }
                 TabBar(selection: $tab, showSwipe: swipeConfig.enabled, shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
             }
@@ -64,9 +82,11 @@ struct MainTabView: View {
         }
     }
 
-    @ViewBuilder private func page<V: View>(_ t: Tab, @ViewBuilder _ content: () -> V) -> some View {
+    @ViewBuilder private func page<V: View>(_ t: Tab, limitWidth: Bool, @ViewBuilder _ content: () -> V) -> some View {
         if opened.contains(t) {
             content()
+                .frame(maxWidth: limitWidth ? Self.maxMenuWidth : .infinity)
+                .frame(maxWidth: .infinity)
                 .opacity(tab == t ? 1 : 0)
                 .allowsHitTesting(tab == t)
                 .accessibilityHidden(tab != t)
