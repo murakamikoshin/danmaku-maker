@@ -37,7 +37,7 @@ struct PublishFlowView: View {
                     case .publishing:
                         VStack(spacing: 12) {
                             ProgressView().tint(Color(Palette.pink)).scaleEffect(1.4)
-                            Text("publish.publishing").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.secondary)
+                            Text("publish.publishing").font(.system(size: 15, weight: .heavy)).foregroundStyle(.secondary)
                         }.padding(.top, 50)
                     case .done(let id): done(id)
                     }
@@ -56,7 +56,7 @@ struct PublishFlowView: View {
     @ViewBuilder private var start: some View {
         if !termsAccepted {
             GamePanel(title: "publish.terms.title") {
-                Text("publish.terms.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                Text("publish.terms.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Link(destination: AppConfig.termsURL) { Chip(title: L("settings.terms"), selected: false) }
                     Link(destination: AppConfig.privacyURL) { Chip(title: L("settings.privacy"), selected: false) }
@@ -66,34 +66,34 @@ struct PublishFlowView: View {
                 .accessibilityIdentifier("publish.terms.accept")
         } else if !auth.isMember {
             GamePanel(title: "signin.title") {
-                Text("signin.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                Text("signin.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
                 SignInButton()
             }
         } else {
             VStack(spacing: 14) {
                 StageCardShell(mode: stage.mode) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(stage.name).font(.system(size: 18, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(2)
+                        Text(stage.name).font(.system(size: 18, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(2)
                         Text("by \(authorName)").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
                         Text(detailText(stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
                     }
                     Spacer(minLength: 0)
                 }
                 if replay == nil {
-                    Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 quotaView
                 if let boss = missingBoss {
                     // 置いて試すのは持っていなくてもできるが、公開には持っている必要がある
                     GamePanel(title: "publish.boss.title") {
-                        Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                        Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
                     }
                     if boss.inviteLimited {
-                        Text("publish.boss.invite").font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                        Text("publish.boss.invite").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
                     } else if cosmetics.canClaimBossTicket && boss.ticketEligible {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
                         TicketCount()
-                        GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.accent) {
+                        GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.reward) {
                             Task {
                                 claimingTicket = true
                                 if !(await cosmetics.claimBossTicket(boss)) { error = L("publish.boss.ticket.failed") }
@@ -106,7 +106,7 @@ struct PublishFlowView: View {
                     GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")
                 } else if limitReached {
-                    GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.gold) { Task { await watchForExtra() } }
+                    GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.reward) { Task { await watchForExtra() } }
                         .disabled(!ads.isReady || granting).opacity(ads.isReady && !granting ? 1 : 0.5)
                         .accessibilityIdentifier("publish.quota.watch")
                 } else {
@@ -127,10 +127,10 @@ struct PublishFlowView: View {
     @ViewBuilder private var quotaView: some View {
         if replay != nil, quota != nil {
             if purchases.isPremium {
-                Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
+                Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.bullets[4]))
             } else if let r = remaining {
                 Text(r > 0 ? String(format: L("publish.quota.left"), r) : String(format: L("publish.quota.none"), PostQuota.free))
-                    .font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(r > 0 ? Color.secondary : Color(Palette.gold)).multilineTextAlignment(.center)
+                    .font(.system(size: 12, weight: .bold)).foregroundStyle(r > 0 ? Color.secondary : Color(Palette.gold)).multilineTextAlignment(.center)
             }
         }
     }
@@ -154,28 +154,28 @@ struct PublishFlowView: View {
                 Circle().fill(Color(Palette.gold).opacity(0.18)).frame(width: 96, height: 96)
                 Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
             }
-            Text("publish.done").font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+            Text("publish.done").font(.display(23)).foregroundStyle(GameStyle.gold)
             if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
                 // 初めての公開のごほうび: ボスの無料チケット
                 Button { gameTap(); showShop = true } label: {
-                    HStack(spacing: 8) { TicketArtView(height: 18); Text("publish.done.ticket") }.font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    HStack(spacing: 8) { TicketArtView(height: 18); Text("publish.done.ticket") }.font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
-                        .background(GameStyle.accent, in: RoundedRectangle(cornerRadius: 14))
+                        .background(KeyCap(fill: GameStyle.accent, radius: 14, depth: 3)).padding(.bottom, 3)
                 }
                 .accessibilityIdentifier("publish.done.ticket")
             }
             Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
-                .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 14))
+                .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
             let text = ShareText.author(name: stage.name, id: id)
             ShareLink(item: text) {
-                Label("detail.share", systemImage: "square.and.arrow.up").font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                Label("detail.share", systemImage: "square.and.arrow.up").font(.system(size: 17, weight: .heavy)).foregroundStyle(GameStyle.ink)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
-                    .background(GameStyle.cyan, in: RoundedRectangle(cornerRadius: 16))
+                    .background(KeyCap(fill: GameStyle.cyan, radius: 16, depth: 3)).padding(.bottom, 3)
             }
             if let url = ShareText.xIntentURL(text) {
                 Link(destination: url) { Chip(title: L("detail.share.x"), selected: false) }
             }
-            Button { gameTap(); dismiss() } label: { Text("editor.close").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(.secondary) }
+            Button { gameTap(); dismiss() } label: { Text("editor.close").font(.system(size: 14, weight: .bold)).foregroundStyle(.secondary) }
         }
     }
 

@@ -90,17 +90,17 @@ struct RemoteShopSection: View {
     var body: some View {
         if !catalog.items.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Text("shop.new.title").font(.system(size: 22, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+                Text("shop.new.title").font(.display(20)).padding(.horizontal, 4)
                 ForEach(catalog.items) { item in
                     HStack(spacing: 12) {
                         SkinThumb(id: item.id).frame(width: 56, height: 56)
-                            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
-                        Text(item.name).font(.system(size: 15, weight: .heavy, design: .rounded)).lineLimit(2)
+                            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 10))
+                        Text(item.name).font(.system(size: 15, weight: .heavy)).lineLimit(2)
                         Spacer(minLength: 0)
                         action(item)
                     }
                     .padding(12)
-                    .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+                    .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
                     .accessibilityIdentifier("shop.new.\(item.id)")
                 }
                 Text("shop.new.footer").font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
@@ -111,7 +111,7 @@ struct RemoteShopSection: View {
 
     @ViewBuilder private func action(_ item: RemoteCatalog.Item) -> some View {
         if cosmetics.ownedSkins.contains(item.id) {
-            Label("shop.new.owned", systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+            Label("shop.new.owned", systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.gold))
         } else if item.free {
             Button { gameTap(); cosmetics.claimRemoteShip(item.id) } label: { pill(L("shop.new.free")) }.buttonStyle(.plain)
         } else if let pid = item.productId {
@@ -121,8 +121,8 @@ struct RemoteShopSection: View {
     }
 
     private func pill(_ text: String) -> some View {
-        Text(text).font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-            .padding(.vertical, 8).padding(.horizontal, 14).background(Color(Palette.bullets[4]), in: Capsule())
+        Text(text).font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
+            .padding(.vertical, 8).padding(.horizontal, 14).background(Color(Palette.bullets[4]), in: PixelRect(cornerRadius: 8))
     }
 
     private func loadPrices() async {

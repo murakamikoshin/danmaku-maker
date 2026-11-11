@@ -87,12 +87,12 @@ struct PatternMakerView: View {
                 .onEnded { _ in finishDrawing() })
         }
         .aspectRatio(fieldW / fieldH, contentMode: .fit)
-        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(GameStyle.edge))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .background(Color(Palette.background), in: PixelRect(cornerRadius: 14))
+        .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
+        .clipShape(PixelRect(cornerRadius: 14))
         .overlay {
             if path.isEmpty && !drawing {
-                Text("maker.draw.empty").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center).padding()
+                Text("maker.draw.empty").font(.system(size: 15, weight: .heavy)).foregroundStyle(.secondary).multilineTextAlignment(.center).padding()
             }
         }
         .accessibilityIdentifier("maker.canvas")
@@ -126,13 +126,13 @@ struct PatternMakerView: View {
     /// ゲーム風の「文字  −  ＋」の行(標準のステッパーの代わり)
     private func stepRow(_ text: String, minus: @escaping () -> Void, plus: @escaping () -> Void, canMinus: Bool, canPlus: Bool) -> some View {
         HStack(spacing: 10) {
-            Text(text).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text(text).font(.system(size: 14, weight: .bold)).foregroundStyle(Color(Palette.text))
             Spacer()
             ForEach([(false, "minus"), (true, "plus")], id: \.1) { item in
                 let enabled = item.0 ? canPlus : canMinus
                 Button { gameTap(); (item.0 ? plus : minus)() } label: {
-                    Image(systemName: item.1).font(.system(size: 15, weight: .heavy)).foregroundStyle(.white)
-                        .frame(width: 38, height: 38).background(GameStyle.accent, in: Circle())
+                    Image(systemName: item.1).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                        .frame(width: 38, height: 38).background(KeyCap(fill: GameStyle.accent, radius: 10, depth: 3)).padding(.bottom, 3)
                         .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 1))
                 }
                 .buttonStyle(BounceButtonStyle()).opacity(enabled ? 1 : 0.35).disabled(!enabled)
@@ -150,10 +150,10 @@ struct PatternMakerView: View {
                     canMinus: speed > 1, canPlus: speed < 4)
             TextField("", text: $name, prompt: Text("maker.name.placeholder"))
                 .textFieldStyle(.plain)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold))
                 .padding(.vertical, 11).padding(.horizontal, 12)
-                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                 .onChange(of: name) { v in if v.count > CustomPattern.maxNameLength { name = String(v.prefix(CustomPattern.maxNameLength)) } }
                 .accessibilityIdentifier("maker.name")
             if let message { Text(message).font(.caption.bold()).foregroundStyle(Color(Palette.gold)) }
@@ -186,14 +186,14 @@ struct PatternMakerView: View {
                 HStack(spacing: 10) {
                     CustomPatternIcon(path: item.path).frame(width: 40, height: 40)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(item.name).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text(item.name).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Text(String(format: L("maker.item.detail"), item.copies, Double(item.path.count / 2 - 1) * PathData.step)).font(.caption2).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Button { gameTap(); load(item) } label: { Chip(title: L("maker.edit"), selected: false) }.buttonStyle(BounceButtonStyle())
                     Button { gameTap(); library.delete(id: item.id) } label: { Image(systemName: "trash").foregroundStyle(Color(Palette.pink)) }.buttonStyle(.plain)
                 }
-                .padding(10).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                .padding(10).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
             }
         }
     }

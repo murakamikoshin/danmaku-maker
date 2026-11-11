@@ -81,20 +81,24 @@ private struct TabBar: View {
                     VStack(spacing: 2) {
                         TabIcon(tab: tab, selected: selected)
                             .frame(width: 36, height: 36)
-                            .scaleEffect(selected ? 1.18 : 1)
-                            .offset(y: selected ? -3 : 0)
+                            .scaleEffect(selected ? 1.08 : 0.94)
                             .overlay(alignment: .topTrailing) {
                                 if tab == .shop && shopBadge {
-                                    Circle().fill(Color.red).frame(width: 10, height: 10)
-                                        .overlay(Circle().stroke(Color(Palette.background), lineWidth: 2))
+                                    Rectangle().fill(Color(Palette.pink)).frame(width: 9, height: 9)
+                                        .overlay(Rectangle().stroke(Color(Palette.background), lineWidth: 2))
                                         .offset(x: 2, y: 2)
                                 }
                             }
                         Text(LocalizedStringKey(tab.titleKey))
-                            .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selected ? Color(Palette.text) : Color(Palette.text).opacity(0.45))
+                            .font(.system(size: 11, weight: .black))
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                            .foregroundStyle(selected ? GameStyle.yellow : GameStyle.dim.opacity(0.7))
                     }
                     .frame(maxWidth: .infinity)
+                    // 選択中のタブの上に、黄色い目印
+                    .overlay(alignment: .top) {
+                        if selected { Rectangle().fill(GameStyle.yellow).frame(width: 28, height: 4).offset(y: -8) }
+                    }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -105,8 +109,8 @@ private struct TabBar: View {
         }
         .padding(.top, 8).padding(.bottom, 2)
         .background(
-            Color(Palette.background).opacity(0.96)
-                .overlay(alignment: .top) { Rectangle().fill(Color.white.opacity(0.08)).frame(height: 1) }
+            Color(UIColor(hex: 0x0D0B1F))
+                .overlay(alignment: .top) { Rectangle().fill(GameStyle.edge).frame(height: 2) }
                 .ignoresSafeArea(edges: .bottom)
         )
     }
@@ -119,17 +123,7 @@ private struct TabIcon: View {
     var body: some View {
         icon
             .saturation(selected ? 1 : 0)
-            .opacity(selected ? 1 : 0.55)
-            .shadow(color: glow.opacity(selected ? 0.9 : 0), radius: 8)
-    }
-
-    private var glow: Color {
-        switch tab {
-        case .play: return Color(UIColor(hex: 0x5CE1E6))
-        case .swipe: return Color(SwipePalette.gold)
-        case .shop: return Color(Palette.pink)
-        case .settings: return Color(Palette.gold)
-        }
+            .opacity(selected ? 1 : 0.5)
     }
 
     @ViewBuilder private var icon: some View {
@@ -144,8 +138,8 @@ private struct TabIcon: View {
         case .swipe:
             // 重なったカードと上向きの矢印（縦にスワイプ）
             ZStack {
-                RoundedRectangle(cornerRadius: 5).fill(Color(SwipePalette.pink)).frame(width: 20, height: 26).rotationEffect(.degrees(-8)).offset(x: -3)
-                RoundedRectangle(cornerRadius: 5).fill(Color(SwipePalette.cyan)).frame(width: 20, height: 26).rotationEffect(.degrees(8)).offset(x: 3)
+                PixelRect(cornerRadius: 5).fill(Color(SwipePalette.pink)).frame(width: 20, height: 26).rotationEffect(.degrees(-8)).offset(x: -3)
+                PixelRect(cornerRadius: 5).fill(Color(SwipePalette.cyan)).frame(width: 20, height: 26).rotationEffect(.degrees(8)).offset(x: 3)
                 Image(systemName: "chevron.up").font(.system(size: 14, weight: .black)).foregroundStyle(.white)
             }
         case .shop:

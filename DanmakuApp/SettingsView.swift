@@ -13,7 +13,7 @@ struct SignInButton: View {
             })
             .signInWithAppleButtonStyle(.white)
             .frame(height: 50)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(PixelRect(cornerRadius: 14))
             .accessibilityIdentifier("signin.apple")
             if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(Color(Palette.pink)) }
         }
@@ -27,7 +27,7 @@ struct MiniSheet<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Text(title).font(.system(size: 22, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).padding(.top, 8)
+            Text(title).font(.display(20)).foregroundStyle(Color(Palette.text)).padding(.top, 8)
             content
             Spacer(minLength: 0)
         }
@@ -45,9 +45,9 @@ struct SignInSheet: View {
 
     var body: some View {
         MiniSheet(title: "signin.title") {
-            Text("signin.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text("signin.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
             SignInButton { dismiss() }
-            Button { gameTap(); dismiss() } label: { Text("common.cancel").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(.secondary) }
+            Button { gameTap(); dismiss() } label: { Text("common.cancel").font(.system(size: 14, weight: .bold)).foregroundStyle(.secondary) }
         }
     }
 }
@@ -89,7 +89,7 @@ struct SettingsView: View {
 
                     GamePanel(title: "settings.store", tint: Color(Palette.pink)) {
                         if purchases.isPremium {
-                            Label("store.purchased", systemImage: "checkmark.seal.fill").font(.system(size: 14, weight: .heavy, design: .rounded))
+                            Label("store.purchased", systemImage: "checkmark.seal.fill").font(.system(size: 14, weight: .heavy))
                                 .foregroundStyle(Color(Palette.bullets[4]))
                         } else {
                             actionRow("revive.removeads", "nosign") { showStore = true }.accessibilityIdentifier("settings.removeads")
@@ -102,18 +102,18 @@ struct SettingsView: View {
                         Button { gameTap(); showHandle = true } label: {
                             HStack {
                                 Text(names.label(handles.handle))
-                                    .font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+                                    .font(.system(size: 17, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                                 Spacer()
                                 Image(systemName: "pencil").foregroundStyle(.secondary)
                             }
-                            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
                     }
 
                     GamePanel(title: "settings.account", tint: Color(UIColor(hex: 0xB28DFF))) {
                         if auth.isMember {
-                            Label("settings.signedin", systemImage: "person.crop.circle.badge.checkmark").font(.system(size: 14, weight: .heavy, design: .rounded))
+                            Label("settings.signedin", systemImage: "person.crop.circle.badge.checkmark").font(.system(size: 14, weight: .heavy))
                                 .foregroundStyle(Color(Palette.text))
                             actionRow("settings.signout", "rectangle.portrait.and.arrow.right") { auth.signOut() }
                             actionRow("settings.delete", "trash", danger: true) { showDelete = true }.accessibilityIdentifier("settings.delete")
@@ -127,7 +127,7 @@ struct SettingsView: View {
                         if blocks.blocked.isEmpty { Text("settings.blocked.none").font(.system(size: 13)).foregroundStyle(.secondary) }
                         ForEach(blocks.blocked.sorted(by: { $0.value < $1.value }), id: \.key) { uid, name in
                             HStack {
-                                Text(name).font(.system(size: 14, weight: .semibold, design: .rounded))
+                                Text(name).font(.system(size: 14, weight: .semibold))
                                 Spacer()
                                 Button { gameTap(); blocks.unblock(uid: uid) } label: { Chip(title: L("settings.unblock"), selected: false) }.buttonStyle(BounceButtonStyle())
                             }
@@ -140,31 +140,31 @@ struct SettingsView: View {
                         Button { gameTap(); showInvite = true } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "person.2.fill").font(.system(size: 15, weight: .bold)).frame(width: 24)
-                                Text("invite.row").font(.system(size: 15, weight: .heavy, design: .rounded))
+                                Text("invite.row").font(.system(size: 15, weight: .heavy))
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
                             }
                             .foregroundStyle(Color(Palette.text))
-                            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityIdentifier("settings.invite")
                         Button { gameTap(); showFeedback = true } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "lightbulb").font(.system(size: 15, weight: .bold)).frame(width: 24)
-                                Text("feedback.row").font(.system(size: 15, weight: .heavy, design: .rounded))
+                                Text("feedback.row").font(.system(size: 15, weight: .heavy))
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
                             }
                             .foregroundStyle(Color(Palette.text))
-                            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                         }
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityIdentifier("settings.feedback")
                         linkRow("settings.support", "questionmark.circle", AppConfig.supportURL)
                         linkRow(LocalizedStringKey(AppConfig.supportEmail), "envelope", URL(string: "mailto:\(AppConfig.supportEmail)")!)
                         HStack {
-                            Text("settings.version").font(.system(size: 14, weight: .semibold, design: .rounded)).foregroundStyle(.secondary)
+                            Text("settings.version").font(.system(size: 14, weight: .semibold)).foregroundStyle(.secondary)
                             Spacer()
                             Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
                                 .font(.system(size: 14, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.text))
@@ -217,7 +217,7 @@ struct SettingsView: View {
     private func toggleRow(_ title: LocalizedStringKey, _ symbol: String, _ binding: Binding<Bool>) -> some View {
         HStack(spacing: 10) {
             Image(systemName: symbol).font(.system(size: 16, weight: .bold)).foregroundStyle(Color(Palette.text).opacity(0.8)).frame(width: 24)
-            Text(title).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text(title).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
             Spacer()
             GameToggle(isOn: binding)
         }
@@ -227,12 +227,12 @@ struct SettingsView: View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 10) {
                 Image(systemName: symbol).font(.system(size: 15, weight: .bold)).frame(width: 24)
-                Text(title).font(.system(size: 15, weight: .heavy, design: .rounded))
+                Text(title).font(.system(size: 15, weight: .heavy))
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).opacity(0.5)
             }
             .foregroundStyle(danger ? Color(Palette.pink) : Color(Palette.text))
-            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
         }
         .buttonStyle(BounceButtonStyle())
     }
@@ -241,12 +241,12 @@ struct SettingsView: View {
         Link(destination: url) {
             HStack(spacing: 10) {
                 Image(systemName: symbol).font(.system(size: 15, weight: .bold)).frame(width: 24)
-                Text(title).font(.system(size: 15, weight: .heavy, design: .rounded))
+                Text(title).font(.system(size: 15, weight: .heavy))
                 Spacer()
                 Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .bold)).opacity(0.5)
             }
             .foregroundStyle(Color(Palette.text))
-            .padding(12).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
         }
     }
 }
@@ -260,21 +260,21 @@ struct DeleteAccountSheet: View {
     var body: some View {
         MiniSheet(title: done ? "delete.done.title" : "delete.title") {
             if done {
-                Text("delete.done.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                Text("delete.done.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 GameActionButton(title: "editor.close", systemImage: "checkmark", fill: GameStyle.accent) { dismiss() }
             } else {
-                Text("delete.body").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                Text("delete.body").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 if auth.isBusy { ProgressView().tint(Color(Palette.pink)) } else {
                     SignInWithAppleButton(.continue, onRequest: { auth.prepare($0) }, onCompletion: { result in
                         Task { if await auth.deleteAccount(result) { done = true } }
                     })
                     .signInWithAppleButtonStyle(.white)
                     .frame(height: 50)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(PixelRect(cornerRadius: 14))
                     .accessibilityIdentifier("delete.apple")
                 }
                 if let e = auth.errorMessage { Text(e).font(.footnote).foregroundStyle(Color(Palette.pink)) }
-                Button { gameTap(); dismiss() } label: { Text("common.cancel").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(.secondary) }
+                Button { gameTap(); dismiss() } label: { Text("common.cancel").font(.system(size: 14, weight: .bold)).foregroundStyle(.secondary) }
                     .disabled(auth.isBusy)
             }
         }

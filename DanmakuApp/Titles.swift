@@ -126,11 +126,11 @@ struct TitleChip: View {
         if let text = TitleID.text(id) {
             let tint = TitleID.tint(id)
             Text(text)
-                .font(.system(size: size, weight: .heavy, design: .rounded)).lineLimit(1).minimumScaleFactor(0.7)
+                .font(.system(size: size, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
                 .foregroundStyle(tint)
                 .padding(.horizontal, size * 0.6).padding(.vertical, size * 0.15)
-                .background(tint.opacity(0.16), in: Capsule())
-                .overlay(Capsule().stroke(tint.opacity(0.5), lineWidth: 0.7))
+                .background(tint.opacity(0.16), in: PixelRect(cornerRadius: 8))
+                .overlay(PixelRect(cornerRadius: 8).stroke(tint.opacity(0.5), lineWidth: 0.7))
         }
     }
 }
@@ -154,7 +154,7 @@ struct BadgedName: View {
                 Image(systemName: "medal.fill").font(.system(size: size * 0.85)).foregroundStyle(Color(Palette.pink))
                     .accessibilityLabel(Text("title.medal"))
             }
-            Text(name).font(.system(size: size, weight: weight, design: .rounded)).lineLimit(1)
+            Text(name).font(.system(size: size, weight: weight)).lineLimit(1)
                 .foregroundStyle(CrownStyle.color(badge.crown) ?? baseColor)
             if inlineChip, let t = badge.title { TitleChip(id: t, size: max(8, size * 0.72)) }
         }
@@ -302,8 +302,8 @@ struct TitlePickerView: View {
                         Spacer()
                         Button { gameTap(); dismiss() } label: {
                             Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
-                                .frame(width: 36, height: 36).background(Color.white.opacity(0.12), in: Circle())
-                                .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                                .frame(width: 36, height: 36).background(GameStyle.panelHi, in: Circle())
+                                .overlay(Circle().stroke(GameStyle.edge))
                         }
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityLabel(Text("swipe.close"))
@@ -315,14 +315,14 @@ struct TitlePickerView: View {
                                     row(id)
                                 } else {
                                     HStack {
-                                        Text(TitleID.text(id) ?? "").font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.45))
+                                        Text(TitleID.text(id) ?? "").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.45))
                                         Spacer()
                                         Text(String(format: L("title.need"), ScoreFormat.short(BigScore(TitleID.scoreMin[id] ?? "0") ?? .zero, SwipePalette.scoreStyle)))
                                             .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.5))
                                         Image(systemName: "lock.fill").font(.system(size: 11)).foregroundStyle(Color(Palette.text).opacity(0.5))
                                     }
                                     .padding(.vertical, 10).padding(.horizontal, 12)
-                                    .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+                                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                                 }
                             }
                         }
@@ -359,12 +359,12 @@ struct TitlePickerView: View {
                     }
                     Button { gameTap(); pick(nil) } label: {
                         HStack {
-                            Text("title.none").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Text("title.none").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             Spacer()
                             if service.selected == nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
                         }
-                        .padding(14).background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(service.selected == nil ? Color(Palette.pink) : GameStyle.edge, lineWidth: service.selected == nil ? 2 : 1))
+                        .padding(14).background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+                        .overlay(PixelRect(cornerRadius: 16).stroke(service.selected == nil ? Color(Palette.pink) : GameStyle.edge, lineWidth: service.selected == nil ? 2 : 1))
                     }
                     .buttonStyle(BounceButtonStyle())
                     if failed { Text("swipe.error.network").font(.footnote).foregroundStyle(.secondary) }
@@ -380,13 +380,13 @@ struct TitlePickerView: View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon).font(.system(size: 16, weight: .bold)).foregroundStyle(color).frame(width: 24)
-                Text(title).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Text(title).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
                 Spacer()
                 if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
             }
             .padding(.vertical, 10).padding(.horizontal, 12)
-            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color(Palette.pink) : GameStyle.edge, lineWidth: on ? 1.5 : 1))
+            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).strokeBorder(on ? GameStyle.yellow : GameStyle.edge, lineWidth: 2))
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityIdentifier("crown.row.\(id)")
@@ -405,8 +405,8 @@ struct TitlePickerView: View {
                 if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(Palette.pink)) }
             }
             .padding(.vertical, 10).padding(.horizontal, 12)
-            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color(Palette.pink) : GameStyle.edge, lineWidth: on ? 1.5 : 1))
+            .background(on ? Color(Palette.pink).opacity(0.16) : Color.white.opacity(0.06), in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).strokeBorder(on ? GameStyle.yellow : GameStyle.edge, lineWidth: 2))
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityIdentifier("title.row.\(id)")

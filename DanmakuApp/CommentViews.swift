@@ -53,18 +53,18 @@ struct CommentsSection: View {
             HStack(spacing: 8) {
                 TextField("", text: $text, prompt: Text("comment.placeholder"))
                     .textFieldStyle(.plain)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .padding(.vertical, 10).padding(.horizontal, 12)
-                    .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                    .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                     .onChange(of: text) { v in if v.count > CommentService.maxLength { text = String(v.prefix(CommentService.maxLength)) } }
                     .submitLabel(.send)
                     .onSubmit { Task { await send() } }
                     .accessibilityIdentifier("comment.field")
                 Button { gameTap(); Task { await send() } } label: {
-                    Image(systemName: "paperplane.fill").font(.system(size: 16, weight: .heavy)).foregroundStyle(.white)
+                    Image(systemName: "paperplane.fill").font(.system(size: 16, weight: .heavy)).foregroundStyle(GameStyle.ink)
                         .frame(width: 44, height: 44)
-                        .background(GameStyle.accent, in: Circle())
+                        .background(KeyCap(fill: GameStyle.accent, radius: 10, depth: 3)).padding(.bottom, 3)
                 }
                 .buttonStyle(BounceButtonStyle())
                 .opacity(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending ? 0.4 : 1)
@@ -84,8 +84,8 @@ struct CommentsSection: View {
             HStack(spacing: 6) {
                 BadgedName(name: c.displayName, badge: badges.badge(c.uid), size: 12, weight: .heavy, baseColor: Color(Palette.gold), inlineChip: true)
                 if c.uid == authorUid {
-                    Text("comment.author").font(.system(size: 9, weight: .heavy)).foregroundStyle(.white)
-                        .padding(.horizontal, 6).padding(.vertical, 1).background(Color(Palette.pink), in: Capsule())
+                    Text("comment.author").font(.system(size: 9, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                        .padding(.horizontal, 6).padding(.vertical, 1).background(Color(Palette.pink), in: PixelRect(cornerRadius: 8))
                 }
                 Spacer()
                 if let d = c.createdAt { Text(d, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary) }
@@ -101,11 +101,11 @@ struct CommentsSection: View {
                     Image(systemName: "ellipsis").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).frame(width: 28, height: 22)
                 }
             }
-            Text(c.text).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text(c.text).font(.system(size: 14, weight: .medium)).foregroundStyle(Color(Palette.text))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(10)
-        .background(mine ? Color(Palette.pink).opacity(0.12) : Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+        .background(mine ? Color(Palette.pink).opacity(0.12) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
     }
 
     private func load() async {

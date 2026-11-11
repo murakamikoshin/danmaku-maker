@@ -30,27 +30,15 @@ struct HomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                LogoTitle(text: "app.title", size: 27)
+            HStack(alignment: .bottom, spacing: 10) {
+                LogoTitle(text: "app.title", size: 26)
                 Spacer(minLength: 8)
-                Button { gameTap(); newStage() } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "plus").font(.system(size: 13, weight: .heavy))
-                        Text("home.create").font(.system(size: 14, weight: .heavy, design: .rounded)).lineLimit(1)
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.vertical, 9).padding(.horizontal, 14)
-                    .background(GameStyle.accent, in: Capsule())
-                    .overlay(Capsule().stroke(Color.white.opacity(0.4)))
-                    .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6)
-                }
-                .buttonStyle(BounceButtonStyle())
-                .accessibilityIdentifier("home.create")
             }
-            .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 6)
+            .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 8)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    CreateHero { newStage() }
                     DailyRewardBanner()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
@@ -144,7 +132,7 @@ struct HomeView: View {
     /// マイステージ: 作ったステージを、投稿しなくても保存して、いつでも遊べる・直せる
     private var mine: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("home.mine").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+            Text("home.mine").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
             Text("home.mine.note").font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary).padding(.horizontal, 4)
             if saved.stages.isEmpty {
                 VStack(spacing: 12) {
@@ -169,7 +157,7 @@ struct HomeView: View {
     @ViewBuilder private var postedSection: some View {
         if auth.isMember && postedLoaded && !posted.list.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Text("mystats.title").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+                Text("mystats.title").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
                 HStack(spacing: 0) {
                     statCell("heart.fill", posted.likes, "mystats.likes", Color(Palette.pink))
                     statCell("gamecontroller.fill", posted.plays, "mystats.plays", Color(UIColor(hex: 0x5CE1E6)))
@@ -177,8 +165,8 @@ struct HomeView: View {
                     statCell("bubble.left.fill", posted.comments, "mystats.comments", Color(Palette.bullets[4]))
                 }
                 .padding(.vertical, 12)
-                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
-                Text(String(format: L("mystats.list"), posted.stages)).font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.horizontal, 4)
+                .gamePanel(radius: 16)
+                Text(String(format: L("mystats.list"), posted.stages)).font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).padding(.horizontal, 4)
                 ForEach(posted.list) { s in
                     Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
                         .buttonStyle(BounceButtonStyle())
@@ -191,7 +179,7 @@ struct HomeView: View {
     private func statCell(_ icon: String, _ value: Int, _ label: LocalizedStringKey, _ tint: Color) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon).foregroundStyle(tint)
-            Text("\(value)").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text("\(value)").font(.display(19)).foregroundStyle(Color(Palette.text))
             Text(label).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -199,7 +187,7 @@ struct HomeView: View {
 
     private var samples: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("home.samples").font(.system(size: 18, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+            Text("home.samples").font(.display(17)).foregroundStyle(Color(Palette.text)).padding(.horizontal, 4)
             ForEach(SampleStages.all) { s in
                 Button { gameTap(); playing = s } label: { SampleRow(sample: s) }
                     .buttonStyle(BounceButtonStyle())
@@ -221,7 +209,7 @@ struct HomeView: View {
             // 作者で絞り込み中(解除すると、ふつうの一覧に戻る)
             HStack {
                 Label(String(format: L("world.author.filter"), a.name), systemImage: "person.crop.rectangle.stack")
-                    .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
                 Spacer()
                 Button { gameTap(); world.author = nil; Task { await world.reload() } } label: { Chip(title: L("world.author.clear"), selected: false) }
                     .buttonStyle(BounceButtonStyle())
@@ -231,7 +219,7 @@ struct HomeView: View {
         if world.searching {
             HStack {
                 Label(String(format: L("world.search.result"), world.query), systemImage: "magnifyingglass")
-                    .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).lineLimit(1)
                 Spacer()
                 Button { gameTap(); query = ""; world.query = ""; Task { await world.reload() } } label: { Chip(title: L("world.search.clear"), selected: false) }
                     .buttonStyle(BounceButtonStyle())
@@ -292,8 +280,8 @@ struct HomeView: View {
             ChipGrid(items: Self.modeOptions.map { ($0.0, L($0.1)) }, selection: $world.mode, idPrefix: "home.mode", minimum: 70)
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.edge))
     }
 
     /// 難しさ(クリア率)の絞り込み。挑戦が10回以上のステージだけが対象
@@ -305,13 +293,13 @@ struct HomeView: View {
             if world.difficulty != nil { Text("world.diff.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(Palette.text).opacity(0.55)) }
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.edge))
     }
 
     private func sectionLabel(_ key: LocalizedStringKey, _ symbol: String) -> some View {
         Label(key, systemImage: symbol)
-            .font(.system(size: 13, weight: .heavy, design: .rounded))
+            .font(.system(size: 13, weight: .heavy))
             .foregroundStyle(Color(Palette.text).opacity(0.8))
     }
 
@@ -370,21 +358,13 @@ struct HomeView: View {
 
 struct ModeBadge: View {
     let mode: Mode
-    private var tint: Color {
-        switch mode {
-        case .boss: return Color(Palette.pink)
-        case .damage: return Color(Palette.gold)
-        case .sequence: return Color(Palette.bullets[3])
-        case .survive: return Color(UIColor(hex: 0x5CE1E6))
-        }
-    }
+    private var tint: Color { GameStyle.tint(mode) }
     var body: some View {
         Text(mode == .boss ? "badge.boss" : mode == .damage ? "badge.damage" : mode == .sequence ? "badge.sequence" : "badge.survive")
-            .font(.system(size: 10, weight: .heavy, design: .rounded))
-            .foregroundStyle(tint)
-            .padding(.horizontal, 8).padding(.vertical, 2)
-            .background(tint.opacity(0.15), in: Capsule())
-            .overlay(Capsule().stroke(tint.opacity(0.6), lineWidth: 1))
+            .font(.system(size: 10, weight: .black))
+            .foregroundStyle(GameStyle.ink)
+            .padding(.horizontal, 7).padding(.vertical, 2)
+            .background(tint, in: PixelRect(cornerRadius: 5))
     }
 }
 
@@ -407,7 +387,7 @@ struct SampleRow: View {
     var body: some View {
         StageCardShell(mode: sample.stage.mode) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(sample.title).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                Text(sample.title).font(.system(size: 16, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(1)
                 HStack(spacing: 6) {
                     ModeBadge(mode: sample.stage.mode)
                     Text(detailText(sample.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
@@ -435,12 +415,12 @@ struct PreviewStillTile: View {
             case .success(let image):
                 image.interpolation(.medium).resizable().scaledToFill()
                     .frame(width: size, height: size)
-                    .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
-                    .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                    .clipShape(PixelRect(cornerRadius: size * 0.21))
+                    .overlay(PixelRect(cornerRadius: size * 0.21).stroke(GameStyle.edge, lineWidth: 1))
             case .failure:
                 StageMiniPreview(stage: stage, playing: playing, visible: visible)
             default:
-                Color(Skin.of(stage.lookBackground).background).frame(width: size, height: size).clipShape(RoundedRectangle(cornerRadius: size * 0.21))
+                Color(Skin.of(stage.lookBackground).background).frame(width: size, height: size).clipShape(PixelRect(cornerRadius: size * 0.21))
             }
         }
         .accessibilityHidden(true)
@@ -462,7 +442,7 @@ struct RemoteRow: View {
                            : stage.hasPreviewImage ? AnyView(PreviewStillTile(url: stage.previewImageURL, stage: stage.stage, playing: playing, visible: visible))
                            : AnyView(StageMiniPreview(stage: stage.stage, playing: playing, visible: visible))) {
             VStack(alignment: .leading, spacing: 4) {
-                MarqueeTitle(text: stage.name, font: .system(size: 16, weight: .heavy, design: .rounded), playing: playing, visible: visible)
+                MarqueeTitle(text: stage.name, font: .system(size: 16, weight: .heavy), playing: playing, visible: visible)
                     .foregroundStyle(Color(Palette.text))
                 HStack(spacing: 6) {
                     ModeBadge(mode: stage.stage.mode)
@@ -505,7 +485,7 @@ struct MyStageRow: View {
             Button { gameTap(); onPlay() } label: {
                 StageCardShell(mode: entry.stage.mode) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(entry.displayName).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+                        Text(entry.displayName).font(.system(size: 16, weight: .heavy)).foregroundStyle(Color(Palette.text)).lineLimit(1)
                         HStack(spacing: 6) {
                             ModeBadge(mode: entry.stage.mode)
                             Text(detailText(entry.stage)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
@@ -534,16 +514,77 @@ struct MyStageRow: View {
     }
 
     private func tag(_ key: LocalizedStringKey, _ color: Color) -> some View {
-        Text(key).font(.system(size: 10, weight: .heavy, design: .rounded)).foregroundStyle(color)
-            .padding(.horizontal, 7).padding(.vertical, 1).overlay(Capsule().stroke(color.opacity(0.7), lineWidth: 1))
+        Text(key).font(.system(size: 10, weight: .heavy)).foregroundStyle(color)
+            .padding(.horizontal, 7).padding(.vertical, 1).overlay(PixelRect(cornerRadius: 8).stroke(color.opacity(0.7), lineWidth: 1))
     }
 
     private func action(_ key: LocalizedStringKey, _ symbol: String, _ color: Color, _ run: @escaping () -> Void) -> some View {
         Button { gameTap(); run() } label: {
-            Label(key, systemImage: symbol).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(color)
+            Label(key, systemImage: symbol).font(.system(size: 12, weight: .heavy)).foregroundStyle(color)
                 .frame(maxWidth: .infinity).padding(.vertical, 8)
-                .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .background(color.opacity(0.14), in: PixelRect(cornerRadius: 10))
         }
         .buttonStyle(BounceButtonStyle())
+    }
+}
+
+/// ホームのいちばん上: 「つくって、世界に投稿」の一言と、ステージを作るボタン。後ろで弾の輪がゆっくり回る
+struct CreateHero: View {
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("home.hero.tagline").font(.display(19)).foregroundStyle(Color(Palette.text))
+                .lineSpacing(3).fixedSize(horizontal: false, vertical: true)
+                .padding(.trailing, 96)
+            Button { gameTap(); action() } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus").font(.system(size: 14, weight: .black))
+                    Text("home.create").font(.display(14)).lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .padding(.vertical, 10).padding(.horizontal, 16)
+                .keyCap(GameStyle.yellow, radius: 12, depth: 4)
+            }
+            .buttonStyle(BounceButtonStyle())
+            .accessibilityIdentifier("home.create")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background { HeroBullets() }
+        .background(Color(UIColor(hex: 0x0E0B24)))
+        .clipShape(PixelRect(cornerRadius: 18))
+        .overlay(PixelRect(cornerRadius: 18).strokeBorder(GameStyle.edge, lineWidth: 2))
+        .hardShadow(radius: 18)
+        .padding(.bottom, 4)
+    }
+}
+
+/// 弾の輪が、互い違いにゆっくり回る飾り(右寄り。左へ行くほど薄くして、文字の邪魔をしない)
+private struct HeroBullets: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
+            Canvas { ctx, size in
+                let t: Double = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate
+                let cx = Double(size.width) - 70, cy = Double(size.height) * 0.5
+                for ring in 0..<7 {
+                    let n = 10 + ring * 4
+                    let r = 24 + Double(ring) * 26
+                    let dir: Double = ring % 2 == 0 ? 1 : -1
+                    let a0 = t * 0.12 * dir + Double(ring) * 0.35
+                    let alpha = max(0.14, 1 - Double(ring) * 0.15)
+                    let col = Color(Palette.bullets[ring % Palette.bullets.count]).opacity(alpha)
+                    let core = Color.white.opacity(alpha)
+                    for i in 0..<n {
+                        let a = a0 + Double(i) / Double(n) * 2 * Double.pi
+                        let x = cx + cos(a) * r, y = cy + sin(a) * r
+                        ctx.fill(Path(ellipseIn: CGRect(x: x - 4.5, y: y - 4.5, width: 9, height: 9)), with: .color(col))
+                        ctx.fill(Path(ellipseIn: CGRect(x: x - 2, y: y - 2, width: 4, height: 4)), with: .color(core))
+                    }
+                }
+            }
+        }
+        .accessibilityHidden(true)
     }
 }

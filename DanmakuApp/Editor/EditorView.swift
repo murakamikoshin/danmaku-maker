@@ -34,12 +34,12 @@ struct EditorView: View {
                     .accessibilityIdentifier("editor.close")
             } trailing: {
                 Button { confirmRevert = true } label: {
-                    Label("editor.revert", systemImage: "arrow.uturn.backward").font(.system(size: 11, weight: .heavy, design: .rounded))
+                    Label("editor.revert", systemImage: "arrow.uturn.backward").font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(Color(Palette.gold)).labelStyle(.titleAndIcon)
                 }
                 .disabled(!model.canRevert).opacity(model.canRevert ? 1 : 0.35)
                 .accessibilityIdentifier("editor.revert")
-                Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold, design: .rounded))
+                Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold))
                     .foregroundStyle(Color(Palette.bullets[4])).labelStyle(.titleAndIcon)
             }
             ScrollView {
@@ -92,8 +92,8 @@ struct EditorView: View {
                                         .frame(maxHeight: 200)
                                         .frame(maxWidth: .infinity)
                                         .padding(6)
-                                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 14))
-                                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(GameStyle.edge))
+                                        .background(Color(Palette.background), in: PixelRect(cornerRadius: 14))
+                                        .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
                                         .padding(.vertical, 4)
                                         .background(Color(Palette.background))
                                 }
@@ -187,7 +187,7 @@ private struct NamePromptSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("editor.namePrompt.title").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text("editor.namePrompt.title").font(.display(18)).foregroundStyle(Color(Palette.text))
             Text("editor.namePrompt.note").font(.caption.bold()).foregroundStyle(.secondary)
             NameFields(draft: $draft)
             GameActionButton(title: "editor.namePrompt.go", systemImage: "paperplane.fill", fill: GameStyle.accent, enabled: canPublish, action: onContinue)
@@ -214,16 +214,16 @@ private struct NameFields: View {
     private func field(_ label: LocalizedStringKey, prompt: LocalizedStringKey, text: Binding<String>, limit: Int, id: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(label).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 Spacer()
                 Text("\(text.wrappedValue.count)/\(limit)").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
             }
             TextField("", text: text, prompt: Text(prompt))
                 .textFieldStyle(.plain)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold))
                 .padding(.vertical, 11).padding(.horizontal, 12)
-                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                 .onChange(of: text.wrappedValue) { v in if v.count > limit { text.wrappedValue = String(v.prefix(limit)) } }
                 .accessibilityIdentifier(id)
         }
@@ -241,9 +241,9 @@ private struct TimingPanel: View {
                      idPrefix: "editor.duration")
             if model.draft.mode != .survive && BossCharacter.of(look: model.draft.bossLook) == nil {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.boss.move").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     BossMoveCards(move: $model.draft.bossMove)
-                    Text("editor.boss.position").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.boss.position").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     BossPositionPad(x: $model.draft.bossX, y: $model.draft.bossY)
                 }
             }
@@ -341,7 +341,7 @@ private struct EnemyControls: View {
                 if isCharacter {
                     Text("editor.enemy.character.note").font(.caption2).foregroundStyle(.secondary)
                 } else {
-                    Text("editor.enemy.size").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.enemy.size").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     // スライダーで半径(px)を決める。小・中・大と同じ値は、保存のときに 0・1・2 に戻る
                     SliderRow(label: "editor.enemy.size.radius",
                               value: Binding(get: { DanmakuConfig.bossRadius(size: bossSize) }, set: { bossSize = DanmakuConfig.bossSize(forRadius: Int($0.rounded())) }),
@@ -349,20 +349,20 @@ private struct EnemyControls: View {
                         .accessibilityIdentifier("editor.boss.size")
                     Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
                 }
-                Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 looks(selection: lookChoice, choices: lookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
                 if isCharacter && BossCharacter.of(look: bossLook) != .puni {
-                    Text("editor.awaken.title").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
                     Text("editor.awaken.note").font(.caption2).foregroundStyle(.secondary)
                 }
             }
-            Text("editor.enemy.mooks").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            Text("editor.enemy.mooks").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: [(-1, L("editor.enemy.none")), (0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))],
                      selection: Binding(get: { mooks ?? -1 }, set: { mooks = $0 < 0 ? nil : $0 }), idPrefix: "editor.mook.size")
             if mooks != nil {
-                Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
         }
@@ -385,12 +385,12 @@ private struct EnemyControls: View {
                     Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection.wrappedValue = n } } label: {
                         VStack(spacing: 4) {
                             Image(uiImage: image(n)).resizable().frame(width: 36, height: 36)
-                            Text(name(n)).font(.system(size: 11, weight: .heavy, design: .rounded))
-                                .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.75))
+                            Text(name(n)).font(.system(size: 11, weight: .heavy))
+                                .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
                         }
                         .padding(.vertical, 8).padding(.horizontal, 10)
-                        .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+                        .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+                        .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("\(idPrefix).\(n)")
@@ -434,7 +434,7 @@ struct SliderRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(label).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
                 .frame(width: 84, alignment: .leading)
             GameSlider(value: $value, range: range, step: step).allowsHitTesting(!disabled)
@@ -442,7 +442,7 @@ struct SliderRow: View {
                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                 .padding(.vertical, 4).padding(.horizontal, 6)
                 .frame(width: 64)
-                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
         }
         .opacity(disabled ? 0.35 : 1)
     }
@@ -457,13 +457,13 @@ private struct StatusBox: View {
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(verified ? Color(Palette.bullets[4]) : Color(Palette.gold))
             Text(verified ? "editor.status.ok" : "editor.status.need")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(verified ? Color(Palette.bullets[4]) : Color(Palette.text))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(verified ? Color(Palette.bullets[4]) : GameStyle.edge, lineWidth: verified ? 2 : 1))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(verified ? Color(Palette.bullets[4]) : GameStyle.edge, lineWidth: verified ? 2 : 1))
         .accessibilityIdentifier(verified ? "editor.status.ok" : "editor.status.need")
     }
 }
@@ -498,15 +498,15 @@ private struct BGMPanel: View {
                             }
                             .frame(width: 34, height: 34)
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(LocalizedStringKey(names[i])).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                                Text(LocalizedStringKey(names[i])).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                                 Text(L("\(names[i]).sub")).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                             }
                             Spacer()
                             if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(tints[i]) }
                         }
                         .padding(10)
-                        .background(on ? tints[i].opacity(0.14) : Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 14))
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(on ? tints[i] : Color.clear, lineWidth: 1.5))
+                        .background(on ? tints[i].opacity(0.14) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 14))
+                        .overlay(PixelRect(cornerRadius: 14).stroke(on ? tints[i] : Color.clear, lineWidth: 1.5))
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityAddTraits(on ? .isSelected : [])
@@ -532,18 +532,18 @@ private struct RewardFxPanel: View {
                 let owned = rewards.state.owned(kind)
                 if !owned.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(LocalizedStringKey(kind.nameKey)).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        Text(LocalizedStringKey(kind.nameKey)).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
                                 Button { gameTap(); set(nil, kind: kind) } label: {
                                     Image(systemName: "nosign").font(.title3).frame(width: 48, height: 48)
-                                        .background(Color.white.opacity(chosen(kind) == nil ? 0.25 : 0.1), in: RoundedRectangle(cornerRadius: 11))
+                                        .background(Color.white.opacity(chosen(kind) == nil ? 0.25 : 0.1), in: PixelRect(cornerRadius: 11))
                                 }
                                 .buttonStyle(.plain)
                                 ForEach(owned.reversed(), id: \.self) { r in
                                     Button { gameTap(); set(r, kind: kind) } label: {
                                         RewardSwatch(reward: r, size: 48)
-                                            .overlay(RoundedRectangle(cornerRadius: 11).stroke(.white, lineWidth: chosen(kind) == r ? 2.5 : 0))
+                                            .overlay(PixelRect(cornerRadius: 11).stroke(.white, lineWidth: chosen(kind) == r ? 2.5 : 0))
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -585,7 +585,7 @@ private struct LookPanel: View {
             Text("editor.look.note").font(.caption).foregroundStyle(.secondary)
             ForEach(ThemePart.allCases, id: \.self) { part in
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(LocalizedStringKey(part.nameKey)).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text(LocalizedStringKey(part.nameKey)).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) { ForEach(Theme.allCases, id: \.self) { tile(part, $0) } }.padding(.vertical, 2)
                     }
@@ -634,19 +634,19 @@ private struct LookPanel: View {
                     case .bullets:
                         HStack(spacing: 1) { ForEach(0..<3, id: \.self) { Image(uiImage: SpriteFactory.bulletImages(t)[$0]).resizable().frame(width: 15, height: 15) } }
                     case .background:
-                        RoundedRectangle(cornerRadius: 6).fill(Color(skin.background)).frame(width: 46, height: 30)
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.2)))
+                        PixelRect(cornerRadius: 6).fill(Color(skin.background)).frame(width: 46, height: 30)
+                            .overlay(PixelRect(cornerRadius: 6).stroke(GameStyle.edge))
                     case .ship:
                         Image(uiImage: SpriteFactory.shipImage(t)).resizable().frame(width: 22, height: 26)
                     }
                 }
                 .frame(width: 56, height: 36)
-                Text(LocalizedStringKey(t.nameKey)).font(.system(size: 11, weight: .heavy, design: .rounded))
-                    .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.75))
+                Text(LocalizedStringKey(t.nameKey)).font(.system(size: 11, weight: .heavy))
+                    .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
             }
             .padding(.vertical, 8).padding(.horizontal, 8)
-            .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+            .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
             .overlay(alignment: .topTrailing) {
                 if !owned {
                     Image(systemName: "lock.fill").font(.system(size: 9, weight: .heavy)).foregroundStyle(Color(Palette.gold))
@@ -673,7 +673,7 @@ private struct WorldPreviewPanel: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.preview.off").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("editor.preview.off").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Text("editor.preview.off.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -681,9 +681,9 @@ private struct WorldPreviewPanel: View {
                 }
                 if !model.draft.noPreview {
                     HStack {
-                        Text("editor.preview.start").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("editor.preview.start").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Spacer()
-                        Text(String(format: L("editor.preview.seconds"), start)).font(.system(size: 15, weight: .heavy, design: .rounded)).monospacedDigit().foregroundStyle(Color(Palette.text))
+                        Text(String(format: L("editor.preview.seconds"), start)).font(.system(size: 15, weight: .heavy)).monospacedDigit().foregroundStyle(Color(Palette.text))
                     }
                     if maxStart > 0 {
                         GameSlider(value: Binding(get: { Double(start) }, set: { model.draft.previewStart = Int($0) }),
@@ -712,7 +712,7 @@ private struct MarkerPanel: View {
             GamePanel(title: "editor.markers", tint: Color(Palette.bullets[4])) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.markers.show").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("editor.markers.show").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Text("editor.markers.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -752,7 +752,7 @@ private struct CustomLookPanel: View {
                             if let image { Image(uiImage: image).resizable().scaledToFill().clipShape(Circle()) }
                             else { Image(systemName: "photo").foregroundStyle(.secondary) }
                         }.frame(width: 40, height: 40)
-                        Text(LocalizedStringKey(slot.nameKey)).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text(LocalizedStringKey(slot.nameKey)).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Spacer()
                         if image == nil {
                             Button { gameTap(); showShop = true } label: { Chip(title: L("editor.custom.pick"), selected: false) }.buttonStyle(BounceButtonStyle())
@@ -779,11 +779,11 @@ private struct AddButton: View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle.fill").font(.system(size: 20))
-                Text(title).font(.system(size: 16, weight: .heavy, design: .rounded))
+                Text(title).font(.display(14))
             }
             .foregroundStyle(Color(Palette.gold))
             .frame(maxWidth: .infinity).padding(.vertical, 14)
-            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color(Palette.gold).opacity(0.7), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+            .overlay(PixelRect(cornerRadius: 16).strokeBorder(Color(Palette.gold).opacity(0.7), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
         }
         .buttonStyle(BounceButtonStyle())
         .opacity(enabled ? 1 : 0.4)
@@ -800,7 +800,7 @@ private struct EffectsPanel: View {
             GamePanel(title: "editor.effects", tint: Color(Palette.pink)) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("editor.warning").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("editor.warning").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                         Text("editor.warning.note").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -824,7 +824,7 @@ struct DefeatPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("editor.defeat").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            Text("editor.defeat").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: items.map { ($0.0.rawValue, L($0.1)) }, selection: $selection, idPrefix: "editor.defeat", minimum: 78)
         }
     }
@@ -839,7 +839,7 @@ private struct WavesSection: View {
         VStack(alignment: .leading, spacing: 14) {
             GamePanel(title: "editor.waves", tint: Color(Palette.bullets[3])) {
                 HStack {
-                    Text(String(format: L("editor.waves.count"), model.draft.waves.count)).font(.system(size: 14, weight: .heavy, design: .rounded))
+                    Text(String(format: L("editor.waves.count"), model.draft.waves.count)).font(.system(size: 14, weight: .heavy))
                     Spacer()
                     Text(String(format: L("editor.waves.total"), Stage.sequenceTotalSeconds(model.draft.waves.map(\.wave)))).font(.caption).foregroundStyle(.secondary)
                 }
@@ -852,7 +852,7 @@ private struct WavesSection: View {
                                 if w.kind == .boss { GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 24, height: 24) }
                                 else { GameShipShape().fill(Color(UIColor(hex: 0x5CE1E6))).frame(width: 14, height: 18) }
                             }
-                            Text("\(idx + 1)").font(.system(size: 10, weight: .heavy, design: .rounded)).foregroundStyle(.secondary)
+                            Text("\(idx + 1)").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
                         }
                         if idx < model.draft.waves.count - 1 { Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary) }
                     }
@@ -892,7 +892,7 @@ private struct WaveCard: View {
         look.bossSize = wave.bossSize ?? 1; look.bossLook = wave.bossLook ?? 0; look.mooks = wave.mooks; look.mookLook = wave.mookLook ?? 0
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(String(format: L("editor.wave.title"), i + 1)).font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                Text(String(format: L("editor.wave.title"), i + 1)).font(.display(15)).foregroundStyle(Color(Palette.gold))
                 Spacer()
                 if model.draft.waves.count > 1 {
                     iconButton("chevron.up", enabled: i > 0) { model.moveWave(waveID, by: -1) }
@@ -903,7 +903,7 @@ private struct WaveCard: View {
             }
             ChipGrid(items: [(WaveKind.survive, L("editor.wave.kind.survive")), (WaveKind.boss, L("editor.wave.kind.boss"))],
                      selection: Binding(get: { wave.kind }, set: { model.draft.waves[i].setKind($0) }), idPrefix: "editor.wave.kind.\(i)", minimum: 130)
-            Text(wave.kind == .boss ? "editor.wave.limit" : "editor.endure").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            Text(wave.kind == .boss ? "editor.wave.limit" : "editor.endure").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: wave.durations.map { ($0, String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { wave.duration }, set: { model.draft.waves[i].setDuration($0) }), idPrefix: "editor.wave.duration.\(i)")
             if wave.kind == .boss { bossControls }
@@ -915,16 +915,16 @@ private struct WaveCard: View {
             AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
         }
         .padding(14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(Palette.bullets[3]).opacity(0.5), lineWidth: 1.5))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 20))
+        .overlay(PixelRect(cornerRadius: 20).stroke(Color(Palette.bullets[3]).opacity(0.5), lineWidth: 1.5))
     }
 
     @ViewBuilder private var bossControls: some View {
                 if BossCharacter.of(look: wave.bossLook ?? 0) == nil {
-                    Text("editor.boss.move").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.boss.move").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     BossMoveCards(move: Binding(get: { wave.bossMove }, set: { model.draft.waves[i].bossMove = $0 }))
                     if advanced {
-                        Text("editor.boss.position").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        Text("editor.boss.position").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         BossPositionPad(x: Binding(get: { wave.bossX }, set: { model.draft.waves[i].bossX = $0 }),
                                         y: Binding(get: { wave.bossY }, set: { model.draft.waves[i].bossY = $0 }))
                     }
@@ -942,7 +942,7 @@ private struct WaveCard: View {
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("editor.warning").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Text("editor.warning").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             Text("editor.warning.note").font(.caption2).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -955,7 +955,7 @@ private struct WaveCard: View {
     private func iconButton(_ symbol: String, enabled: Bool, tint: Color = Color(Palette.text), action: @escaping () -> Void) -> some View {
         Button { gameTap(); action() } label: {
             Image(systemName: symbol).font(.system(size: 13, weight: .heavy)).foregroundStyle(tint)
-                .frame(width: 32, height: 32).background(Color.white.opacity(0.08), in: Circle())
+                .frame(width: 32, height: 32).background(GameStyle.panelHi, in: Circle())
         }
         .buttonStyle(BounceButtonStyle())
         .opacity(enabled ? 1 : 0.3)

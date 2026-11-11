@@ -89,12 +89,12 @@ struct RewardNoticeView: View {
             case .drink: Image(systemName: "drop.fill").font(.system(size: 24, weight: .bold)).foregroundStyle(Color(Palette.bullets[2])).frame(width: 48, height: 48)
             case .boss(let b): Image(uiImage: BossSprites.art(b, awakened: false)?.still ?? UIImage()).resizable().interpolation(.none).scaledToFit().frame(width: 48, height: 48)
             }
-            Text(text(item)).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+            Text(text(item)).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
             Spacer(minLength: 0)
         }
         .padding(.vertical, 8).padding(.horizontal, 12)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(GameStyle.edge))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
+        .overlay(PixelRect(cornerRadius: 14).stroke(GameStyle.edge))
     }
 
     private func text(_ item: RewardNoticeService.Item) -> String {

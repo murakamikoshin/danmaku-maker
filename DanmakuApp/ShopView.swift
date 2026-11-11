@@ -78,9 +78,8 @@ struct ShopView: View {
                     ZStack {
                         ConfettiView()
                         Text("shop.got")
-                            .font(.system(size: 56, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LinearGradient(colors: [Color(Palette.gold), Color(Palette.pink)], startPoint: .top, endPoint: .bottom))
-                            .shadow(color: .black.opacity(0.5), radius: 8)
+                            .font(.display(50)).lineLimit(1).minimumScaleFactor(0.5)
+                            .thick(GameStyle.yellow, shade: GameStyle.yellowShade, depth: 6)
                             .transition(.scale.combined(with: .opacity))
                     }
                     .ignoresSafeArea()
@@ -112,11 +111,11 @@ struct ShopView: View {
     private var header: some View {
         VStack(spacing: 4) {
             HStack {
-                Text("tab.shop").font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Text("tab.shop").font(.display(24)).foregroundStyle(Color(Palette.text))
                 Spacer()
                 Button { gameTap(); Task { await purchases.restore() } } label: {
                     Label("store.restore", systemImage: "arrow.clockwise")
-                        .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        .font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
                 .disabled(purchases.isBusy)
@@ -143,10 +142,9 @@ struct ShopView: View {
                         Spacer()
                         Image(systemName: "chevron.right").font(.footnote.bold())
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(GameStyle.ink)
                     .padding(16)
-                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0x8E5CFF))], startPoint: .leading, endPoint: .trailing),
-                                in: RoundedRectangle(cornerRadius: 18))
+                    .background(KeyCap(fill: GameStyle.pinkColor, radius: 18)).padding(.bottom, 4)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("shop.removeads")
@@ -183,16 +181,15 @@ private struct ShopHero: View {
             LinearGradient(colors: [.clear, Color.black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 2) {
                 Text("SHOP")
-                    .font(.system(size: 46, weight: .heavy, design: .rounded))
-                    .foregroundStyle(LinearGradient(colors: [.white, Color(Palette.pink)], startPoint: .top, endPoint: .bottom))
-                    .shadow(color: Color(Palette.pink).opacity(0.8), radius: 10)
+                    .font(.display(40))
+                    .thick(GameStyle.yellow, shade: GameStyle.yellowShade, depth: 4)
                 Text("shop.hero.sub").font(.footnote.bold()).foregroundStyle(.white.opacity(0.9))
             }
             .padding(16)
         }
         .frame(height: 190)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.18)))
+        .clipShape(PixelRect(cornerRadius: 24))
+        .overlay(PixelRect(cornerRadius: 24).strokeBorder(GameStyle.edge, lineWidth: 2))
     }
 }
 
@@ -204,7 +201,7 @@ private struct ShopCard<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.system(size: 22, weight: .heavy, design: .rounded)).padding(.horizontal, 4)
+            Text(title).font(.display(20)).padding(.horizontal, 4)
             content
             if let footer { Text(footer).font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4) }
         }
@@ -215,8 +212,8 @@ private struct CardBody<Content: View>: View {
     @ViewBuilder var content: Content
     var body: some View {
         VStack(spacing: 0) { content }
-            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08)))
+            .clipShape(PixelRect(cornerRadius: 18))
+            .gamePanel(radius: 18)
     }
 }
 
@@ -233,12 +230,11 @@ private struct PriceButton: View {
         Button { Task { await purchases.purchase(product) } } label: {
             // 価格は App Store から届いたもの(その人の国の通貨)だけを出す。届くまでは「…」
             Text(purchases.prices[product] ?? "…")
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
-                .foregroundStyle(.white)
+                .font(.system(size: 15, weight: .heavy))
+                .foregroundStyle(GameStyle.ink)
                 .frame(minWidth: 70)
                 .padding(.vertical, 8).padding(.horizontal, 12)
-                .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
-                .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6, y: 2)
+                .background(KeyCap(fill: GameStyle.accent, radius: 10, depth: 3)).padding(.bottom, 3)
         }
         .buttonStyle(.plain)
         .opacity(available && !purchases.isBusy ? 1 : 0.5)
@@ -259,7 +255,7 @@ private struct EquipButton: View {
     var body: some View {
         Button(action: action) {
             Text("shop.equip").font(.footnote.bold()).padding(.vertical, 6).padding(.horizontal, 14)
-                .background(Color.white.opacity(0.14), in: Capsule())
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -288,9 +284,9 @@ private struct ShotTile: View {
         VStack(alignment: .leading, spacing: 8) {
             ShotPreviewView(shot: shot)
                 .frame(height: 190)
-                .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            Text(LocalizedStringKey(shot.nameKey)).font(.system(size: 18, weight: .heavy, design: .rounded))
+                .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                .clipShape(PixelRect(cornerRadius: 12))
+            Text(LocalizedStringKey(shot.nameKey)).font(.display(16))
             Text(LocalizedStringKey(shot.detailKey)).font(.caption).foregroundStyle(.secondary)
                 .frame(height: 48, alignment: .topLeading)
             HStack {
@@ -304,8 +300,8 @@ private struct ShotTile: View {
         }
         .padding(12)
         .frame(width: 210)
-        .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1.5))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+        .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge, lineWidth: 1.5))
     }
 }
 
@@ -364,14 +360,14 @@ private struct ThemeCard: View {
                 BulletBurstView(theme: theme)
                 HStack {
                     Text(LocalizedStringKey(theme.nameKey))
-                        .font(.system(size: 26, weight: .heavy, design: .rounded))
+                        .font(.display(23))
                         .foregroundStyle(.white).shadow(color: .black.opacity(0.7), radius: 5)
                     Spacer()
                     if theme != .classic && cosmetics.ownership.canBuy(.set(theme)) {
                         Text(String(format: L("shop.off"), offPercent))
-                            .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                            .font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.ink)
                             .padding(.vertical, 4).padding(.horizontal, 10)
-                            .background(Color(Palette.pink), in: Capsule())
+                            .background(Color(Palette.pink), in: PixelRect(cornerRadius: 8))
                     }
                 }
                 .padding(14)
@@ -385,16 +381,16 @@ private struct ThemeCard: View {
                 }
                 if theme != .classic { setRow }
             }
-            .background(Color.white.opacity(0.07))
+            .background(GameStyle.panel)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 22))
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.12)))
+        .clipShape(PixelRect(cornerRadius: 22))
+        .overlay(PixelRect(cornerRadius: 22).stroke(GameStyle.edge))
     }
 
     private var setRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 3) {
-                Text("shop.set").font(.system(size: 17, weight: .heavy, design: .rounded))
+                Text("shop.set").font(.display(15))
                 // 単品の合計 → セットの価格(App Store の価格が届いてから出す)
                 if let total = purchases.totalText(parts), let price = purchases.prices[.set(theme)] {
                     HStack(spacing: 6) {
@@ -409,7 +405,7 @@ private struct ThemeCard: View {
             else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
         }
         .padding(14)
-        .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.18), Color(Palette.gold).opacity(0.10)], startPoint: .leading, endPoint: .trailing))
+        .background(GameStyle.yellow.opacity(0.10))
     }
 }
 
@@ -441,7 +437,7 @@ private struct PartRow: View {
             }
         case .background:
             ZStack {
-                RoundedRectangle(cornerRadius: 4).fill(Color(skin.background))
+                PixelRect(cornerRadius: 4).fill(Color(skin.background))
                 HStack(spacing: 7) {
                     ForEach(0..<5, id: \.self) { i in
                         Circle().fill(Color(skin.star)).frame(width: i % 2 == 0 ? 3 : 2, height: i % 2 == 0 ? 3 : 2)
@@ -450,7 +446,7 @@ private struct PartRow: View {
                 }
             }
             .frame(width: 44, height: 28)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.2)))
+            .overlay(PixelRect(cornerRadius: 4).stroke(GameStyle.edge))
         case .ship:
             Image(uiImage: SpriteFactory.shipImage(theme)).resizable().frame(width: 20, height: 24)
         }
@@ -529,7 +525,7 @@ private struct CustomSlotRow: View {
             PhotosPicker(selection: $item, matching: .images) {
                 Text(image == nil ? "shop.custom.pick" : "shop.custom.change").font(.footnote.bold())
                     .padding(.vertical, 6).padding(.horizontal, 12)
-                    .background(Color.white.opacity(0.14), in: Capsule())
+                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
             }
             .accessibilityIdentifier("shop.custom.pick.\(slot.rawValue)")
         }
@@ -560,7 +556,7 @@ private struct LifetimeCard: View {
         ShopCard(title: "lifetime.title", footer: "lifetime.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("lifetime.tagline").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    Text("lifetime.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
                     ForEach(items, id: \.self) { k in
                         Label(LocalizedStringKey(k), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Color(Palette.text))
@@ -572,7 +568,7 @@ private struct LifetimeCard: View {
                     }
                 }
                 .padding(14)
-                .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.22), Color(Palette.gold).opacity(0.12)], startPoint: .leading, endPoint: .trailing))
+                .background(GameStyle.yellow.opacity(0.10))
             }
         }
         .accessibilityIdentifier("shop.lifetime")
@@ -588,19 +584,19 @@ private struct MakerCard: View {
         ShopCard(title: "maker.title", footer: "maker.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("maker.tagline").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    Text("maker.tagline").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
                     MakerDemo()
                         .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
-                        .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                        .clipShape(PixelRect(cornerRadius: 12))
                     Text("maker.how").font(.caption).foregroundStyle(.secondary)
                     HStack {
                         Spacer()
                         if cosmetics.ownership.hasPatternMaker {
                             Button { gameTap(); showMaker = true } label: {
-                                Label("maker.open", systemImage: "pencil.and.scribble").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                Label("maker.open", systemImage: "pencil.and.scribble").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                                     .padding(.vertical, 8).padding(.horizontal, 14)
-                                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                                    .background(KeyCap(fill: GameStyle.accent, radius: 10, depth: 3)).padding(.bottom, 3)
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("maker.open")
@@ -657,8 +653,8 @@ private struct MakerDemo: View {
             }
             .overlay(alignment: .topLeading) {
                 Text(tl.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: Self.cycle) < Self.drawSeconds ? "maker.demo.step1" : "maker.demo.step2")
-                    .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-                    .padding(.vertical, 3).padding(.horizontal, 8).background(Color.black.opacity(0.5), in: Capsule()).padding(8)
+                    .font(.system(size: 12, weight: .heavy)).foregroundStyle(.white)
+                    .padding(.vertical, 3).padding(.horizontal, 8).background(Color.black.opacity(0.5), in: PixelRect(cornerRadius: 8)).padding(8)
             }
         }
     }
@@ -678,7 +674,7 @@ private struct AdPatternCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("shop.adpattern.title").font(.system(size: 22, weight: .heavy, design: .rounded))
+                Text("shop.adpattern.title").font(.display(20))
                 Spacer()
                 Text(String(format: L("shop.adpattern.progress"), all ? Pattern.ad.count : adPatterns.state.claimed, Pattern.ad.count))
                     .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
@@ -691,11 +687,11 @@ private struct AdPatternCard: View {
                         PatternDemo(pattern: next)
                             .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                             .frame(width: 150)
-                            .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                            .clipShape(PixelRect(cornerRadius: 12))
                         VStack(alignment: .leading, spacing: 8) {
                             Text("shop.adpattern.next").font(.caption.bold()).foregroundStyle(.secondary)
-                            Text(L("pattern.\(next.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
+                            Text(L("pattern.\(next.rawValue)")).font(.display(16))
                             claimButton
                         }
                         Spacer(minLength: 0)
@@ -712,11 +708,11 @@ private struct AdPatternCard: View {
                                 PatternDemo(pattern: p)
                                     .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
                                     .frame(width: 92)
-                                    .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 10))
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .background(Color(Palette.background), in: PixelRect(cornerRadius: 10))
+                                    .clipShape(PixelRect(cornerRadius: 10))
                                     .opacity(open ? 1 : 0.4)
                                     .overlay { if !open { Image(systemName: "lock.fill").foregroundStyle(Color(Palette.gold)) } }
-                                Text(L("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold, design: .rounded))
+                                Text(L("pattern.\(p.rawValue)")).font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(open ? Color(Palette.text) : .secondary).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .frame(width: 92)
@@ -725,8 +721,8 @@ private struct AdPatternCard: View {
                 }
             }
             .padding(14)
-            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08)))
+            .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+            .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
 
             Text(purchases.isPremium ? "shop.adpattern.footer.premium" : "shop.adpattern.footer")
                 .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
@@ -744,9 +740,9 @@ private struct AdPatternCard: View {
             let ready = purchases.isPremium || ads.isReady
             Button { Task { await claim() } } label: {
                 Label(purchases.isPremium ? "shop.adpattern.claim.free" : "shop.adpattern.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                    .font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                     .padding(.vertical, 8).padding(.horizontal, 14)
-                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                    .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
             }
             .buttonStyle(.plain)
             .disabled(!ready || busy)
@@ -793,7 +789,7 @@ private struct PatternShop: View {
                 CardBody {
                     HStack {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(packTitle).font(.system(size: 17, weight: .heavy, design: .rounded))
+                            Text(packTitle).font(.display(15))
                             if let total = purchases.totalText(singles), let price = purchases.prices[pack] {
                                 HStack(spacing: 6) {
                                     Text(total).strikethrough().foregroundStyle(.secondary)
@@ -807,7 +803,7 @@ private struct PatternShop: View {
                         else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
                     }
                     .padding(14)
-                    .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.18), Color(Palette.gold).opacity(0.10)], startPoint: .leading, endPoint: .trailing))
+                    .background(GameStyle.yellow.opacity(0.10))
                 }
             }
         }
@@ -822,9 +818,9 @@ private struct PatternTile: View {
         VStack(alignment: .leading, spacing: 8) {
             PatternDemo(pattern: pattern)
                 .aspectRatio(PatternDemoEngine.fieldWidth / PatternDemoEngine.fieldHeight, contentMode: .fit)
-                .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            Text(L("pattern.\(pattern.rawValue)")).font(.system(size: 18, weight: .heavy, design: .rounded))
+                .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
+                .clipShape(PixelRect(cornerRadius: 12))
+            Text(L("pattern.\(pattern.rawValue)")).font(.display(16))
             Text(L("shop.pattern.\(pattern.rawValue)")).font(.caption).foregroundStyle(.secondary)
                 .frame(height: 44, alignment: .topLeading)
             HStack {
@@ -838,8 +834,8 @@ private struct PatternTile: View {
         }
         .padding(12)
         .frame(width: 200)
-        .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1.5))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+        .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge, lineWidth: 1.5))
     }
 }
 
@@ -949,13 +945,13 @@ private struct BossShopCard: View {
         ShopCard(title: LocalizedStringKey(L("enemy.boss.\(boss.rawValue)")), footer: "shop.boss.footer") {
             CardBody {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(L("shop.boss.\(boss.rawValue).desc")).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    Text(L("shop.boss.\(boss.rawValue).desc")).font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.gold))
                     HStack(spacing: 0) {
                         sprite(awakened: false)
                         sprite(awakened: true)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(Color(Palette.background), in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color(Palette.background), in: PixelRect(cornerRadius: 12))
                     Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
                     HStack {
                         Spacer()
@@ -965,9 +961,9 @@ private struct BossShopCard: View {
                             if cosmetics.canClaimBossTicket && boss.ticketEligible {
                                 TicketCount()
                                 Button { gameTap(); Task { await cosmetics.claimBossTicket(boss) } } label: {
-                                    HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket") }.font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                                    HStack(spacing: 6) { TicketArtView(height: 16); Text("shop.boss.ticket") }.font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                                         .padding(.vertical, 8).padding(.horizontal, 12)
-                                        .background(Color(Palette.bullets[4]), in: Capsule())
+                                        .background(KeyCap(fill: GameStyle.green, radius: 10, depth: 3)).padding(.bottom, 3)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("shop.boss.ticket")

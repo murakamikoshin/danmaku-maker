@@ -2,31 +2,25 @@ import SwiftUI
 import UIKit
 import DanmakuCore
 
-// 編集画面で使う、ゲーム専用の部品(標準のピッカーやスライダーの代わり)
-
-enum GameStyle {
-    static let panel = Color(red: 0.11, green: 0.09, blue: 0.25)
-    static let edge = Color.white.opacity(0.12)
-    static let accent = LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing)
-    static let cyan = LinearGradient(colors: [Color(UIColor(hex: 0x5CE1E6)), Color(UIColor(hex: 0x5C8AFF))], startPoint: .leading, endPoint: .trailing)
-    static let gold = LinearGradient(colors: [Color(Palette.gold), Color(UIColor(hex: 0xFF9F5C))], startPoint: .leading, endPoint: .trailing)
-}
+// 編集画面などで使う、ゲーム専用の部品(標準のピッカーやスライダーの代わり)。色・字体・形の決まりは DesignSystem.swift
 
 func gameTap() {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     Task { @MainActor in AudioManager.shared.se(.tap) }
 }
 
-/// 押すとぷにっと縮んで、ぽんと戻るボタン
+/// 押すと、キーのように少し沈むボタン
 struct BounceButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.5), value: configuration.isPressed)
+            .offset(y: configuration.isPressed ? 3 : 0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .brightness(configuration.isPressed ? -0.06 : 0)
+            .animation(.spring(response: 0.18, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
-/// 大きなアクションボタン(テストプレイ・投稿など)
+/// 大きなアクションボタン(テストプレイ・投稿など)。べた塗りの面に黒い文字、下に厚み
 struct GameActionButton: View {
     let title: LocalizedStringKey
     let systemImage: String
@@ -37,14 +31,13 @@ struct GameActionButton: View {
     var body: some View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 8) {
-                Image(systemName: systemImage).font(.system(size: 17, weight: .heavy))
-                Text(title).font(.system(size: 17, weight: .heavy, design: .rounded))
+                Image(systemName: systemImage).font(.system(size: 15, weight: .black))
+                Text(title).font(.display(15)).multilineTextAlignment(.center).minimumScaleFactor(0.7)
             }
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity).padding(.vertical, 14)
-            .background(fill, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.35), lineWidth: 1))
-            .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+            .foregroundStyle(GameStyle.ink)
+            .frame(maxWidth: .infinity).padding(.vertical, 13).padding(.horizontal, 10)
+            .background(KeyCap(fill: fill, radius: 14))
+            .padding(.bottom, 4)
         }
         .buttonStyle(BounceButtonStyle())
         .opacity(enabled ? 1 : 0.4)
@@ -62,32 +55,29 @@ struct GamePanel<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             if let title {
                 HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 2).fill(tint).frame(width: 4, height: 16)
-                    Text(title).font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    Rectangle().fill(tint).frame(width: 8, height: 8)
+                    Text(title).font(.display(15)).foregroundStyle(Color(Palette.text))
                 }
             }
             content
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(GameStyle.edge))
+        .gamePanel(radius: 18)
     }
 }
 
-/// 選べる丸いチップ(選ぶと色がついて光る)
+/// 選べるチップ(選ぶと黄色になる)
 struct Chip: View {
     let title: String
     let selected: Bool
 
     var body: some View {
         Text(title)
-            .font(.system(size: 14, weight: .heavy, design: .rounded))
-            .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.75))
-            .padding(.vertical, 8).padding(.horizontal, 14)
-            .background(selected ? AnyShapeStyle(GameStyle.accent) : AnyShapeStyle(Color.white.opacity(0.08)), in: Capsule())
-            .overlay(Capsule().stroke(selected ? Color.white.opacity(0.65) : Color.white.opacity(0.12), lineWidth: 1))
-            .shadow(color: selected ? Color(Palette.pink).opacity(0.55) : .clear, radius: 7)
+            .font(.system(size: 13, weight: .heavy))
+            .foregroundStyle(selected ? GameStyle.ink : Color(Palette.text).opacity(0.85))
+            .padding(.vertical, 8).padding(.horizontal, 13)
+            .background(selected ? GameStyle.yellow : GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
     }
 }
 
@@ -114,7 +104,7 @@ struct ChipGrid<T: Hashable>: View {
     }
 }
 
-/// 弾の形のつまみがついたスライダー
+/// 四角いつまみがついたスライダー
 struct GameSlider: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
@@ -126,14 +116,14 @@ struct GameSlider: View {
             let span = range.upperBound - range.lowerBound
             let frac = span > 0 ? (value - range.lowerBound) / span : 0
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.1)).frame(height: 8).padding(.horizontal, 12)
-                Capsule().fill(GameStyle.accent).frame(width: max(8, w * frac + 12), height: 8).padding(.leading, 12)
+                Rectangle().fill(GameStyle.panelHi).frame(height: 8).padding(.horizontal, 12)
+                Rectangle().fill(GameStyle.yellow).frame(width: max(0, w * frac), height: 8).padding(.leading, 12)
                 ZStack {
-                    Circle().fill(Color(Palette.pink))
-                    Circle().fill(Color.white).frame(width: 10, height: 10)
+                    PixelRect(cornerRadius: 8).fill(Color.black.opacity(0.5)).offset(y: 3)
+                    PixelRect(cornerRadius: 8).fill(Color.white)
+                    Rectangle().fill(GameStyle.ink).frame(width: 6, height: 6)
                 }
                 .frame(width: 24, height: 24)
-                .shadow(color: Color(Palette.pink).opacity(0.7), radius: 6)
                 .offset(x: w * frac)
             }
             .frame(height: geo.size.height)
@@ -167,7 +157,7 @@ struct CountStepper: View {
             roundButton("minus", enabled: value > range.lowerBound) { value -= 1 }
                 .accessibilityIdentifier("\(idPrefix).minus")
             Text("\(value)")
-                .font(.system(size: 38, weight: .heavy, design: .rounded))
+                .font(.display(34))
                 .foregroundStyle(Color(Palette.text))
                 .frame(minWidth: 64)
                 .contentTransition(.numericText())
@@ -179,11 +169,10 @@ struct CountStepper: View {
 
     private func roundButton(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button { gameTap(); action() } label: {
-            Image(systemName: symbol).font(.system(size: 18, weight: .heavy)).foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(GameStyle.accent, in: Circle())
-                .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 1))
-                .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6)
+            Image(systemName: symbol).font(.system(size: 18, weight: .black)).foregroundStyle(GameStyle.ink)
+                .frame(width: 44, height: 42)
+                .background(KeyCap(fill: GameStyle.yellow, radius: 10, depth: 3))
+                .padding(.bottom, 3)
         }
         .buttonStyle(BounceButtonStyle())
         .opacity(enabled ? 1 : 0.35)
@@ -210,7 +199,6 @@ struct LifePreview: View {
                     HStack(spacing: 6) {
                         ForEach(0..<n, id: \.self) { _ in
                             Image(systemName: "heart.fill").font(.system(size: 22)).foregroundStyle(Color(Palette.pink))
-                                .shadow(color: Color(Palette.pink).opacity(0.7), radius: 5)
                         }
                     }
                 }
@@ -220,13 +208,13 @@ struct LifePreview: View {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, n in
                     HStack(spacing: 2) {
                         ForEach(0..<n, id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: 2).fill(Color(Palette.bullets[4])).frame(width: 9, height: 16)
+                            Rectangle().fill(Color(Palette.bullets[4])).frame(width: 9, height: 16)
                         }
                     }
                 }
             }
             .padding(4)
-            .background(Color.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 5))
+            .background(Color.black.opacity(0.4), in: PixelRect(cornerRadius: 5))
         }
     }
 }
@@ -238,50 +226,34 @@ struct ModeCards: View {
     let onSelect: (Mode) -> Void
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-            card(.survive, "editor.mode.survive", "editor.mode.survive.sub") {
-                ZStack {
-                    GameShipShape().fill(Color(UIColor(hex: 0x5CE1E6)))
-                    Circle().fill(Color.white).frame(width: 6, height: 6)
-                }.frame(width: 24, height: 28)
-            }
-            card(.boss, "editor.mode.boss", "editor.mode.boss.sub") {
-                GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 34, height: 34)
-            }
-            card(.sequence, "editor.mode.sequence", "editor.mode.sequence.sub") {
-                ZStack {
-                    GameBossShape().fill(Color(Palette.bullets[3]), style: FillStyle(eoFill: true)).frame(width: 30, height: 30).offset(x: 6, y: 4)
-                    GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: 24, height: 24).offset(x: -8, y: -3)
-                }.frame(width: 40, height: 34)
-            }
-            card(.damage, "editor.mode.damage", "editor.mode.damage.sub") {
-                ZStack {
-                    GameBossShape().fill(Color(Palette.gold), style: FillStyle(eoFill: true)).frame(width: 34, height: 34)
-                    Image(systemName: "bolt.fill").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.background))
-                }
-            }
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 10) {
+            card(.survive, "editor.mode.survive", "editor.mode.survive.sub")
+            card(.boss, "editor.mode.boss", "editor.mode.boss.sub")
+            card(.sequence, "editor.mode.sequence", "editor.mode.sequence.sub")
+            card(.damage, "editor.mode.damage", "editor.mode.damage.sub")
         }
     }
 
-    private func card<Icon: View>(_ m: Mode, _ title: LocalizedStringKey, _ sub: LocalizedStringKey, @ViewBuilder icon: () -> Icon) -> some View {
+    private func card(_ m: Mode, _ title: LocalizedStringKey, _ sub: LocalizedStringKey) -> some View {
         let selected = mode == m
         return Button {
             gameTap()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { onSelect(m) }
         } label: {
             VStack(spacing: 6) {
-                icon().frame(height: 36)
-                Text(title).font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
-                Text(sub).font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                // 選択中は黄色の札に黒い絵。それ以外は、クリア条件の色の絵
+                ModeGlyph(mode: m, size: 32, color: selected ? GameStyle.ink : nil,
+                          core: selected ? GameStyle.yellow : (m == .damage ? GameStyle.panelHi : .white))
+                    .frame(height: 36)
+                Text(title).font(.display(14)).foregroundStyle(selected ? GameStyle.ink : Color(Palette.text))
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                Text(sub).font(.system(size: 10, weight: .bold)).foregroundStyle(selected ? GameStyle.ink.opacity(0.75) : GameStyle.dim)
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.vertical, 12).padding(.horizontal, 6)
-            .background(selected ? AnyShapeStyle(LinearGradient(colors: [Color(Palette.gold).opacity(0.28), Color(Palette.pink).opacity(0.18)], startPoint: .top, endPoint: .bottom)) : AnyShapeStyle(GameStyle.panel),
-                        in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? Color(Palette.gold) : GameStyle.edge, lineWidth: selected ? 2 : 1))
-            .shadow(color: selected ? Color(Palette.gold).opacity(0.45) : .clear, radius: 8)
-            .scaleEffect(selected ? 1.03 : 1)
+            .background(KeyCap(fill: selected ? GameStyle.yellow : GameStyle.panelHi, radius: 14, depth: selected ? 4 : 0))
+            .padding(.bottom, 4)
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -307,7 +279,7 @@ struct BossMoveCards: View {
             if canReverse {
                 HStack {
                     Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
-                    Text("editor.boss.reverse").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    Text("editor.boss.reverse").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
                     Spacer()
                     GameToggle(isOn: Binding(get: { reversed }, set: { move = $0 ? (Self.reversePairs[base] ?? base) : base }))
                 }
@@ -349,13 +321,12 @@ struct BossMoveCards: View {
                             }
                         }
                         .frame(height: 40)
-                        Text(L("editor.boss.move.\(i)")).font(.system(size: 11, weight: .heavy, design: .rounded)).lineLimit(1).minimumScaleFactor(0.6)
+                        Text(L("editor.boss.move.\(i)")).font(.system(size: 11, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.6)
                             .foregroundStyle(Color(Palette.text))
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 6).padding(.horizontal, 3)
-                    .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.2)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
-                    .shadow(color: selected ? Color(Palette.pink).opacity(0.45) : .clear, radius: 7)
+                    .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+                    .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
                 }
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -384,20 +355,19 @@ struct BossPositionPad: View {
     var body: some View {
         VStack(spacing: 8) {
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 12).fill(Color.black.opacity(0.35))
+                PixelRect(cornerRadius: 12).fill(Color.black.opacity(0.35))
                 // 置ける範囲
-                RoundedRectangle(cornerRadius: 8).fill(Color(Palette.pink).opacity(0.10))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(Palette.pink).opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                PixelRect(cornerRadius: 8).fill(Color(Palette.pink).opacity(0.10))
+                    .overlay(PixelRect(cornerRadius: 8).stroke(Color(Palette.pink).opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
                     .frame(width: w * CGFloat(Self.xr.upperBound - Self.xr.lowerBound), height: h * CGFloat((Self.yr.upperBound - Self.yr.lowerBound) / 0.5))
                     .offset(x: w * CGFloat(Self.xr.lowerBound), y: h * CGFloat(Self.yr.lowerBound / 0.5))
                 // 動きの道すじは出さない(動きは上のカードで選ぶ)。ここは「中心」だけ
                 GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true))
                     .frame(width: 26, height: 26)
-                    .shadow(color: Color(Palette.pink).opacity(0.6), radius: 6)
                     .offset(x: w * CGFloat(cx) - 13, y: h * CGFloat(cy / 0.5) - 13)
             }
             .frame(width: w, height: h)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+            .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
             .contentShape(Rectangle())
             .gesture(DragGesture(minimumDistance: 0).onChanged { v in
                 let nx = min(max(Double(v.location.x / w), Self.xr.lowerBound), Self.xr.upperBound)
@@ -408,10 +378,10 @@ struct BossPositionPad: View {
             })
             .accessibilityIdentifier("editor.boss.position")
             Button { gameTap(); x = nil; y = nil } label: {
-                Text("editor.boss.position.reset").font(.system(size: 12, weight: .heavy, design: .rounded))
+                Text("editor.boss.position.reset").font(.system(size: 12, weight: .heavy))
                     .foregroundStyle(isStandard ? Color(Palette.text).opacity(0.4) : Color(Palette.text))
                     .padding(.vertical, 6).padding(.horizontal, 14)
-                    .background(Color.white.opacity(0.08), in: Capsule()).overlay(Capsule().stroke(GameStyle.edge))
+                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8)).overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.edge))
             }
             .buttonStyle(BounceButtonStyle()).disabled(isStandard)
         }
@@ -439,13 +409,13 @@ struct PatternTiles: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let character {
-                Text(L("editor.pattern.bosssection.\(character.rawValue)")).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text(L("editor.pattern.bosssection.\(character.rawValue)")).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 grid(DanmakuCore.Pattern.allCases.filter { $0.bossCharacter == character })
             }
             grid(freePatterns)
-            Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            Text("editor.pattern.adsection").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.ad)
-            Text("editor.pattern.pack2section").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            Text("editor.pattern.pack2section").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.pack2)
             customSection
         }
@@ -473,7 +443,7 @@ struct PatternTiles: View {
     /// 弾幕作成モードで作った弾幕(選ぶと、描いた軌道がこの発射台に入る)
     @ViewBuilder private var customSection: some View {
         if cosmetics.ownership.hasPatternMaker || !library.items.isEmpty {
-            Text("editor.pattern.mysection").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary).padding(.top, 4)
+            Text("editor.pattern.mysection").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
             if library.items.isEmpty {
                 Text("editor.pattern.mynone").font(.caption).foregroundStyle(.secondary)
             }
@@ -488,12 +458,12 @@ struct PatternTiles: View {
                     } label: {
                         VStack(spacing: 3) {
                             CustomPatternIcon(path: item.path).frame(width: 40, height: 40)
-                            Text(item.name).font(.system(size: 10, weight: .heavy, design: .rounded))
-                                .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.7)).lineLimit(1).minimumScaleFactor(0.7)
+                            Text(item.name).font(.system(size: 10, weight: .heavy))
+                                .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 6)
-                        .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
+                        .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+                        .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
                     }
                     .buttonStyle(BounceButtonStyle())
                 }
@@ -513,14 +483,13 @@ struct PatternTiles: View {
                 } label: {
                     VStack(spacing: 3) {
                         PatternIcon(pattern: p, selected: selected).frame(width: 40, height: 40)
-                        Text(LocalizedStringKey(keys[p] ?? "pattern.\(p.rawValue)")).font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.7))
+                        Text(LocalizedStringKey(keys[p] ?? "pattern.\(p.rawValue)")).font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(selected ? GameStyle.yellow : Color(Palette.text).opacity(0.75))
                             .lineLimit(1).minimumScaleFactor(0.7)
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
-                    .background(selected ? AnyShapeStyle(Color(Palette.pink).opacity(0.22)) : AnyShapeStyle(Color.white.opacity(0.06)), in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color(Palette.pink) : GameStyle.edge, lineWidth: selected ? 2 : 1))
-                    .shadow(color: selected ? Color(Palette.pink).opacity(0.45) : .clear, radius: 6)
+                    .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
+                    .overlay(PixelRect(cornerRadius: 12).strokeBorder(selected ? GameStyle.yellow : Color.clear, lineWidth: 2))
                     .overlay(alignment: .topTrailing) {
                         if locked {
                             Image(systemName: "lock.fill").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.gold))
@@ -572,7 +541,7 @@ struct PatternIcon: View {
 
     var body: some View {
         Canvas { ctx, size in
-            let col = selected ? Color(Palette.pink) : Color(Palette.text).opacity(0.55)
+            let col = selected ? GameStyle.yellow : Color(Palette.text).opacity(0.6)
             let c = CGPoint(x: size.width / 2, y: size.height / 2)
             func dot(_ x: Double, _ y: Double, _ r: Double = 2.6) {
                 ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(col))
@@ -755,29 +724,24 @@ struct PatternIcon: View {
 
 // MARK: 全画面で使う部品
 
-/// アプリのロゴ風タイトル(光る文字と、弾の飾り)
+/// アプリのロゴ風タイトル(厚みのある黄色い文字と、弾の飾り)
 struct LogoTitle: View {
     let text: LocalizedStringKey
     var size: CGFloat = 32
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 5) {
                 ForEach(0..<5, id: \.self) { i in
                     ZStack {
                         Circle().fill(Color(Palette.bullets[i]))
                         Circle().fill(Color.white).frame(width: 4, height: 4)
                     }
-                    .frame(width: 8, height: 8)
-                    .shadow(color: Color(Palette.bullets[i]).opacity(0.8), radius: 4)
+                    .frame(width: 9, height: 9)
                 }
             }
-            Text(text)
-                .font(.system(size: size, weight: .heavy, design: .rounded))
-                .lineLimit(1).minimumScaleFactor(0.6)
-                .foregroundStyle(LinearGradient(colors: [.white, Color(Palette.pink), Color(Palette.gold)], startPoint: .top, endPoint: .bottom))
-                .shadow(color: Color(Palette.pink).opacity(0.8), radius: 10)
-                .shadow(color: .black.opacity(0.5), radius: 2, y: 2)
+            Text(text).font(.display(size)).lineLimit(1).minimumScaleFactor(0.6)
+                .thick(GameStyle.yellow, shade: GameStyle.yellowShade, depth: size * 0.1)
         }
     }
 }
@@ -794,14 +758,15 @@ struct ScreenHeader<Leading: View, Trailing: View>: View {
             HStack { leading; Spacer(minLength: 0); trailing }
             if let logo { LogoTitle(text: logo) }
             if let title {
-                Text(title).font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Text(title).font(.display(19)).foregroundStyle(Color(Palette.text))
+                    .lineLimit(1).minimumScaleFactor(0.6).padding(.horizontal, 50)
             }
         }
         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 6)
     }
 }
 
-/// 丸い小さなボタン(閉じる・戻るなど)
+/// 四角い小さなボタン(閉じる・戻るなど)
 struct RoundIconButton: View {
     let systemImage: String
     let label: LocalizedStringKey
@@ -810,10 +775,9 @@ struct RoundIconButton: View {
 
     var body: some View {
         Button { gameTap(); action() } label: {
-            Image(systemName: systemImage).font(.system(size: 15, weight: .heavy)).foregroundStyle(tint)
+            Image(systemName: systemImage).font(.system(size: 15, weight: .black)).foregroundStyle(tint)
                 .frame(width: 38, height: 38)
-                .background(Color.white.opacity(0.1), in: Circle())
-                .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                .gamePanel(radius: 10, fill: GameStyle.panelHi)
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityLabel(Text(label))
@@ -835,24 +799,24 @@ struct GameTabs<T: Hashable>: View {
                 let selected = selection == item.0
                 Button {
                     gameTap()
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { selection = item.0 }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { selection = item.0 }
                 } label: {
-                    Text(item.1).font(.system(size: 15, weight: .heavy, design: .rounded))
-                        .lineLimit(1).minimumScaleFactor(0.7)
-                        .foregroundStyle(selected ? Color.white : Color(Palette.text).opacity(0.6))
-                        .frame(maxWidth: .infinity).padding(.vertical, 9)
+                    Text(item.1).font(.display(13))
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                        .foregroundStyle(selected ? GameStyle.ink : GameStyle.dim)
+                        .frame(maxWidth: .infinity).padding(.vertical, 9).padding(.horizontal, 4)
                         .overlay(alignment: .topTrailing) {
                             if badges.contains(item.0) {
-                                Circle().fill(Color.red).frame(width: 9, height: 9).padding(.top, 5).padding(.trailing, 6)
+                                Rectangle().fill(Color(Palette.pink)).frame(width: 8, height: 8).padding(.top, 4).padding(.trailing, 5)
                             }
                         }
                         .background {
                             if selected {
-                                RoundedRectangle(cornerRadius: 12).fill(GameStyle.accent)
-                                    .shadow(color: Color(Palette.pink).opacity(0.5), radius: 6)
+                                PixelRect(cornerRadius: 10).fill(GameStyle.yellow)
                                     .matchedGeometryEffect(id: "sel", in: ns)
                             }
                         }
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -860,29 +824,28 @@ struct GameTabs<T: Hashable>: View {
             }
         }
         .padding(4)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+        .gamePanel(radius: 14)
     }
 }
 
-/// ゲーム風のオン・オフスイッチ(弾のつまみ)
+/// ゲーム風のオン・オフスイッチ(四角いつまみ)
 struct GameToggle: View {
     @Binding var isOn: Bool
 
     var body: some View {
         Button {
             UISelectionFeedbackGenerator().selectionChanged()
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isOn.toggle() }
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) { isOn.toggle() }
         } label: {
             ZStack(alignment: isOn ? .trailing : .leading) {
-                Capsule().fill(isOn ? AnyShapeStyle(GameStyle.accent) : AnyShapeStyle(Color.white.opacity(0.12)))
+                PixelRect(cornerRadius: 8).fill(isOn ? GameStyle.yellow : GameStyle.panelHi)
                     .frame(width: 52, height: 30)
-                    .overlay(Capsule().stroke(Color.white.opacity(0.25)))
+                    .overlay(PixelRect(cornerRadius: 8).strokeBorder(isOn ? GameStyle.yellow : GameStyle.edge, lineWidth: 2))
                 ZStack {
-                    Circle().fill(isOn ? Color.white : Color(Palette.text).opacity(0.7))
-                    Circle().fill(isOn ? Color(Palette.pink) : Color.black.opacity(0.3)).frame(width: 9, height: 9)
+                    PixelRect(cornerRadius: 6).fill(isOn ? GameStyle.ink : GameStyle.dim)
+                    Rectangle().fill(isOn ? GameStyle.yellow : GameStyle.panelHi).frame(width: 6, height: 6)
                 }
-                .frame(width: 24, height: 24).padding(3)
+                .frame(width: 22, height: 22).padding(4)
             }
         }
         .buttonStyle(.plain)
@@ -891,75 +854,50 @@ struct GameToggle: View {
     }
 }
 
-/// モードを表す丸いアイコン
+/// クリア条件を表す四角いアイコン(クリア条件の色の札に、黒い絵)
 struct ModeIcon: View {
     let mode: Mode
     var size: CGFloat = 46
 
-    private var tint: Color {
-        switch mode {
-        case .survive: return Color(UIColor(hex: 0x5CE1E6))
-        case .boss: return Color(Palette.pink)
-        case .damage: return Color(Palette.gold)
-        case .sequence: return Color(Palette.bullets[3])
-        }
-    }
-
     var body: some View {
-        ZStack {
-            Circle().fill(tint.opacity(0.18))
-            Circle().stroke(tint.opacity(0.7), lineWidth: 1.5)
-            switch mode {
-            case .survive:
-                ZStack {
-                    GameShipShape().fill(tint)
-                    Circle().fill(Color.white).frame(width: size * 0.12, height: size * 0.12)
-                }.frame(width: size * 0.42, height: size * 0.5)
-            case .boss:
-                GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.6, height: size * 0.6)
-            case .sequence:
-                ZStack {
-                    GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.5, height: size * 0.5).offset(x: size * 0.1, y: size * 0.06)
-                    GameBossShape().fill(Color(Palette.pink), style: FillStyle(eoFill: true)).frame(width: size * 0.42, height: size * 0.42).offset(x: -size * 0.13, y: -size * 0.05)
-                }
-            case .damage:
-                ZStack {
-                    GameBossShape().fill(tint, style: FillStyle(eoFill: true)).frame(width: size * 0.6, height: size * 0.6)
-                    Image(systemName: "bolt.fill").font(.system(size: size * 0.24, weight: .heavy)).foregroundStyle(Color(Palette.background))
-                }
-            }
-        }
-        .frame(width: size, height: size)
+        ModeGlyph(mode: mode, size: size * 0.6, color: GameStyle.ink, core: GameStyle.tint(mode))
+            .frame(width: size, height: size)
+            .background(GameStyle.tint(mode), in: PixelRect(cornerRadius: size * 0.22))
     }
 }
 
-/// ステージのカード(一覧の1行)。モードの色で縁が光る
+/// ステージのカード(一覧の1行)。左の帯の色で、クリア条件が分かる
 struct StageCardShell<Content: View>: View {
     let mode: Mode
     /// 左のアイコンの代わりに出すもの(世界のステージの動くプレビューなど)。nil ならクリア条件のアイコン
     var thumbnail: AnyView? = nil
     @ViewBuilder var content: Content
 
-    private var tint: Color {
-        switch mode {
-        case .survive: return Color(UIColor(hex: 0x5CE1E6))
-        case .boss: return Color(Palette.pink)
-        case .damage: return Color(Palette.gold)
-        case .sequence: return Color(Palette.bullets[3])
-        }
-    }
+    /// 左の帯の幅。アイコンだけのときは太い帯にアイコンを乗せ、プレビューがあるときは細い帯にする
+    private var band: CGFloat { thumbnail == nil ? 50 : 6 }
 
     var body: some View {
         HStack(spacing: 12) {
-            if let thumbnail { thumbnail } else { ModeIcon(mode: mode) }
+            if let thumbnail { thumbnail }
             content
         }
         .padding(12)
+        .padding(.leading, band)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(tint.opacity(0.45), lineWidth: 1.5))
-        .shadow(color: tint.opacity(0.18), radius: 8)
-        .contentShape(RoundedRectangle(cornerRadius: 18))
+        .background(alignment: .leading) {
+            ZStack(alignment: .leading) {
+                GameStyle.panel
+                GameStyle.tint(mode).frame(width: band)
+                if thumbnail == nil {
+                    ModeGlyph(mode: mode, size: 28, color: GameStyle.ink, core: GameStyle.tint(mode)).frame(width: band)
+                }
+            }
+        }
+        .clipShape(PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).strokeBorder(GameStyle.edge, lineWidth: 2))
+        .hardShadow(radius: 16, depth: 3)
+        .padding(.bottom, 3)
+        .contentShape(Rectangle())
     }
 }
 
@@ -968,14 +906,14 @@ struct PercentRing: View {
     let percent: Int?
     var body: some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.1), lineWidth: 5)
+            Circle().stroke(GameStyle.panelHi, lineWidth: 5)
             if let percent {
                 Circle().trim(from: 0, to: CGFloat(percent) / 100)
-                    .stroke(GameStyle.gold, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .stroke(GameStyle.yellow, style: StrokeStyle(lineWidth: 5, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
             }
             Text(percent.map { "\($0)%" } ?? "—")
-                .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                .font(.system(size: 12, weight: .black)).foregroundStyle(Color(Palette.text))
         }
         .frame(width: 48, height: 48)
     }
@@ -989,20 +927,19 @@ struct GameSearchField: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField("", text: $text, prompt: Text(prompt))
+            Image(systemName: "magnifyingglass").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.dim)
+            TextField("", text: $text, prompt: Text(prompt).foregroundColor(GameStyle.dim.opacity(0.7)))
                 .textFieldStyle(.plain)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .font(.system(size: 15, weight: .bold))
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
                 .onSubmit(onSubmit)
             if !text.isEmpty {
-                Button { text = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                Button { text = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(GameStyle.dim) }.buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 11).padding(.horizontal, 14)
-        .background(GameStyle.panel, in: Capsule())
-        .overlay(Capsule().stroke(GameStyle.edge))
+        .padding(.vertical, 10).padding(.horizontal, 12)
+        .gamePanel(radius: 10)
     }
 }

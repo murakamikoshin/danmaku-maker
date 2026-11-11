@@ -27,8 +27,8 @@ struct FeedbackView: View {
                         Spacer()
                         Button { gameTap(); dismiss() } label: {
                             Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
-                                .frame(width: 36, height: 36).background(Color.white.opacity(0.12), in: Circle())
-                                .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                                .frame(width: 36, height: 36).background(GameStyle.panelHi, in: Circle())
+                                .overlay(Circle().stroke(GameStyle.edge))
                         }
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityLabel(Text("swipe.close"))
@@ -37,7 +37,7 @@ struct FeedbackView: View {
                         GamePanel(tint: Color(Palette.bullets[4])) {
                             VStack(spacing: 10) {
                                 Image(systemName: "checkmark.circle.fill").font(.system(size: 40)).foregroundStyle(Color(Palette.bullets[4]))
-                                Text("feedback.sent").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text)).multilineTextAlignment(.center)
+                                Text("feedback.sent").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text)).multilineTextAlignment(.center)
                             }.frame(maxWidth: .infinity).padding(.vertical, 12)
                         }
                     } else {
@@ -45,19 +45,19 @@ struct FeedbackView: View {
                             ZStack(alignment: .topLeading) {
                                 TextEditor(text: $text)
                                     .scrollContentBackground(.hidden)
-                                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                                    .font(.system(size: 15, weight: .medium))
                                     .focused($focused)
                                     .frame(minHeight: 150)
                                     .padding(6)
                                     .onChange(of: text) { v in if v.count > Self.maxLength { text = String(v.prefix(Self.maxLength)) } }
                                     .accessibilityIdentifier("feedback.text")
                                 if text.isEmpty {
-                                    Text("feedback.hint").font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                                    Text("feedback.hint").font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
                                         .padding(.horizontal, 12).padding(.vertical, 14).allowsHitTesting(false)
                                 }
                             }
-                            .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                            .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                             HStack {
                                 Spacer()
                                 Text("\(text.count)/\(Self.maxLength)").font(.system(size: 11, weight: .semibold, design: .monospaced)).foregroundStyle(.secondary)
@@ -65,10 +65,10 @@ struct FeedbackView: View {
                             TextField("", text: $contact, prompt: Text("feedback.contact"))
                                 .textFieldStyle(.plain)
                                 .textInputAutocapitalization(.never).autocorrectionDisabled()
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .font(.system(size: 15, weight: .semibold))
                                 .padding(.vertical, 11).padding(.horizontal, 12)
-                                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                                 .onChange(of: contact) { v in if v.count > 100 { contact = String(v.prefix(100)) } }
                                 .accessibilityIdentifier("feedback.contact")
                             Text("feedback.note").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)

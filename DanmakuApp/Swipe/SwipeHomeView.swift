@@ -38,14 +38,14 @@ struct SwipeHomeView: View {
                                    ranking: { showRanking = true }, retry: { Task { await model.submit() } }, openStamina: { showStamina = true })
             }
             if let toast = model.toast {
-                VStack { Spacer(); Text(toast).font(.system(size: 13, weight: .heavy, design: .rounded)).padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(Capsule().fill(Color.black.opacity(0.75))).foregroundStyle(.white).padding(.bottom, 80) }
+                VStack { Spacer(); Text(toast).font(.system(size: 13, weight: .heavy)).padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(PixelRect(cornerRadius: 8).fill(Color.black.opacity(0.75))).foregroundStyle(.white).padding(.bottom, 80) }
                     .transition(.opacity).allowsHitTesting(false)
                     .task { try? await Task.sleep(nanoseconds: 2_200_000_000); model.toast = nil }
             }
         }
         .overlay(alignment: .top) {
-            if let key = model.errorKey, model.phase == .title { Text(LocalizedStringKey(key)).font(.system(size: 13, weight: .bold)).padding(10).background(Capsule().fill(Color.red.opacity(0.85))).foregroundStyle(.white).padding(.top, 8) }
+            if let key = model.errorKey, model.phase == .title { Text(LocalizedStringKey(key)).font(.system(size: 13, weight: .bold)).padding(10).background(PixelRect(cornerRadius: 8).fill(Color.red.opacity(0.85))).foregroundStyle(.white).padding(.top, 8) }
         }
         .sheet(isPresented: $showStamina) { StaminaSheet(service: service, close: { showStamina = false }) }
         .sheet(isPresented: $showRanking, onDismiss: { breakAd() }) { SwipeRankingView(service: service) }
@@ -117,7 +117,7 @@ private struct TitleView: View {
                 LinearGradient(colors: [.white, Color(uiColor: SwipePalette.gold), Color(uiColor: SwipePalette.pink)], startPoint: .top, endPoint: .bottom))
                 .multilineTextAlignment(.center)
             Text("swipe.beta").font(.system(size: 11, weight: .black)).padding(.horizontal, 8).padding(.vertical, 2)
-                .background(Capsule().fill(Color(uiColor: SwipePalette.pink))).foregroundStyle(.white)
+                .background(PixelRect(cornerRadius: 8).fill(Color(uiColor: SwipePalette.pink))).foregroundStyle(.white)
             VStack(alignment: .leading, spacing: 5) {
                 ForEach(["swipe.rule.1", "swipe.rule.2", "swipe.rule.3", "swipe.rule.4", "swipe.rule.5"], id: \.self) { k in
                     Text(LocalizedStringKey(k)).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Color(uiColor: SwipePalette.text).opacity(0.9))
@@ -130,7 +130,7 @@ private struct TitleView: View {
                     Text(service.stamina.unlimited ? "swipe.start.unlimited" : "swipe.start.cost").font(.system(size: 11, weight: .bold))
                 }
                 .foregroundStyle(.white).padding(.horizontal, 44).padding(.vertical, 12)
-                .background(Capsule().fill(Color(uiColor: SwipePalette.pink)))
+                .background(PixelRect(cornerRadius: 8).fill(Color(uiColor: SwipePalette.pink)))
                 .scaleEffect(pulse ? 1.05 : 1)
             }
             .buttonStyle(.plain)
@@ -151,7 +151,7 @@ struct StaminaBar: View {
             if !info.known {
                 // サーバーの値を受け取るまでは、満タンに見せない
                 HStack(spacing: 4) { ForEach(0..<StaminaInfo.max, id: \.self) { _ in Image(systemName: "bolt.fill").foregroundStyle(Color.white.opacity(0.18)) } }
-                Text("…").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.dim))
+                Text("…").font(.system(size: 11, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.dim))
             } else if info.unlimited {
                 Text("swipe.stamina.unlimited").font(.system(size: 13, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold))
             } else {
@@ -162,12 +162,12 @@ struct StaminaBar: View {
                     }
                 }
                 TimelineView(.periodic(from: .now, by: 1)) { ctx in
-                    Text(label(now: ctx.date)).font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.dim))
+                    Text(label(now: ctx.date)).font(.system(size: 11, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.dim))
                 }
             }
         }
         .padding(.vertical, 8).padding(.horizontal, 16)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
+        .background(PixelRect(cornerRadius: 12).fill(Color.white.opacity(0.06)))
     }
 
     private func label(now: Date) -> String {
@@ -204,7 +204,7 @@ private struct PlayHUD: View {
                         VStack(alignment: .trailing, spacing: 2) {
                             ScoreText(score: sc.score, lang: lang)
                             if sc.combo > 0 {
-                                Text("×" + ScoreFormat.short(sc.multiplier, lang)).font(.system(size: 15, weight: .black, design: .rounded))
+                                Text("×" + ScoreFormat.short(sc.multiplier, lang)).font(.system(size: 15, weight: .black))
                                     .foregroundStyle(Color(uiColor: sc.level >= 6 ? SwipePalette.pink : sc.level >= 4 ? SwipePalette.gold : SwipePalette.cyan))
                             }
                         }
@@ -259,8 +259,8 @@ private struct BombGauge: View {
         let f = Double(gauge) / Double(SwipeScoring.bombGauge)
         VStack(spacing: 2) {
             ZStack(alignment: .bottom) {
-                RoundedRectangle(cornerRadius: 2).fill(Color.white.opacity(0.12)).frame(width: 5)
-                RoundedRectangle(cornerRadius: 2).fill(Color(uiColor: SwipePalette.gold)).frame(width: 5, height: 190 * f)
+                PixelRect(cornerRadius: 2).fill(Color.white.opacity(0.12)).frame(width: 5)
+                PixelRect(cornerRadius: 2).fill(Color(uiColor: SwipePalette.gold)).frame(width: 5, height: 190 * f)
                     .opacity(f > 0.8 ? 0.65 + 0.35 * Double(Int(Date().timeIntervalSince1970 * 8) % 2) : 1)
             }.frame(height: 190)
             Text("B\nO\nM\nB").font(.system(size: 7, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.dim)).multilineTextAlignment(.center).lineSpacing(-1)
@@ -291,7 +291,7 @@ private struct SwipeResultView: View {
             if model.submitting { ProgressView().tint(.white) }
             else if model.submitError {
                 Text("swipe.over.submit.failed").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.pink))
-                Button(action: retry) { Text("swipe.over.retry").font(.system(size: 13, weight: .heavy)).padding(.horizontal, 16).padding(.vertical, 6).background(Capsule().fill(Color.white.opacity(0.16))) }.foregroundStyle(.white)
+                Button(action: retry) { Text("swipe.over.retry").font(.system(size: 13, weight: .heavy)).padding(.horizontal, 16).padding(.vertical, 6).background(PixelRect(cornerRadius: 8).fill(Color.white.opacity(0.16))) }.foregroundStyle(.white)
             } else if let r = model.result {
                 if r.improved { Text("swipe.over.newbest").font(.system(size: 15, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }
                 if !r.ranked { Text(model.filterAuthor != nil ? "swipe.over.unranked.filter" : "swipe.over.unranked.signin").font(.system(size: 11, weight: .semibold)).foregroundStyle(Color(uiColor: SwipePalette.dim)).multilineTextAlignment(.center).padding(.horizontal, 24) }
@@ -299,7 +299,7 @@ private struct SwipeResultView: View {
             StaminaBar(info: service.stamina).onTapGesture(perform: openStamina)
             Button(action: again) {
                 Text(service.stamina.unlimited ? "swipe.again.unlimited" : "swipe.again").font(.custom("DelaGothicOne-Regular", size: 18)).foregroundStyle(.white)
-                    .padding(.horizontal, 36).padding(.vertical, 10).background(Capsule().fill(Color(uiColor: SwipePalette.pink)))
+                    .padding(.horizontal, 36).padding(.vertical, 10).background(PixelRect(cornerRadius: 8).fill(Color(uiColor: SwipePalette.pink)))
             }.disabled(model.submitting)
             HStack(spacing: 24) {
                 Button(action: ranking) { Label("swipe.ranking", systemImage: "trophy.fill") }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
@@ -331,22 +331,22 @@ private struct StaminaSheet: View {
                         Text(service.stamina.adRefillUsed ? "swipe.ad.used" : "swipe.ad.refill").font(.system(size: 15, weight: .black))
                         if !service.stamina.adRefillUsed { Text("swipe.ad.once").font(.system(size: 10, weight: .bold)) }
                     }.frame(maxWidth: .infinity).padding(.vertical, 10).foregroundStyle(.black)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(uiColor: SwipePalette.gold).opacity(service.stamina.adRefillUsed ? 0.35 : 1)))
+                    .background(PixelRect(cornerRadius: 12).fill(Color(uiColor: SwipePalette.gold).opacity(service.stamina.adRefillUsed ? 0.35 : 1)))
                 }.disabled(service.stamina.adRefillUsed || busy)
                 if service.stamina.drinks > 0 {
                     Button(action: useDrink) { Text(String(format: L("swipe.drink.use"), service.stamina.drinks)).font(.system(size: 15, weight: .black)).frame(maxWidth: .infinity).padding(.vertical, 10)
-                        .foregroundStyle(.white).background(RoundedRectangle(cornerRadius: 12).fill(Color(uiColor: SwipePalette.pink))) }.disabled(busy)
+                        .foregroundStyle(.white).background(PixelRect(cornerRadius: 12).fill(Color(uiColor: SwipePalette.pink))) }.disabled(busy)
                 }
                 Button(action: { Task { busy = true; await purchases.buyDrink(); await service.refresh(); busy = false } }) {
                     Text(String(format: L("swipe.drink.buy"), purchases.drinkPrice ?? "¥120")).font(.system(size: 14, weight: .heavy)).frame(maxWidth: .infinity).padding(.vertical, 9)
-                        .foregroundStyle(.white).background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.4)))
+                        .foregroundStyle(.white).background(PixelRect(cornerRadius: 12).stroke(Color.white.opacity(0.4)))
                 }.disabled(busy)
                 Button(action: { Task { busy = true; await purchases.buyPass(); await service.refresh(); busy = false } }) {
                     VStack(spacing: 1) {
                         Text(String(format: L("swipe.pass.buy"), purchases.passPrice ?? "¥980")).font(.system(size: 14, weight: .heavy))
                         Text("swipe.pass.sub").font(.system(size: 10, weight: .semibold)).opacity(0.8)
                     }.frame(maxWidth: .infinity).padding(.vertical, 9).foregroundStyle(.white)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(LinearGradient(colors: [Color(uiColor: SwipePalette.pink).opacity(0.7), Color(uiColor: SwipePalette.cyan).opacity(0.5)], startPoint: .leading, endPoint: .trailing)))
+                    .background(PixelRect(cornerRadius: 12).fill(LinearGradient(colors: [Color(uiColor: SwipePalette.pink).opacity(0.7), Color(uiColor: SwipePalette.cyan).opacity(0.5)], startPoint: .leading, endPoint: .trailing)))
                 }.disabled(busy)
                 Text("swipe.pass.legal").font(.system(size: 9.5)).foregroundStyle(Color(uiColor: SwipePalette.dim)).multilineTextAlignment(.center)
                 HStack(spacing: 14) {
@@ -403,7 +403,7 @@ struct SwipeRankingView: View {
                     GameTabs(items: [(true, "swipe.rank.month"), (false, "swipe.rank.all")], selection: $monthly, idPrefix: "swipe.rank.tab")
                     if monthly, let m = data.month, let end = data.endsAt {
                         Text(String(format: L("swipe.rank.period"), monthLabel(m), remaining(end)))
-                            .font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.7))
+                            .font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.7))
                     }
                     // 名前の出し方(匿名 / ユーザー名)と、称号。変えたあとのプレイから反映される
                     HStack(spacing: 10) {
@@ -441,8 +441,8 @@ struct SwipeRankingView: View {
             Spacer()
             Button { gameTap(); dismiss() } label: {
                 Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
-                    .frame(width: 36, height: 36).background(Color.white.opacity(0.12), in: Circle())
-                    .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                    .frame(width: 36, height: 36).background(GameStyle.panelHi, in: Circle())
+                    .overlay(Circle().stroke(GameStyle.edge))
             }
             .buttonStyle(BounceButtonStyle())
             .accessibilityLabel(Text("swipe.close"))
@@ -454,15 +454,15 @@ struct SwipeRankingView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     Image(systemName: icon).font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
-                    Text(title).font(.system(size: 12, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text).opacity(0.7))
+                    Text(title).font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.7))
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(Palette.text).opacity(0.4))
                 }
-                value().font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                value().font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
             }
             .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-            .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(GameStyle.edge))
+            .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+            .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.edge))
         }
         .buttonStyle(BounceButtonStyle())
     }
@@ -470,9 +470,9 @@ struct SwipeRankingView: View {
     private func mine(rank: Int, score: BigScore) -> some View {
         VStack(spacing: 6) {
             HStack {
-                Text(String(format: L("swipe.rank.mine"), rank)).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(Color(Palette.text))
+                Text(String(format: L("swipe.rank.mine"), rank)).font(.system(size: 15, weight: .black)).foregroundStyle(Color(Palette.text))
                 Spacer()
-                Text(ScoreFormat.short(score, SwipePalette.scoreStyle)).font(.system(size: 17, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold))
+                Text(ScoreFormat.short(score, SwipePalette.scoreStyle)).font(.system(size: 17, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold))
             }
             if monthly, let total = data.total {
                 HStack {
@@ -483,8 +483,8 @@ struct SwipeRankingView: View {
             }
         }
         .padding(14)
-        .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.28), Color(Palette.pink).opacity(0.10)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(Palette.pink).opacity(0.6), lineWidth: 1.2))
+        .background(LinearGradient(colors: [Color(Palette.pink).opacity(0.28), Color(Palette.pink).opacity(0.10)], startPoint: .leading, endPoint: .trailing), in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(Color(Palette.pink).opacity(0.6), lineWidth: 1.2))
     }
 
     /// 1 行: 順位・(王冠|メダル)と名前・名前の下に称号の札と連続本数・点数
@@ -493,7 +493,7 @@ struct SwipeRankingView: View {
         return HStack(spacing: 10) {
             ZStack {
                 Circle().fill((top ?? Color.white).opacity(top == nil ? 0.08 : 0.22))
-                Text("\(row.rank)").font(.system(size: row.rank >= 100 ? 11 : 14, weight: .black, design: .rounded)).minimumScaleFactor(0.6)
+                Text("\(row.rank)").font(.system(size: row.rank >= 100 ? 11 : 14, weight: .black)).minimumScaleFactor(0.6)
                     .foregroundStyle(top ?? Color(Palette.text))
             }.frame(width: 34, height: 34)
             VStack(alignment: .leading, spacing: 2) {
@@ -504,11 +504,11 @@ struct SwipeRankingView: View {
                 }
             }
             Spacer(minLength: 4)
-            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(Color(uiColor: SwipePalette.gold)).lineLimit(1).minimumScaleFactor(0.6)
+            Text(ScoreFormat.short(row.score, SwipePalette.scoreStyle)).font(.system(size: 15, weight: .black)).foregroundStyle(Color(uiColor: SwipePalette.gold)).lineLimit(1).minimumScaleFactor(0.6)
         }
         .padding(.vertical, 8).padding(.horizontal, 10)
-        .background((row.mine ? Color(Palette.pink).opacity(0.2) : (top?.opacity(0.10) ?? Color.white.opacity(0.05))), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(row.mine ? Color(Palette.pink).opacity(0.6) : (top?.opacity(0.45) ?? GameStyle.edge)))
+        .background((row.mine ? Color(Palette.pink).opacity(0.2) : (top?.opacity(0.10) ?? Color.white.opacity(0.05))), in: PixelRect(cornerRadius: 14))
+        .overlay(PixelRect(cornerRadius: 14).stroke(row.mine ? Color(Palette.pink).opacity(0.6) : (top?.opacity(0.45) ?? GameStyle.edge)))
     }
 
     private func load() async {

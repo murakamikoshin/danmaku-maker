@@ -53,7 +53,7 @@ struct EmitterCard: View {
             HStack {
                 HStack(spacing: 8) {
                     bulletBadge
-                    Text(String(format: L("editor.emitter"), index + 1)).font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.gold))
+                    Text(String(format: L("editor.emitter"), index + 1)).font(.display(14)).foregroundStyle(Color(Palette.gold))
                 }
                 Spacer()
                 Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { collapsed.toggle() } } label: {
@@ -64,10 +64,10 @@ struct EmitterCard: View {
                 .accessibilityIdentifier("emitter.collapse.\(index)")
                 if canDelete {
                     Button { gameTap(); onDelete() } label: {
-                        Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy, design: .rounded))
+                        Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy))
                             .foregroundStyle(Color(Palette.pink))
                             .padding(.vertical, 6).padding(.horizontal, 10)
-                            .background(Color(Palette.pink).opacity(0.15), in: Capsule())
+                            .background(Color(Palette.pink).opacity(0.15), in: PixelRect(cornerRadius: 8))
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("emitter.delete.\(index)")
@@ -83,16 +83,16 @@ struct EmitterCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("editor.pattern").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.pattern").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     Spacer()
                     // 一覧は大きいので、選んだら畳む。いまのパターンだけを見せて、下の設定に早く行けるようにする
                     Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { patternOpen.toggle() } } label: {
                         HStack(spacing: 4) {
-                            Text(L("pattern.\(emitter.t.rawValue)")).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Text(L("pattern.\(emitter.t.rawValue)")).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             Image(systemName: patternOpen ? "chevron.up" : "chevron.down").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 5).padding(.horizontal, 10)
-                        .background(Color.white.opacity(0.1), in: Capsule())
+                        .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
@@ -103,14 +103,14 @@ struct EmitterCard: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("editor.color.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text("editor.color.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 ColorSwatches(selection: $emitter.k, index: index, theme: look.bullets)
             }
 
             if advanced {
                 // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸。見た目だけ(当たる範囲は同じ)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("editor.shape.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                    Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round"))],
                              selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
                              idPrefix: "emitter.shape.\(index)", minimum: 80)
@@ -118,14 +118,14 @@ struct EmitterCard: View {
                 // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ
                 HStack {
                     Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.pink))
-                    Text("editor.mirror").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                    Text("editor.mirror").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
                     Spacer()
                     GameToggle(isOn: Binding(get: { emitter.mir == 1 }, set: { emitter.mir = $0 ? 1 : nil }))
                 }
                 .accessibilityIdentifier("emitter.mirror.\(index)")
                 if isBoss {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("editor.origin").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        Text("editor.origin").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         ChipGrid(items: [(0, L("editor.origin.boss")), (1, L("editor.origin.point"))],
                                  selection: $emitter.p, idPrefix: "emitter.origin.\(index)", minimum: 110)
                     }
@@ -134,7 +134,7 @@ struct EmitterCard: View {
                         SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("editor.phase").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                        Text("editor.phase").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         ChipGrid(items: [(0, L("phase.all")), (1, L("phase.1")), (2, L("phase.2")), (3, L("phase.3"))],
                                  selection: $emitter.ph, idPrefix: "emitter.phase.\(index)", minimum: 64)
                     }
@@ -163,8 +163,8 @@ struct EmitterCard: View {
             }   // if !collapsed
         }
         .padding(14)
-        .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(GameStyle.edge))
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+        .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
     }
@@ -236,7 +236,6 @@ private struct ColorSwatches: View {
                     }
                     .frame(width: 30, height: 30)
                     .overlay(Circle().stroke(Color.white, lineWidth: selected ? 2.5 : 0).padding(-4))
-                    .shadow(color: Color(colors[j]).opacity(selected ? 0.9 : 0), radius: 8)
                     .scaleEffect(selected ? 1.15 : 1)
                 }
                 .buttonStyle(BounceButtonStyle())

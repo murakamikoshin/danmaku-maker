@@ -23,10 +23,10 @@ struct StoreView: View {
                         benefit("store.benefit.once", "checkmark.seal")
                     }
                     .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 18))
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(GameStyle.edge))
+                    .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+                    .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
                     if purchases.isPremium {
-                        Label("store.purchased", systemImage: "checkmark.seal.fill").font(.system(size: 17, weight: .heavy, design: .rounded))
+                        Label("store.purchased", systemImage: "checkmark.seal.fill").font(.display(15))
                             .foregroundStyle(Color(Palette.bullets[4]))
                     } else {
                         GameActionButton(title: purchases.priceText.map { LocalizedStringKey(String(format: L("store.buy"), $0)) } ?? "store.buy.noprice",
@@ -35,9 +35,9 @@ struct StoreView: View {
                             .accessibilityIdentifier("store.buy")
                     }
                     Button { gameTap(); Task { await purchases.restore() } } label: {
-                        Text("store.restore").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                        Text("store.restore").font(.system(size: 15, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
+                            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 14))
                     }
                     .buttonStyle(BounceButtonStyle()).disabled(purchases.isBusy)
                     .accessibilityIdentifier("store.restore")
@@ -52,7 +52,7 @@ struct StoreView: View {
     }
 
     private func benefit(_ key: LocalizedStringKey, _ symbol: String) -> some View {
-        Label { Text(key).font(.system(size: 15, weight: .semibold, design: .rounded)).foregroundStyle(Color(Palette.text)) }
+        Label { Text(key).font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(Palette.text)) }
             icon: { Image(systemName: symbol).foregroundStyle(Color(Palette.gold)).frame(width: 24) }
     }
 }

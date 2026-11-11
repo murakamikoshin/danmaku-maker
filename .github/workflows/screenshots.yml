@@ -20,33 +20,51 @@ jobs:
         run: xcodegen generate
       - name: Build for simulator
         run: |
+          # コンパイルエラーが見えるように、エラーの行と結果だけを出す(全部のログは成果物に入れる)
+          set +e
           xcodebuild build -project DanmakuMaker.xcodeproj -scheme DanmakuApp -configuration Debug \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO | tail -5
+            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO > "$RUNNER_TEMP/build.log" 2>&1
+          rc=$?
+          mkdir -p shots
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" "$RUNNER_TEMP/build.log" | sort -u | head -80 | tee shots/build_errors.txt
+          exit $rc
       - name: Take screenshots
         run: |
           APP=$(ls -d "$RUNNER_TEMP"/dd/Build/Products/Debug-iphonesimulator/*.app | head -1)
           BID=com.koshin.danmakumaker
           mkdir -p shots
           pick() { xcrun simctl list devices available | grep "$1" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/'; }
-          for kind in iPhone; do
-            UDID=$(pick "$kind")
-            echo "$kind => $UDID"
-            xcrun simctl boot "$UDID" || true
-            xcrun simctl bootstatus "$UDID" -b
-            xcrun simctl install "$UDID" "$APP"
-            shot() {  # 名前, 起動引数...
-              name=$1; shift
-              xcrun simctl terminate "$UDID" $BID || true
-              xcrun simctl launch "$UDID" $BID -force-banner "$@"
-              sleep 14
-              xcrun simctl io "$UDID" screenshot "shots/${kind}_${name}.png"
-            }
-            shot swipe -open-swipe
-            shot swipe_stamina -open-swipe -swipe-stamina-sheet
-            xcrun simctl shutdown "$UDID" || true
-          done
+          UDID=$(pick "iPhone")
+          echo "iPhone => $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          shot() {  # 名前, 言語, 待つ秒数, 起動引数...
+            name=$1; lang=$2; wait=$3; shift 3
+            xcrun simctl terminate "$UDID" $BID || true
+            xcrun simctl launch "$UDID" $BID -no-ads -no-audio -no-debug-overlay -uitest-invincible -AppleLanguages "($lang)" "$@"
+            sleep "$wait"
+            xcrun simctl io "$UDID" screenshot "shots/${lang}_${name}.png"
+          }
+          shot home ja 14
+          shot editor ja 16 -open-editor
+          shot editor_sequence ja 16 -open-sequence-editor
+          shot shop ja 14 -open-shop
+          shot shop_bosses ja 14 -open-shop -shop-bosses
+          shot shop_patterns ja 16 -open-shop -shop-focus patterns
+          shot settings ja 14 -open-settings
+          shot play ja 16 -open-stage o16
+          shot result ja 40 -open-stage o01
+          shot store ja 14 -open-store
+          shot swipe ja 14 -open-swipe
+          shot swipe_stamina ja 14 -open-swipe -swipe-stamina-sheet
+          shot home en 14
+          shot editor de 16 -open-editor
+          shot shop ko 14 -open-shop
+          xcrun simctl shutdown "$UDID" || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: screenshots
           path: shots

@@ -22,7 +22,7 @@ struct RankingSubmitPanel: View {
         VStack(spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: "trophy.fill").foregroundStyle(Color(Palette.gold))
-                Text("ranking.title").font(.system(size: 14, weight: .heavy, design: .rounded))
+                Text("ranking.title").font(.system(size: 14, weight: .heavy))
             }
             if !standard {
                 Text("ranking.standard.only").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -32,11 +32,11 @@ struct RankingSubmitPanel: View {
                     Button { gameTap(); editing = true } label: {
                         HStack(spacing: 6) {
                             Text(names.label(handles.handle))
-                                .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                                .font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             Image(systemName: "pencil").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 6).padding(.horizontal, 12)
-                        .background(Color.white.opacity(0.08), in: Capsule())
+                        .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                     }
                     .buttonStyle(BounceButtonStyle())
                     GameActionButton(title: "ranking.submit", systemImage: "paperplane.fill", fill: GameStyle.gold) { Task { await send() } }
@@ -46,17 +46,17 @@ struct RankingSubmitPanel: View {
                     ProgressView().tint(Color(Palette.gold))
                 case .done(let s):
                     VStack(spacing: 2) {
-                        Text(String(format: L("ranking.rank"), s.rank)).font(.system(size: 26, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+                        Text(String(format: L("ranking.rank"), s.rank)).font(.display(23)).foregroundStyle(GameStyle.gold)
                         Text(s.improved ? L("ranking.improved") : String(format: L("ranking.best"), RankingService.format(s.value, mode: mode)))
-                            .font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     }
                 }
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity)
-        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.35)))
+        .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.35)))
         .sheet(isPresented: $editing) { HandleSheet() }
     }
 
@@ -86,7 +86,7 @@ struct HandleSheet: View {
             } trailing: { Color.clear.frame(width: 38, height: 38) }
             Text(names.useAuthorName && !authorName.trimmingCharacters(in: .whitespaces).isEmpty
                  ? authorName.trimmingCharacters(in: .whitespaces) : PlayerHandle.name(a: handles.handle.a, n: handles.handle.n, num: 1234))
-                .font(.system(size: 22, weight: .heavy, design: .rounded)).foregroundStyle(GameStyle.gold)
+                .font(.display(20)).foregroundStyle(GameStyle.gold)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     GamePanel(title: "handle.mode.title") {
@@ -95,10 +95,10 @@ struct HandleSheet: View {
                         if names.useAuthorName {
                             TextField("", text: $authorName, prompt: Text("handle.author.placeholder"))
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .font(.system(size: 16, weight: .semibold))
                                 .padding(.vertical, 11).padding(.horizontal, 12)
-                                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(GameStyle.edge))
+                                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
                                 .onChange(of: authorName) { v in
                                     if v.count > DisplayNameStore.maxLength { authorName = String(v.prefix(DisplayNameStore.maxLength)) }
                                     else { AuthorName.set(v); names.objectWillChange.send() }
@@ -119,9 +119,9 @@ struct HandleSheet: View {
                                  selection: Binding(get: { handles.handle.n }, set: { handles.handle.n = $0 }), idPrefix: "handle.animal", minimum: 96)
                     }
                     Button { gameTap(); handles.handle = .random() } label: {
-                        Label("handle.random", systemImage: "dice.fill").font(.system(size: 15, weight: .heavy, design: .rounded))
+                        Label("handle.random", systemImage: "dice.fill").font(.system(size: 15, weight: .heavy))
                             .foregroundStyle(Color(Palette.text)).frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
+                            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 14))
                     }
                     .buttonStyle(BounceButtonStyle())
                     Text("handle.note").font(.caption).foregroundStyle(.secondary)
@@ -170,17 +170,17 @@ struct RankingSection: View {
                     Image(systemName: "medal.fill").font(.system(size: 20))
                         .foregroundStyle([Color(Palette.gold), Color(white: 0.8), Color(UIColor(hex: 0xCD7F32))][rank - 1])
                 } else {
-                    Text("\(rank)").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(.secondary)
+                    Text("\(rank)").font(.system(size: 14, weight: .heavy)).foregroundStyle(.secondary)
                 }
             }
             .frame(width: 28)
-            Text(e.displayName).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.text)).lineLimit(1)
+            Text(e.displayName).font(.system(size: 14, weight: .bold)).foregroundStyle(Color(Palette.text)).lineLimit(1)
             Spacer()
             Text(RankingService.format(e.value, mode: mode)).font(.system(size: 15, weight: .heavy, design: .monospaced)).foregroundStyle(Color(Palette.gold))
         }
         .padding(.vertical, 6).padding(.horizontal, 10)
-        .background(mine ? Color(Palette.gold).opacity(0.16) : Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(mine ? Color(Palette.gold) : Color.clear, lineWidth: 1.5))
+        .background(mine ? Color(Palette.gold).opacity(0.16) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 12))
+        .overlay(PixelRect(cornerRadius: 12).stroke(mine ? Color(Palette.gold) : Color.clear, lineWidth: 1.5))
     }
 
     private func load() async {

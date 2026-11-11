@@ -89,7 +89,7 @@ struct EmitterPreview: View {
             }
         }
         .aspectRatio(DanmakuConfig.width / PreviewEngine.height, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(PixelRect(cornerRadius: 10))
         .accessibilityHidden(true)
     }
 
@@ -419,8 +419,8 @@ struct StageMiniPreview: View {
         }
         .frame(width: size, height: size)
         .background(Color(bg))
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
-        .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
+        .clipShape(PixelRect(cornerRadius: size * 0.21))
+        .overlay(PixelRect(cornerRadius: size * 0.21).stroke(GameStyle.edge, lineWidth: 1))
         .onChange(of: visible) { _, v in if !v { holder.engine?.restart() } }
         .accessibilityHidden(true)
     }
@@ -452,16 +452,16 @@ struct SpoilerTile: View {
     var size: CGFloat = 56
     var body: some View {
         VStack(spacing: 2) {
-            Text("？？？").font(.system(size: size * 0.26, weight: .heavy, design: .rounded))
-            Text("world.preview.spoiler").font(.system(size: size * 0.13, weight: .bold, design: .rounded))
+            Text("？？？").font(.system(size: size * 0.26, weight: .heavy))
+            Text("world.preview.spoiler").font(.system(size: size * 0.13, weight: .bold))
                 .lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
         }
         .foregroundStyle(.white.opacity(0.85))
         .padding(.horizontal, 3)
         .frame(width: size, height: size)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.21))
-        .overlay(RoundedRectangle(cornerRadius: size * 0.21).stroke(Color.white.opacity(0.15), lineWidth: 1))
+        .background(GameStyle.panelHi)
+        .clipShape(PixelRect(cornerRadius: size * 0.21))
+        .overlay(PixelRect(cornerRadius: size * 0.21).stroke(GameStyle.edge, lineWidth: 1))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("world.preview.spoiler"))
     }

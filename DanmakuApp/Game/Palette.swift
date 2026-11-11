@@ -13,7 +13,7 @@ enum Palette {
     static let star = UIColor(hex: 0x3A3270)
     static let barBack = UIColor(hex: 0x332B62)
     static let pink = UIColor(hex: 0xFF6B9D)
-    static let gold = UIColor(hex: 0xFFD166)
+    static let gold = UIColor(hex: 0xFFD23F)
     static let text = UIColor(hex: 0xEFEAFF)
 }
 

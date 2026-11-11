@@ -49,8 +49,8 @@ struct RewardSwatch: View {
     var body: some View {
         let c = RewardArt.color(reward)
         ZStack {
-            RoundedRectangle(cornerRadius: size * 0.22).fill(Color(Palette.background))
-            RoundedRectangle(cornerRadius: size * 0.22).stroke(c.opacity(0.6), lineWidth: 1.5)
+            PixelRect(cornerRadius: size * 0.22).fill(Color(Palette.background))
+            PixelRect(cornerRadius: size * 0.22).stroke(c.opacity(0.6), lineWidth: 1.5)
             Canvas { ctx, sz in
                 let mid = CGPoint(x: sz.width / 2, y: sz.height / 2)
                 let r = min(sz.width, sz.height) * 0.3
@@ -89,7 +89,7 @@ struct RewardSwatch: View {
                 .font(.system(size: size * 0.2, weight: .bold)).foregroundStyle(.white.opacity(0.85))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).padding(size * 0.08)
             if locked {
-                Color.black.opacity(0.45).clipShape(RoundedRectangle(cornerRadius: size * 0.22))
+                Color.black.opacity(0.45).clipShape(PixelRect(cornerRadius: size * 0.22))
                 Image(systemName: "lock.fill").font(.system(size: size * 0.28)).foregroundStyle(.white.opacity(0.85))
             }
         }

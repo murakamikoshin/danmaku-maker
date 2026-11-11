@@ -167,7 +167,7 @@ struct PlayView: View {
                 .frame(maxHeight: .infinity)
 
             Text("play.hint")
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 8)
         }
@@ -194,19 +194,18 @@ struct PlayView: View {
             Button { gameTap(); onExit() } label: {
                 Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(Color(Palette.text))
                     .frame(width: 36, height: 36)
-                    .background(Color.white.opacity(0.1), in: Circle())
-                    .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                    .gamePanel(radius: 10, fill: GameStyle.panelHi)
             }
             .buttonStyle(BounceButtonStyle())
             .accessibilityLabel(Text("play.quit"))
             .accessibilityIdentifier("play.quit")
-            Text(title).font(.system(size: 16, weight: .heavy, design: .rounded)).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+            Text(title).font(.system(size: 16, weight: .heavy)).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
             Text((model.stage.isUnlimitedTime ? "∞ " : "") + String(format: "%.1f", model.remaining))
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
                 .foregroundStyle(Color(Palette.gold))
                 .padding(.vertical, 5).padding(.horizontal, 12)
-                .background(Color.white.opacity(0.08), in: Capsule())
-                .overlay(Capsule().stroke(Color(Palette.gold).opacity(0.4)))
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+                .overlay(PixelRect(cornerRadius: 8).strokeBorder(GameStyle.edge, lineWidth: 2))
         }
         .foregroundStyle(Color(Palette.text))
         .padding(.horizontal, 16).padding(.vertical, 8)
@@ -225,11 +224,11 @@ struct PlayView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "bolt.fill").foregroundStyle(Color(Palette.gold))
                         Text(model.damage, format: .number)
-                            .font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            .font(.system(size: 20, weight: .heavy)).foregroundStyle(Color(Palette.text))
                             .contentTransition(.numericText())
                     }
                     .padding(.vertical, 4).padding(.horizontal, 12)
-                    .background(Color.white.opacity(0.08), in: Capsule())
+                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                     .accessibilityIdentifier("play.damage")
                 }
             }
@@ -245,20 +244,19 @@ struct PlayView: View {
                     Image(systemName: i < model.lifeLeft ? "heart.fill" : "heart")
                         .font(.system(size: 18))
                         .foregroundStyle(i < model.lifeLeft ? Color(Palette.pink) : Color.white.opacity(0.3))
-                        .shadow(color: Color(Palette.pink).opacity(i < model.lifeLeft ? 0.7 : 0), radius: 4)
                 }
             }
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: model.lifeLeft)
         } else {
             HStack(spacing: 2) {
                 ForEach(0..<max, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 2)
+                    PixelRect(cornerRadius: 2)
                         .fill(i < model.lifeLeft ? Color(Palette.bullets[4]) : Color.white.opacity(0.15))
                         .frame(width: max > 12 ? 7 : 10, height: 14)
                 }
             }
             .padding(4)
-            .background(Color.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+            .background(Color.black.opacity(0.35), in: PixelRect(cornerRadius: 6))
             .animation(.easeOut(duration: 0.2), value: model.lifeLeft)
         }
     }
@@ -342,33 +340,32 @@ struct ResultView: View {
                     if !isTest, let badge = rewardStore.selected(.badge) {
                         HStack(spacing: 8) {
                             RewardSwatch(reward: badge, size: 34)
-                            Text(RewardArt.name(badge)).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(RewardArt.color(badge))
+                            Text(RewardArt.name(badge)).font(.system(size: 13, weight: .heavy)).foregroundStyle(RewardArt.color(badge))
                         }
                         .accessibilityIdentifier("result.badge")
                     }
                     Text(headline)
+                        .font(.display(34)).multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                        .thick(win ? GameStyle.yellow : GameStyle.pinkColor, shade: win ? GameStyle.yellowShade : GameStyle.pinkShade, depth: 4)
                         .accessibilityIdentifier("result.headline")
-                        .font(.system(size: 38, weight: .heavy, design: .rounded))
-                        .foregroundStyle(win ? AnyShapeStyle(GameStyle.gold) : AnyShapeStyle(Color(Palette.pink)))
-                        .shadow(color: (win ? Color(Palette.gold) : Color(Palette.pink)).opacity(0.7), radius: 10)
                     if win && result.isDamage {
                         VStack(spacing: 0) {
-                            Text("result.damage.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                            Text("result.damage.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                             Text(result.damage, format: .number)
-                                .font(.system(size: 46, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                                .font(.display(41)).foregroundStyle(Color(Palette.text))
                         }
                     } else if win && result.isBoss {
                         VStack(spacing: 0) {
-                            Text("result.time.label").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
-                            Text(timeText + L("unit.s")).font(.system(size: 46, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+                            Text("result.time.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                            Text(timeText + L("unit.s")).font(.display(41)).foregroundStyle(Color(Palette.text))
                         }
                     }
-                    Text(message).font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    Text(message).font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).multilineTextAlignment(.center)
 
                     if result.revived && win && !isTest {
                         Label("result.revived", systemImage: "arrow.counterclockwise.circle.fill")
-                            .font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[1]))
-                            .padding(.vertical, 6).padding(.horizontal, 12).background(Color(Palette.bullets[1]).opacity(0.14), in: Capsule())
+                            .font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.bullets[1]))
+                            .padding(.vertical, 6).padding(.horizontal, 12).background(Color(Palette.bullets[1]).opacity(0.14), in: PixelRect(cornerRadius: 8))
                     }
                     if !isTest, win, result.isBoss, ranking != nil {
                         if result.revived {
@@ -391,7 +388,7 @@ struct ResultView: View {
                         HStack(spacing: 12) {
                             RewardSwatch(reward: next, size: 44)
                             GameActionButton(title: purchases.isPremium ? "daily.claim.free" : "daily.claim.ad",
-                                             systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill", fill: GameStyle.gold) {
+                                             systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill", fill: GameStyle.reward) {
                                 Task { await claimReward() }
                             }
                             .disabled(!ready || claiming).opacity(ready && !claiming ? 1 : 0.5)
@@ -399,7 +396,7 @@ struct ResultView: View {
                         }
                     } else if win, !isTest, rewardStore.justClaimed != nil {
                         Label("daily.claimed", systemImage: "checkmark.circle.fill")
-                            .font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.bullets[4]))
+                            .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.bullets[4]))
                     }
                     if win, !isTest, BossCharacter.editorEnabled, let boss, !cosmetics.ownership.has(boss) {
                         // ボスを倒したあと、自分のステージにも置きたくなったときの入り口
@@ -410,17 +407,16 @@ struct ResultView: View {
                         GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                             .accessibilityIdentifier("result.retry")
                         Button { gameTap(); back() } label: {
-                            Text("result.back").font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
-                                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                                .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
-                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2)))
+                            Text("result.back").font(.display(14)).foregroundStyle(Color(Palette.text))
+                                .frame(maxWidth: .infinity).padding(.vertical, 13)
+                                .background(KeyCap(fill: GameStyle.panelHi, radius: 14)).padding(.bottom, 4)
                         }
                         .buttonStyle(BounceButtonStyle())
                     }
                 }
                 .padding(20)
-                .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 22))
-                .overlay(RoundedRectangle(cornerRadius: 22).stroke(win ? Color(Palette.gold).opacity(0.6) : GameStyle.edge, lineWidth: win ? 2 : 1))
+                .gamePanel(radius: 22, edge: win ? GameStyle.yellow : GameStyle.edge)
+                .hardShadow(radius: 22, depth: 5)
                 .padding(24)
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -443,10 +439,10 @@ struct ResultView: View {
     }
 
     private func smallButton(_ title: LocalizedStringKey, _ image: String) -> some View {
-        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
+        Label(title, systemImage: image).font(.system(size: 13, weight: .heavy)).foregroundStyle(Color(Palette.text))
             .padding(.vertical, 8).padding(.horizontal, 14)
-            .background(Color.white.opacity(0.1), in: Capsule())
-            .overlay(Capsule().stroke(Color.white.opacity(0.2)))
+            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+            .overlay(PixelRect(cornerRadius: 8).stroke(GameStyle.edge))
     }
 }
 
@@ -462,27 +458,26 @@ struct ReviveView: View {
             Color(Palette.background).opacity(0.78)
             VStack(spacing: 14) {
                 Text("result.hit")
-                    .font(.system(size: 38, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.pink))
-                    .shadow(color: Color(Palette.pink).opacity(0.7), radius: 10)
+                    .font(.display(34)).multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                    .thick(GameStyle.pinkColor, shade: GameStyle.pinkShade, depth: 4)
                 GameActionButton(title: isPremium ? "revive.free" : "revive.ad", systemImage: "play.rectangle.fill", fill: GameStyle.cyan, action: onRevive)
                     .accessibilityIdentifier("revive.button")
                 Button { gameTap(); onGiveUp() } label: {
-                    Text("revive.giveup").font(.system(size: 16, weight: .heavy, design: .rounded)).foregroundStyle(Color(Palette.text))
-                        .frame(maxWidth: .infinity).padding(.vertical, 12)
-                        .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2)))
+                    Text("revive.giveup").font(.display(14)).foregroundStyle(Color(Palette.text))
+                        .frame(maxWidth: .infinity).padding(.vertical, 13)
+                        .background(KeyCap(fill: GameStyle.panelHi, radius: 14)).padding(.bottom, 4)
                 }
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityIdentifier("revive.giveup")
                 if !isPremium {
                     Button(action: onStore) {
-                        Text("revive.removeads").font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Color(Palette.gold)).underline()
+                        Text("revive.removeads").font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.gold)).underline()
                     }
                 }
             }
             .padding(22)
-            .background(GameStyle.panel, in: RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(GameStyle.edge))
+            .gamePanel(radius: 22)
+            .hardShadow(radius: 22, depth: 5)
             .padding(30)
         }
     }

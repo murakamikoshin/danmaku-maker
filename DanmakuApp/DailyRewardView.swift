@@ -12,7 +12,7 @@ struct DailyRewardCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("daily.title").font(.system(size: 22, weight: .heavy, design: .rounded))
+                Text("daily.title").font(.display(20))
                 Spacer()
                 Text(String(format: L("daily.progress"), rewards.state.claimed, DailyRewards.total))
                     .font(.footnote.bold()).foregroundStyle(Color(Palette.gold))
@@ -25,8 +25,8 @@ struct DailyRewardCard: View {
                 if rewards.state.claimed > 0 { collection }
             }
             .padding(14)
-            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08)))
+            .background(GameStyle.panel, in: PixelRect(cornerRadius: 18))
+            .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
 
             Text(purchases.isPremium ? "daily.footer.premium" : "daily.footer")
                 .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
@@ -43,7 +43,7 @@ struct DailyRewardCard: View {
             HStack(spacing: 14) {
                 RewardSwatch(reward: next, size: 84)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(RewardArt.name(next)).font(.system(size: 17, weight: .heavy, design: .rounded))
+                    Text(RewardArt.name(next)).font(.display(15))
                     claimButton
                 }
                 Spacer(minLength: 0)
@@ -63,9 +63,9 @@ struct DailyRewardCard: View {
                 Task { await claim() }
             } label: {
                 Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                    .font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                     .padding(.vertical, 8).padding(.horizontal, 14)
-                    .background(LinearGradient(colors: [Color(Palette.pink), Color(UIColor(hex: 0xFF8A5C))], startPoint: .leading, endPoint: .trailing), in: Capsule())
+                    .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
             }
             .buttonStyle(.plain)
             .disabled(!ready || busy)
@@ -100,7 +100,7 @@ struct DailyRewardCard: View {
                         VStack(spacing: 4) {
                             RewardSwatch(reward: r, size: 56, locked: true)
                             Text(String(format: L("daily.days.later"), i + 1 + (rewards.canClaim ? 0 : 0)))
-                                .font(.system(size: 10, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                                .font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -122,13 +122,13 @@ struct DailyRewardCard: View {
                             HStack(spacing: 8) {
                                 Button { rewards.select(nil, kind: kind) } label: {
                                     Image(systemName: "nosign").font(.title3).frame(width: 48, height: 48)
-                                        .background(Color.white.opacity(rewards.selected(kind) == nil ? 0.25 : 0.1), in: RoundedRectangle(cornerRadius: 11))
+                                        .background(Color.white.opacity(rewards.selected(kind) == nil ? 0.25 : 0.1), in: PixelRect(cornerRadius: 11))
                                 }
                                 .buttonStyle(.plain)
                                 ForEach(owned.reversed(), id: \.self) { r in
                                     Button { rewards.select(r, kind: kind) } label: {
                                         RewardSwatch(reward: r, size: 48)
-                                            .overlay(RoundedRectangle(cornerRadius: 11).stroke(.white, lineWidth: rewards.selected(kind) == r ? 2.5 : 0))
+                                            .overlay(PixelRect(cornerRadius: 11).stroke(.white, lineWidth: rewards.selected(kind) == r ? 2.5 : 0))
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -157,7 +157,7 @@ struct DailyRewardBanner: View {
                 HStack(spacing: 12) {
                     RewardSwatch(reward: next, size: 52)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("daily.title").font(.system(size: 15, weight: .heavy, design: .rounded))
+                        Text("daily.title").font(.system(size: 15, weight: .heavy))
                         Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                     }
                     Spacer(minLength: 4)
@@ -165,17 +165,17 @@ struct DailyRewardBanner: View {
                         Task { await claim() }
                     } label: {
                         Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                            .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(.white).lineLimit(1)
+                            .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink).lineLimit(1)
                             .padding(.vertical, 8).padding(.horizontal, 12)
-                            .background(GameStyle.gold, in: Capsule())
+                            .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
                     }
                     .buttonStyle(.plain)
                     .disabled(!ready || busy).opacity(ready && !busy ? 1 : 0.5)
                     .accessibilityIdentifier("home.daily.claim")
                 }
                 .padding(12)
-                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.5)))
+                .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+                .overlay(PixelRect(cornerRadius: 16).stroke(Color(Palette.gold).opacity(0.5)))
             }
         }
         .onAppear { rewards.refreshDay() }
