@@ -61193,6 +61193,136 @@
           }
         }
       }
+    },
+    "editor.mooks.breakable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雑魚を倒せる"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minions can be destroyed"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gegner zerstörbar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esbirros destruibles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sbires destructibles"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잡몹을 쓰러뜨릴 수 있음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capangas destrutíveis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приспешников можно уничтожить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可以击倒小怪"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可以擊倒小怪"
+          }
+        }
+      }
+    },
+    "editor.mooks.breakable.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機の弾が当たると、雑魚の体力が減ります。倒すと、その発射台はこの場面では撃たなくなります。耐えきるステージでも、オンのときは自機が撃ちます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your shots wear minions down. A destroyed minion’s emitter stops firing for this scene. In Survive stages, your ship also fires while this is on."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Schüsse schwächen Gegner. Ein zerstörter Gegner feuert in dieser Szene nicht mehr. In Überleben-Leveln schießt dein Schiff, solange dies an ist."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus disparos dañan a los esbirros. El emisor de uno destruido deja de disparar en esta escena. En fases de Resistir, tu nave también dispara si está activado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tes tirs affaiblissent les sbires. Un sbire détruit ne tire plus pendant cette scène. En mode Survie, ton vaisseau tire aussi quand c’est activé."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내 탄이 맞으면 잡몹의 체력이 줄어요. 쓰러뜨리면 그 발사대는 이 장면에서 더 이상 쏘지 않아요. 버티기 스테이지에서도 켜 두면 기체가 쏩니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seus tiros desgastam os capangas. O emissor de um capanga destruído para de atirar nesta cena. Em fases de Sobreviver, sua nave também atira quando ativado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваши выстрелы ослабляют приспешников. Уничтоженный перестаёт стрелять в этой сцене. В уровнях на выживание ваш корабль тоже стреляет, пока это включено."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自机的子弹会削减小怪的体力。击倒后，该发射台在这个场景里不再射击。开启时，在坚持型关卡中自机也会射击。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自機的子彈會削減小怪的體力。擊倒後，該發射台在這個場景裡不再射擊。開啟時，在堅持型關卡中自機也會射擊。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

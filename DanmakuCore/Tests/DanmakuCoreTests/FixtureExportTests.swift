@@ -285,6 +285,21 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("char-mech-big-sway", moved(mech([(.mechLockOn, 2.0, 2, 2.6, 0), (.mechMissiles, 2.0, 12, 3.0, 0), (.mechGatling, 0.05, 2, 3.4, 0)], awaken: 2), move: 2, size: 52)))
         stages.append(("char-puni-small-updown", moved(puni(puniAll, awaken: 2), move: 3, size: 28)))
         stages.append(("char-witch-home-only-damage", moved(witch([(.witchAbyss, 0.15, 7, 1.8, 0), (.witchTentacles, 0.05, 8, 2.0, 0)], awaken: nil, mode: .damage), move: 0, size: nil, x: 0.7, y: 0.15)))
+        // 1.2.0: 雑魚を倒せる(耐久・ボス戦・連戦)。ここより前の並びは変えない
+        func breakable(_ st: Stage) -> Stage { var s = st; s.mooksBreakable = true; return s.sanitized() }
+        let mookEms = [Emitter(t: .ring, x: 0.5, y: 0.3, s: 0, e: 60, i: 0.4, c: 10, v: 2, r: 5, k: 0),
+                       Emitter(t: .aim, x: 0.25, y: 0.2, s: 0, e: 60, i: 0.8, c: 3, v: 2.5, r: 20, k: 1),
+                       Emitter(t: .spiral, x: 0.5, y: 0.15, s: 1, e: 60, i: 0.12, c: 3, v: 2, r: 11, k: 2)]
+        stages.append(("mooks-survive-breakable", breakable(Stage(name: "ms", mode: .survive, durationSec: 30, emitters: mookEms, mooks: 1))))
+        stages.append(("mooks-survive-breakable-big-heavy", breakable(Stage(name: "mh", mode: .survive, durationSec: 30, emitters: mookEms, mooks: 2, shot: .heavy))))
+        stages.append(("mooks-boss-breakable", breakable(Stage(name: "mb", mode: .boss, durationSec: 60, bossHp: 300,
+            emitters: mookEms.map { var m = $0; m.p = 1; return m } + [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 1, c: 16, v: 2, r: 6, k: 3)], mooks: 0))))
+        stages.append(("mooks-damage-breakable-spread", breakable(Stage(name: "md", mode: .damage, durationSec: 40, emitters: mookEms.map { var m = $0; m.p = 1; return m }, mooks: 1, shot: .spread))))
+        var seq = Stage(name: "mq", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .survive, durationSec: 15, emitters: mookEms, mooks: 1),
+            Wave(kind: .boss, durationSec: 40, bossHp: 200, bossMove: 1, emitters: mookEms.map { var m = $0; m.p = 1; return m }, mooks: 2)])
+        seq.waves![0].mooksBreakable = true; seq.waves![1].mooksBreakable = true
+        stages.append(("mooks-sequence-breakable", seq.sanitized()))
         stages.append(("puni-damage-all", puni(puniAll, awaken: nil, mode: .damage)))
 
         var cases: [Case] = []

@@ -47,6 +47,10 @@ final class GameScene: SKScene {
     private static let awakenLength = 1.2
     private static let awakenSwap = 0.45
     private var mookNodes: [SKSpriteNode] = []
+    /// 雑魚の絵が、どの発射台のものか(倒された雑魚を消すため)
+    private var mookEmitterIndex: [Int] = []
+    /// 倒されて、もう消した雑魚(発射台の番号)
+    private var mookGone: Set<Int> = []
     private var bulletNodes: [SKSpriteNode] = []
     /// 深海の魔女「深淵」の暗転(提灯と自機のまわりだけ見える)。見た目だけで、計算には関わらない
     private let darkNode = SKShapeNode()
@@ -340,17 +344,18 @@ final class GameScene: SKScene {
             bossNode.size = bossSize
         }
         for n in mookNodes { n.removeFromParent() }
-        mookNodes.removeAll()
+        mookNodes.removeAll(); mookEmitterIndex.removeAll(); mookGone.removeAll()
         guard let mookSize = sim.mookSizeIndex else { return }
         let W = GameScene.W, H = GameScene.H
         let tex = SpriteFactory.mookTexture(look: sim.mookLookIndex, size: mookSize)
         let side = EnemyArt.mookPoints(size: mookSize)
-        for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) && (!sim.isBoss || m.firesFromPoint) {
+        for (idx, m) in sim.currentEmitters.enumerated() where Simulation.hasMook(m, boss: sim.isBoss) {
             let n = SKSpriteNode(texture: tex, size: CGSize(width: side, height: side))
             n.position = pos(m.x * Double(W), m.y * Double(H))
             n.zPosition = 1.5
             addChild(n)
             mookNodes.append(n)
+            mookEmitterIndex.append(idx)
         }
     }
 
@@ -527,6 +532,7 @@ final class GameScene: SKScene {
             s.node.position = pos(Double(s.node.position.x), (s.y + now * s.v).truncatingRemainder(dividingBy: Double(H)))
         }
         shipNode.position = pos(sim.player.x, sim.player.y)
+        renderMooks()
         if effectsOn { renderRewardFX() }
         shipNode.alpha = sim.isShielded ? (Int(now * 10) % 2 == 0 ? 0.35 : 1) : 1
 
@@ -827,6 +833,30 @@ extension GameScene {
         }
         auraNode = node
         addChild(node)
+    }
+
+    /// 倒せる雑魚: 弾が当たると白く光り、倒されると小さく弾けて消える(見た目だけ。計算は Simulation)
+    private func renderMooks() {
+        for (k, n) in mookNodes.enumerated() where k < mookEmitterIndex.count {
+            let idx = mookEmitterIndex[k]
+            if sim.mookDestroyed(idx) {
+                guard !mookGone.contains(idx) else { continue }
+                mookGone.insert(idx)
+                if effectsOn {
+                    let burst = SKSpriteNode(texture: n.texture, size: n.size)
+                    burst.position = n.position; burst.zPosition = 6
+                    burst.color = .white; burst.colorBlendFactor = 1
+                    addChild(burst)
+                    burst.run(.sequence([.group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]), .removeFromParent()]))
+                }
+                n.isHidden = true
+                AudioManager.shared.se(.boom)
+                continue
+            }
+            let lit = idx < sim.mookFlash.count && sim.mookFlash[idx] > 0
+            n.color = .white
+            n.colorBlendFactor = lit ? 0.85 : 0
+        }
     }
 
     fileprivate func renderRewardFX() {

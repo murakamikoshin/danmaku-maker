@@ -64,6 +64,7 @@ struct EditorView: View {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
                                               mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken,
+                                              mooksBreakable: $model.draft.mooksBreakable,
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
@@ -308,6 +309,8 @@ private struct EnemyControls: View {
     @Binding var mookLook: Int
     /// 覚醒する段階(nil は覚醒しない)。専用の絵を持つボスを選んだときだけ出す
     @Binding var awaken: Int?
+    /// 雑魚を倒せるか(雑魚を出すときだけ選べる)
+    @Binding var mooksBreakable: Bool
     @EnvironmentObject private var cosmetics: CosmeticsStore
     /// いま置いている発射台に、キャラクターのボス専用の技があるか。見た目を変えると使えなくなるので、確認してから「放射」に置き換える
     var usesCharacterPatterns = false
@@ -407,6 +410,15 @@ private struct EnemyControls: View {
             ChipGrid(items: [(-1, L("editor.enemy.none")), (0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))],
                      selection: Binding(get: { mooks ?? -1 }, set: { mooks = $0 < 0 ? nil : $0 }), idPrefix: "editor.mook.size")
             if mooks != nil {
+                // 雑魚を倒せるか。倒すと、その発射台はその場面では撃たなくなる(耐久でも、オンのときだけ自機が撃つ)
+                HStack(spacing: 10) {
+                    Image(systemName: "scope").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 22)
+                    Text("editor.mooks.breakable").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                    Spacer()
+                    GameToggle(isOn: $mooksBreakable)
+                }
+                .accessibilityIdentifier("editor.mooks.breakable")
+                Text("editor.mooks.breakable.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look", trial: { _ in false }, locked: { _ in false }) { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
@@ -995,6 +1007,7 @@ private struct WaveCard: View {
                                   mooks: Binding(get: { wave.mooks }, set: { model.draft.waves[i].mooks = $0 }),
                                   mookLook: Binding(get: { wave.mookLook ?? 0 }, set: { model.draft.waves[i].mookLook = $0 }),
                                   awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }),
+                                  mooksBreakable: Binding(get: { wave.mooksBreakable == true }, set: { model.draft.waves[i].mooksBreakable = $0 }),
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {

@@ -420,6 +420,15 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
+  it("雑魚を倒せる設定(1.2.0)は、雑魚を出すときだけ受け付ける。そのステージは 1.2.0 以降が必要", () => {
+    const ok = validatePublish(good({ mooks: 1, mooksBreakable: true }));
+    expect(ok.ok && [ok.stage.mooksBreakable, ok.stage.needs]).toEqual([true, 2]);
+    const off = validatePublish(good({ mooks: 1, mooksBreakable: false }));
+    expect(off.ok && ["mooksBreakable" in off.stage, "needs" in off.stage]).toEqual([false, false]);
+    expect(validatePublish(good({ mooksBreakable: true }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(good({ mooks: 1, mooksBreakable: "yes" }))).toEqual({ ok: false, error: "look" });
+  });
+
   it("キャラクターのボス(堕天使など)も、1.2.0 から動き・位置・大きさ(半径20〜60px)を選べる。そのステージは 1.2.0 以降が必要", () => {
     const a = validatePublish(boss({ bossLook: 5, bossMove: 0 }));
     expect(a.ok && a.stage.bossLook).toBe(5);

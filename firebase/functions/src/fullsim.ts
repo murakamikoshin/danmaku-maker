@@ -140,17 +140,24 @@ export interface SimStage {
   awaken?: number | null;
   bossX?: number | null;
   bossY?: number | null;
+  mooks?: number | null;
+  mooksBreakable?: boolean | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean }
+/** 倒せる雑魚の体力・当たる半径(アプリの DanmakuConfig.mookHp / Simulation.mookRadius と同じ) */
+const MOOK_HP = 20;
+const MOOK_RADII = [9, 13, 18];
+/** 雑魚が出る発射台か(アプリの Simulation.hasMook と同じ) */
+const hasMook = (m: Emitter, boss: boolean): boolean => !["rain", "sideL", "sideR", "corner"].includes(m.t) && (!boss || m.p === 1);
 const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -439,6 +446,9 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   const rng = mulberry(salt);
   let next = specs[0]!.emitters.map((m) => m.s);
   let shotCount = specs[0]!.emitters.map(() => 0);
+  /** 倒せる雑魚の残りの体力(発射台ごと。いない・倒せないものは 0) */
+  const mookHPOf = (sp: Spec): number[] => sp.emitters.map((m) => (sp.breakable && hasMook(m, sp.boss) ? MOOK_HP : 0));
+  let mookHP = mookHPOf(specs[0]!);
   let bullets: Bullet[] = [];
   let shots: Shot[] = [];
   let tick = 0, t = -READY, waveStart = 0;
@@ -455,6 +465,24 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     return r > 2 / 3 ? 1 : r > 1 / 3 ? 2 : 3;
   };
 
+  /** 自機の弾が、倒せる雑魚に当たったか。当たったら体力を減らして true(アプリの hitMook と同じ) */
+  const hitMook = (s: Shot): boolean => {
+    const sp = spec();
+    if (!sp.breakable || sp.mooks === undefined) return false;
+    const r = MOOK_RADII[Math.min(Math.max(sp.mooks, 0), 2)]!;
+    for (let idx = 0; idx < sp.emitters.length; idx++) {
+      if (!(mookHP[idx]! > 0)) continue;
+      const m = sp.emitters[idx]!;
+      const dx = s.x - m.x * W, dy = s.y - m.y * H;
+      if (dx * dx + dy * dy < r * r) { mookHP[idx]! -= s.damage; return true; }
+    }
+    return false;
+  };
+  const mookDestroyed = (idx: number): boolean => {
+    const sp = spec();
+    return sp.breakable && sp.mooks !== undefined && (mookHP[idx] ?? 0) <= 0 && hasMook(sp.emitters[idx]!, sp.boss);
+  };
+
   /** 次の場面へ: 画面の弾と自機の弾を消し、切り替えの間(自機は動ける)のあとに新しい場面が始まる */
   const advanceWave = (dt: number) => {
     wi += 1;
@@ -463,6 +491,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     shots = [];
     next = spec().emitters.map((m) => m.s);
     shotCount = spec().emitters.map(() => 0);
+    mookHP = mookHPOf(spec());
     hp = spec().hp;
     phase = 1; banner = 0; flash = 0; cooldown = 0;
     shieldUntil = Math.max(shieldUntil, tick + Math.round(INTERMISSION / dt));
@@ -516,6 +545,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         s.x += s.vx * dt;
         s.y -= 600 * dt;
         if (s.y < -10 || s.x < -10 || s.x > W + 10) continue;
+        if (hitMook(s)) continue;
         const dx = s.x - bx, dy = s.y - by;
         if (dx * dx + dy * dy < bossRadius ** 2) {
           damage += s.damage;
@@ -533,10 +563,30 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       }
     }
 
+    // 耐久: 倒せる雑魚がいるときだけ、自機が撃つ(雑魚にだけ当たる)
+    if (!sp.boss && sp.breakable && sp.mooks !== undefined) {
+      cooldown -= dt;
+      if (!swipe && waveT >= 0 && cooldown <= 0) {
+        cooldown = shotDef.interval;
+        for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage });
+      }
+      let w = 0;
+      for (let i = 0; i < shots.length; i++) {
+        const s = shots[i]!;
+        s.x += s.vx * dt;
+        s.y -= 600 * dt;
+        if (s.y < -10 || s.x < -10 || s.x > W + 10) continue;
+        if (hitMook(s)) continue;
+        shots[w++] = s;
+      }
+      shots.length = w;
+    }
+
     if (waveT >= 0) {
       // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
       if (sp.boss) setAnchorScale(charScale);
       sp.emitters.forEach((m, idx) => {
+        if (mookDestroyed(idx)) return;
         if (sp.boss) {
           if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = waveT; return; }
           while (waveT >= next[idx]!) {
@@ -838,10 +888,10 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   };
 
   /** 状態を丸ごと控える/戻す(ボットが先読みするため)。控えは入れ替わらない値のコピー */
-  type Snap = { wi: number; lifeLeft: number; hp: number; damage: number; defeats: number; next: number[]; shotCount: number[]; bullets: Bullet[]; shots: Shot[]; tick: number; t: number; waveStart: number; px: number; py: number; phase: number; banner: number; flash: number; cooldown: number; shieldUntil: number; outcome: Outcome; grazeCount: number; rng: number };
-  const snapshot = (): Snap => ({ wi, lifeLeft, hp, damage, defeats, next: [...next], shotCount: [...shotCount], bullets: bullets.map((b) => ({ ...b })), shots: shots.map((x) => ({ ...x })), tick, t, waveStart, px, py, phase, banner, flash, cooldown, shieldUntil, outcome, grazeCount, rng: rng.state });
+  type Snap = { wi: number; lifeLeft: number; hp: number; damage: number; defeats: number; next: number[]; shotCount: number[]; mookHP: number[]; bullets: Bullet[]; shots: Shot[]; tick: number; t: number; waveStart: number; px: number; py: number; phase: number; banner: number; flash: number; cooldown: number; shieldUntil: number; outcome: Outcome; grazeCount: number; rng: number };
+  const snapshot = (): Snap => ({ wi, lifeLeft, hp, damage, defeats, next: [...next], shotCount: [...shotCount], mookHP: [...mookHP], bullets: bullets.map((b) => ({ ...b })), shots: shots.map((x) => ({ ...x })), tick, t, waveStart, px, py, phase, banner, flash, cooldown, shieldUntil, outcome, grazeCount, rng: rng.state });
   const restore = (c: Snap) => {
-    wi = c.wi; lifeLeft = c.lifeLeft; hp = c.hp; damage = c.damage; defeats = c.defeats; next = [...c.next]; shotCount = [...c.shotCount];
+    wi = c.wi; lifeLeft = c.lifeLeft; hp = c.hp; damage = c.damage; defeats = c.defeats; next = [...c.next]; shotCount = [...c.shotCount]; mookHP = [...c.mookHP];
     bullets = c.bullets.map((b) => ({ ...b })); shots = c.shots.map((x) => ({ ...x }));
     tick = c.tick; t = c.t; waveStart = c.waveStart; px = c.px; py = c.py; phase = c.phase; banner = c.banner; flash = c.flash; cooldown = c.cooldown;
     shieldUntil = c.shieldUntil; outcome = c.outcome; grazeCount = c.grazeCount; rng.state = c.rng; grazedThisStep = [];

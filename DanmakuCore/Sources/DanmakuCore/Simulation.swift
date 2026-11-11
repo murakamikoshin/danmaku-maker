@@ -661,6 +661,10 @@ public struct Simulation {
     private var rng: Mulberry32
     private var next: [Double]
     private var shotCount: [Int]
+    /// 倒せる雑魚の残りの体力(発射台ごと。雑魚がいない・倒せない発射台は 0)。0 になった雑魚の発射台は、その場面では撃たない
+    public private(set) var mookHP: [Int] = []
+    /// 雑魚に弾が当たった光(発射台ごと。見た目だけ)
+    public private(set) var mookFlash: [Double] = []
     /// 場面の一覧と、いまの場面。連戦以外は、ステージ全体が「場面1つ」
     private let specs: [WaveSpec]
     public private(set) var waveIndex = 0
@@ -735,6 +739,41 @@ public struct Simulation {
         salt = seed
         next = specs[0].emitters.map(\.s)
         shotCount = Array(repeating: 0, count: specs[0].emitters.count)
+        resetMooks()
+    }
+
+    /// 雑魚が出る発射台か(画面の端から撃つ種類と、ボス戦でボスから撃つ発射台には、雑魚は出ない)。ゲームの絵も、この判定を使う
+    public static func hasMook(_ m: Emitter, boss: Bool) -> Bool {
+        ![.rain, .sideL, .sideR, .corner].contains(m.t) && (!boss || m.firesFromPoint)
+    }
+    /// 雑魚が当たる半径(論理px)。大きさ(小・中・大)ごと。絵の大きさの半分
+    public static func mookRadius(size: Int) -> Double { [9.0, 13, 18][min(max(size, 0), 2)] }
+
+    /// 場面の始めに、倒せる雑魚の体力を入れ直す
+    private mutating func resetMooks() {
+        let sp = spec
+        mookHP = sp.emitters.map { sp.mooksBreakable && Simulation.hasMook($0, boss: sp.boss) ? DanmakuConfig.mookHp : 0 }
+        mookFlash = Array(repeating: 0, count: sp.emitters.count)
+    }
+    /// いまの場面の、倒せる雑魚がいるか(いれば、耐久のステージでも自機が撃つ)
+    private var breakableMooks: Bool { spec.mooksBreakable && spec.mooks != nil }
+    /// その発射台の雑魚が倒されたか
+    public func mookDestroyed(_ idx: Int) -> Bool { breakableMooks && idx < mookHP.count && mookHP[idx] <= 0 && Simulation.hasMook(spec.emitters[idx], boss: spec.boss) }
+
+    /// 自機の弾が雑魚に当たったか。当たったら体力を減らして true(弾は消える)
+    private mutating func hitMook(_ s: PlayerShot) -> Bool {
+        guard breakableMooks, let size = spec.mooks else { return false }
+        let r = Simulation.mookRadius(size: size)
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
+        for (idx, m) in spec.emitters.enumerated() where idx < mookHP.count && mookHP[idx] > 0 {
+            let dx = s.x - m.x * W, dy = s.y - m.y * H
+            if dx * dx + dy * dy < r * r {
+                mookHP[idx] -= s.damage
+                mookFlash[idx] = 0.06
+                return true
+            }
+        }
+        return false
     }
 
     private var spec: WaveSpec { specs[waveIndex] }
@@ -788,6 +827,7 @@ public struct Simulation {
         shots.removeAll(keepingCapacity: true)
         next = spec.emitters.map(\.s)
         shotCount = Array(repeating: 0, count: spec.emitters.count)
+        resetMooks()
         hp = spec.hp
         phase = 1
         banner = 0
@@ -900,6 +940,7 @@ public struct Simulation {
                 s.x += s.vx * dt
                 s.y -= 600 * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
+                if hitMook(s) { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
                 let br = bossHitRadius
                 if dx * dx + dy * dy < br * br {
@@ -920,11 +961,32 @@ public struct Simulation {
             }
         }
 
+        if !isBoss && breakableMooks {
+            cooldown -= dt
+            if firesShots && waveT >= 0 && cooldown <= 0 {
+                cooldown = shotType.interval
+                for sp in shotType.volley {
+                    shots.append(PlayerShot(x: player.x + sp.dx, y: player.y - 10, vx: sp.vx, damage: sp.damage))
+                }
+            }
+            var w = 0
+            for var s in shots {
+                s.x += s.vx * dt
+                s.y -= 600 * dt
+                if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
+                if hitMook(s) { continue }
+                shots[w] = s; w += 1
+            }
+            shots.removeSubrange(w...)
+        }
+        for j in mookFlash.indices where mookFlash[j] > 0 { mookFlash[j] -= dt }
+
         if waveT >= 0 {
             // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
             if isBoss { Emit.anchorScale = spec.characterScale }
             defer { if isBoss { Emit.anchorScale = 1 } }
             for (idx, m) in spec.emitters.enumerated() {
+                if mookDestroyed(idx) { continue }
                 if isBoss {
                     if !(m.ph == 0 || m.ph == phase) || banner > 0 { next[idx] = waveT; continue }
                     while waveT >= next[idx] {
