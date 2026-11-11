@@ -3,7 +3,12 @@
 # テーマ 3 つ × iPhone(大きい画面・小さい画面)と iPad、文字を大きくした設定で回し、
 # 1 画面ごとのスクリーンショットを成果物(ui-flow-shots)に保存する。手動実行(Actions → UI Flow Tests → Run workflow)
 name: UI Flow Tests
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  # 手動実行は、main にこのファイルが入るまで使えないので、テストやこのファイルを変えて push したときにも回す
+  push:
+    branches: [design-refresh, swipe-mode-spec]
+    paths: [".github/workflows/ui-tests.yml", "DanmakuAppUITests/**"]
 jobs:
   flows:
     runs-on: macos-26
