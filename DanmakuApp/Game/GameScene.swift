@@ -875,6 +875,13 @@ extension GameScene {
         }
     }
 
+    /// 降参: その場で落ちたものとして終える(記録はここまで。サーバーも「記録が尽きたら、その場で落ちた」と計算する)
+    func forfeit() {
+        guard !finished else { return }
+        finished = true
+        onFinish?(sim, moves)
+    }
+
     /// 弾幕バトルの相手の自機: 自分と同じ形を薄く出す。落ちたら弾けて消える(見た目だけで、当たり判定はない)
     private func renderGhost() {
         guard let provider = ghostPosition, !ghostGone else { return }

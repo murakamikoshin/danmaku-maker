@@ -13,7 +13,7 @@ final class FlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        var args = ["-uitest-invincible", "-no-ads", "-no-audio", "-no-debug-overlay", "-swipe-on",
+        var args = ["-uitest-invincible", "-no-ads", "-no-audio", "-no-debug-overlay", "-swipe-on", "-battle-on",
                     "-ui-theme", theme, "-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         if ProcessInfo.processInfo.environment["UI_BACKEND"] == "emulator" { args.append("-use-emulator") }
         if let size = ProcessInfo.processInfo.environment["UI_TEXT_SIZE"] { args += ["-UIPreferredContentSizeCategoryName", size] }
@@ -157,6 +157,25 @@ final class FlowUITests: XCTestCase {
         tap("swipe.ranking"); snap("swipe-ranking")
         if exists("swipe.titles", timeout: 8) { tap("swipe.titles"); snap("swipe-titles"); closeSheet("titles.close") }
         closeSheet()
+    }
+
+    /// 弾幕バトル: 入口 → 対戦する → (相手が見つからず)ボットと対戦 → 降参 → 結果 → やめる
+    func testBattle() {
+        tap("tab.battle", timeout: 20)
+        XCTAssertTrue(exists("battle.start"), "対戦するボタンがない")
+        snap("battle")
+        tap("battle.start")
+        XCTAssertTrue(exists("battle.cancel", timeout: 10), "相手を探す画面にならない")
+        snap("battle-searching")
+        // 10 秒探して、ボットが相手になる → 3・2・1 → 対戦
+        XCTAssertTrue(exists("battle.forfeit", timeout: 60), "対戦が始まらない")
+        sleep(3)
+        snap("battle-playing")
+        tap("battle.forfeit")
+        XCTAssertTrue(exists("battle.result.quit", timeout: 60), "結果が出ない")
+        snap("battle-result")
+        tap("battle.result.quit")
+        XCTAssertTrue(exists("battle.start", timeout: 10), "入口に戻らない")
     }
 
     /// せってい: 名前・招待・問い合わせ・広告削除・テーマの切り替え

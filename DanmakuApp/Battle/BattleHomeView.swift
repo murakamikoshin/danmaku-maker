@@ -135,7 +135,17 @@ struct BattleHomeView: View {
                     .font(.system(size: 18, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
             }
             Spacer()
-            Text("VS").font(.display(16)).foregroundStyle(GameStyle.yellow)
+            if model.phase == .playing {
+                Button { gameTap(); model.forfeit() } label: {
+                    Text("battle.forfeit").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
+                        .padding(.vertical, 6).padding(.horizontal, 10)
+                        .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("battle.forfeit")
+            } else {
+                Text("VS").font(.display(16)).foregroundStyle(GameStyle.yellow)
+            }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(model.match?.opponent.name ?? "").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.pinkColor).lineLimit(1)

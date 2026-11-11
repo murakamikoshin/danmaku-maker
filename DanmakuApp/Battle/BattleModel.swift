@@ -204,6 +204,12 @@ final class BattleModel: ObservableObject {
         Task { await loadStatus() }
     }
 
+    /// 対戦中にやめる(降参)。その時点で落ちた扱い
+    func forfeit() {
+        guard phase == .playing else { return }
+        scene?.forfeit()
+    }
+
     /// 結果から入口へ戻る
     func backToTitle() {
         cleanup()

@@ -72,7 +72,7 @@ jobs:
           EOS
           chmod +x run_flows.sh
           export BIG SMALL IPAD
-          cd firebase && firebase emulators:exec --only auth,firestore,functions,storage --project demo-danmaku \
+          cd firebase && firebase emulators:exec --only auth,firestore,functions,storage,database --project demo-danmaku \
             "cd .. && ./run_flows.sh" | grep -vE "^\s*$" | grep -E "=> exit|Test Case|error: |skip " | tee ../flow/summary.txt
       - name: Export screenshots
         if: always()
