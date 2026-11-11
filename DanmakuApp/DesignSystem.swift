@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 import DanmakuCore
 
-// アプリ全体の見た目の決まり(色・字体・形)。テーマは 2 つ(アーケード・幻想)で、設定で選べる。下の説明は、アーケード。
+// アプリ全体の見た目の決まり(色・字体・形)。テーマは 3 つ(アーケード・幻想・従来)で、設定で選べる。下の説明は、アーケード。
+// 従来は、一新する前の見た目(角の丸い札・ピンクのグラデーションのボタン・丸ゴシック)。これだけは、ぼかした影を使う
 //
 // - 形: 角は丸めず、ドット絵の角(2 段の階段)にする(ボスや自機のドット絵に合わせる)。`PixelRect`
 // - 色: ぼかした光やグラデーションは使わず、べた塗り。いちばん大事なボタンと「選択中」は黄色に黒い文字
@@ -16,6 +17,8 @@ enum UITheme: String, CaseIterable {
     case arcade
     /// 斜めに落とした角・金と朱・明朝の見出し
     case gensou
+    /// 一新する前の見た目(角の丸い札・ピンクのグラデーションのボタン・丸ゴシック)
+    case classic
 
     var titleKey: String { "settings.theme.\(rawValue)" }
 
@@ -60,40 +63,50 @@ final class UIThemeStore: ObservableObject {
 }
 
 enum GameStyle {
-    private static var gensou: Bool { UITheme.current == .gensou }
-    private static func pick(_ arcade: UInt32, _ gensouHex: UInt32) -> Color { Color(UIColor(hex: gensou ? gensouHex : arcade)) }
+    static var classic: Bool { UITheme.current == .classic }
+    private static func pick(_ arcade: UInt32, _ gensouHex: UInt32, _ classicHex: UInt32? = nil) -> Color {
+        switch UITheme.current {
+        case .arcade: return Color(UIColor(hex: arcade))
+        case .gensou: return Color(UIColor(hex: gensouHex))
+        case .classic: return Color(UIColor(hex: classicHex ?? arcade))
+        }
+    }
 
     /// 画面の地の色
     static var night: Color { pick(0x0A0818, 0x0B0E22) }
     /// 地より一段暗い面(下のタブ・見出しの絵の後ろ)
     static var nightDeep: Color { pick(0x0D0B1F, 0x080A1A) }
     /// 主役の色(黄・金)の上に乗せる文字の色
-    static var ink: Color { pick(0x0A0818, 0x14101C) }
+    static var ink: Color { pick(0x0A0818, 0x14101C, 0xFFFFFF) }
     static var text: Color { pick(0xEFEAFF, 0xF4EEDD) }
-    static var panel: Color { pick(0x16132E, 0x151935) }
+    static var panel: Color { pick(0x16132E, 0x151935, 0x1C1740) }
     /// パネルの上に乗せる、一段明るい面(選べる札・入力欄など)
-    static var panelHi: Color { pick(0x231F4A, 0x21264D) }
-    static var edge: Color { pick(0x35306A, 0x4A4368) }
+    static var panelHi: Color { pick(0x231F4A, 0x21264D, 0x2A2358) }
+    static var edge: Color { pick(0x35306A, 0x4A4368, 0x3A3568) }
     static var dim: Color { pick(0xA49DCB, 0xA9A7C4) }
     /// 主役の色: いちばん大事なボタンと「選択中」。アーケードは黄色、幻想は金
-    static var yellow: Color { pick(0xFFD23F, 0xE6BE6A) }
+    static var yellow: Color { pick(0xFFD23F, 0xE6BE6A, 0xFF6B9D) }
     /// 脇役の色: ボス・ハート・注意。アーケードはピンク、幻想は朱
     static var pinkColor: Color { pick(0xFF6B9D, 0xE8554E) }
     static var cyanColor: Color { pick(0x5CE1E6, 0x7FD3CF) }
     static var green: Color { pick(0x7CF29C, 0x9AD8A0) }
     static var violet: Color { pick(0xB28DFF, 0xB7A3F2) }
     /// 厚みのある文字の、下に敷く濃い色
-    static var yellowShade: Color { pick(0x9A4A12, 0x6E4F1C) }
+    static var yellowShade: Color { pick(0x9A4A12, 0x6E4F1C, 0x8E2148) }
     static var pinkShade: Color { pick(0x8E2148, 0x7A2226) }
 
     /// べた塗り(以前はグラデーションだった。呼び出し側の型を変えないため、同じ色 2 つのグラデーションにしてある)
     static func solid(_ c: Color) -> LinearGradient { LinearGradient(colors: [c, c], startPoint: .leading, endPoint: .trailing) }
     /// いちばん大事なボタン・選択中
-    static var accent: LinearGradient { solid(yellow) }
-    static var cyan: LinearGradient { solid(cyanColor) }
-    static var gold: LinearGradient { solid(yellow) }
+    static var accent: LinearGradient { classic ? grad(0xFF6B9D, 0xFF8A5C) : solid(yellow) }
+    static var cyan: LinearGradient { classic ? grad(0x5CE1E6, 0x5C8AFF) : solid(cyanColor) }
+    static var gold: LinearGradient { classic ? grad(0xFFD23F, 0xFF9F5C) : solid(yellow) }
     /// 広告を見てもらう・無料でもらう
-    static var reward: LinearGradient { solid(green) }
+    static var reward: LinearGradient { classic ? grad(0x7CF29C, 0x5CE1A6) : solid(green) }
+    /// 従来のテーマだけが使う、2 色のグラデーション
+    private static func grad(_ a: UInt32, _ b: UInt32) -> LinearGradient {
+        LinearGradient(colors: [Color(UIColor(hex: a)), Color(UIColor(hex: b))], startPoint: .leading, endPoint: .trailing)
+    }
 
     /// クリア条件ごとの色
     static func tint(_ mode: Mode) -> Color {
@@ -120,6 +133,8 @@ extension Font {
             return lang.hasPrefix("ko") || lang.hasPrefix("zh") ? .system(size: size, weight: .black) : .custom("DelaGothicOne-Regular", fixedSize: size)
         case .gensou:
             return lang.hasPrefix("ja") ? .custom("HiraMinProN-W6", fixedSize: size * 1.06) : .system(size: size, weight: .heavy, design: .serif)
+        case .classic:
+            return .system(size: size, weight: .heavy, design: .rounded)
         }
     }
 }
@@ -141,6 +156,8 @@ struct PixelRect: InsettableShape {
     func path(in rect: CGRect) -> Path {
         let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
         guard r.width > 0, r.height > 0 else { return Path() }
+        // 従来: ふつうの丸い角
+        if UITheme.current == .classic { return RoundedRectangle(cornerRadius: cornerRadius).path(in: r) }
         let u = unit(in: r)
         guard u > 0 else { return Path(r) }
         let x0 = r.minX, x1 = r.maxX, y0 = r.minY, y1 = r.maxY
@@ -198,10 +215,17 @@ struct KeyCap<S: ShapeStyle>: View {
 
     var body: some View {
         let shape = PixelRect(cornerRadius: radius)
+        if UITheme.current == .classic {
+            // 従来: 厚みではなく、ふちの白い線とぼかした影
+            shape.fill(fill)
+                .overlay(shape.strokeBorder(Color.white.opacity(0.35), lineWidth: 1))
+                .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+        } else {
         ZStack {
             shape.fill(fill).offset(y: depth)
             shape.fill(Color.black.opacity(0.4)).offset(y: depth)
             shape.fill(fill)
+        }
         }
     }
 }
@@ -215,14 +239,23 @@ extension View {
 
     /// 札の下に落とす、ぼかさない影
     func hardShadow(radius: CGFloat = 16, depth: CGFloat = 4, color: Color = Color.black.opacity(0.55)) -> some View {
-        background(PixelRect(cornerRadius: radius).fill(color).offset(y: depth))
+        Group {
+            if UITheme.current == .classic { shadow(color: .black.opacity(0.3), radius: 6, y: 3) }
+            else { background(PixelRect(cornerRadius: radius).fill(color).offset(y: depth)) }
+        }
     }
 
     /// 文字の下に濃い色をずらして重ね、厚みを出す(ロゴ・結果の見出し)。色は、ここで付ける
     func thick(_ front: Color, shade: Color, depth: CGFloat = 3) -> some View {
-        ZStack {
-            self.foregroundStyle(shade).offset(y: depth).accessibilityHidden(true)
-            self.foregroundStyle(front)
+        Group {
+            if UITheme.current == .classic {
+                self.foregroundStyle(front)
+            } else {
+                ZStack {
+                    self.foregroundStyle(shade).offset(y: depth).accessibilityHidden(true)
+                    self.foregroundStyle(front)
+                }
+            }
         }
     }
 

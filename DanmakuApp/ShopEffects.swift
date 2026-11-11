@@ -54,7 +54,7 @@ struct BulletBurstView: View {
         let skin = Skin.of(theme)
         let images = SpriteFactory.bulletImages(theme)
         let ship = SpriteFactory.shipImage(theme)
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+        VisibleTimeline(interval: 1.0 / 30.0) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate
                 engine.advance(to: timeline.date, emitters: Self.emitters, key: 0)
@@ -99,7 +99,7 @@ struct ShotPreviewView: View {
 
     var body: some View {
         let ship = SpriteFactory.shipImage(.classic)
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+        VisibleTimeline(interval: 1.0 / 30.0) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate
                 // ゲームの画面は 360 幅。自機とボスの距離は、実際のゲームと同じ 約362(ボスは高さ18%、自機は85%の位置)
@@ -130,6 +130,20 @@ struct ShotPreviewView: View {
                 ctx.draw(Image(uiImage: ship), in: CGRect(x: shipP.x - 10 * sc * 1.2, y: shipP.y - 12 * sc * 1.2, width: 20 * sc * 1.2, height: 24 * sc * 1.2))
             }
         }
+    }
+}
+
+/// 画面に映っている間だけ動くアニメ(TimelineView と同じ使い方)。ショップやエディタには、動く見本が何十個も並ぶので、
+/// 映っていないぶんは止めて、一覧を開いたときや、スクロールしたときに重くならないようにする
+struct VisibleTimeline<Content: View>: View {
+    let interval: Double
+    @ViewBuilder let content: (TimelineViewDefaultContext) -> Content
+    @State private var visible = false
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: interval, paused: !visible), content: content)
+            .onAppear { visible = true }
+            .onDisappear { visible = false }
     }
 }
 
