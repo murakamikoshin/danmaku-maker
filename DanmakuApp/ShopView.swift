@@ -33,6 +33,7 @@ struct ShopView: View {
             case "shots": return .shots
             case "customimages": return .looks
             case "bosses": return .bosses
+            case _ where id.hasPrefix("boss."): return .bosses
             default: return nil
             }
         }
@@ -161,7 +162,7 @@ struct ShopView: View {
         case .shots:
             ShotSection().id("shots")
         case .bosses:
-            ForEach(BossCharacter.allCases.filter(\.purchasable), id: \.self) { BossShopCard(boss: $0) }
+            ForEach(BossCharacter.allCases.filter(\.purchasable), id: \.self) { BossShopCard(boss: $0).id("boss." + $0.productKey) }
         case .looks:
             RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
