@@ -133,3 +133,13 @@
 - アプリ: `Services/InviteService.swift`、`InviteView.swift`(設定 > 友達を招待)、OneLink 受け取りは AttributionService(UDL)。リンク: https://danmaku-maker.onelink.me/F1m3?deep_link_value=invite&deep_link_sub1=<コード>。project.yml の APPSFLYER_DEV_KEY が空のあいだは計測・OneLink の自動受け取りは止まる(手入力のコードは動く)。
 - 手元の Xcode 15.2 では AppsFlyer 7.0.4 のリンクが通らない(swift_FORCE_LOAD。コンパイルまでは通る)。CI の Xcode 26 で確認する。
 - 世界のステージ一覧の「長押しで大きなプレビュー」は、不具合のもとなので削除した。
+
+---
+
+## 2026-11-11 デザインの一新(ブランチ `design-refresh`。`swipe-mode-spec` から分岐、未合流)
+
+- 見た目の決まりは `DanmakuApp/DesignSystem.swift` にまとめた(色 `GameStyle`、字体 `Font.display`、角の形 `PixelRect`、厚みのあるボタン `KeyCap`、文字の厚み `.thick`)。新しい画面も、ここの部品と色を使う。`RoundedRectangle` / `Capsule` / ぼかした `.shadow` / グラデーションは使わない
+- メニューのテーマは 2 つ: アーケード(既定。黄色+黒文字、ドット絵の角、Dela Gothic One)と、幻想(金と朱、斜めの角、明朝)。設定 > 表示 > メニューのテーマ。保存先は UserDefaults の `ui.theme`。変えると、いちばん外側の画面を `.id` で作り直す。画面確認用の起動引数は `-ui-theme gensou`
+- 色は `GameStyle.yellow` などを通す(メニューで `Color(Palette.gold)` などを直接使うと、テーマが効かない)。ゲーム中(SpriteKit)は、これまで通り `Palette` と `Skin`
+- プレイヤーが付けた名前(ステージ名・作者名・ランキングの名前)には `Font.display` を使わない(どの言語でも読めるように、標準の字体)
+- 確認の状況: 1 つ目のコミット(アーケードの見た目)は、CI(UI Screenshots)でビルドが通り、主な画面のスクリーンショットを確認済み。**2 つ目のコミット(テーマの切り替え・崩れの修正)は、GitHub Actions が支払い・利用上限の理由で動かず、未ビルド**。Actions が動くようになったら、`design-refresh` で UI Screenshots を流して確かめる(幻想テーマの画面も撮るようにしてある)
