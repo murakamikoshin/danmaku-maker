@@ -67,7 +67,7 @@ struct RewardNoticeView: View {
             GameStyle.night.ignoresSafeArea()
             VStack(spacing: 14) {
                 Text("reward.notice.title").font(.custom("DelaGothicOne-Regular", size: 22))
-                    .foregroundStyle(LinearGradient(colors: [.white, GameStyle.yellow], startPoint: .top, endPoint: .bottom))
+                    .foregroundStyle(GameStyle.yellow)
                     .padding(.top, 24)
                 ScrollView {
                     VStack(spacing: 8) { ForEach(items) { row($0) } }

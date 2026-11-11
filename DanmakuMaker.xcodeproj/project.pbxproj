@@ -121,6 +121,7 @@
 		A97071E62973560D1F271F87 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9430A9E973CE136581259DC9 /* BannerAdView.swift */; };
 		A9D16E416D1C0755B7E593EC /* witch_awakened_idle_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = F9CDCE1275D9995A7D0507BE /* witch_awakened_idle_sheet.png */; };
 		AC11A6E63FD7C1ED9678F264 /* kitsune_windup_awakened_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = D17E54C799637B371CBAC575 /* kitsune_windup_awakened_sheet.png */; };
+		AC707DEFA059E61983297628 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C31F36A835DFF2869600B357 /* DesignSystem.swift */; };
 		AE1FE8A587901134937C21F6 /* ice_recover_awakened_sheet.png in Resources */ = {isa = PBXBuildFile; fileRef = 5E46EDB388B03A31BB9DDF8F /* ice_recover_awakened_sheet.png */; };
 		AE2B066A34866E9DB4B6FEA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */; };
 		AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED3045376B6993745B32B4 /* DanmakuApp.swift */; };
@@ -301,6 +302,7 @@
 		C1DAC9469CD1FFC900A757FA /* mech_windup_sheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mech_windup_sheet.png; sourceTree = "<group>"; };
 		C215A3C95C2A8021A12A703D /* official_stages_i18n.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_stages_i18n.json; sourceTree = "<group>"; };
 		C2ACDBD9418D0E35835B749E /* bgm_boss.caf */ = {isa = PBXFileReference; path = bgm_boss.caf; sourceTree = "<group>"; };
+		C31F36A835DFF2869600B357 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		C5224F9D0128CAA0F361E5A3 /* se_get.caf */ = {isa = PBXFileReference; path = se_get.caf; sourceTree = "<group>"; };
 		C68321CF2F6D3DCFF7456C66 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
 		C8393515DD0F1156221C5E1B /* EnemyArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnemyArt.swift; sourceTree = "<group>"; };
@@ -564,6 +566,7 @@
 				CAEDF0B0A7D3F0B6DB776BA4 /* DailyRewardView.swift */,
 				AAD54EBE94259BD8BE4EB567 /* DanmakuApp.entitlements */,
 				CBED3045376B6993745B32B4 /* DanmakuApp.swift */,
+				C31F36A835DFF2869600B357 /* DesignSystem.swift */,
 				4F68837435E863CE44BB6217 /* FeedbackView.swift */,
 				E805B9DEE5512D8E74046B1B /* GoogleService-Info.plist */,
 				999CC41D43E16FE0C7135EDD /* HomeView.swift */,
@@ -877,6 +880,7 @@
 				1C20487B71E38F28F475A332 /* CustomImageStore.swift in Sources */,
 				DB8245559AA794D35992DF01 /* DailyRewardView.swift in Sources */,
 				AEBDA41B153AF8175C895B3F /* DanmakuApp.swift in Sources */,
+				AC707DEFA059E61983297628 /* DesignSystem.swift in Sources */,
 				84F964B0373C9BC6FE3CCA77 /* EditorModel.swift in Sources */,
 				F379544BE24E12BF703FE682 /* EditorView.swift in Sources */,
 				CAAA487D8463EC02EB328BAF /* EmitterCard.swift in Sources */,

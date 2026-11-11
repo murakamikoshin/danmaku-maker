@@ -157,7 +157,6 @@ struct StaminaBar: View {
                 HStack(spacing: 4) {
                     ForEach(0..<StaminaInfo.max, id: \.self) { i in
                         Image(systemName: "bolt.fill").foregroundStyle(i < info.value ? Color(uiColor: SwipePalette.gold) : Color.white.opacity(0.18))
-                            .shadow(color: i < info.value ? Color(uiColor: SwipePalette.gold).opacity(0.8) : .clear, radius: 4)
                     }
                 }
                 TimelineView(.periodic(from: .now, by: 1)) { ctx in
@@ -196,7 +195,6 @@ private struct PlayHUD: View {
                             Text("swipe.streak").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.dim))
                             Text("\(sc.streak)").font(.display(28))
                                 .foregroundStyle(sc.streak >= 5 ? Color(uiColor: SwipePalette.pink) : .white)
-                                .shadow(color: sc.streak >= 5 ? Color(uiColor: SwipePalette.pink) : .clear, radius: 6)
                             if sc.streak > 0 { Text("×3^\(sc.streak)").font(.system(size: 10, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan)) }
                         }
                         Spacer()
@@ -248,7 +246,6 @@ private struct ScoreText: View {
         Text(ScoreFormat.full(score, lang))
             .font(.display(22)).foregroundStyle(.white)
             .lineLimit(1).minimumScaleFactor(6 / 22).frame(maxWidth: 280, alignment: .trailing)
-            .shadow(color: .black, radius: 2)
     }
 }
 
@@ -481,7 +478,7 @@ struct SwipeRankingView: View {
             }
         }
         .padding(14)
-        .background(LinearGradient(colors: [GameStyle.pinkColor.opacity(0.28), GameStyle.pinkColor.opacity(0.10)], startPoint: .leading, endPoint: .trailing), in: PixelRect(cornerRadius: 16))
+        .background(GameStyle.pinkColor.opacity(0.18), in: PixelRect(cornerRadius: 16))
         .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.pinkColor.opacity(0.6), lineWidth: 1.2))
     }
 

@@ -178,7 +178,8 @@ private struct ShopHero: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             BulletBurstView(theme: .classic)
-            LinearGradient(colors: [.clear, Color.black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
+            Rectangle().fill(Color.black.opacity(0.45)).frame(maxHeight: .infinity, alignment: .bottom)
+            .mask(alignment: .bottom) { Rectangle().frame(height: 70) }
             VStack(alignment: .leading, spacing: 2) {
                 Text("SHOP")
                     .font(.display(40))
@@ -361,7 +362,7 @@ private struct ThemeCard: View {
                 HStack {
                     Text(LocalizedStringKey(theme.nameKey))
                         .font(.display(23))
-                        .foregroundStyle(.white).shadow(color: .black.opacity(0.7), radius: 5)
+                        .foregroundStyle(.white).padding(.horizontal, 6).padding(.vertical, 2).background(Color.black.opacity(0.55))
                     Spacer()
                     if theme != .classic && cosmetics.ownership.canBuy(.set(theme)) {
                         Text(String(format: L("shop.off"), offPercent))

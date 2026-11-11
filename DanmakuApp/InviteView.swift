@@ -40,8 +40,7 @@ struct InviteView: View {
 
     private var header: some View {
         HStack {
-            Text("invite.title").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(
-                LinearGradient(colors: [.white, GameStyle.yellow], startPoint: .top, endPoint: .bottom))
+            Text("invite.title").font(.custom("DelaGothicOne-Regular", size: 22)).foregroundStyle(GameStyle.yellow)
             Spacer()
             Button { gameTap(); dismiss() } label: {
                 Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(.white)
