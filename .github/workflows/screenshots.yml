@@ -5,7 +5,7 @@ on: workflow_dispatch
 jobs:
   shots:
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26
@@ -66,6 +66,16 @@ jobs:
           shot gensou_settings ja 14 -ui-theme gensou -open-settings
           shot gensou_result ja 40 -ui-theme gensou -open-stage o01
           shot gensou_home en 14 -ui-theme gensou
+          # メニューのテーマ「従来」(一新する前の見た目)
+          shot classic_home ja 14 -ui-theme classic
+          shot classic_editor ja 16 -ui-theme classic -open-editor
+          shot classic_shop_bosses ja 14 -ui-theme classic -open-shop -shop-bosses
+          shot classic_settings ja 14 -ui-theme classic -open-settings
+          shot classic_result ja 40 -ui-theme classic -open-stage o01
+          shot classic_swipe ja 14 -ui-theme classic -open-swipe
+          shot gensou_swipe ja 14 -ui-theme gensou -open-swipe
+          shot gensou_shop_patterns ja 16 -ui-theme gensou -open-shop -shop-focus patterns
+          shot classic_shop_patterns ja 16 -ui-theme classic -open-shop -shop-focus patterns
           shot home en 14
           shot editor de 16 -open-editor
           shot shop ko 14 -open-shop
