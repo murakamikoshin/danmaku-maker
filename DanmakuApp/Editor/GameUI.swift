@@ -208,7 +208,7 @@ struct LifePreview: View {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, n in
                     HStack(spacing: 2) {
                         ForEach(0..<n, id: \.self) { _ in
-                            Rectangle().fill(Color(Palette.bullets[4])).frame(width: 9, height: 16)
+                            Rectangle().fill(GameStyle.green).frame(width: 9, height: 16)
                         }
                     }
                 }

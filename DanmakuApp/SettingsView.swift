@@ -78,7 +78,7 @@ struct SettingsView: View {
                         toggleRow("settings.se", "speaker.wave.2.fill", $audio.seOn)
                     }
 
-                    GamePanel(title: "settings.display", tint: Color(Palette.bullets[3])) {
+                    GamePanel(title: "settings.display", tint: GameStyle.violet) {
                         toggleRow("settings.stagelook", "paintpalette.fill", $cosmetics.showStageLook)
                         Text("settings.stagelook.note").font(.caption).foregroundStyle(.secondary)
                         toggleRow("settings.effects", "sparkles", $cosmetics.effectsOn)
@@ -106,7 +106,7 @@ struct SettingsView: View {
                     GamePanel(title: "settings.store", tint: GameStyle.pinkColor) {
                         if purchases.isPremium {
                             Label("store.purchased", systemImage: "checkmark.seal.fill").font(.system(size: 14, weight: .heavy))
-                                .foregroundStyle(Color(Palette.bullets[4]))
+                                .foregroundStyle(GameStyle.green)
                         } else {
                             actionRow("revive.removeads", "nosign") { showStore = true }.accessibilityIdentifier("settings.removeads")
                         }
@@ -139,7 +139,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    GamePanel(title: "settings.blocked", tint: Color(Palette.bullets[3])) {
+                    GamePanel(title: "settings.blocked", tint: GameStyle.violet) {
                         if blocks.blocked.isEmpty { Text("settings.blocked.none").font(.system(size: 13)).foregroundStyle(.secondary) }
                         ForEach(blocks.blocked.sorted(by: { $0.value < $1.value }), id: \.key) { uid, name in
                             HStack {
@@ -150,7 +150,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    GamePanel(title: "settings.about", tint: Color(Palette.bullets[4])) {
+                    GamePanel(title: "settings.about", tint: GameStyle.green) {
                         linkRow("settings.terms", "doc.text", AppConfig.termsURL)
                         linkRow("settings.privacy", "lock.shield", AppConfig.privacyURL)
                         Button { gameTap(); showInvite = true } label: {

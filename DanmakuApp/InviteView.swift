@@ -115,7 +115,7 @@ struct InviteView: View {
             }
             Text(String(format: L("invite.ship.progress"), min(cosmetics.ownedSkins.count, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
             if let nextShip = Self.shipSteps.first(where: { $0 > rewarded }) {
-                Text(String(format: L("invite.ship.next"), nextShip - rewarded)).font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(Palette.bullets[0]))
+                Text(String(format: L("invite.ship.next"), nextShip - rewarded)).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
             }
             if let next {
                 Text(String(format: L("invite.progress.next"), next.need - rewarded)).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
@@ -136,7 +136,7 @@ struct InviteView: View {
 
     /// 手に入れた自機から、使うものを選ぶ(標準の自機に戻すこともできる)
     private var shipPanel: some View {
-        GamePanel(title: "ship.section", tint: Color(Palette.bullets[0])) {
+        GamePanel(title: "ship.section", tint: GameStyle.pinkColor) {
             Text("ship.note").font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.7))
             let columns = [GridItem(.adaptive(minimum: 78), spacing: 8)]
             LazyVGrid(columns: columns, spacing: 8) {
@@ -171,7 +171,7 @@ struct InviteView: View {
 
     @ViewBuilder private var enterPanel: some View {
         if service.info?.joinedBy != true {
-            GamePanel(title: "invite.enter.section", tint: Color(Palette.bullets[4])) {
+            GamePanel(title: "invite.enter.section", tint: GameStyle.green) {
                 TextField("", text: $entered, prompt: Text("invite.enter.hint"))
                     .textFieldStyle(.plain).textInputAutocapitalization(.characters).autocorrectionDisabled()
                     .font(.system(size: 18, weight: .heavy, design: .monospaced))
@@ -183,7 +183,7 @@ struct InviteView: View {
                     .accessibilityIdentifier("invite.enter")
                 if let key = messageKey {
                     Text(LocalizedStringKey(key)).font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(result == .registered ? Color(Palette.bullets[4]) : GameStyle.pinkColor)
+                        .foregroundStyle(result == .registered ? GameStyle.green : GameStyle.pinkColor)
                 }
                 GameActionButton(title: "invite.enter.button", systemImage: busy ? "hourglass" : "checkmark.seal.fill", fill: GameStyle.accent,
                                  enabled: InviteService.isValid(InviteService.normalize(entered)) && !busy) {
@@ -238,7 +238,7 @@ struct TicketCount: View {
             TicketArtView(height: 20).opacity(n > 0 ? 1 : 0.45)
             Text(String(format: L("ticket.count"), n)).font(.system(size: 12, weight: .heavy))
         }
-        .foregroundStyle(n > 0 ? Color(Palette.bullets[4]) : GameStyle.text.opacity(0.5))
+        .foregroundStyle(n > 0 ? GameStyle.green : GameStyle.text.opacity(0.5))
         .accessibilityIdentifier("ticket.count")
     }
 }

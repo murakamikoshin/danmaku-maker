@@ -247,7 +247,7 @@ private struct PriceButton: View {
 private struct EquippedLabel: View {
     var body: some View {
         Label("shop.equipped", systemImage: "checkmark.circle.fill")
-            .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+            .font(.footnote.bold()).foregroundStyle(GameStyle.green)
     }
 }
 
@@ -293,7 +293,7 @@ private struct ShotTile: View {
             HStack {
                 Spacer()
                 if cosmetics.ownership.has(shot) {
-                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green)
                 } else {
                     PriceButton(product: .shot(shot))
                 }
@@ -329,7 +329,7 @@ private struct RewardShop: View {
                         Text(LocalizedStringKey(t.nameKey)).font(.body.weight(.semibold))
                         Spacer()
                         if cosmetics.ownership.hasUnlocked(t) {
-                            Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                            Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green)
                         } else {
                             let need = (t.unlockPosts ?? 0)
                             VStack(alignment: .trailing, spacing: 2) {
@@ -403,7 +403,7 @@ private struct ThemeCard: View {
             }
             Spacer()
             if cosmetics.ownership.canBuy(.set(theme)) { PriceButton(product: .set(theme)) }
-            else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+            else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green) }
         }
         .padding(14)
         .background(GameStyle.yellow.opacity(0.10))
@@ -421,7 +421,7 @@ private struct PartRow: View {
             Text(LocalizedStringKey(part.nameKey)).font(.body.weight(.semibold))
             Spacer()
             if cosmetics.ownership.has(part, of: theme) {
-                Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green)
             } else {
                 PriceButton(product: .part(theme, part))
             }
@@ -565,7 +565,7 @@ private struct LifetimeCard: View {
                     HStack {
                         Spacer()
                         if cosmetics.ownership.canBuy(.lifetime) { PriceButton(product: .lifetime) }
-                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green) }
                     }
                 }
                 .padding(14)
@@ -736,7 +736,7 @@ private struct AdPatternCard: View {
     @ViewBuilder private var claimButton: some View {
         if !adPatterns.canClaim {
             Label("shop.adpattern.claimed", systemImage: "checkmark.circle.fill")
-                .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                .font(.footnote.bold()).foregroundStyle(GameStyle.green)
         } else {
             let ready = purchases.isPremium || ads.isReady
             Button { Task { await claim() } } label: {
@@ -801,7 +801,7 @@ private struct PatternShop: View {
                         }
                         Spacer()
                         if cosmetics.ownership.canBuy(pack) { PriceButton(product: pack) }
-                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4])) }
+                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green) }
                     }
                     .padding(14)
                     .background(GameStyle.yellow.opacity(0.10))
@@ -827,7 +827,7 @@ private struct PatternTile: View {
             HStack {
                 Spacer()
                 if cosmetics.ownership.has(pattern) {
-                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                    Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green)
                 } else {
                     PriceButton(product: .pattern(pattern))
                 }
@@ -959,7 +959,7 @@ private struct BossShopCard: View {
                         if cosmetics.ownership.has(boss) {
                             // ボスは「使用中」ではなく「購入済み」(ステージを作るときに選ぶもので、装備するものではない)
                             Label("shop.owned", systemImage: "checkmark.circle.fill")
-                                .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                                .font(.footnote.bold()).foregroundStyle(GameStyle.green)
                         } else {
                             let ticket = cosmetics.canClaimBossTicket && boss.ticketEligible
                             if ticket { TicketCount() }

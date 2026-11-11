@@ -12,7 +12,9 @@ final class SwipeConfig: ObservableObject {
 
     func refresh() async {
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-open-swipe") { enabled = true; return }
+        // 画面確認用: -open-swipe はスワイプのタブを開く。-swipe-on はタブを出すだけ(本番と同じ4タブで撮るため)
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-open-swipe") || args.contains("-swipe-on") { enabled = true; return }
         #endif
         guard Backend.isAvailable else { return }
         let rc = RemoteConfig.remoteConfig()

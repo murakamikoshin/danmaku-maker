@@ -127,7 +127,7 @@ struct PublishFlowView: View {
     @ViewBuilder private var quotaView: some View {
         if replay != nil, quota != nil {
             if purchases.isPremium {
-                Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.bullets[4]))
+                Text("publish.quota.unlimited").font(.system(size: 12, weight: .bold)).foregroundStyle(GameStyle.green)
             } else if let r = remaining {
                 Text(r > 0 ? String(format: L("publish.quota.left"), r) : String(format: L("publish.quota.none"), PostQuota.free))
                     .font(.system(size: 12, weight: .bold)).foregroundStyle(r > 0 ? Color.secondary : GameStyle.yellow).multilineTextAlignment(.center)

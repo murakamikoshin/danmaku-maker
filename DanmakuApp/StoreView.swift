@@ -27,7 +27,7 @@ struct StoreView: View {
                     .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
                     if purchases.isPremium {
                         Label("store.purchased", systemImage: "checkmark.seal.fill").font(.display(15))
-                            .foregroundStyle(Color(Palette.bullets[4]))
+                            .foregroundStyle(GameStyle.green)
                     } else {
                         GameActionButton(title: purchases.priceText.map { LocalizedStringKey(String(format: L("store.buy"), $0)) } ?? "store.buy.noprice",
                                          systemImage: "cart.fill", fill: GameStyle.accent,

@@ -33,9 +33,9 @@ struct FeedbackView: View {
                         .accessibilityLabel(Text("swipe.close"))
                     }
                     if sent {
-                        GamePanel(tint: Color(Palette.bullets[4])) {
+                        GamePanel(tint: GameStyle.green) {
                             VStack(spacing: 10) {
-                                Image(systemName: "checkmark.circle.fill").font(.system(size: 40)).foregroundStyle(Color(Palette.bullets[4]))
+                                Image(systemName: "checkmark.circle.fill").font(.system(size: 40)).foregroundStyle(GameStyle.green)
                                 Text("feedback.sent").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text).multilineTextAlignment(.center)
                             }.frame(maxWidth: .infinity).padding(.vertical, 12)
                         }

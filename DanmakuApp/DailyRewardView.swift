@@ -56,7 +56,7 @@ struct DailyRewardCard: View {
     @ViewBuilder private var claimButton: some View {
         if !rewards.canClaim {
             Label("daily.claimed", systemImage: "checkmark.circle.fill")
-                .font(.footnote.bold()).foregroundStyle(Color(Palette.bullets[4]))
+                .font(.footnote.bold()).foregroundStyle(GameStyle.green)
         } else {
             let ready = purchases.isPremium || ads.isReady
             Button {

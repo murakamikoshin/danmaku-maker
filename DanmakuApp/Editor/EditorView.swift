@@ -40,7 +40,7 @@ struct EditorView: View {
                 .disabled(!model.canRevert).opacity(model.canRevert ? 1 : 0.35)
                 .accessibilityIdentifier("editor.revert")
                 Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color(Palette.bullets[4])).labelStyle(.titleAndIcon)
+                    .foregroundStyle(GameStyle.green).labelStyle(.titleAndIcon)
             }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
@@ -66,7 +66,7 @@ struct EditorView: View {
                         RewardFxPanel(model: model)
                         WorldPreviewPanel(model: model)
                         if model.draft.mode != .sequence {
-                            GamePanel(title: "editor.enemy", tint: Color(Palette.bullets[3])) {
+                            GamePanel(title: "editor.enemy", tint: GameStyle.violet) {
                                 EnemyControls(showBoss: model.draft.mode != .survive,
                                               bossSize: $model.draft.bossSize, bossLook: $model.draft.bossLook,
                                               mooks: $model.draft.mooks, mookLook: $model.draft.mookLook, awaken: $model.draft.awaken,
@@ -235,7 +235,7 @@ private struct TimingPanel: View {
     @ObservedObject var model: EditorModel
 
     var body: some View {
-        GamePanel(title: model.draft.mode == .survive ? "editor.endure" : "editor.limit", tint: Color(Palette.bullets[2])) {
+        GamePanel(title: model.draft.mode == .survive ? "editor.endure" : "editor.limit", tint: GameStyle.yellow) {
             ChipGrid(items: model.durations.map { ($0, $0 == 0 ? L("editor.unlimited") : String(format: L("unit.seconds"), $0)) },
                      selection: Binding(get: { model.draft.duration }, set: model.setDuration),
                      idPrefix: "editor.duration")
@@ -455,15 +455,15 @@ private struct StatusBox: View {
         HStack(spacing: 10) {
             Image(systemName: verified ? "checkmark.seal.fill" : "flag.checkered")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(verified ? Color(Palette.bullets[4]) : GameStyle.yellow)
+                .foregroundStyle(verified ? GameStyle.green : GameStyle.yellow)
             Text(verified ? "editor.status.ok" : "editor.status.need")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(verified ? Color(Palette.bullets[4]) : GameStyle.text)
+                .foregroundStyle(verified ? GameStyle.green : GameStyle.text)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
         .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
-        .overlay(PixelRect(cornerRadius: 16).stroke(verified ? Color(Palette.bullets[4]) : GameStyle.edge, lineWidth: verified ? 2 : 1))
+        .overlay(PixelRect(cornerRadius: 16).stroke(verified ? GameStyle.green : GameStyle.edge, lineWidth: verified ? 2 : 1))
         .accessibilityIdentifier(verified ? "editor.status.ok" : "editor.status.need")
     }
 }
@@ -474,14 +474,14 @@ private struct BGMPanel: View {
     @ObservedObject var model: EditorModel
     @ObservedObject private var audio = AudioManager.shared
     private let names = ["bgm.0", "bgm.1", "bgm.2", "bgm.3", "bgm.4"]
-    private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, Color(Palette.bullets[3])]
+    private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, GameStyle.violet]
 
     private var selected: Int {
         model.draft.bgm ?? (model.draft.mode == .survive ? 0 : 1)
     }
 
     var body: some View {
-        GamePanel(title: "editor.bgm", tint: Color(Palette.bullets[3])) {
+        GamePanel(title: "editor.bgm", tint: GameStyle.violet) {
             VStack(spacing: 8) {
                 ForEach(0..<5, id: \.self) { i in
                     let on = selected == i
@@ -669,7 +669,7 @@ private struct WorldPreviewPanel: View {
         let stage = model.draft.stage
         let maxStart = stage.maxPreviewStart
         let start = min(model.draft.previewStart, maxStart)
-        GamePanel(title: "editor.preview", tint: Color(Palette.bullets[2])) {
+        GamePanel(title: "editor.preview", tint: GameStyle.yellow) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -709,7 +709,7 @@ private struct MarkerPanel: View {
 
     var body: some View {
         if model.draft.mode == .survive {
-            GamePanel(title: "editor.markers", tint: Color(Palette.bullets[4])) {
+            GamePanel(title: "editor.markers", tint: GameStyle.green) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("editor.markers.show").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
@@ -818,8 +818,8 @@ private struct EffectsPanel: View {
 struct DefeatPicker: View {
     @Binding var selection: Int
     private let items: [(DefeatEffect, String, Color)] = [
-        (.none, "defeat.none", .gray), (.explosion, "defeat.explosion", GameStyle.yellow), (.fireworks, "defeat.fireworks", Color(Palette.bullets[1])),
-        (.hearts, "defeat.hearts", GameStyle.pinkColor), (.stardust, "defeat.stardust", Color(Palette.bullets[3])),
+        (.none, "defeat.none", .gray), (.explosion, "defeat.explosion", GameStyle.yellow), (.fireworks, "defeat.fireworks", GameStyle.cyanColor),
+        (.hearts, "defeat.hearts", GameStyle.pinkColor), (.stardust, "defeat.stardust", GameStyle.violet),
     ]
 
     var body: some View {
@@ -837,7 +837,7 @@ private struct WavesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            GamePanel(title: "editor.waves", tint: Color(Palette.bullets[3])) {
+            GamePanel(title: "editor.waves", tint: GameStyle.violet) {
                 HStack {
                     Text(String(format: L("editor.waves.count"), model.draft.waves.count)).font(.system(size: 14, weight: .heavy))
                     Spacer()
@@ -916,7 +916,7 @@ private struct WaveCard: View {
         }
         .padding(14)
         .background(GameStyle.panel, in: PixelRect(cornerRadius: 20))
-        .overlay(PixelRect(cornerRadius: 20).stroke(Color(Palette.bullets[3]).opacity(0.5), lineWidth: 1.5))
+        .overlay(PixelRect(cornerRadius: 20).stroke(GameStyle.violet.opacity(0.5), lineWidth: 1.5))
     }
 
     @ViewBuilder private var bossControls: some View {

@@ -164,7 +164,7 @@ struct HomeView: View {
                     statCell("heart.fill", posted.likes, "mystats.likes", GameStyle.pinkColor)
                     statCell("gamecontroller.fill", posted.plays, "mystats.plays", GameStyle.cyanColor)
                     statCell("flag.checkered", posted.clears, "mystats.clears", GameStyle.yellow)
-                    statCell("bubble.left.fill", posted.comments, "mystats.comments", Color(Palette.bullets[4]))
+                    statCell("bubble.left.fill", posted.comments, "mystats.comments", GameStyle.green)
                 }
                 .padding(.vertical, 12)
                 .gamePanel(radius: 16)
@@ -527,7 +527,7 @@ struct MyStageRow: View {
                         }
                         HStack(spacing: 6) {
                             if entry.isPublished { tag("mystage.posted", GameStyle.yellow) }
-                            else if entry.isVerified { tag("mystage.cleared", Color(Palette.bullets[4])) }
+                            else if entry.isVerified { tag("mystage.cleared", GameStyle.green) }
                             else { tag("mystage.notcleared", Color.white.opacity(0.5)) }
                             Text(entry.updatedAt, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary)
                         }

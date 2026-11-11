@@ -251,7 +251,7 @@ struct PlayView: View {
             HStack(spacing: 2) {
                 ForEach(0..<max, id: \.self) { i in
                     PixelRect(cornerRadius: 2)
-                        .fill(i < model.lifeLeft ? Color(Palette.bullets[4]) : Color.white.opacity(0.15))
+                        .fill(i < model.lifeLeft ? GameStyle.green : Color.white.opacity(0.15))
                         .frame(width: max > 12 ? 7 : 10, height: 14)
                 }
             }
@@ -364,8 +364,8 @@ struct ResultView: View {
 
                     if result.revived && win && !isTest {
                         Label("result.revived", systemImage: "arrow.counterclockwise.circle.fill")
-                            .font(.system(size: 12, weight: .bold)).foregroundStyle(Color(Palette.bullets[1]))
-                            .padding(.vertical, 6).padding(.horizontal, 12).background(Color(Palette.bullets[1]).opacity(0.14), in: PixelRect(cornerRadius: 8))
+                            .font(.system(size: 12, weight: .bold)).foregroundStyle(GameStyle.cyanColor)
+                            .padding(.vertical, 6).padding(.horizontal, 12).background(GameStyle.cyanColor.opacity(0.14), in: PixelRect(cornerRadius: 8))
                     }
                     if !isTest, win, result.isBoss, ranking != nil {
                         if result.revived {
@@ -396,7 +396,7 @@ struct ResultView: View {
                         }
                     } else if win, !isTest, rewardStore.justClaimed != nil {
                         Label("daily.claimed", systemImage: "checkmark.circle.fill")
-                            .font(.system(size: 13, weight: .bold)).foregroundStyle(Color(Palette.bullets[4]))
+                            .font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.green)
                     }
                     if win, !isTest, BossCharacter.editorEnabled, let boss, !cosmetics.ownership.has(boss) {
                         // ボスを倒したあと、自分のステージにも置きたくなったときの入り口

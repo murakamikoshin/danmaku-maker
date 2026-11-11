@@ -122,7 +122,7 @@ struct RemoteShopSection: View {
 
     private func pill(_ text: String) -> some View {
         Text(text).font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
-            .padding(.vertical, 8).padding(.horizontal, 14).background(Color(Palette.bullets[4]), in: PixelRect(cornerRadius: 8))
+            .padding(.vertical, 8).padding(.horizontal, 14).background(GameStyle.green, in: PixelRect(cornerRadius: 8))
     }
 
     private func loadPrices() async {

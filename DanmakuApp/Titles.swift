@@ -60,18 +60,18 @@ enum TitleID {
             case "rank2": return CrownStyle.silver
             case "rank3": return CrownStyle.bronze
             case "top10": return GameStyle.pinkColor
-            default: return Color(Palette.bullets[2])
+            default: return GameStyle.yellow
             }
         }
         switch id {
         case "inv10", "founder": return CrownStyle.gold
         case "inv5": return GameStyle.pinkColor
-        case "inv3": return Color(Palette.bullets[2])
-        case "invited", "inv1": return Color(Palette.bullets[0])
+        case "inv3": return GameStyle.yellow
+        case "invited", "inv1": return GameStyle.pinkColor
         case "score4": return CrownStyle.gold
         case "score3": return GameStyle.pinkColor
-        case "score2": return Color(Palette.bullets[2])
-        default: return Color(Palette.bullets[4])
+        case "score2": return GameStyle.yellow
+        default: return GameStyle.green
         }
     }
 
@@ -352,7 +352,7 @@ struct TitlePickerView: View {
                     }
                     let invites = TitleID.inviteSorted(service.owned)
                     if !invites.isEmpty {
-                        GamePanel(title: "title.section.invite", tint: Color(Palette.bullets[0])) {
+                        GamePanel(title: "title.section.invite", tint: GameStyle.pinkColor) {
                             VStack(spacing: 8) { ForEach(invites, id: \.self) { row($0) } }
                         }
                     }
