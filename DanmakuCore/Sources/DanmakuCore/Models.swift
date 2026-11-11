@@ -644,10 +644,19 @@ public struct Stage: Codable, Equatable, Sendable {
     public var themeBullets: Theme?
     public var themeBackground: Theme?
     public var themeShip: Theme?
+    /// 作者が選んだドット絵の自機(招待のごほうびなど。ID)。遊ぶ全員に、その自機で見える。nil は自機の見た目(themeShip)、または遊ぶ人の自分の自機。
+    /// 見た目だけで、計算(種・当たり判定)には関わらない。1.2.0 から
+    public var shipSkin: String?
 
     public var lookBullets: Theme { themeBullets ?? .classic }
     public var lookBackground: Theme { themeBackground ?? .classic }
     public var lookShip: Theme { themeShip ?? .classic }
+
+    /// 自機の絵の ID の形だけ確かめる(英小文字・数字・_ の 1〜40 文字)。持っているかは、投稿のときにサーバーが確かめる
+    static func sanitizedSkin(_ v: String?) -> String? {
+        guard let v, (1...40).contains(v.count), v.allSatisfy({ ($0.isASCII && $0.isLowercase) || $0.isNumber || $0 == "_" }) else { return nil }
+        return v
+    }
 
     /// 世界のステージ一覧の動くプレビューを始める秒(作者が決める。見た目だけで、計算やランキングには関わらない)。nil は0秒から
     public var previewStart: Int?
@@ -701,7 +710,7 @@ public struct Stage: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
         case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
-        case mooksBreakable, mookHits, mooksClear
+        case mooksBreakable, mookHits, mooksClear, shipSkin
     }
 
     static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
@@ -777,6 +786,7 @@ public struct Stage: Codable, Equatable, Sendable {
         mooksBreakable = try d.decodeIfPresent(Bool.self, forKey: .mooksBreakable)
         mookHits = try d.decodeIfPresent(Int.self, forKey: .mookHits)
         mooksClear = try d.decodeIfPresent(Bool.self, forKey: .mooksClear)
+        shipSkin = try? d.decodeIfPresent(String.self, forKey: .shipSkin)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -791,6 +801,7 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(mooksBreakable, forKey: .mooksBreakable)
         try c.encodeIfPresent(mookHits, forKey: .mookHits)
         try c.encodeIfPresent(mooksClear, forKey: .mooksClear)
+        try c.encodeIfPresent(shipSkin, forKey: .shipSkin)
         try c.encode(emitters, forKey: .emitters)
         try c.encode(formatVersion, forKey: .formatVersion)
         try c.encodeIfPresent(lifeMode, forKey: .lifeMode)
@@ -908,6 +919,7 @@ public struct Stage: Codable, Equatable, Sendable {
         out.mooksBreakable = (out.mooks != nil && mooksBreakable == true) ? true : nil
         out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
         out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: mode == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
+        out.shipSkin = Stage.sanitizedSkin(shipSkin)
         return out
     }
 }

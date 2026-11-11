@@ -130,8 +130,11 @@ struct InviteView: View {
                 HStack(spacing: 10) {
                     SkinThumb(id: ShipSkin.original).frame(width: 40, height: 40)
                     TitleChip(id: "invited", size: 11)
-                    Label(String(format: L("invite.rewards.drinks"), Self.friendDrinks), systemImage: "drop.fill")
-                        .font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                    HStack(spacing: 4) {
+                        DrinkArtView(size: 22)
+                        Text(String(format: L("invite.rewards.drinks"), Self.friendDrinks))
+                    }
+                    .font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                     Spacer(minLength: 0)
                 }
             }
@@ -162,12 +165,10 @@ struct InviteView: View {
                             .foregroundStyle(GameStyle.green).padding(.horizontal, 6)
                     }
                     if m.secretBoss {
-                        // 招待限定のボスは、手に入れるまで影だけ見せる
+                        // 招待限定のボス「ぷにまる」(名前も絵も、そのまま見せる)
                         HStack(spacing: 4) {
                             Image(uiImage: EnemyArt.bossImage(look: BossCharacter.puni.rawValue, size: 1, flash: false))
                                 .interpolation(.none).resizable().scaledToFit().frame(width: 42, height: 42)
-                                .colorMultiply(cosmetics.ownership.has(.puni) ? .white : .black)
-                                .overlay(cosmetics.ownership.has(.puni) ? nil : Text("?").font(.display(16)).foregroundStyle(GameStyle.yellow))
                             Text("invite.rewards.secret").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.yellow)
                         }
                         .padding(.horizontal, 6)

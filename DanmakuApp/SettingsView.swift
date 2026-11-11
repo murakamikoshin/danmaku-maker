@@ -60,6 +60,8 @@ struct SettingsView: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @ObservedObject private var handles = HandleStore.shared
     @ObservedObject private var names = DisplayNameStore.shared
+    @ObservedObject private var titles = TitleService.shared
+    @State private var showTitles = false
     @State private var showStore = false
     @State private var showDelete = false
     @State private var showHandle = false
@@ -126,6 +128,21 @@ struct SettingsView: View {
                         }
                         .buttonStyle(BounceButtonStyle())
                         .accessibilityIdentifier("settings.handle")
+                        // 名前の横に出す称号(スワイプ弾幕のランキングなど)。持っている称号から選ぶ
+                        Button { gameTap(); showTitles = true } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "rosette").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.yellow)
+                                Text("title.button").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                                Spacer()
+                                if let t = titles.selected { TitleChip(id: t, size: 11) } else { Text("title.none").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary) }
+                                Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy)).foregroundStyle(.secondary)
+                            }
+                            .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                        }
+                        .buttonStyle(BounceButtonStyle())
+                        .accessibilityIdentifier("settings.titles")
+                        .sheet(isPresented: $showTitles) { TitlePickerView() }
+                        .task { await titles.load(uid: auth.uid) }
                     }
 
                     GamePanel(title: "settings.account", tint: GameStyle.violet) {

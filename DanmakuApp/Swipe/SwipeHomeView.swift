@@ -139,8 +139,48 @@ private struct TitleView: View {
                 Button(action: ranking) { Label("swipe.ranking", systemImage: "trophy.fill").font(.system(size: 12, weight: .heavy)) }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
                     .accessibilityIdentifier("swipe.ranking")
             }
+            SeasonCard(action: ranking)
             Spacer(minLength: 30)
         }
+    }
+}
+
+/// 今月のシーズン(ランキングの期間)と、月末にもらえるもの。押すと今月の賞品を開く(そこからランキングへも行ける)。期間は日本時間の月ごと(サーバーと同じ)
+private struct SeasonCard: View {
+    let action: () -> Void
+    @State private var showPrizes = false
+
+    var body: some View {
+        let (start, end, left) = Self.season()
+        Button { gameTap(); showPrizes = true } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "calendar").font(.system(size: 16, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.gold))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(String(format: L("swipe.season.line"), start, end, left)).font(.system(size: 13, weight: .heavy))
+                        .foregroundStyle(Color(uiColor: SwipePalette.text))
+                    Text("swipe.season.reward").font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color(uiColor: SwipePalette.text).opacity(0.75)).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(PixelRect(cornerRadius: 12).fill(Color.white.opacity(0.06)))
+            .overlay(PixelRect(cornerRadius: 12).stroke(Color.white.opacity(0.15)))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 28)
+        .accessibilityIdentifier("swipe.season")
+        .sheet(isPresented: $showPrizes) { SeasonPrizesView(openRanking: action) }
+    }
+
+    /// 今月の 1 日と末日(「11/1」の形)と、残りの日数(今日を含む)。日本時間
+    static func season(now: Date = Date()) -> (String, String, Int) {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        let m = cal.component(.month, from: now), d = cal.component(.day, from: now)
+        let days = cal.range(of: .day, in: .month, for: now)?.count ?? 30
+        return ("\(m)/1", "\(m)/\(days)", days - d + 1)
     }
 }
 
@@ -331,11 +371,11 @@ private struct StaminaSheet: View {
                     .background(PixelRect(cornerRadius: 12).fill(Color(uiColor: SwipePalette.gold).opacity(service.stamina.adRefillUsed ? 0.35 : 1)))
                 }.disabled(service.stamina.adRefillUsed || busy)
                 if service.stamina.drinks > 0 {
-                    Button(action: useDrink) { Text(String(format: L("swipe.drink.use"), service.stamina.drinks)).font(.system(size: 15, weight: .black)).frame(maxWidth: .infinity).padding(.vertical, 10)
+                    Button(action: useDrink) { HStack(spacing: 6) { DrinkArtView(size: 24); Text(String(format: L("swipe.drink.use"), service.stamina.drinks)) }.font(.system(size: 15, weight: .black)).frame(maxWidth: .infinity).padding(.vertical, 8)
                         .foregroundStyle(.white).background(PixelRect(cornerRadius: 12).fill(Color(uiColor: SwipePalette.pink))) }.disabled(busy)
                 }
                 Button(action: { Task { busy = true; await purchases.buyDrink(); await service.refresh(); busy = false } }) {
-                    Text(String(format: L("swipe.drink.buy"), purchases.drinkPrice ?? "¥120")).font(.system(size: 14, weight: .heavy)).frame(maxWidth: .infinity).padding(.vertical, 9)
+                    HStack(spacing: 6) { DrinkArtView(size: 22); Text(String(format: L("swipe.drink.buy"), purchases.drinkPrice ?? "¥120")) }.font(.system(size: 14, weight: .heavy)).frame(maxWidth: .infinity).padding(.vertical, 8)
                         .foregroundStyle(.white).background(PixelRect(cornerRadius: 12).stroke(Color.white.opacity(0.4)))
                 }.disabled(busy)
                 Button(action: { Task { busy = true; await purchases.buyPass(); await service.refresh(); busy = false } }) {
@@ -386,6 +426,7 @@ struct SwipeRankingView: View {
     @State private var failed = false
     @State private var editingName = false
     @State private var showTitles = false
+    @State private var showPrizes = false
     @ObservedObject private var names = DisplayNameStore.shared
     @ObservedObject private var titles = TitleService.shared
     @EnvironmentObject private var auth: AuthService
@@ -399,8 +440,15 @@ struct SwipeRankingView: View {
                     header
                     GameTabs(items: [(true, "swipe.rank.month"), (false, "swipe.rank.all")], selection: $monthly, idPrefix: "swipe.rank.tab")
                     if monthly, let m = data.month, let end = data.endsAt {
-                        Text(String(format: L("swipe.rank.period"), monthLabel(m), remaining(end)))
-                            .font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.7))
+                        HStack(spacing: 10) {
+                            Text(String(format: L("swipe.rank.period"), monthLabel(m), remaining(end)))
+                                .font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.7))
+                            Button { gameTap(); showPrizes = true } label: {
+                                Label("season.prizes.title", systemImage: "gift.fill").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("swipe.rank.prizes")
+                        }
                     }
                     // 名前の出し方(匿名 / ユーザー名)と、称号。変えたあとのプレイから反映される
                     HStack(spacing: 10) {
@@ -427,6 +475,7 @@ struct SwipeRankingView: View {
         .preferredColorScheme(.dark)
         .sheet(isPresented: $editingName) { HandleSheet() }
         .sheet(isPresented: $showTitles) { TitlePickerView() }
+        .sheet(isPresented: $showPrizes) { SeasonPrizesView(openRanking: {}) }
         .task { await titles.load(uid: auth.uid) }
         .task(id: monthly) { await load() }
     }
