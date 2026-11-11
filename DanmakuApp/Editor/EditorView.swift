@@ -308,10 +308,24 @@ private struct EnemyControls: View {
     var usesCharacterPatterns = false
     var convertCharacterPatterns: () -> Void = {}
     @State private var pendingLook: Int?
+    @State private var showBossShop = false
+    @State private var lockedInfo = false
+
+    /// 持っていない(お試し中の)キャラクターのボスか。招待限定のボスは、お試しではなく鍵
+    private func isTrial(_ look: Int) -> Bool {
+        guard let b = BossCharacter.of(look: look), !b.inviteLimited else { return false }
+        return !cosmetics.ownership.has(b)
+    }
+    private func isLocked(_ look: Int) -> Bool {
+        guard let b = BossCharacter.of(look: look), b.inviteLimited else { return false }
+        return !cosmetics.ownership.has(b)
+    }
 
     /// ボスの見た目を選んだとき: 専用の技を置いているのに、そのボスをやめるなら、先に確認する
     private var lookChoice: Binding<Int> {
         Binding(get: { bossLook }, set: { new in
+            // 招待限定のボス(ぷにまる)は、お試しなし。持っていなければ、鍵の説明だけ出す
+            if let b = BossCharacter.of(look: new), b.inviteLimited, !cosmetics.ownership.has(b) { lockedInfo = true; return }
             let leaves = usesCharacterPatterns && BossCharacter.of(look: new) != BossCharacter.of(look: bossLook)
             if leaves { pendingLook = new } else { select(new) }
         })
@@ -326,13 +340,8 @@ private struct EnemyControls: View {
         if BossCharacter.of(look: new) == .puni { awaken = 3 } else if was { awaken = nil }
     }
 
-    /// 選べる見た目。招待限定のボス(ぷにまる)は、手に入れた人にだけ出す
-    private var lookChoices: [Int] {
-        EnemyArt.bossLookChoices.filter { l in
-            guard let b = BossCharacter.of(look: l), b.inviteLimited else { return true }
-            return cosmetics.ownership.has(b) || bossLook == l
-        }
-    }
+    /// 選べる見た目。招待限定のボス(ぷにまる)も並べる(持っていなければ鍵つき。選べない)
+    private var lookChoices: [Int] { EnemyArt.bossLookChoices }
 
     private func sizeItems() -> [(Int, String)] { [(0, L("editor.size.0")), (1, L("editor.size.1")), (2, L("editor.size.2"))] }
 
@@ -351,7 +360,28 @@ private struct EnemyControls: View {
                     Text("editor.enemy.size.note").font(.caption2).foregroundStyle(.secondary)
                 }
                 Text("editor.enemy.bosslook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                looks(selection: lookChoice, choices: lookChoices, idPrefix: "editor.boss.look") { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                looks(selection: lookChoice, choices: lookChoices, idPrefix: "editor.boss.look", trial: isTrial, locked: isLocked) { EnemyArt.bossImage(look: $0, size: 1, flash: false) } name: { L("enemy.boss.\($0)") }
+                if let b = BossCharacter.of(look: bossLook), !cosmetics.ownership.has(b) {
+                    // お試し中: テストプレイまでは使える。公開には購入かチケットが要る
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("editor.boss.trial", systemImage: "hourglass").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                        Text(b.inviteLimited ? "editor.boss.trial.invite" : "editor.boss.trial.note").font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.ink.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
+                        if b.purchasable {
+                            Button { gameTap(); showBossShop = true } label: {
+                                Label("editor.boss.trial.shop", systemImage: "bag.fill").font(.system(size: 13, weight: .heavy))
+                                    .padding(.vertical, 7).padding(.horizontal, 12)
+                                    .keyCap(GameStyle.panel, radius: 10, depth: 2).foregroundStyle(GameStyle.text)
+                            }
+                            .buttonStyle(BounceButtonStyle())
+                            .accessibilityIdentifier("editor.boss.trial.shop")
+                        }
+                    }
+                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(GameStyle.yellow, in: PixelRect(cornerRadius: 12))
+                    .accessibilityIdentifier("editor.boss.trial")
+                    .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: "boss.\(b.productKey)") }
+                }
                 if isCharacter && BossCharacter.of(look: bossLook) != .puni {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
@@ -364,9 +394,10 @@ private struct EnemyControls: View {
                      selection: Binding(get: { mooks ?? -1 }, set: { mooks = $0 < 0 ? nil : $0 }), idPrefix: "editor.mook.size")
             if mooks != nil {
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look") { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
+                looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look", trial: { _ in false }, locked: { _ in false }) { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
             }
         }
+        .gameDialog("editor.boss.locked.title", isPresented: $lockedInfo, message: "editor.boss.locked.message") { [.ok()] }
         .gameDialog("editor.boss.change.title", isPresented: Binding(get: { pendingLook != nil }, set: { if !$0 { pendingLook = nil } }),
                     message: "editor.boss.change.message") {
             let new = pendingLook
@@ -377,7 +408,7 @@ private struct EnemyControls: View {
         }
     }
 
-    private func looks(selection: Binding<Int>, choices: [Int], idPrefix: String, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
+    private func looks(selection: Binding<Int>, choices: [Int], idPrefix: String, trial: @escaping (Int) -> Bool, locked: @escaping (Int) -> Bool, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(choices, id: \.self) { n in
@@ -385,8 +416,19 @@ private struct EnemyControls: View {
                     Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection.wrappedValue = n } } label: {
                         VStack(spacing: 4) {
                             Image(uiImage: image(n)).resizable().frame(width: 36, height: 36)
+                                .colorMultiply(locked(n) ? .black : .white)
+                                .overlay { if locked(n) { Image(systemName: "lock.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.yellow) } }
                             Text(name(n)).font(.system(size: 11, weight: .heavy))
                                 .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            if trial(n) {
+                                // 持っていないボスは「お試し」(テストプレイまで)
+                                Text("editor.boss.trial.tag").font(.system(size: 9, weight: .black)).foregroundStyle(GameStyle.ink)
+                                    .padding(.horizontal, 4).padding(.vertical, 1)
+                                    .background(GameStyle.yellow, in: PixelRect(cornerRadius: 4))
+                                    .offset(x: 8, y: -6)
+                            }
                         }
                         .padding(.vertical, 8).padding(.horizontal, 10)
                         .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))
