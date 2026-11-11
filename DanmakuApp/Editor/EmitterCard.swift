@@ -127,7 +127,10 @@ struct EmitterCard: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.origin").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         ChipGrid(items: [(0, L("editor.origin.boss")), (1, L("editor.origin.point"))],
-                                 selection: $emitter.p, idPrefix: "emitter.origin.\(index)", minimum: 110)
+                                 selection: Binding(get: { emitter.p }, set: { choosePoint($0) }), idPrefix: "emitter.origin.\(index)", minimum: 110)
+                        if emitter.firesFromPoint {
+                            Text("editor.origin.point.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     if emitter.firesFromPoint && !positionless {
                         SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
@@ -167,6 +170,14 @@ struct EmitterCard: View {
         .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
+    }
+
+    /// 撃つ場所を選ぶ。「好きな場所」にしたとき、場所がボスのすぐ近く(初期値のまま)なら、少し離して変わったことが分かるようにする
+    private func choosePoint(_ p: Int) {
+        emitter.p = p
+        if p == 1 && abs(emitter.x - 0.5) < 0.08 && abs(emitter.y - 0.2) < 0.08 {
+            emitter.x = 0.25; emitter.y = 0.35
+        }
     }
 
     private var bulletBadge: some View {

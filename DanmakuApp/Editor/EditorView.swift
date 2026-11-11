@@ -394,9 +394,11 @@ private struct EnemyControls: View {
                             .fixedSize(horizontal: false, vertical: true)
                         if b.purchasable {
                             Button { gameTap(); showBossShop = true } label: {
+                                // 文字の色は keyCap より内側で決める(keyCap は黄色いキー用の黒い文字を付けるので、外側で変えても効かない)
                                 Label("editor.boss.trial.shop", systemImage: "bag.fill").font(.system(size: 13, weight: .heavy))
+                                    .foregroundStyle(GameStyle.text)
                                     .padding(.vertical, 7).padding(.horizontal, 12)
-                                    .keyCap(GameStyle.panel, radius: 10, depth: 2).foregroundStyle(GameStyle.text)
+                                    .keyCap(GameStyle.panel, radius: 10, depth: 2)
                             }
                             .buttonStyle(BounceButtonStyle())
                             .accessibilityIdentifier("editor.boss.trial.shop")

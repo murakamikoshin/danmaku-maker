@@ -61908,6 +61908,71 @@
           }
         }
       }
+    },
+    "editor.origin.point.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下の X・Y で場所を決めます。雑魚を出す設定なら、その場所に雑魚が出て撃ちます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set the spot with X and Y below. If minions are on, a minion appears there and fires."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lege die Stelle unten mit X und Y fest. Sind Gegner an, erscheint dort einer und feuert."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige el lugar con X e Y abajo. Si los esbirros están activados, uno aparece ahí y dispara."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisis l’endroit avec X et Y ci-dessous. Si les sbires sont activés, l’un d’eux y apparaît et tire."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아래 X·Y로 위치를 정해요. 잡몹을 켜 두면 그 자리에 잡몹이 나와서 쏩니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Defina o lugar com X e Y abaixo. Se os capangas estiverem ativos, um aparece ali e atira."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Задайте место ползунками X и Y ниже. Если приспешники включены, там появится приспешник и будет стрелять."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用下方的 X、Y 决定位置。开启小怪时，会有小怪出现在那里射击。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用下方的 X、Y 決定位置。開啟小怪時，會有小怪出現在那裡射擊。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
