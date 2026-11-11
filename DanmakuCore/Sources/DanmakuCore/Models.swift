@@ -3,7 +3,7 @@ import Foundation
 /// 論理画面・固定ステップなどの定数
 public enum DanmakuConfig {
     public static let formatVersion = 1
-    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.1.3〜の新しいボス)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
+    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
     public static let contentLevel = 2
     public static let width = 360.0
     public static let height = 540.0

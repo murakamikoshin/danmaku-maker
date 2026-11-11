@@ -76,7 +76,7 @@
 
 ## 2026-11-09 の作業メモ(swipe-mode-spec)
 
-アプリ 1.1.3 の内容と、**サーバーのデプロイ待ちの項目**。
+アプリ 1.2.0(旧 1.1.3)の内容と、**サーバーのデプロイ待ちの項目**。
 
 ### 入れたもの
 - 世界のステージ: 動くミニプレビュー・流れるタイトル・見せ場の開始秒・プレビューなし(ネタバレ防止)・長押しで大きく再生
@@ -85,7 +85,7 @@
 - 世界のステージ: 作者で絞り込み
 - 設計書: `docs/ADS_PROPOSAL.md`(フェーズ4)、`docs/FRIEND_INVITE_DESIGN.md`(フェーズ3)、`docs/BOSS_ROSTER_PLAN.md`(ボス6体の移植計画)
 
-### デプロイ(本番)が必要なもの — 1.1.3 の TestFlight で確認する前に
+### デプロイ(本番)が必要なもの — 1.2.0 の TestFlight で確認する前に
 フェーズ1の関数(開始秒・プレビューなし)は、デプロイ済み。それ以降の、次の3つが未デプロイです。
 1. `firebase deploy --only functions`(`FUNCTIONS_DISCOVERY_TIMEOUT=120` を付ける): 称号・月間ランキング(`swipeMonthlyAward`、毎月1日 0:05 JST)・`setTitle`・発射間隔/弾の形/ボスの動きの検証
 2. `firebase deploy --only firestore:rules`: `titleState` / `publicProfiles`
