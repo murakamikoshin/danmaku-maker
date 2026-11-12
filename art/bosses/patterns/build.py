@@ -8,13 +8,15 @@ b64 = lambda p: 'data:image/png;base64,' + base64.b64encode(open(p, 'rb').read()
 frames, bosses = {}, []
 for bid, name, origin in BOSSES:
     fr = {}
+    mp = f'{ART}/{bid}/anim.json'; meta = json.load(open(mp)) if os.path.exists(mp) else {}   # コマ数・速さがふつうと違うボス
     for st, n in (('idle', 8), ('windup', 4), ('attack', 4), ('recover', 2)):
+        n = meta.get('counts', {}).get(st, n)
         fr['normal:' + st] = [b64(f'{ART}/{bid}/{bid}_{st}_{i}.png') for i in range(n)]
         aw = 'idle_awakened' if st == 'idle' else st + '_awakened'
         fr['awake:' + st] = [b64(f'{ART}/{bid}/{bid}_{aw}_{i}.png') for i in range(n)]
     frames[bid] = fr
     w, h = Image.open(f'{ART}/{bid}/{bid}_idle_0.png').size
-    bosses.append(dict(id=bid, name=name, origin=origin, w=w, h=h))
+    bosses.append(dict(id=bid, name=name, origin=origin, w=w, h=h, ms=meta.get('frame_ms', 120)))
 spec = dict(bosses=bosses, patterns=PATTERNS, bullets=BULLETS)
 html = open(f'{HERE}/template.html').read()
 html = (html.replace('__SPEC__', json.dumps(spec, ensure_ascii=False)).replace('__FRAMES__', json.dumps(frames))
@@ -24,7 +26,7 @@ print('html', len(html) // 1024, 'KB')
 
 # 仕様書
 L = ['# ボス専用の技(限定弾幕パターン)', '',
-     '堕天使と同じ仕組みで、**そのボスを選んでいるときだけステージに置ける技**を、残り6体に5つずつ(計30)。',
+     '堕天使と同じ仕組みで、**そのボスを選んでいるときだけステージに置ける技**を、ほかのボスに5つずつ。',
      '弾の見た目も、ボスごとに専用のものを使う。動くプレビューは `art/bosses/patterns/`(`python3 build.py 出力.html` で作れる)。', '',
      '## 決まりごと(堕天使と同じ)', '',
      '- `Pattern` に case を足す(並びは変えず、必ず後ろに足す)。`Pattern.<ボス>` の一覧と `bossCharacter` に入れて、そのボスを選んでいるときだけ置けるようにする',
@@ -53,6 +55,8 @@ L += ['## 避けられるかの注意', '',
       '- 死神「三日月の大鎌」は、止まってから30フレーム待つので読める。覚醒は2重になるので、刃の列に隙間を2か所あける',
       '- 死神「冥府の鎖」は、伸びる前に20フレーム予告線を出す',
       '- ぷにまる覚醒「位相のずれ」は、移動先に30フレーム前から印を出し、自機から40px以内には出さない(前に話した救済をはじめから入れた)',
-      '- 弾数が多い技(魔女「渦潮」、九尾「天気雨」覚醒、ぷにまる「螺旋の腕」)は `DanmakuConfig.maxBullets` と負荷を確認する']
+      '- ドラゴン「劫火の咆哮」は、炎の帯が自機を追う速さ(0.006rad/フレーム。400px 先で 2.4px/フレーム)を自機より遅くしてある。覚醒のビームは予告50フレーム',
+      '- ドラゴン「金剛裂爪」は、走る前に24フレーム予告線を出す。「メテオフォール」は落ちる30フレーム前に上で光る',
+      '- 弾数が多い技(魔女「渦潮」、九尾「天気雨」覚醒、ぷにまる「螺旋の腕」、ドラゴン「劫火の咆哮」覚醒)は `DanmakuConfig.maxBullets` と負荷を確認する']
 open(f'{REPO}/docs/BOSS_EXCLUSIVE_PATTERNS.md', 'w').write('\n'.join(L) + '\n')
 print('doc ok')

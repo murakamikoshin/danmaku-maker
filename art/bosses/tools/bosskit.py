@@ -151,8 +151,16 @@ STATES = [('idle', 8, '0→1→…→7 でループ'), ('windup', 4, '0→3 の�
           ('windup_awakened', 4, '0→3 の順に1回(覚醒後)'), ('attack_awakened', 4, '0→3 でループ(覚醒後)'),
           ('recover_awakened', 2, '0→1 の順に1回(そのあと覚醒後の待機へ)')]
 
-def export(boss_id, title, frames, note=''):
+def export(boss_id, title, frames, note='', counts=None, frame_ms=120):
+    """counts: コマ数を変えるボスだけ {状態: コマ数}(覚醒の状態は同じ数になる)。frame_ms: 1コマの長さ(ミリ秒)。
+    ふつうと違うときは <ID>/anim.json に書き出す(試射場・ボス図鑑が読む)"""
+    import json
     out = os.path.join(ROOT, boss_id); os.makedirs(out, exist_ok=True)
+    cn = dict(counts or {})
+    STATES = [(st, cn.get(st.replace('_awakened', ''), n), o) for st, n, o in globals()['STATES']]
+    meta = os.path.join(out, 'anim.json')
+    if counts or frame_ms != 120: json.dump(dict(frame_ms=frame_ms, counts={st: n for st, n, _ in STATES}), open(meta, 'w'))
+    elif os.path.exists(meta): os.remove(meta)
     for f in os.listdir(out):
         if f.endswith('.png') or f.endswith('.gif'): os.remove(os.path.join(out, f))
     size = None; allc = set()
@@ -164,14 +172,15 @@ def export(boss_id, title, frames, note=''):
             al = {p[3] for p in im.getdata()}; assert al <= {0, 255}, (boss_id, st, i, al)
             allc |= {p[:3] for p in im.getdata() if p[3]}
             im.save(os.path.join(out, f'{boss_id}_{st}_{i}.png'))
-        # 状態ごとのGIF(4倍・0.12秒/コマ)
+        # 状態ごとのGIF(4倍・ふつうは 0.12秒/コマ)
         g = [Image.alpha_composite(Image.new('RGBA', size, BG + (255,)), im).resize((size[0] * 4, size[1] * 4), Image.NEAREST)
              for im in frames[st]]
         g = [x.convert('P', palette=Image.ADAPTIVE, colors=255) for x in g]
-        g[0].save(os.path.join(out, f'{boss_id}_{st}.gif'), save_all=True, append_images=g[1:], duration=120, loop=0, disposal=2)
+        g[0].save(os.path.join(out, f'{boss_id}_{st}.gif'), save_all=True, append_images=g[1:], duration=frame_ms, loop=0, disposal=2)
     # 一覧画像(4倍・暗い背景): 1行=1状態
     S = 4; cw, ch = size[0] * S, size[1] * S
-    sheet = Image.new('RGBA', (cw * 8 + 9 * 8, (ch + 8) * len(STATES) + 8), BG + (255,))
+    cols = max(n for _, n, _ in STATES)
+    sheet = Image.new('RGBA', (cw * cols + (cols + 1) * 8, (ch + 8) * len(STATES) + 8), BG + (255,))
     for r, (st, n, _) in enumerate(STATES):
         for i, im in enumerate(frames[st]):
             sheet.alpha_composite(im.resize((cw, ch), Image.NEAREST), (8 + i * (cw + 8), 8 + r * (ch + 8)))
@@ -186,7 +195,7 @@ def export(boss_id, title, frames, note=''):
     lines += ['', '- 待機(idle)は元の絵(handoff/sheets)をそのまま1コマずつに分けたもの。〇〇_awakened は覚醒後の姿の同じ動き']
     if note: lines.append('- ' + note)
     lines += ['- 構え・技中・硬直では、体を少し傾けて真正面一辺倒にならないようにしている(行ごとの整数ずらしなので、ぼけない)',
-              '- 再生の目安: 1コマ 0.12 秒(状態ごとのGIFと同じ)', '',
+              f'- 再生の目安: 1コマ {frame_ms / 1000:g} 秒(状態ごとのGIFと同じ)', '',
               f'使った色({len(allc)}色):']
     lines += ['  ' + ' '.join('#%02X%02X%02X' % c for c in sorted(allc)[i:i + 8]) for i in range(0, len(allc), 8)]
     lines += ['', f'描き直すとき: python3 make_{boss_id}.py(共通処理は ../tools/bosskit.py)']

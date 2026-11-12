@@ -52,7 +52,7 @@ footer{margin-top:24px;font-size:12.5px;color:var(--mute);max-width:72ch}
 </style>
 <div class="wrap">
   <h1>ボス専用技 試射場</h1>
-  <p class="lead">そのボスを選んでいるときだけステージに置ける、限定の弾幕パターン。6体×5技、弾も専用の見た目。自機は自動で避ける(ドラッグか矢印キーで自分でも動かせる)。</p>
+  <p class="lead">そのボスを選んでいるときだけステージに置ける、限定の弾幕パターン。8体×5技、弾も専用の見た目。自機は自動で避ける(ドラッグか矢印キーで自分でも動かせる)。</p>
   <div class="main">
     <div>
       <div class="screen"><canvas id="field" width="720" height="1200" aria-label="試射場"></canvas></div>
@@ -87,9 +87,11 @@ for (const id in FRAMES) for (const k in FRAMES[id]) FRAMES[id][k].forEach(img);
 const STARS = Array.from({ length: 60 }, () => [Math.random() * W, Math.random() * H, Math.random() < 0.2 ? 2 : 1]);
 const ANIM = { idle: [8, "loop"], windup: [4, "once"], attack: [4, "loop"], recover: [2, "once"] };
 function bossFrame() {
-  const [n, mode] = ANIM[G.anim], i = Math.floor(G.animT / 7);
+  // コマ数と速さはボスごと(ふつうは 8/4/4/2 コマ・7フレームごと。コマの多いボスは速く回す)
+  const fr = FRAMES[G.boss.id][(G.aw ? "awake:" : "normal:") + G.anim], n = fr.length, mode = ANIM[G.anim][1];
+  const i = Math.floor(G.animT / (7 * (G.boss.ms || 120) / 120));
   const k = mode === "loop" ? i % n : Math.min(i, n - 1);
-  return FRAMES[G.boss.id][(G.aw ? "awake:" : "normal:") + G.anim][k];
+  return fr[k];
 }
 function drawSprite(type, x, y, a, sc) {
   const s = SPRITES[type][G.aw ? 1 : 0], w = s.width * sc, h = s.height * sc;
@@ -183,7 +185,7 @@ function bulletIcon(type) {
 }
 function pickBoss(id) {
   const b = SPEC.bosses.find(x => x.id === id);
-  G.boss = { id, w: b.w, h: b.h };
+  G.boss = { id, w: b.w, h: b.h, ms: b.ms };
   press(bossesEl, id);
   patsEl.replaceChildren(...SPEC.patterns[id].map(p => {
     const nm = p.card.split(" / ")[0];

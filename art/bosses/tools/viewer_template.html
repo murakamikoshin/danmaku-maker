@@ -46,7 +46,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--mute);max-width:72ch}
 </style>
 <div class="wrap">
 <header>
-  <h1>弾幕メーカー ボス図鑑<small>7体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最近傍補間で3倍表示</small></h1>
+  <h1>弾幕メーカー ボス図鑑<small>9体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最近傍補間で3倍表示</small></h1>
   <div class="controls">
     <div class="bar"><span class="lab">全員まとめて</span><div class="bar form" id="allForm"></div><div class="bar" id="allAct"></div></div>
     <div class="bar"><button id="speed" type="button" aria-pressed="false">ゆっくり再生</button></div>
@@ -66,7 +66,7 @@ function press(g,v){[...g.children].forEach(b=>b.setAttribute("aria-pressed",b.d
 DATA.forEach(b=>{
   const c={b,form:"normal",act:"idle",i:0,hold:0};
   c.img=el("img",{alt:b.name,width:b.w*3,height:b.h*3}); c.fno=el("div",{class:"fno"}); c.tag=el("div",{class:"tag"});
-  c.formG=group(FORMS,"form",v=>set(c,v,c.act)); c.actG=group(ACTS,"tabs",v=>set(c,c.form,v));
+  c.formG=group(FORMS,"form",v=>set(c,v,c.act)); c.actG=group(ACTS.map(a=>({...a,n:b.frames["normal:"+a.id].length})),"tabs",v=>set(c,c.form,v));
   c.strip=el("div",{class:"strip"}); c.order=el("div",{class:"order"});
   c.card=el("article",{class:"card"},el("div",{class:"stage"},c.img,c.tag,c.fno),
     el("div",{class:"body"},el("div",{class:"title"},el("h2",{},b.name),el("span",{class:"meta"},b.w+"×"+b.h+" / 核: "+b.core)),
@@ -78,12 +78,15 @@ function set(c,form,act){c.form=form;c.act=act;c.i=0;c.hold=0;c.paused=reduce;
   const a=ACTS.find(x=>x.id===act), f=c.b.frames[form+":"+act];
   c.strip.replaceChildren(...f.map((src,i)=>{const t=el("img",{src,alt:a.label+" "+i});t.onclick=()=>{c.i=i;c.paused=true;draw(c)};return t}));
   const name=(form==="awake"?"覚醒・":"")+a.label, file=act+(form==="awake"?"_awakened":"");
-  c.order.textContent=name+"("+file+"): "+(a.mode==="loop"?"0→"+(a.n-1)+" でループ":"0→"+(a.n-1)+" の順に1回");
+  c.order.textContent=name+"("+file+"): "+(a.mode==="loop"?"0→"+(f.length-1)+" でループ":"0→"+(f.length-1)+" の順に1回")+(c.b.ms!==120?" / 1コマ "+c.b.ms/1000+"秒":"");
   draw(c)}
 function draw(c){const f=c.b.frames[c.form+":"+c.act];c.img.src=f[c.i];c.fno.textContent=c.i+" / "+(f.length-1);
   [...c.strip.children].forEach((t,k)=>t.classList.toggle("on",k===c.i))}
-function tick(){cards.forEach(c=>{if(c.paused)return;const a=ACTS.find(x=>x.id===c.act);
-  if(a.mode==="once"&&c.i===a.n-1){if(++c.hold<6)return;c.hold=0;c.i=0}else c.i=(c.i+1)%a.n;draw(c)});setTimeout(tick,frameMs)}
+// コマ数と速さはボスごと(ふつうは 8/4/4/2 コマ・0.12秒。コマの多いボスは 1コマが短い)
+const TICK=20;
+function tick(){cards.forEach(c=>{if(c.paused)return;c.acc=(c.acc||0)+TICK;const ms=frameMs*(c.b.ms||120)/120;if(c.acc<ms)return;c.acc-=ms;
+  const a=ACTS.find(x=>x.id===c.act),n=c.b.frames[c.form+":"+c.act].length;
+  if(a.mode==="once"&&c.i===n-1){if(++c.hold<Math.round(6*120/(c.b.ms||120)))return;c.hold=0;c.i=0}else c.i=(c.i+1)%n;draw(c)});setTimeout(tick,TICK)}
 let gForm="normal", gAct="idle";
 const allForm=group(FORMS,"form",v=>{gForm=v;press(allForm,v);cards.forEach(c=>set(c,v,c.act))});
 const allAct=group(ACTS,"tabs",v=>{gAct=v;press(allAct,v);cards.forEach(c=>set(c,c.form,v))});

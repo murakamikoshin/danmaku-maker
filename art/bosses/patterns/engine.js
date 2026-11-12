@@ -29,6 +29,11 @@ const MAPS = {
   eye: ["..ooooo..", ".oWWWWWo.", "oWWRRRWWo", "oWRRkRRWo", "oWRkkkRWo", "oWRRkRRWo", "oWWRRRWWo", ".oWWWWWo.", "..ooooo.."],
   tooth: ["ooooo", "oWWWo", "oWWWo", ".oWo.", ".oWo.", "..o..", "..o.."],
   goo: [".kkk.", "kPGPk", "kGWGk", "kPGPk", ".kkk."],
+  flame: ["..ooo..", ".oYYYo.", "oYWWWYo", "oYWWWYo", "oOYWYOo", ".oOYOo.", ".oOOOo.", "..oOo..", "..oOo..", "...o..."],
+  scale: ["..o..", ".oGo.", "oGRGo", "oRRRo", "oRrRo", ".oro.", "..o.."],
+  claw: [".W.", ".W.", "oWo", "oYo", "oYo", "oYo", "oyo", "oyo", ".o."],
+  ember: ["..o..", ".oYo.", "oYWYo", ".oYo.", "..o.."],
+  meteor: ["..ooooo..", ".oYYYYYo.", "oYYWWYYOo", "oYWWWYOOo", "oYWWYOOOo", "oYYYOOOko", "oYOOOOkko", ".oOOkkko.", "..ooooo.."],
 };
 // 通常 / 覚醒 の色
 const PALS = {
@@ -54,8 +59,13 @@ const PALS = {
   eye: [{ o: "#140a1e", W: "#fff6dc", R: "#e01e3c", k: "#14060a" }, { o: "#140a1e", W: "#fff6dc", R: "#e01e3c", k: "#14060a" }],
   tooth: [{ o: "#3c2a32", W: "#fff8ec" }, { o: "#3c2a32", W: "#fff8ec" }],
   goo: [{ k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }, { k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }],
+  flame: [{ o: "#7a1408", O: "#f0541e", Y: "#ffb428", W: "#fff4c8" }, { o: "#0a2a6a", O: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }],
+  scale: [{ o: "#5a0a14", G: "#ffd060", R: "#e02a28", r: "#8c1020" }, { o: "#0c0a24", G: "#a0f0ff", R: "#4a3c8c", r: "#241c50" }],
+  claw: [{ o: "#6a3c08", W: "#fff4c8", Y: "#ffc83c", y: "#c88214" }, { o: "#0a2a6a", W: "#ffffff", Y: "#78dcff", y: "#2890e6" }],
+  ember: [{ o: "#e0541e", Y: "#ffb428", W: "#fff0b4" }, { o: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }],
+  meteor: [{ o: "#5a1408", Y: "#ffb428", W: "#fff4c8", O: "#e04a1e", k: "#8c1e14" }, { o: "#0a1e5a", Y: "#5ad2ff", W: "#ffffff", O: "#1e78f0", k: "#143c96" }],
 };
-const ORIENT = new Set(["kingyo", "fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth"]);
+const ORIENT = new Set(["kingyo", "fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth", "flame", "scale", "claw"]);
 const SPRITES = {};
 function makeSprite(map, pal) {
   const h = map.length, w = map[0].length, c = document.createElement("canvas");
@@ -64,7 +74,7 @@ function makeSprite(map, pal) {
   return c;
 }
 for (const k in MAPS) SPRITES[k] = [makeSprite(MAPS[k], PALS[k][0]), makeSprite(MAPS[k], PALS[k][1])];
-const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5 };
+const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5, flame: 3, scale: 2.5, claw: 2.5, ember: 2, meteor: 6 };
 
 // ---------- 状態 ----------
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
@@ -519,6 +529,81 @@ R.puniOsusowake = function* (aw) {
     }
     yield 1;
   }
+};
+
+// 最強のドラゴン(絵は 168×128。口・胸・両手の爪・翼の先)
+const DMOUTH = () => pt(83, 46), DCHEST = () => pt(83, 62), DHAND = i => i ? pt(123, 72) : pt(44, 72), DWING = i => i ? pt(160, 43) : pt(7, 43);
+R.dragonBreath = function* (aw) {
+  // 口から炎の帯。向きはゆっくり自機を追う(追う速さより自機のほうが速いので、横へ走れば抜けられる)
+  let a = PI / 2 + (G.P.x < 180 ? 0.7 : -0.7);
+  if (aw) G.lasers.push({ from: DMOUTH, a: aimFrom(DMOUTH()), len: 900, w: 20, warn: 50, dur: 50, t: 0, va: 0, col: ["#5ad2ff", "#f0fcff"] });
+  for (let t = 0; t < 170; t++) {
+    const o = DMOUTH(); let d = aimFrom(o) - a; while (d > PI) d -= TAU; while (d < -PI) d += TAU;
+    a += clamp(d, -1, 1) * (aw ? 0.0075 : 0.006);
+    if (t % (aw ? 1 : 2) === 0) {
+      const sp = aw ? 0.26 : 0.18;
+      fire("flame", o.x, o.y, a + (rand() - 0.5) * 2 * sp, 3.0 + rand() * 1.2, { u: b => { if (b.t === 40 && rand() < 0.25) fire("ember", b.x, b.y, PI / 2 + (rand() - 0.5), 0.7); } });
+    }
+    yield 1;
+  }
+  yield 40;
+};
+R.dragonGale = function* (aw) {
+  // 羽ばたきに合わせて、翼の先から竜鱗の扇。内側へ曲がりながら飛び、左右の扇が画面の真ん中で交差する
+  for (let v = 0; v < (aw ? 8 : 6); v++) {
+    for (const side of aw ? [0, 1] : [v % 2]) {
+      const o = DWING(side), dir = side ? 1 : -1, n = aw ? 11 : 9, base = PI / 2 + dir * 0.55;
+      for (let i = 0; i < n; i++) fire("scale", o.x, o.y, base + (i - (n - 1) / 2) * 0.13, (aw ? 2.6 : 2.2) + (i % 2) * 0.5, { u: b => { if (b.t < 70) rot(b, dir * 0.009); } });
+    }
+    yield aw ? 20 : 24;
+  }
+  yield 50;
+};
+R.dragonClaw = function* (aw) {
+  // 爪の軌跡を薄い線で予告してから、3本(覚醒5本)の爪痕が斜めに走る。左右の手で交互に(覚醒は同時に X の形)
+  for (let v = 0; v < 4; v++) {
+    const tx = G.P.x, ty = G.P.y;
+    for (const side of aw ? [0, 1] : [v % 2]) {
+      const o = DHAND(side), a = atan2(ty - o.y, tx - o.x), n = aw ? 5 : 3;
+      for (let k = 0; k < n; k++) {
+        const off = (k - (n - 1) / 2) * 26, sx = o.x - sin(a) * off, sy = o.y + cos(a) * off;
+        G.marks.push({ k: "line", x1: sx, y1: sy, x2: sx + cos(a) * 100, y2: sy + sin(a) * 100, t: 0, life: 24 });
+        spawn((function* () { yield 24 + k * 2; for (let j = 0; j < 9; j++) { fire("claw", sx, sy, a, 5.2); yield 2; } })());
+      }
+    }
+    yield aw ? 46 : 40;
+  }
+  yield 60;
+};
+R.dragonMeteor = function* (aw) {
+  // 空から隕石が自機のいた所へ斜めに落ちてくる。通ったあとに火の粉が残って、ゆっくり降る。落ちる前に上で光って予告する
+  for (let v = 0; v < (aw ? 8 : 5); v++) {
+    const x0 = 30 + rand() * 300, tx = G.P.x, ty = G.P.y;
+    G.marks.push({ k: "glint", x: x0, y: 10, t: 0, life: 30 });
+    spawn((function* () {
+      yield 30;
+      fire("meteor", x0, -10, atan2(ty + 10, tx - x0), aw ? 3.4 : 3.0, { u: b => {
+        if (b.t % 6 === 0) fire("ember", b.x, b.y, PI / 2 + (rand() - 0.5) * 1.6, 0.5 + rand() * 0.4, { life: 150 });
+        if (aw && b.y > 470) { b.dead = 1; const a0 = aimFrom(b); for (let i = 0; i < 12; i++) fire("flame", b.x, b.y, a0 + i * TAU / 12, 2.0); }
+      } });
+    })());
+    yield aw ? 28 : 36;
+  }
+  yield 120;
+};
+R.dragonWrath = function* (aw) {
+  // 胸から竜鱗の渦(覚醒は1本おきに逆回り)。50フレームごとに炎の輪が吠えるように広がり、ゆっくり出て加速する。輪には自機の近くに抜け道が1つ
+  const arms = aw ? 6 : 4;
+  for (let t = 0; t < 170; t++) {
+    const o = DCHEST();
+    if (t % 5 === 0) for (let k = 0; k < arms; k++) { const dir = aw && k % 2 ? -1 : 1; fire("scale", o.x, o.y, k * TAU / arms + t * 0.045 * dir, 2.0, { u: b => rot(b, 0.006 * dir) }); }
+    if (t % 50 === 20) {
+      const m = DMOUTH(), n = aw ? 26 : 20, gapA = aimFrom(m) + (rand() < 0.5 ? 0.45 : -0.45);
+      for (let i = 0; i < n; i++) { const a = i * TAU / n; if (angDiff(a, gapA) < TAU / n * 1.6) continue; fire("flame", m.x, m.y, a, 1.0, { u: b => { const s = hypot(b.vx, b.vy); if (s < 3.2) { b.vx *= 1.03; b.vy *= 1.03; } } }); }
+    }
+    yield 1;
+  }
+  yield 50;
 };
 
 // ---------- 進行(構え → 技中 → 硬直 → 待機) ----------
