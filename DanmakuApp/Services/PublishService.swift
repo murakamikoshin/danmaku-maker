@@ -32,7 +32,7 @@ extension PublishService {
     /// 投稿したステージの、一覧に出す見せ場の静止画を作って、サーバーに送る(失敗しても投稿はそのまま。一覧は動くプレビューのままになる)
     @MainActor static func uploadPreview(id: String, stage: Stage) async {
         guard Backend.isAvailable, let png = StageStillView.png(for: stage), png.count < 80_000 else { return }
-        _ = try? await Backend.functions.httpsCallable("savePreviewImage").call(["stageId": id, "png": png.base64EncodedString()])
+        _ = try? await Backend.functions.httpsCallable("savePreviewImage").call(["stageId": id, "png": png.base64EncodedString(), "v": 2])
     }
 }
 

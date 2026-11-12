@@ -138,12 +138,13 @@ struct ShotPreviewView: View {
 struct VisibleTimeline<Content: View>: View {
     let interval: Double
     @ViewBuilder let content: (TimelineViewDefaultContext) -> Content
-    @State private var visible = false
+    /// 画面に出ている数(onDisappear が、次の onAppear より後に届くことがあるため、真偽ではなく数で持つ。0 なら止める)
+    @State private var shown = 0
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: interval, paused: !visible), content: content)
-            .onAppear { visible = true }
-            .onDisappear { visible = false }
+        TimelineView(.animation(minimumInterval: interval, paused: shown <= 0), content: content)
+            .onAppear { shown += 1 }
+            .onDisappear { shown = max(0, shown - 1) }
     }
 }
 

@@ -164,6 +164,6 @@ struct StageRepository {
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
         return RemoteStage(id: id, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
-                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")), hasPreviewImage: (d["pv"] as? Bool) == true)
+                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")), hasPreviewImage: (d["pv"] as? Bool) == true && ((d["pvv"] as? NSNumber)?.intValue ?? 0) >= 2)
     }
 }
