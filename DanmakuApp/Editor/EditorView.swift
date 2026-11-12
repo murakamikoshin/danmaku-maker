@@ -87,7 +87,12 @@ struct EditorView: View {
                     }
                     if model.draft.mode == .sequence {
                         // 連戦の場面(場面ごとの時間・敵・発射台)。ほかのクリア条件と同じく、発射台はライフ・BGM・見た目などの下に置く
-                        WavesSection(model: model, advanced: advanced)
+                        WavesSection(model: model, advanced: advanced) { from in
+                            // 連戦の、その場面からのテスト(前の場面を飛ばす)。クリアしても、投稿に要るクリア確認にはしない
+                            var s = model.stage
+                            s.waves = Array((s.waves ?? []).dropFirst(from))
+                            testRun = TestRun(stage: s, customs: model.draft.customImages, fromWave: from)
+                        }
                     } else {
                         ForEach(Array(model.draft.emitters.indices), id: \.self) { i in
                             // プレビューは、カードの設定を動かしている間も画面の上に残す(下の項目を設定しながら見える)
@@ -146,9 +151,11 @@ struct EditorView: View {
             // テストプレイから戻ったら、試聴していた BGM を流し直す
             if let i = model.previewingBGM { AudioManager.shared.preview(.forNumber(i)) }
         }) { run in
-            PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name), isTest: true, customs: run.customs,
+            PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name)
+                        + (run.fromWave > 0 ? " " + String(format: L("editor.wave.testfrom.title"), run.fromWave + 1) : ""),
+                     isTest: true, customs: run.customs,
                      onResult: { result, moves in
-                         if result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves)) }
+                         if run.fromWave == 0 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves)) }
                      },
                      onExit: { testRun = nil })
         }
@@ -167,6 +174,8 @@ private struct TestRun: Identifiable {
     let id = UUID()
     let stage: Stage
     let customs: CustomImageChoice
+    /// 連戦の、途中の場面から始めるテスト(0 は最初から)。途中からのクリアは、クリア確認にしない
+    var fromWave = 0
 }
 
 /// プレビューや見本に使う、作者が選んだ見た目
@@ -981,6 +990,8 @@ struct DefeatPicker: View {
 private struct WavesSection: View {
     @ObservedObject var model: EditorModel
     let advanced: Bool
+    /// その場面からテストする(場面の番号。0 から)
+    let onTestFrom: (Int) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -1007,7 +1018,7 @@ private struct WavesSection: View {
                 }
             }
             ForEach(Array(model.draft.waves.enumerated()), id: \.element.id) { idx, w in
-                WaveCard(model: model, index: idx, waveID: w.id, advanced: advanced)
+                WaveCard(model: model, index: idx, waveID: w.id, advanced: advanced, onTestFrom: onTestFrom)
             }
             HStack(spacing: 8) {
                 AddButton(enabled: model.canAddWave, title: "editor.wave.add.survive") { model.addWave(.survive) }
@@ -1024,6 +1035,7 @@ private struct WaveCard: View {
     let index: Int
     let waveID: UUID
     let advanced: Bool
+    let onTestFrom: (Int) -> Void
 
     private var i: Int { model.draft.waves.firstIndex { $0.id == waveID } ?? 0 }
     private var wave: DraftWave { model.draft.waves[i] }
@@ -1060,6 +1072,18 @@ private struct WaveCard: View {
                             canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
             }
             AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
+            if i > 0 {
+                // 2場面目より後: その場面からすぐ試せる(連戦のテストプレイは、ふつう1場面目から始まる)
+                Button { gameTap(); onTestFrom(i) } label: {
+                    Label(String(format: L("editor.wave.testfrom"), i + 1), systemImage: "play.fill")
+                        .font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                        .frame(maxWidth: .infinity).padding(.vertical, 11)
+                        .background(KeyCap(fill: GameStyle.cyan, radius: 14, depth: 3)).padding(.bottom, 3)
+                }
+                .buttonStyle(BounceButtonStyle())
+                .accessibilityIdentifier("editor.wave.testfrom.\(i)")
+                Text("editor.wave.testfrom.note").font(.caption2).foregroundStyle(.secondary)
+            }
         }
         .padding(14)
         .background(GameStyle.panel, in: PixelRect(cornerRadius: 20))
