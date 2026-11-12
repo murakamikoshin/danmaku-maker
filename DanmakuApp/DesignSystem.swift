@@ -78,6 +78,8 @@ enum GameStyle {
     static var nightDeep: Color { pick(0x0D0B1F, 0x080A1A) }
     /// 主役の色(黄・金)の上に乗せる文字の色
     static var ink: Color { pick(0x0A0818, 0x14101C, 0xFFFFFF) }
+    /// クリア条件の色(水色・黄色など明るい色)の上に乗せる文字・絵の色。テーマ「従来」でも白にしない(白だと読めないため)
+    static var onTint: Color { pick(0x0A0818, 0x14101C, 0x14102A) }
     static var text: Color { pick(0xEFEAFF, 0xF4EEDD) }
     static var panel: Color { pick(0x16132E, 0x151935, 0x1C1740) }
     /// パネルの上に乗せる、一段明るい面(選べる札・入力欄など)

@@ -54,6 +54,11 @@ targets:
         APPLE_APP_ID: $(APPLE_APP_ID)
         NSUserTrackingUsageDescription: 許可すると、あなたに合った広告が表示されやすくなります。許可しなくても、すべての機能で遊べます。
         ITSAppUsesNonExemptEncryption: false
+        # 共有ページの「アプリで遊ぶ」から開くための URL(danmakumaker://s/ABCDE)。
+        # Universal Links は、同じサイトの中のリンクや転送では働かず、LINE・X などのアプリ内ブラウザでも働かないことが多いため
+        CFBundleURLTypes:
+          - CFBundleURLName: com.koshin.danmakumaker
+            CFBundleURLSchemes: [danmakumaker]
         UIAppFonts: [DelaGothicOne-Regular.ttf]
         # Google・AppLovin・Unity Ads の公式の一覧を合わせたもの(2026-11-12)。メディエーションの各社が入札するのに要る
         SKAdNetworkItems:

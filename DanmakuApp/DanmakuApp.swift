@@ -99,8 +99,16 @@ final class DeepLink: ObservableObject {
     func handle(_ url: URL?) {
         // 招待リンク(OneLink)をアプリで直接開いたとき。コードは deep_link_sub1 に入っている
         if let url, let code = InviteService.code(from: url) { InviteService.shared.receive(code: code); return }
-        guard let url, url.path.hasPrefix("/s/") else { return }
+        guard let url, let id = Self.stageID(from: url) else { return }
+        stageID = id
+    }
+
+    /// ステージのリンクから、5文字のステージIDを取り出す。
+    /// https://danmaku-maker.web.app/s/ABCDE(Universal Links)と danmakumaker://s/ABCDE(共有ページの「アプリで遊ぶ」)の両方
+    static func stageID(from url: URL) -> String? {
+        let path = url.scheme?.lowercased() == "danmakumaker" ? "/" + (url.host ?? "") + url.path : url.path
+        guard path.hasPrefix("/s/") else { return nil }
         let id = url.lastPathComponent.uppercased()
-        if id.count == 5 { stageID = id }
+        return id.count == 5 ? id : nil
     }
 }
