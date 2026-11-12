@@ -29,11 +29,16 @@ const MAPS = {
   eye: ["..ooooo..", ".oWWWWWo.", "oWWRRRWWo", "oWRRkRRWo", "oWRkkkRWo", "oWRRkRRWo", "oWWRRRWWo", ".oWWWWWo.", "..ooooo.."],
   tooth: ["ooooo", "oWWWo", "oWWWo", ".oWo.", ".oWo.", "..o..", "..o.."],
   goo: [".kkk.", "kPGPk", "kGWGk", "kPGPk", ".kkk."],
+  // 最強のドラゴン: 大きい弾が中心(画面では big で拡大して使う)
   flame: ["..ooo..", ".oYYYo.", "oYWWWYo", "oYWWWYo", "oOYWYOo", ".oOYOo.", ".oOOOo.", "..oOo..", "..oOo..", "...o..."],
-  scale: ["..o..", ".oGo.", "oGRGo", "oRRRo", "oRrRo", ".oro.", "..o.."],
-  claw: [".W.", ".W.", "oWo", "oYo", "oYo", "oYo", "oyo", "oyo", ".o."],
+  slash: ["......ooo", "....ooWWo", "..ooWWYo.", ".oWWYYo..", "oWWYYo...", "oWYYo....", "oWYo.....", "oWYo.....", ".oWYo....", "..oWYo...", "...ooo..."],
+  gust: ["..oo.....", ".oWWoo...", "oWLLWWoo.", ".oLLLLWWo", "..ooLLLWo", "....oLLWo", "..ooLLWo.", ".oLLWWo..", "oWWWoo...", ".ooo....."],
+  sun: ["...ooooo...", "..oYYYYYo..", ".oYYWWWYYo.", "oYYWWWWWYYo", "oYWWWWWWWYo", "oYWWWWWWWYo", "oYWWWWWWWYo", "oYYWWWWWYYo", ".oYYWWWYYo.", "..oYYYYYo..", "...ooooo..."],
+  rock: ["..oooo...", ".oRRRRoo.", "oRRrRRRRo", "oRrrRRYRo", "oRRRRYYRo", "oRRrRRRRo", ".oRRRrRo.", "..ooooo.."],
+  spine: [".W.", ".W.", "oWo", "oYo", "oYo", "oYo", "oyo", "oyo", "oyo", ".o."],
+  tornado: ["oWWWWWWWWWo", ".oLLLLLLLo.", ".oWWWWWWWo.", "..oLLLLLo..", "..oWWWWWo..", "...oLLLo...", "...oWWWo...", "....oLo....", "....oWo....", ".....o....."],
   ember: ["..o..", ".oYo.", "oYWYo", ".oYo.", "..o.."],
-  meteor: ["..ooooo..", ".oYYYYYo.", "oYYWWYYOo", "oYWWWYOOo", "oYWWYOOOo", "oYYYOOOko", "oYOOOOkko", ".oOOkkko.", "..ooooo.."],
+  pshot: [".W.", "oWo", "oCo", "oCo", "oCo", ".o."],
 };
 // 通常 / 覚醒 の色
 const PALS = {
@@ -59,13 +64,18 @@ const PALS = {
   eye: [{ o: "#140a1e", W: "#fff6dc", R: "#e01e3c", k: "#14060a" }, { o: "#140a1e", W: "#fff6dc", R: "#e01e3c", k: "#14060a" }],
   tooth: [{ o: "#3c2a32", W: "#fff8ec" }, { o: "#3c2a32", W: "#fff8ec" }],
   goo: [{ k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }, { k: "#0e0618", P: "#3c1e5a", G: "#c8ff3c", W: "#f8ffd0" }],
-  flame: [{ o: "#7a1408", O: "#f0541e", Y: "#ffb428", W: "#fff4c8" }, { o: "#0a2a6a", O: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }],
-  scale: [{ o: "#5a0a14", G: "#ffd060", R: "#e02a28", r: "#8c1020" }, { o: "#0c0a24", G: "#a0f0ff", R: "#4a3c8c", r: "#241c50" }],
-  claw: [{ o: "#6a3c08", W: "#fff4c8", Y: "#ffc83c", y: "#c88214" }, { o: "#0a2a6a", W: "#ffffff", Y: "#78dcff", y: "#2890e6" }],
-  ember: [{ o: "#e0541e", Y: "#ffb428", W: "#fff0b4" }, { o: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }],
-  meteor: [{ o: "#5a1408", Y: "#ffb428", W: "#fff4c8", O: "#e04a1e", k: "#8c1e14" }, { o: "#0a1e5a", Y: "#5ad2ff", W: "#ffffff", O: "#1e78f0", k: "#143c96" }],
+  // ドラゴンの弾は、姿ごとに4色(通常・覚醒1 蒼炎・覚醒2 紫電・覚醒3 白金)
+  flame: [{ o: "#7a1408", O: "#f0541e", Y: "#ffb428", W: "#fff4c8" }, { o: "#0a2a6a", O: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }, { o: "#3c0a50", O: "#aa28a0", Y: "#ff5adc", W: "#ffe6fa" }, { o: "#a06414", O: "#ffc83c", Y: "#fff0aa", W: "#ffffff" }],
+  slash: [{ o: "#7a1408", Y: "#ffb428", W: "#fff4c8" }, { o: "#0a2a6a", Y: "#5ad2ff", W: "#f0fcff" }, { o: "#3c0a50", Y: "#ff5adc", W: "#ffe6fa" }, { o: "#a06414", Y: "#ffdc64", W: "#ffffff" }],
+  gust: [{ o: "#8c5a28", L: "#ffd28c", W: "#fff6dc" }, { o: "#14508c", L: "#8cdcff", W: "#f0fcff" }, { o: "#641478", L: "#f08cf0", W: "#fff0ff" }, { o: "#b4823c", L: "#fff0b4", W: "#ffffff" }],
+  sun: [{ o: "#c83c14", Y: "#ffb428", W: "#fff4c8" }, { o: "#1450c8", Y: "#5ad2ff", W: "#f0fcff" }, { o: "#8c1e96", Y: "#ff5adc", W: "#ffe6fa" }, { o: "#dca028", Y: "#fff0aa", W: "#ffffff" }],
+  rock: [{ o: "#3c1410", R: "#8c2a20", r: "#5a1a14", Y: "#ffb428" }, { o: "#0c0a24", R: "#3a3070", r: "#241c50", Y: "#5ad2ff" }, { o: "#1e0a32", R: "#501e78", r: "#32144e", Y: "#ff5adc" }, { o: "#a07828", R: "#fff0d2", r: "#d4bc96", Y: "#ffc83c" }],
+  spine: [{ o: "#6a3c08", W: "#fff4c8", Y: "#ffc83c", y: "#c88214" }, { o: "#0a2a6a", W: "#ffffff", Y: "#78dcff", y: "#2890e6" }, { o: "#3c0a50", W: "#ffffff", Y: "#ff78e6", y: "#b432aa" }, { o: "#a06414", W: "#ffffff", Y: "#fff0aa", y: "#ffc83c" }],
+  tornado: [{ o: "#b43c14", L: "#ff8c28", W: "#ffdc8c" }, { o: "#143c96", L: "#3c96ff", W: "#b4e6ff" }, { o: "#641478", L: "#c83cc8", W: "#ffb4fa" }, { o: "#c88c28", L: "#ffdc64", W: "#ffffff" }],
+  pshot: [{ o: "#1e6edc", C: "#5adcff", W: "#ffffff" }, { o: "#1e6edc", C: "#5adcff", W: "#ffffff" }, { o: "#1e6edc", C: "#5adcff", W: "#ffffff" }, { o: "#1e6edc", C: "#5adcff", W: "#ffffff" }],
+  ember: [{ o: "#e0541e", Y: "#ffb428", W: "#fff0b4" }, { o: "#1e78f0", Y: "#5ad2ff", W: "#f0fcff" }, { o: "#aa28a0", Y: "#ff5adc", W: "#ffe6fa" }, { o: "#ffc83c", Y: "#fff0aa", W: "#ffffff" }],
 };
-const ORIENT = new Set(["kingyo", "fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth", "flame", "scale", "claw"]);
+const ORIENT = new Set(["kingyo", "fox", "ofuda", "missile", "shell", "icicle", "shard", "soul", "chain", "tooth", "flame", "slash", "spine", "pshot"]);
 const SPRITES = {};
 function makeSprite(map, pal) {
   const h = map.length, w = map[0].length, c = document.createElement("canvas");
@@ -73,12 +83,14 @@ function makeSprite(map, pal) {
   for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const ch = map[j][i]; if (pal[ch]) { x.fillStyle = pal[ch]; x.fillRect(i, j, 1, 1); } }
   return c;
 }
-for (const k in MAPS) SPRITES[k] = [makeSprite(MAPS[k], PALS[k][0]), makeSprite(MAPS[k], PALS[k][1])];
-const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5, flame: 3, scale: 2.5, claw: 2.5, ember: 2, meteor: 6 };
+for (const k in MAPS) SPRITES[k] = PALS[k].map(pal => makeSprite(MAPS[k], pal));
+const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5, flame: 3, slash: 4, gust: 4, sun: 5, rock: 4, spine: 2.5, tornado: 5, ember: 2, pshot: 2 };
 
 // ---------- 状態 ----------
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
-  B: { x: 180, y: 128 }, P: { x: 180, y: 500 }, aw: false, boss: null, pat: null, anim: "idle", animT: 0, auto: true, target: null, manualUntil: 0 };
+  B: { x: 180, y: 128 }, P: { x: 180, y: 500 }, aw: false, lv: 0, boss: null, pat: null, anim: "idle", animT: 0, auto: true, target: null, manualUntil: 0,
+  // ここから下は、ドラゴンの技で使う: ボス本体の移動、自機を流す風・引き寄せ、バインド(動けない)、範囲攻撃、即死
+  Boff: { x: 0, y: 0 }, wind: { x: 0, y: 0 }, pull: null, bind: 0, zones: [], kills: 0, heat: 0 };
 
 function pt(sx, sy) { const b = G.boss, w = b.w, h = b.h; return { x: G.B.x - w + sx * 2, y: G.B.y - h + sy * 2 }; }
 function aimFrom(o) { return atan2(G.P.y - o.y, G.P.x - o.x); }
@@ -531,95 +543,216 @@ R.puniOsusowake = function* (aw) {
   }
 };
 
-// 最強のドラゴン(絵は 168×128。口・胸・両手の爪・翼の先)
-const DMOUTH = () => pt(83, 46), DCHEST = () => pt(83, 62), DHAND = i => i ? pt(123, 72) : pt(44, 72), DWING = i => i ? pt(160, 43) : pt(7, 43);
-R.dragonBreath = function* (aw) {
-  // 口から炎の帯。向きはゆっくり自機を追う(追う速さより自機のほうが速いので、横へ走れば抜けられる)
-  let a = PI / 2 + (G.P.x < 180 ? 0.7 : -0.7);
-  if (aw) G.lasers.push({ from: DMOUTH, a: aimFrom(DMOUTH()), len: 900, w: 20, warn: 50, dur: 50, t: 0, va: 0, col: ["#5ad2ff", "#f0fcff"] });
-  for (let t = 0; t < 170; t++) {
-    const o = DMOUTH(); let d = aimFrom(o) - a; while (d > PI) d -= TAU; while (d < -PI) d += TAU;
-    a += clamp(d, -1, 1) * (aw ? 0.0075 : 0.006);
-    if (t % (aw ? 1 : 2) === 0) {
-      const sp = aw ? 0.26 : 0.18;
-      fire("flame", o.x, o.y, a + (rand() - 0.5) * 2 * sp, 3.0 + rand() * 1.2, { u: b => { if (b.t === 40 && rand() < 0.25) fire("ember", b.x, b.y, PI / 2 + (rand() - 0.5), 0.7); } });
+// ---------- 最強のドラゴン(絵は 240×200。口・胸・両手・翼の先・尻尾の先) ----------
+// ほかのボスと違い、小さい弾は少なめで、大きい弾・範囲攻撃・本体の体当たりが中心。
+// 範囲攻撃は G.zones に入れる: {shape: "rect"|"circle"|"safe", warn: 予告のフレーム, dur: 当たるフレーム, bind: 当たると動けなくなるフレーム, kill: 当たると即死}
+const DMOUTH = () => pt(131, 86), DCHEST = () => pt(120, 94), DHAND = i => i ? pt(158, 108) : pt(80, 108), DWING = i => i ? pt(206, 112) : pt(34, 112), DTAIL = () => pt(103, 168);
+function zone(z) { z.t = 0; G.zones.push(z); return z; }
+function* glideTo(x, y, n) {        // ボス本体を、n フレームかけて (x, y) へ動かす(なめらかに)
+  const x0 = G.Boff.x, y0 = G.Boff.y;
+  for (let i = 1; i <= n; i++) { const t = i / n, e = t * t * (3 - 2 * t); G.Boff.x = x0 + (x - x0) * e; G.Boff.y = y0 + (y - y0) * e; yield 1; }
+}
+function bodyHit(frames, r) {       // ボス本体の当たり判定(見えない弾を体に重ねる)
+  fire("body", G.B.x, G.B.y, 0, 0, { r: r || 40, life: frames, u: b => { b.x = G.B.x; b.y = G.B.y + 10; } });
+}
+R.dragonBreath = function* (aw, lv) {
+  // 口から極太の炎の柱。ゆっくり自機を追う。通った跡に火柱が残る。
+  // 柱は「自機に近い壁の側」から出て、広い側へ追い立てる(壁に追い詰めない)。追う速さは自機より遅い
+  const o = DMOUTH();
+  const L = { from: DMOUTH, a: aimFrom(o) + (G.P.x < W / 2 ? 0.45 : -0.45), len: 900, w: aw ? 96 + lv * 8 : 80, warn: 44, dur: aw ? 150 : 170, t: 0, va: 0, track: aw ? 0.0046 : 0.0042, fire: 1, col: ["#f0541e", "#ffdc8c"] };
+  G.lasers.push(L);
+  for (let t = 0; t < 214; t++) {
+    if (t > 50 && t % (aw ? 11 : 13) === 0) {
+      const m = DMOUTH(), d = 150 + rand() * 380, x = m.x + cos(L.a) * d + (rand() - 0.5) * 30, y = m.y + sin(L.a) * d;
+      if (y < H - 10 && x > 10 && x < W - 10) fire("flame", x, y, -PI / 2, 0.15, { big: 2.6, r: 8, life: 110 });
     }
     yield 1;
+  }
+  yield 30;
+};
+R.dragonRaid = function* (aw, lv) {
+  // 本体が自機めがけて飛んできて、左右の爪で2回ひっかく。体も爪も当たる。爪の跡は大きな斬撃になって飛ぶ
+  for (let rep = 0; rep < (aw ? 3 : 2); rep++) {
+    const tx = clamp(G.P.x, 70, W - 70), ty = clamp(G.P.y - 95, 150, 420);
+    G.marks.push({ k: "target", x: tx, y: ty + 95, t: 0, life: 34 });
+    // 爪が届く範囲は、飛んでくる間に予告する(右の爪 → 左の爪)
+    zone({ shape: "circle", x: tx + 30, y: ty + 62, r: 68, warn: 40, dur: 8, col: "#fff4c8", claw: 1 });
+    zone({ shape: "circle", x: tx - 30, y: ty + 62, r: 68, warn: 60, dur: 8, col: "#fff4c8", claw: 1 });
+    yield 10;
+    bodyHit(90, 44);
+    yield* glideTo(tx - 180, ty - 128, 24);
+    for (const side of [1, 0]) {
+      yield 6;
+      const h = DHAND(side), dir = side ? -1 : 1, n = aw ? 5 : 3;
+      for (let k = 0; k < n; k++) fire("slash", h.x, h.y, PI / 2 + dir * (0.25 + k * 0.28), 4.4 + k * 0.3, { big: 3, r: 10, face: PI / 2 + dir * (0.25 + k * 0.28) + PI / 2 });
+      yield 14;
+    }
+    yield* glideTo(0, 0, 30);
+    yield 10;
+  }
+  yield 30;
+};
+R.dragonGale = function* (aw, lv) {
+  // 羽ばたきの暴風で、自機が横へ流される。風に乗って、大きな風の刃が横から飛んでくる。風向きは羽ばたきごとに変わる
+  let dir = rand() < 0.5 ? 1 : -1;
+  for (let v = 0; v < (aw ? 6 : 4); v++) {
+    dir = aw ? (rand() < 0.5 ? 1 : -1) : -dir;
+    G.marks.push({ k: "wind", dir, t: 0, life: 26 });
+    yield 26;
+    G.wind = { x: dir * (aw ? 2.0 : 1.6), y: 0.5 };
+    for (let k = 0; k < (aw ? 5 : 3); k++) {
+      fire("gust", dir > 0 ? -20 : W + 20, 240 + rand() * 320, dir > 0 ? 0 : PI, 3.6 + rand(), { big: 3.2, r: 11, face: dir > 0 ? PI / 2 : -PI / 2 });
+      yield 12;
+    }
+    for (const side of [0, 1]) { const o = DWING(side); fire("gust", o.x, o.y, aimFrom(o), 3.2, { big: 2.6, r: 9, face: aimFrom(o) + PI / 2 }); }
+    yield 14;
+    G.wind = { x: 0, y: 0 };
   }
   yield 40;
 };
-R.dragonGale = function* (aw) {
-  // 羽ばたきに合わせて、翼の先から竜鱗の扇。内側へ曲がりながら飛び、左右の扇が画面の真ん中で交差する
-  for (let v = 0; v < (aw ? 8 : 6); v++) {
-    for (const side of aw ? [0, 1] : [v % 2]) {
-      const o = DWING(side), dir = side ? 1 : -1, n = aw ? 11 : 9, base = PI / 2 + dir * 0.55;
-      for (let i = 0; i < n; i++) fire("scale", o.x, o.y, base + (i - (n - 1) / 2) * 0.13, (aw ? 2.6 : 2.2) + (i % 2) * 0.5, { u: b => { if (b.t < 70) rot(b, dir * 0.009); } });
-    }
-    yield aw ? 20 : 24;
-  }
-  yield 50;
-};
-R.dragonClaw = function* (aw) {
-  // 爪の軌跡を薄い線で予告してから、3本(覚醒5本)の爪痕が斜めに走る。左右の手で交互に(覚醒は同時に X の形)
-  for (let v = 0; v < 4; v++) {
-    const tx = G.P.x, ty = G.P.y;
-    for (const side of aw ? [0, 1] : [v % 2]) {
-      const o = DHAND(side), a = atan2(ty - o.y, tx - o.x), n = aw ? 5 : 3;
-      for (let k = 0; k < n; k++) {
-        const off = (k - (n - 1) / 2) * 26, sx = o.x - sin(a) * off, sy = o.y + cos(a) * off;
-        G.marks.push({ k: "line", x1: sx, y1: sy, x2: sx + cos(a) * 100, y2: sy + sin(a) * 100, t: 0, life: 24 });
-        spawn((function* () { yield 24 + k * 2; for (let j = 0; j < 9; j++) { fire("claw", sx, sy, a, 5.2); yield 2; } })());
-      }
-    }
-    yield aw ? 46 : 40;
-  }
-  yield 60;
-};
-R.dragonMeteor = function* (aw) {
-  // 空から隕石が自機のいた所へ斜めに落ちてくる。通ったあとに火の粉が残って、ゆっくり降る。落ちる前に上で光って予告する
-  for (let v = 0; v < (aw ? 8 : 5); v++) {
-    const x0 = 30 + rand() * 300, tx = G.P.x, ty = G.P.y;
-    G.marks.push({ k: "glint", x: x0, y: 10, t: 0, life: 30 });
-    spawn((function* () {
-      yield 30;
-      fire("meteor", x0, -10, atan2(ty + 10, tx - x0), aw ? 3.4 : 3.0, { u: b => {
-        if (b.t % 6 === 0) fire("ember", b.x, b.y, PI / 2 + (rand() - 0.5) * 1.6, 0.5 + rand() * 0.4, { life: 150 });
-        if (aw && b.y > 470) { b.dead = 1; const a0 = aimFrom(b); for (let i = 0; i < 12; i++) fire("flame", b.x, b.y, a0 + i * TAU / 12, 2.0); }
-      } });
-    })());
-    yield aw ? 28 : 36;
-  }
-  yield 120;
-};
-R.dragonWrath = function* (aw) {
-  // 胸から竜鱗の渦(覚醒は1本おきに逆回り)。50フレームごとに炎の輪が吠えるように広がり、ゆっくり出て加速する。輪には自機の近くに抜け道が1つ
-  const arms = aw ? 6 : 4;
-  for (let t = 0; t < 170; t++) {
-    const o = DCHEST();
-    if (t % 5 === 0) for (let k = 0; k < arms; k++) { const dir = aw && k % 2 ? -1 : 1; fire("scale", o.x, o.y, k * TAU / arms + t * 0.045 * dir, 2.0, { u: b => rot(b, 0.006 * dir) }); }
-    if (t % 50 === 20) {
-      const m = DMOUTH(), n = aw ? 26 : 20, gapA = aimFrom(m) + (rand() < 0.5 ? 0.45 : -0.45);
-      for (let i = 0; i < n; i++) { const a = i * TAU / n; if (angDiff(a, gapA) < TAU / n * 1.6) continue; fire("flame", m.x, m.y, a, 1.0, { u: b => { const s = hypot(b.vx, b.vy); if (s < 3.2) { b.vx *= 1.03; b.vy *= 1.03; } } }); }
+R.dragonInhale = function* (aw, lv) {
+  // 息を吸い込む: 自機も火の粉も口へ引き寄せられる。自機の撃った弾も吸い込まれて食べられる(ボスに届かない)。
+  // 吸い終わると、超巨大な火球を吐く。落ちた所で、画面の半分を焼く大爆発。そのあと、食べた自機の弾を撃ち返してくる(食べた数だけ)
+  G.pull = { at: DMOUTH, f: aw ? 0.95 : 0.75 };
+  let eaten = 0;
+  for (let t = 0; t < 130; t++) {
+    if (t % 5 === 0) fire("pshot", G.P.x, G.P.y - 12, -PI / 2, 6, { friendly: 1, u: b => {      // 自機の弾(試射場では、この技の間だけ撃つ)
+      const m = DMOUTH(), a = atan2(m.y - b.y, m.x - b.x); b.vx += (cos(a) * 6 - b.vx) * 0.08; b.vy += (sin(a) * 6 - b.vy) * 0.08;
+      if (hypot(m.x - b.x, m.y - b.y) < 16) { b.dead = 1; eaten++; }
+    } });
+    if (t % 10 === 0) {
+      const side = rand(), x = side < 0.5 ? -6 : W + 6, y = 240 + rand() * 200;
+      fire("ember", x, y, 0, 0, { big: 1.6, r: 3, u: b => { const m = DMOUTH(), a = atan2(m.y - b.y, m.x - b.x), sp = Math.min(5, 1.2 + b.t * 0.05); b.vx = cos(a) * sp; b.vy = sin(a) * sp; if (hypot(m.x - b.x, m.y - b.y) < 14) b.dead = 1; } });
     }
     yield 1;
   }
+  G.pull = null;
+  for (let n = 0; n < (aw ? 2 : 1); n++) {
+    const m = DMOUTH(), tx = clamp(G.P.x, 60, W - 60), ty = clamp(G.P.y, 330, 520), Rr = aw ? 160 : 150, fl = aw ? 64 : 60;
+    zone({ shape: "circle", x: tx, y: ty, r: Rr, warn: fl, dur: 26, col: "#ff8c28", boom: 1 });
+    fire("sun", m.x, m.y, 0, 0, { big: 5, r: 26, life: fl, u: b => { const t = b.t / fl; b.x = m.x + (tx - m.x) * t; b.y = m.y + (ty - m.y) * t * t; } });
+    yield fl + 40;
+  }
+  // 食べた弾を撃ち返す: 自機の弾と同じ見た目で、扇になって降ってくる
+  const back = Math.min(eaten, aw ? 36 : 24);
+  for (let i = 0; i < back; i++) {
+    const m = DMOUTH(); fire("pshot", m.x, m.y, aimFrom(m) + sin(i * 0.9) * 0.5, 4.2, { big: 1.6, r: 3 });
+    yield 3;
+  }
+  yield 40;
+};
+R.dragonGlide = function* (aw, lv) {
+  // 画面の外へ飛び去り、影が通った列を、本体が炎をまとって上から下へ突っ切る。3回
+  yield* glideTo(0, -330, 26);
+  for (let pass = 0; pass < 3; pass++) {
+    const lanes = [0, 1, 2], mine = clamp(Math.floor(G.P.x / 120), 0, 2);
+    const hit = aw ? [mine, mine === 1 ? (G.P.x < W / 2 ? 2 : 0) : 2 - mine] : [mine];      // 覚醒: 2列。安全な列は必ずとなりで、自機に近い側
+    hit.forEach(l => zone({ shape: "rect", x: l * 120, y: 0, w: 120, h: H, warn: 52, dur: 30, col: "#ff8c28", shadow: 1 }));
+    yield 52;
+    const l0 = hit[0];
+    G.Boff.x = l0 * 120 + 60 - 180; G.Boff.y = -330;
+    for (let i = 0; i < 30; i++) {
+      G.Boff.y = -330 + i * 34;
+      if (i % 3 === 0) hit.forEach(l => fire("flame", l * 120 + 20 + rand() * 80, clamp(G.B.y + 40, -20, H), PI / 2, 0.6, { big: 2.4, r: 8, life: 50 }));
+      yield 1;
+    }
+    G.Boff.y = -330; G.Boff.x = 0;
+    yield 18;
+  }
+  yield* glideTo(0, 0, 30);
+  yield 20;
+};
+R.dragonRoar = function* (aw, lv) {
+  // 咆哮の衝撃波が輪になって広がる。当たるとダメージに加えて、しばらく動けなくなる(バインド)。動けない所へ、自機狙いの大火球
+  for (let v = 0; v < (aw ? 5 : 3); v++) {
+    const m = DMOUTH(), gapA = aimFrom(m) + (rand() < 0.5 ? 1 : -1) * (0.3 + rand() * 0.25);
+    zone({ shape: "ring", at: DMOUTH, x: m.x, y: m.y, r: 10, vr: aw ? 3.0 : 2.6, th: 16, gapA, gapW: aw ? 0.48 : 0.55, warn: 0, dur: 200, bind: 80, col: "#ffdc8c" });
+    yield 34;
+    if (v % 2 === 1 || aw) { const o = DMOUTH(); fire("sun", o.x, o.y, aimFrom(o), 3.0, { big: 3, r: 16 }); }
+    yield 26;
+  }
+  yield 70;
+};
+R.dragonQuake = function* (aw, lv) {
+  // 叩きつけで地面が裂ける。稲妻の形のひびが光って予告され、ひびに沿って炎の壁が噴き上がる。岩も飛び散る
+  for (let v = 0; v < (aw ? 3 : 2); v++) {
+    const pts = []; let x = clamp(G.P.x + (rand() - 0.5) * 80, 40, W - 40);
+    for (let y = 150; y <= H + 20; y += 50) { pts.push({ x, y }); x = clamp(x + (rand() < 0.5 ? -1 : 1) * (30 + rand() * 40), 30, W - 30); }
+    G.marks.push({ k: "crack", pts, t: 0, life: 44 });
+    yield 44;
+    for (let i = 0; i < pts.length - 1; i++) for (let k = 0; k < 2; k++) {
+      const a = pts[i], b = pts[i + 1], px = a.x + (b.x - a.x) * k / 2, py = a.y + (b.y - a.y) * k / 2;
+      zone({ shape: "circle", x: px, y: py, r: 24, warn: i * 2, dur: 46, col: "#ff8c28", pillar: 1 });
+    }
+    for (let k = 0; k < (aw ? 6 : 4); k++) { const q = pts[1 + Math.floor(rand() * (pts.length - 2))]; fire("rock", q.x, q.y, -PI / 2 + (rand() - 0.5) * 1.4, 3 + rand() * 2, { big: 2.2, r: 8, spin: 1, u: b => { b.vy += 0.07; } }); }
+    yield aw ? 50 : 64;
+  }
+  yield 40;
+};
+R.dragonTail = function* (aw, lv) {
+  // 尻尾の薙ぎ払い: 自機の高さに横一文字の帯が予告され、巨大な尻尾が画面を横切る。上下どちらかへ逃げる。通ったあと、トゲが上下に飛ぶ
+  for (let v = 0; v < (aw ? 4 : 3); v++) {
+    const hh = aw ? 96 : 76, y0 = clamp(G.P.y - hh / 2, 290, 470 - (aw ? 20 : 0)), dir = v % 2 ? -1 : 1;
+    zone({ shape: "rect", x: 0, y: y0, w: W, h: hh, warn: 38, dur: 14, col: "#ffc83c", sweep: dir });
+    yield 38;
+    const sx0 = rand() * 40;
+    for (let k = 0; k < 9; k++) { const x = sx0 + k * 40; fire("spine", x, y0 + hh / 2, k % 2 ? PI / 2 : -PI / 2, 2.6, { big: 2.2, r: 6 }); }
+    yield aw ? 34 : 46;
+  }
   yield 50;
+};
+R.dragonRampage = function* (aw, lv) {
+  // 本体が画面じゅうを8の字に飛び回る。体に当たるとダメージ。飛んだ跡に炎の竜巻が2つ残り、自機を引き寄せる。竜巻に当たるとバインド
+  const T = aw ? 250 : 210;
+  bodyHit(T + 20, 44);
+  const tor = [];
+  for (let t = 0; t < T; t++) {
+    const u = t / T * TAU * (aw ? 2 : 1.5), e = Math.min(1, t / 30, (T - t) / 30);
+    G.Boff.x = sin(u) * 120 * e; G.Boff.y = (0.5 - 0.5 * cos(u * 2)) * 300 * e + sin(u) * 30 * e;
+    if (t === 50 || t === 110) {
+      const b = fire("tornado", G.B.x, G.B.y + 40, 0, 0, { big: 5, r: 22, bind: 50, life: 260, x0: G.B.x, y0: clamp(G.B.y + 60, 280, 520), u: q => { q.x = q.x0 + sin(q.t * 0.03 + q.ph) * 60; q.y = q.y0 + sin(q.t * 0.05) * 16; } });
+      tor.push(b);
+    }
+    const live = tor.filter(q => !q.dead);
+    G.pull = live.length ? { at: () => live.reduce((a, q) => hypot(q.x - G.P.x, q.y - G.P.y) < hypot(a.x - G.P.x, a.y - G.P.y) ? q : a), f: 0.7 } : null;
+    if (t % 16 === 0) fire("flame", G.B.x, G.B.y + 30, PI / 2 + (rand() - 0.5) * 0.8, 1.4, { big: 2.4, r: 8 });
+    yield 1;
+  }
+  G.Boff.x = 0; G.Boff.y = 0;
+  yield 120; G.pull = null;
+};
+R.dragonEnd = function* (aw, lv) {
+  // 終焉: 画面のほぼ全部が焼き尽くされる。当たると即死。光る竜鱗の輪の中だけが安全。輪は予告のあいだに少しずつ動く
+  for (let v = 0; v < 2; v++) {
+    const n = aw ? 1 : 2, safe = [];
+    for (let k = 0; k < n; k++) safe.push({ x: 60 + rand() * (W - 120), y: 300 + rand() * 240, r: aw ? 40 : 46, vx: aw ? (rand() < 0.5 ? 0.5 : -0.5) : 0 });
+    zone({ shape: "safe", safe, warn: aw ? 100 : 115, dur: 22, kill: 1, col: "#ffdc8c" });
+    yield (aw ? 100 : 115) + 60;
+  }
+  yield 40;
 };
 
 // ---------- 進行(構え → 技中 → 硬直 → 待機) ----------
+function animOf(st) {
+  // ドラゴンは技ごとに動きが違う(spec の anim / windup)。ほかのボスは 構え・技中・硬直 が1種類
+  const p = G.pat; if (!p || !p.anim || st === "idle") return st;
+  return (st === "windup" ? (p.windup || p.anim) : p.anim) + "_" + st;
+}
 function* director() {
   while (true) {
     G.anim = "windup"; G.animT = 0; G.banner = { t: 0 };
-    yield 28;
+    yield G.pat.anim ? 30 : 28;
     G.anim = "attack"; G.animT = 0;
-    yield* R[G.pat.id](G.aw);
-    G.anim = "recover"; G.animT = 0; yield 14;
+    yield* R[G.pat.id](G.aw, G.lv);
+    G.Boff.x = 0; G.Boff.y = 0; G.wind = { x: 0, y: 0 }; G.pull = null;
+    G.anim = "recover"; G.animT = 0; yield G.pat.anim ? 15 : 14;
     G.anim = "idle"; G.animT = 0; yield 50;
   }
 }
 
 function reset() {
   G.bullets = []; G.lasers = []; G.marks = []; G.tasks = []; G.walls = []; G.hits = 0; G.inv = 0; G.dark = 0; G.T = 0;
+  G.Boff = { x: 0, y: 0 }; G.wind = { x: 0, y: 0 }; G.pull = null; G.bind = 0; G.zones = []; G.kills = 0; G.heat = 0;
   G.P = { x: 180, y: 500 };
   spawn(director());
 }
@@ -628,6 +761,7 @@ function reset() {
 function danger(x, y) {
   let d = 0;
   for (const b of G.bullets) {
+    if (b.friendly) continue;
     const dx0 = b.x - x, dy0 = b.y - y; if (dx0 * dx0 + dy0 * dy0 > 110 * 110) continue;
     for (let k = 2; k <= 14; k += 4) { const bx = b.x + b.vx * k, by = b.y + b.vy * k, q = (bx - x) ** 2 + (by - y) ** 2; d += (1 + b.r / 3) / (q + 4) * (18 - k); }
   }
@@ -642,6 +776,21 @@ function danger(x, y) {
     const o = EYE(), ux = m.x - o.x, uy = m.y - o.y, l = hypot(ux, uy), px = x - o.x, py = y - o.y;
     const dist = Math.abs(px * uy / l - py * ux / l); if (dist < 34) d += (34 - dist) * 1.5;
   }
+  // 範囲攻撃(予告の間も避ける)
+  for (const z of G.zones) {
+    if (z.shape === "rect") {
+      if (x > z.x - 14 && x < z.x + z.w + 14 && y > z.y - 14 && y < z.y + z.h + 14) {      // いちばん近い出口へ向かう
+        const ex = Math.min(z.x <= 0 ? 1e9 : x - (z.x - 14), z.x + z.w >= W ? 1e9 : z.x + z.w + 14 - x), ey = Math.min(z.y <= 230 ? 1e9 : y - (z.y - 14), z.y + z.h >= H ? 1e9 : z.y + z.h + 14 - y);
+        d += 40 + Math.min(ex, ey) * 0.8;
+      }
+    }
+    else if (z.shape === "circle") { const q = hypot(x - z.x, y - z.y); if (q < z.r + 16) d += 40 + (z.r + 16 - q) * 0.8; }
+    else if (z.shape === "safe") { const q = Math.min(...z.safe.map(c => hypot(x - c.x, y - c.y) - c.r + 14)); if (q > 0) d += 30 + q * 0.6; }
+    else if (z.shape === "ring") {
+      const q = hypot(x - z.x, y - z.y), a = atan2(y - z.y, x - z.x);
+      if (q > z.r - 10 && q < z.r + 260) d += Math.max(0, angDiff(a, z.gapA) - z.gapW * 0.5) * 60;        // 輪が来る前に、抜け道の向きへ寄る
+    }
+  }
   // 下りてくる壁: 近い列の通り道へ寄る
   for (const w of G.walls) {
     if (!w.ref || w.ref.dead) continue;
@@ -652,13 +801,17 @@ function danger(x, y) {
 const keys = {};
 function movePlayer() {
   const P = G.P, sp = 3.3;
+  // 風と引き寄せ(ドラゴン): 操作とは別に、自機が流される
+  P.x += G.wind.x; P.y += G.wind.y;
+  if (G.pull) { const o = G.pull.at(), l = hypot(o.x - P.x, o.y - P.y); if (l > 30) { P.x += (o.x - P.x) / l * G.pull.f; P.y += (o.y - P.y) / l * G.pull.f; } }
+  if (G.bind > 0) { G.bind--; P.x = clamp(P.x, 8, W - 8); P.y = clamp(P.y, 220, H - 12); return; }      // バインド中は動けない
   let mx = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0), my = (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0);
   if (mx || my) { G.manualUntil = G.T + 90; const l = hypot(mx, my); P.x += mx / l * sp; P.y += my / l * sp; }
   else if (G.target) { G.manualUntil = G.T + 90; const dx = G.target.x - P.x, dy = G.target.y - P.y, l = hypot(dx, dy); if (l > 1) { const s = Math.min(l, 5); P.x += dx / l * s; P.y += dy / l * s; } }
   else if (G.auto && G.T > G.manualUntil) {
     let best = null, bv = 1e9;
     for (const dx of [-1, -0.5, 0, 0.5, 1]) for (const dy of [-1, -0.5, 0, 0.5, 1]) {
-      const x = P.x + dx * sp, y = P.y + dy * sp; if (x < 10 || x > W - 10 || y < 300 || y > H - 16) continue;
+      const l = Math.max(1, hypot(dx, dy)), x = P.x + dx / l * sp, y = P.y + dy / l * sp; if (x < 10 || x > W - 10 || y < (G.zones.length ? 230 : 300) || y > H - 16) continue;
       const v = danger(x, y) + ((x - 180) ** 2 + (y - 500) ** 2) * 0.000004; if (v < bv) { bv = v; best = { x, y }; }
     }
     if (best) { P.x = best.x; P.y = best.y; }
@@ -670,8 +823,8 @@ function movePlayer() {
 function step() {
   G.T++; G.animT++;
   const b0 = G.boss;
-  G.B.x = 180 + sin(G.T * 0.012) * 30;
-  G.B.y = (b0.id === "puni" && !G.aw ? 150 : 128) + sin(G.T * 0.02) * 5;
+  G.B.x = 180 + sin(G.T * 0.012) * (b0.id === "dragon" ? 12 : 30) + G.Boff.x;
+  G.B.y = (b0.id === "puni" && !G.aw ? 150 : 128) + sin(G.T * 0.02) * 5 + G.Boff.y;
   for (const t of G.tasks) { if (t.done) continue; if (t.wait > 0) { t.wait--; continue; } const r = t.g.next(); if (r.done) t.done = 1; else t.wait = (r.value || 1) - 1; }
   G.tasks = G.tasks.filter(t => !t.done);
   if (G.dark > 0) G.dark--;
@@ -682,19 +835,38 @@ function step() {
     b.t++; if (b.u) b.u(b); b.x += b.vx; b.y += b.vy;
     if (b.life && b.t > b.life) b.dead = 1;
     if (b.x < -40 || b.x > W + 40 || b.y < -60 || b.y > H + 40) { if (b.t > 30 || b.y > H) b.dead = 1; }
-    if (!G.inv && !b.dead && (b.x - P.x) ** 2 + (b.y - P.y) ** 2 < (b.r + 2.5) ** 2) hit();
+    if (!G.inv && !b.dead && !b.friendly && (b.x - P.x) ** 2 + (b.y - P.y) ** 2 < (b.r + 2.5) ** 2) hit(b);
   }
   G.bullets = G.bullets.filter(b => !b.dead);
   for (const L of G.lasers) {
     L.t++; if (L.t > L.warn) L.a += L.va;
+    if (L.track) { let d = aimFrom(L.from()) - L.a; while (d > PI) d -= TAU; while (d < -PI) d += TAU; L.a += clamp(d, -L.track, L.track); }
     if (L.t > L.warn && !G.inv) {
       const o = L.from(), ux = cos(L.a), uy = sin(L.a), px = P.x - o.x, py = P.y - o.y, pr = px * ux + py * uy;
       if (pr > 0 && pr < L.len && Math.abs(px * uy - py * ux) < L.w / 2) hit();
     }
   }
   G.lasers = G.lasers.filter(L => L.t < L.warn + L.dur);
+  // 範囲攻撃(ドラゴン)
+  for (const z of G.zones) {
+    z.t++;
+    if (z.shape === "ring") { if (z.at && z.t < 4) { const o = z.at(); z.x = o.x; z.y = o.y; } z.r += z.vr; }
+    if (z.shape === "safe") for (const c of z.safe) { c.x += c.vx || 0; if (c.x < 50 || c.x > W - 50) c.vx = -(c.vx || 0); }
+    if (z.t <= z.warn || G.inv) continue;
+    let h = false;
+    if (z.shape === "rect") h = P.x > z.x && P.x < z.x + z.w && P.y > z.y && P.y < z.y + z.h;
+    else if (z.shape === "circle") h = hypot(P.x - z.x, P.y - z.y) < z.r;
+    else if (z.shape === "safe") h = !z.safe.some(c => hypot(P.x - c.x, P.y - c.y) < c.r);
+    else if (z.shape === "ring") { const q = hypot(P.x - z.x, P.y - z.y); h = Math.abs(q - z.r) < z.th / 2 && angDiff(atan2(P.y - z.y, P.x - z.x), z.gapA) > z.gapW; }
+    if (h) hit(z);
+  }
+  G.zones = G.zones.filter(z => z.t < z.warn + z.dur && !(z.shape === "ring" && z.r > 760));
   for (const m of G.marks) m.t++;
   G.marks = G.marks.filter(m => !m.dead && m.t < m.life);
   if (G.inv) G.inv--;
 }
-function hit() { G.hits++; G.inv = 40; }
+function hit(src) {
+  G.hits++; G.inv = 40;
+  if (src && src.bind) G.bind = src.bind;        // バインド: しばらく動けない
+  if (src && src.kill) { G.kills++; G.inv = 90; G.heat = 30; }      // 即死
+}

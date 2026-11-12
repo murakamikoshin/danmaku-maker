@@ -1,1 +1,150 @@
-{"frame_ms": 40, "counts": {"idle": 24, "windup": 12, "attack": 12, "recover": 6, "idle_awakened": 24, "windup_awakened": 12, "attack_awakened": 12, "recover_awakened": 6}}
+{
+ "frame_ms": 40,
+ "w": 240,
+ "h": 200,
+ "cols": 8,
+ "counts": {
+  "idle": 48,
+  "windup": 12,
+  "attack": 16,
+  "recover": 6
+ },
+ "moves": [
+  {
+   "id": "breath",
+   "name": "ブレス"
+  },
+  {
+   "id": "dive",
+   "name": "急降下の爪"
+  },
+  {
+   "id": "gale",
+   "name": "羽ばたき"
+  },
+  {
+   "id": "inhale",
+   "name": "吸い込み"
+  },
+  {
+   "id": "glide",
+   "name": "滑空"
+  },
+  {
+   "id": "roar",
+   "name": "咆哮"
+  },
+  {
+   "id": "slam",
+   "name": "叩きつけ"
+  },
+  {
+   "id": "tail",
+   "name": "尻尾"
+  },
+  {
+   "id": "cyclone",
+   "name": "旋回"
+  },
+  {
+   "id": "wrath",
+   "name": "逆鱗"
+  }
+ ],
+ "anims": {
+  "idle": 48,
+  "breath_windup": 12,
+  "breath_attack": 16,
+  "breath_recover": 6,
+  "dive_windup": 12,
+  "dive_attack": 16,
+  "dive_recover": 6,
+  "gale_windup": 12,
+  "gale_attack": 16,
+  "gale_recover": 6,
+  "inhale_windup": 12,
+  "inhale_attack": 16,
+  "inhale_recover": 6,
+  "glide_windup": 12,
+  "glide_attack": 16,
+  "glide_recover": 6,
+  "roar_windup": 12,
+  "roar_attack": 16,
+  "roar_recover": 6,
+  "slam_windup": 12,
+  "slam_attack": 16,
+  "slam_recover": 6,
+  "tail_windup": 12,
+  "tail_attack": 16,
+  "tail_recover": 6,
+  "cyclone_windup": 12,
+  "cyclone_attack": 16,
+  "cyclone_recover": 6,
+  "wrath_windup": 12,
+  "wrath_attack": 16,
+  "wrath_recover": 6
+ },
+ "origins": {
+  "mouth": [
+   131,
+   84
+  ],
+  "throat": [
+   131,
+   77
+  ],
+  "handL": [
+   81,
+   103
+  ],
+  "handR": [
+   156,
+   104
+  ],
+  "tailtip": [
+   103,
+   168
+  ],
+  "wtipL": [
+   64,
+   115
+  ],
+  "wtipR": [
+   172,
+   115
+  ],
+  "wristL": [
+   77,
+   38
+  ],
+  "wristR": [
+   161,
+   39
+  ],
+  "chest": [
+   120,
+   94
+  ],
+  "footL": [
+   110,
+   141
+  ],
+  "footR": [
+   129,
+   151
+  ],
+  "eyeL": [
+   125,
+   63
+  ],
+  "eyeR": [
+   138,
+   64
+  ],
+  "crown": [
+   129,
+   40
+  ]
+ },
+ "label_step": 10
+}

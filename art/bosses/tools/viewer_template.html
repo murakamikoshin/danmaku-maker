@@ -23,10 +23,12 @@ button{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var
 button:hover{border-color:var(--mute)}
 button:focus-visible{outline:2px solid var(--awake);outline-offset:2px}
 button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.form button[data-v="awake"][aria-pressed="true"]{background:var(--awake);border-color:var(--awake);color:var(--awake-ink)}
+.form button:not([data-v="normal"])[aria-pressed="true"]{background:var(--awake);border-color:var(--awake);color:var(--awake-ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
 .card.awake{border-color:#5a4520}
+.card.wide{grid-column:1/-1}
+.moves button{font-size:12px;padding:4px 9px}
 .stage{background:var(--field);display:grid;place-items:center;padding:14px 0;position:relative;border-bottom:1px solid var(--line)}
 .stage img{image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;height:auto}
 .fno{position:absolute;right:10px;bottom:8px;font-family:var(--display);font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
@@ -46,7 +48,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--mute);max-width:72ch}
 </style>
 <div class="wrap">
 <header>
-  <h1>弾幕メーカー ボス図鑑<small>9体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最近傍補間で3倍表示</small></h1>
+  <h1>弾幕メーカー ボス図鑑<small>9体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最強のドラゴンは姿が4つ・動きが31種類 / 最近傍補間で3倍表示</small></h1>
   <div class="controls">
     <div class="bar"><span class="lab">全員まとめて</span><div class="bar form" id="allForm"></div><div class="bar" id="allAct"></div></div>
     <div class="bar"><button id="speed" type="button" aria-pressed="false">ゆっくり再生</button></div>
@@ -63,29 +65,59 @@ let frameMs=120; const cards=[];
 function el(t,a={},...k){const e=document.createElement(t);for(const[x,y]of Object.entries(a)){if(x==="class")e.className=y;else e.setAttribute(x,y)}k.forEach(c=>e.append(c));return e}
 function group(list,cls,onpick){const g=el("div",{class:"bar "+cls,role:"group"});list.forEach(o=>{const b=el("button",{type:"button","data-v":o.id,"aria-pressed":"false"},o.label,...(o.n?[el("span",{},o.n+"コマ")]:[]));b.onclick=()=>onpick(o.id);g.append(b)});return g}
 function press(g,v){[...g.children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))}
+// 動きが多く姿が4つあるボス(ドラゴン): 色の番号の絵(b.sheets)を、姿ごとの色の表で塗って1コマずつの絵にする。使うぶんだけ作って少し覚えておく
+function sheetFrames(b,formIdx,anim){
+  b._c=b._c||new Map(); const key=formIdx+":"+anim; if(b._c.has(key))return b._c.get(key);
+  const im=b._img[anim]; if(!im.complete||!im.naturalWidth)return null;
+  const A=b.anim, cv=document.createElement("canvas"); cv.width=im.naturalWidth; cv.height=im.naturalHeight; const x=cv.getContext("2d");
+  x.drawImage(im,0,0); const d=x.getImageData(0,0,cv.width,cv.height), q=d.data, col=b.forms[formIdx].colors;
+  for(let i=0;i<q.length;i+=4){ if(!q[i+3])continue; const c=col[Math.round(q[i]/A.label_step)]; if(c){q[i]=c[0];q[i+1]=c[1];q[i+2]=c[2];q[i+3]=255}else q[i+3]=0 }
+  x.putImageData(d,0,0);
+  const t=document.createElement("canvas"); t.width=A.w; t.height=A.h; const tx=t.getContext("2d"), out=[];
+  for(let k=0;k<A.anims[anim];k++){ tx.clearRect(0,0,A.w,A.h); tx.drawImage(cv,(k%A.cols)*A.w,Math.floor(k/A.cols)*A.h,A.w,A.h,0,0,A.w,A.h); out.push(t.toDataURL()) }
+  b._c.set(key,out); if(b._c.size>8)b._c.delete(b._c.keys().next().value);
+  return out;
+}
+function animOf(c){return c.act==="idle"?"idle":c.move+"_"+c.act}
+function framesOf(c){
+  if(!c.b.sheets)return c.b.frames[c.form+":"+c.act];
+  return sheetFrames(c.b,Math.max(0,c.b.forms.findIndex(f=>f.id===c.form)),animOf(c))||[];
+}
 DATA.forEach(b=>{
-  const c={b,form:"normal",act:"idle",i:0,hold:0};
+  const c={b,form:"normal",act:"idle",i:0,hold:0,move:b.sheets?b.anim.moves[0].id:null};
+  const forms=b.sheets?b.forms.map(f=>({id:f.id,label:f.name})):FORMS;
+  const acts=b.sheets?ACTS.map(a=>({...a,n:b.anim.counts[a.id]})):ACTS.map(a=>({...a,n:b.frames["normal:"+a.id].length}));
   c.img=el("img",{alt:b.name,width:b.w*3,height:b.h*3}); c.fno=el("div",{class:"fno"}); c.tag=el("div",{class:"tag"});
-  c.formG=group(FORMS,"form",v=>set(c,v,c.act)); c.actG=group(ACTS.map(a=>({...a,n:b.frames["normal:"+a.id].length})),"tabs",v=>set(c,c.form,v));
+  c.formG=group(forms,"form",v=>set(c,v,c.act)); c.actG=group(acts,"tabs",v=>set(c,c.form,v));
   c.strip=el("div",{class:"strip"}); c.order=el("div",{class:"order"});
-  c.card=el("article",{class:"card"},el("div",{class:"stage"},c.img,c.tag,c.fno),
+  const rows=[el("div",{class:"row"},c.formG,c.actG)];
+  if(b.sheets){
+    // 技ごとの動き(構え・技中・硬直が、技ごとに違う)
+    c.moveG=group(b.anim.moves.map(m=>({id:m.id,label:m.name})),"moves",v=>{c.move=v;set(c,c.form,c.act==="idle"?"windup":c.act)});
+    rows.push(el("div",{class:"row"},el("span",{class:"lab"},"技ごとの動き"),c.moveG));
+    b._img={}; for(const a in b.sheets){const im=new Image(); im.onload=()=>{if(animOf(c)===a)set(c,c.form,c.act)}; im.src=b.sheets[a]; b._img[a]=im}
+  }
+  c.card=el("article",{class:"card"+(b.sheets?" wide":"")},el("div",{class:"stage"},c.img,c.tag,c.fno),
     el("div",{class:"body"},el("div",{class:"title"},el("h2",{},b.name),el("span",{class:"meta"},b.w+"×"+b.h+" / 核: "+b.core)),
-      el("div",{class:"row"},c.formG,c.actG),c.strip,c.order));
+      ...rows,c.strip,c.order));
   document.getElementById("grid").append(c.card); cards.push(c); set(c,"normal","idle");
 });
-function set(c,form,act){c.form=form;c.act=act;c.i=0;c.hold=0;c.paused=reduce;
-  press(c.formG,form);press(c.actG,act);c.card.classList.toggle("awake",form==="awake");c.tag.textContent=form==="awake"?"覚醒":"";
-  const a=ACTS.find(x=>x.id===act), f=c.b.frames[form+":"+act];
+function set(c,form,act){
+  if(c.b.sheets&&!c.b.forms.some(f=>f.id===form))form=form==="awake"?c.b.forms[1].id:"normal";       // 「全員まとめて 覚醒」は、覚醒1にする
+  c.form=form;c.act=act;c.i=0;c.hold=0;c.paused=reduce;
+  press(c.formG,form);press(c.actG,act);if(c.moveG)press(c.moveG,act==="idle"?"":c.move);
+  c.card.classList.toggle("awake",form!=="normal");c.tag.textContent=form==="normal"?"":(c.b.sheets?c.b.forms.find(f=>f.id===form).name:"覚醒");
+  const a=ACTS.find(x=>x.id===act), f=framesOf(c);
   c.strip.replaceChildren(...f.map((src,i)=>{const t=el("img",{src,alt:a.label+" "+i});t.onclick=()=>{c.i=i;c.paused=true;draw(c)};return t}));
-  const name=(form==="awake"?"覚醒・":"")+a.label, file=act+(form==="awake"?"_awakened":"");
+  const name=(form!=="normal"?"覚醒・":"")+a.label, file=c.b.sheets?"sheets/"+animOf(c)+".png":act+(form==="awake"?"_awakened":"");
   c.order.textContent=name+"("+file+"): "+(a.mode==="loop"?"0→"+(f.length-1)+" でループ":"0→"+(f.length-1)+" の順に1回")+(c.b.ms!==120?" / 1コマ "+c.b.ms/1000+"秒":"");
   draw(c)}
-function draw(c){const f=c.b.frames[c.form+":"+c.act];c.img.src=f[c.i];c.fno.textContent=c.i+" / "+(f.length-1);
+function draw(c){const f=framesOf(c);if(!f.length)return;c.img.src=f[c.i%f.length];c.fno.textContent=c.i+" / "+(f.length-1);
   [...c.strip.children].forEach((t,k)=>t.classList.toggle("on",k===c.i))}
 // コマ数と速さはボスごと(ふつうは 8/4/4/2 コマ・0.12秒。コマの多いボスは 1コマが短い)
 const TICK=20;
 function tick(){cards.forEach(c=>{if(c.paused)return;c.acc=(c.acc||0)+TICK;const ms=frameMs*(c.b.ms||120)/120;if(c.acc<ms)return;c.acc-=ms;
-  const a=ACTS.find(x=>x.id===c.act),n=c.b.frames[c.form+":"+c.act].length;
+  const a=ACTS.find(x=>x.id===c.act),n=framesOf(c).length;if(!n)return;
   if(a.mode==="once"&&c.i===n-1){if(++c.hold<Math.round(6*120/(c.b.ms||120)))return;c.hold=0;c.i=0}else c.i=(c.i+1)%n;draw(c)});setTimeout(tick,TICK)}
 let gForm="normal", gAct="idle";
 const allForm=group(FORMS,"form",v=>{gForm=v;press(allForm,v);cards.forEach(c=>set(c,v,c.act))});
