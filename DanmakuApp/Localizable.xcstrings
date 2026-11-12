@@ -40213,61 +40213,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "At the chosen phase, the boss changes form with a flashy effect."
+            "value": "At the chosen phase, the boss transforms with an effect and its special moves get stronger (more or faster bullets, etc.). The same settings fire a different pattern before and after awakening."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "選んだ段階になると、ボスが演出とともに姿を変えます。"
+            "value": "選んだ段階になると、ボスが演出とともに姿を変え、専用の技も強くなります(弾が増える・速くなるなど)。同じ設定でも、覚醒の前と後で弾幕が変わります。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "到达所选阶段时，BOSS 会伴随特效变换形态。"
+            "value": "到达所选阶段时，Boss 会伴随演出改变外形，专属招式也会变强（弹幕变多、变快等）。即使设置相同，觉醒前后的弹幕也会不同。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "到達所選階段時，BOSS 會伴隨特效變換形態。"
+            "value": "到達所選階段時，Boss 會伴隨演出改變外形，專屬招式也會變強（彈幕變多、變快等）。即使設定相同，覺醒前後的彈幕也會不同。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "선택한 페이즈가 되면 보스가 연출과 함께 모습을 바꿉니다."
+            "value": "선택한 페이즈가 되면 보스가 연출과 함께 모습을 바꾸고, 전용 기술도 강해져요(탄이 늘거나 빨라지는 등). 같은 설정이라도 각성 전후로 탄막이 달라져요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En la fase elegida, el jefe cambia de forma con un efecto especial."
+            "value": "En la fase elegida, el jefe se transforma con un efecto y sus movimientos especiales se vuelven más fuertes (más balas, más rápidas, etc.). Con los mismos ajustes, el patrón cambia antes y después del despertar."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "À la phase choisie, le boss change de forme avec un effet spectaculaire."
+            "value": "À la phase choisie, le boss se transforme avec un effet et ses attaques spéciales deviennent plus fortes (plus de balles, plus rapides, etc.). Avec les mêmes réglages, le motif change avant et après l'éveil."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "In der gewählten Phase wechselt der Boss mit einem Effekt seine Gestalt."
+            "value": "In der gewählten Phase verwandelt sich der Boss mit einem Effekt, und seine Spezialangriffe werden stärker (mehr oder schnellere Kugeln usw.). Bei gleichen Einstellungen ändert sich das Muster vor und nach dem Erwachen."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Na fase escolhida, o chefe muda de forma com um efeito especial."
+            "value": "Na fase escolhida, o chefe se transforma com um efeito e seus golpes especiais ficam mais fortes (mais balas, mais rápidas etc.). Com as mesmas configurações, o padrão muda antes e depois do despertar."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "На выбранной фазе босс меняет облик с эффектом."
+            "value": "В выбранной фазе босс преображается с эффектом, а его особые приёмы усиливаются (больше пуль, они быстрее и т. п.). При тех же настройках узор до и после пробуждения отличается."
           }
         }
       }
