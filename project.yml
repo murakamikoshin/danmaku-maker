@@ -44,6 +44,11 @@ targets:
         APPLE_APP_ID: $(APPLE_APP_ID)
         NSUserTrackingUsageDescription: 広告を表示するために使用します。許可しなくても遊べます。
         ITSAppUsesNonExemptEncryption: false
+        # 共有ページの「アプリで遊ぶ」から開くための URL(danmakumaker://s/ABCDE)。
+        # Universal Links は、同じサイトの中のリンクや転送では働かず、LINE・X などのアプリ内ブラウザでも働かないことが多いため
+        CFBundleURLTypes:
+          - CFBundleURLName: com.koshin.danmakumaker
+            CFBundleURLSchemes: [danmakumaker]
         UIAppFonts: [DelaGothicOne-Regular.ttf]
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
