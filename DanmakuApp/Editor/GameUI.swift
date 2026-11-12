@@ -241,18 +241,18 @@ struct ModeCards: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { onSelect(m) }
         } label: {
             VStack(spacing: 6) {
-                // 選択中は黄色の札に黒い絵。それ以外は、クリア条件の色の絵
-                ModeGlyph(mode: m, size: 32, color: selected ? GameStyle.ink : nil,
-                          core: selected ? GameStyle.yellow : (m == .damage ? GameStyle.panelHi : .white))
+                // 選択中は、そのクリア条件の色の札に濃い紺の絵。それ以外は、クリア条件の色の絵
+                ModeGlyph(mode: m, size: 32, color: selected ? GameStyle.onTint : nil,
+                          core: selected ? GameStyle.tint(m) : (m == .damage ? GameStyle.panelHi : .white))
                     .frame(height: 36)
-                Text(title).font(.display(14)).foregroundStyle(selected ? GameStyle.ink : GameStyle.text)
+                Text(title).font(.display(14)).foregroundStyle(selected ? GameStyle.onTint : GameStyle.text)
                     .lineLimit(1).minimumScaleFactor(0.6)
-                Text(sub).font(.system(size: 10, weight: .bold)).foregroundStyle(selected ? GameStyle.ink.opacity(0.75) : GameStyle.dim)
+                Text(sub).font(.system(size: 10, weight: .bold)).foregroundStyle(selected ? GameStyle.onTint.opacity(0.75) : GameStyle.dim)
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.vertical, 12).padding(.horizontal, 6)
-            .background(KeyCap(fill: selected ? GameStyle.yellow : GameStyle.panelHi, radius: 14, depth: selected ? 4 : 0))
+            .background(KeyCap(fill: selected ? GameStyle.tint(m) : GameStyle.panelHi, radius: 14, depth: selected ? 4 : 0))
             .padding(.bottom, 4)
         }
         .buttonStyle(BounceButtonStyle())
