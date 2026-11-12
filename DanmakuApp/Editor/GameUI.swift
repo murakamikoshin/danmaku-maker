@@ -893,7 +893,7 @@ struct ModeIcon: View {
     var size: CGFloat = 46
 
     var body: some View {
-        ModeGlyph(mode: mode, size: size * 0.6, color: GameStyle.ink, core: GameStyle.tint(mode))
+        ModeGlyph(mode: mode, size: size * 0.6, color: GameStyle.onTint, core: GameStyle.tint(mode))
             .frame(width: size, height: size)
             .background(GameStyle.tint(mode), in: PixelRect(cornerRadius: size * 0.22))
     }
@@ -922,7 +922,7 @@ struct StageCardShell<Content: View>: View {
                 GameStyle.panel
                 GameStyle.tint(mode).frame(width: band)
                 if thumbnail == nil {
-                    ModeGlyph(mode: mode, size: 28, color: GameStyle.ink, core: GameStyle.tint(mode)).frame(width: band)
+                    ModeGlyph(mode: mode, size: 28, color: GameStyle.onTint, core: GameStyle.tint(mode)).frame(width: band)
                 }
             }
         }

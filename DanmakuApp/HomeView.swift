@@ -398,7 +398,7 @@ struct ModeBadge: View {
     var body: some View {
         Text(mode == .boss ? "badge.boss" : mode == .damage ? "badge.damage" : mode == .sequence ? "badge.sequence" : "badge.survive")
             .font(.system(size: 10, weight: .black))
-            .foregroundStyle(GameStyle.ink)
+            .foregroundStyle(GameStyle.onTint)
             .padding(.horizontal, 7).padding(.vertical, 2)
             .background(tint, in: PixelRect(cornerRadius: 5))
     }
