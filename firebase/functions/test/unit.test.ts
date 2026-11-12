@@ -120,7 +120,7 @@ describe("OGP 画像", () => {
 describe("共有ページ", () => {
   const stage = { name: "<b>渦</b>", authorName: "A&B", mode: "survive" as const, durationSec: 20, bossHp: null, plays: 10, clears: 4, likes: 2 };
   it("OGP タグと、HTML エスケープ", () => {
-    const { status, html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "https://alt.test/s/K7X2P", appId: "123" });
+    const { status, html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "danmakumaker://s/K7X2P", appId: "123" });
     expect(status).toBe(200);
     for (const tag of ['property="og:title"', 'property="og:description"', 'property="og:image" content="https://ex.test/og/K7X2P.png"', 'name="twitter:card" content="summary_large_image"']) expect(html).toContain(tag);
     expect(html).not.toContain("<b>渦</b>");
@@ -134,11 +134,11 @@ describe("共有ページ", () => {
     expect(html).toContain("Clear rate");
   });
   it("ステージIDの表示と、アプリで開くボタン・帯", () => {
-    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "https://alt.test/s/K7X2P", appId: "123" });
+    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "danmakumaker://s/K7X2P", appId: "123" });
     expect(html).toContain('<b id="sid">K7X2P</b>');
     expect(html).toContain("ステージID");
-    // 同じサイトの中のリンクでは Universal Links が働かないので、別ドメインの同じページへ飛ばす
-    expect(html).toContain('class="btn primary" href="https://alt.test/s/K7X2P">アプリで遊ぶ');
+    // アプリ専用の URL で開く(Universal Links は同じサイトの中や転送では働かない)
+    expect(html).toContain('class="btn primary" href="danmakumaker://s/K7X2P">アプリで遊ぶ');
     expect(html).toContain('class="btn sub" href="https://apps.apple.com/x"');
     // Safari の「開く」の帯。開くと共有ページの URL がアプリに渡り、今の版のアプリでもそのステージが開く
     expect(html).toContain('<meta name="apple-itunes-app" content="app-id=123, app-argument=https://ex.test/s/K7X2P">');

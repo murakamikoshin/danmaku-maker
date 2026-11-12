@@ -24,7 +24,7 @@ const T = {
     sequence: (n: number) => `連戦 ${n}場面`,
     desc: (a: string, mode: string, rate: string, plays: number) => `${a} さんが作った弾幕ステージ。${mode}・クリア率${rate}・挑戦${plays}回。クリアできる？`,
     by: "作者", plays: "挑戦", clears: "クリア", rate: "クリア率", likes: "いいね",
-    open: "アプリで遊ぶ", store: "App Store でダウンロード",
+    open: "アプリで遊ぶ", store: "まだ入れていない方は App Store へ",
     id: "ステージID", copy: "コピー", copied: "コピーしました",
     idHint: "アプリのホームの検索に、この ID を入れても遊べます。",
     tagline: "弾幕ステージを作って、投稿して、世界中で遊ぼう。",
@@ -39,7 +39,7 @@ const T = {
     sequence: (n: number) => `Boss rush · ${n} waves`,
     desc: (a: string, mode: string, rate: string, plays: number) => `A bullet-hell stage by ${a}. ${mode} · ${rate} clear rate · ${plays} plays. Can you clear it?`,
     by: "By", plays: "Plays", clears: "Clears", rate: "Clear rate", likes: "Likes",
-    open: "Play in the app", store: "Download on the App Store",
+    open: "Play in the app", store: "New here? Get it on the App Store",
     id: "Stage ID", copy: "Copy", copied: "Copied",
     idHint: "You can also enter this ID in the search on the app's home screen.",
     tagline: "Build bullet-hell stages, share them, and dodge the world.",
@@ -72,7 +72,7 @@ function shell(lang: Lang, head: string, body: string): string {
 
 export interface PageInput {
   id: string; stage: SharedStage | null; lang: Lang; origin: string; appStoreUrl: string;
-  /** 「アプリで遊ぶ」の行き先(別のドメインの同じページ。sharePage の説明を参照) */
+  /** 「アプリで遊ぶ」の行き先(アプリ専用の URL。sharePage の説明を参照) */
   openUrl: string;
   /** Safari の上に出る「開く」の帯(スマートバナー)。開くと、この URL がアプリに渡る */
   appId: string;
