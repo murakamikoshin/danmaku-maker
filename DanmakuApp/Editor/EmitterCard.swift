@@ -44,6 +44,9 @@ struct EmitterCard: View {
 
     /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
     @State private var patternOpen = false
+    /// 持っていないパターンを押したときに開くショップ(開く先の商品のカード)。一覧の外のカード全体で持つ
+    @State private var shopFocus: ShopFocus?
+    struct ShopFocus: Identifiable { let id: String }
 
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
     private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
@@ -98,7 +101,8 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
                 }
                 if patternOpen {
-                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil, emitter: $emitter)
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil,
+                                 onLocked: { shopFocus = ShopFocus(id: $0) }, emitter: $emitter)
                 }
             }
 
@@ -170,6 +174,7 @@ struct EmitterCard: View {
         .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
+        .sheet(item: $shopFocus) { ShopView(focus: $0.id) }
     }
 
     /// 撃つ場所を選ぶ。「好きな場所」にしたとき、場所がボスのすぐ近く(初期値のまま)なら、少し離して変わったことが分かるようにする

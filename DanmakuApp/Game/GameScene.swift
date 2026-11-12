@@ -589,7 +589,7 @@ final class GameScene: SKScene {
                     continue
                 }
                 let boomerang = b.drawsAsBoomerang
-                n.texture = boomerang ? boomerangTextures[min(max(b.color, 0), boomerangTextures.count - 1)] : bulletTextures[b.color]
+                n.texture = boomerang ? boomerangTextures[min(max(b.color, 0), boomerangTextures.count - 1)] : bulletTextures[min(max(b.color, 0), bulletTextures.count - 1)]
                 // 巨大弾は、当たる範囲に合わせて大きく描く。ブーメランは🪃の形で、くるくる回す
                 // 膨らむ泡など、広さを持つ弾は、当たる広さに合わせて描く
                 let size = b.isGiant ? CGSize(width: DanmakuConfig.giantDrawRadius * 2, height: DanmakuConfig.giantDrawRadius * 2)
