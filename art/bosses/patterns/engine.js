@@ -88,7 +88,7 @@ const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, pla
 
 // ---------- 状態 ----------
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
-  B: { x: 180, y: 128 }, P: { x: 180, y: 500 }, aw: false, lv: 0, boss: null, pat: null, anim: "idle", animT: 0, auto: true, target: null, manualUntil: 0,
+  B: { x: 180, y: 128 }, P: { x: 180, y: 500 }, aw: false, lv: 0, boss: null, pat: null, anim: "idle", animT: 0, auto: true, target: null, manualUntil: 0, react: 0,
   // ここから下は、ドラゴンの技で使う: ボス本体の移動、自機を流す風・引き寄せ、バインド(動けない)、範囲攻撃、即死
   Boff: { x: 0, y: 0 }, wind: { x: 0, y: 0 }, pull: null, bind: 0, zones: [], kills: 0, heat: 0,
   // 見た目だけの粒(火花・煙・火の粉)と、画面のゆれ・ボスの絵の差し替え(横向きに飛ぶ姿)
@@ -572,7 +572,7 @@ function* glideTo(x, y, n) {        // ボス本体を、n フレームかけて
   for (let i = 1; i <= n; i++) { const t = i / n, e = t * t * (3 - 2 * t); G.Boff.x = x0 + (x - x0) * e; G.Boff.y = y0 + (y - y0) * e; yield 1; }
 }
 function bodyHit(frames, r) {       // ボス本体の当たり判定(見えない弾を体に重ねる)
-  fire("body", G.B.x, G.B.y, 0, 0, { r: r || 40, life: frames, u: b => { b.x = G.B.x; b.y = G.B.y + 10; } });
+  fire("body", G.B.x, G.B.y, 0, 0, { r: r || 40, life: frames, u: b => { b.mvx = G.B.x - b.x; b.mvy = G.B.y + 10 - b.y; b.x = G.B.x; b.y = G.B.y + 10; } });      // mvx, mvy: 動いた向き(自動で避ける自機が先読みに使う)
 }
 // 技の強さは、姿(lv: 0 通常 / 1 覚醒1 蒼炎 / 2 覚醒2 紫電 / 3 覚醒3 白金)が進むほど上がる。V(通常, 覚醒1, 覚醒2, 覚醒3) で段階ごとの値を書く
 R.dragonBreath = function* (aw, lv) {
@@ -580,8 +580,8 @@ R.dragonBreath = function* (aw, lv) {
   // 柱は「自機に近い壁の側」から出て、広い側へ追い立てる(壁に追い詰めない)。追う速さは自機より遅い
   const V = (...v) => v[lv];
   for (let rep = 0; rep < V(1, 1, 1, 2); rep++) {
-    const o = DMOUTH(), dur = V(170, 160, 150, 120);
-    const L = { from: DMOUTH, a: aimFrom(o) + (G.P.x < W / 2 ? 0.45 : -0.45), len: 900, w: V(80, 96, 108, 122), warn: rep ? 30 : 44, dur, t: 0, va: 0, track: V(0.0042, 0.0046, 0.0049, 0.0052), fire: 1, col: ["#f0541e", "#ffdc8c"] };
+    const o = DMOUTH(), dur = V(150, 160, 160, 150);
+    const L = { from: DMOUTH, a: aimFrom(o) + (G.P.x < W / 2 ? 0.45 : -0.45), len: 900, w: V(78, 96, 106, 124), warn: rep ? 30 : 44, dur, t: 0, va: 0, track: V(0.0041, 0.0046, 0.0050, 0.0057), fire: 1, col: ["#f0541e", "#ffdc8c"] };
     G.lasers.push(L);
     for (let t = 0; t < L.warn + dur; t++) {
       if (t > L.warn + 6 && t % V(13, 11, 9, 8) === 0) {
@@ -599,12 +599,13 @@ R.dragonRaid = function* (aw, lv) {
   // 覚醒2からは、ひっかいたあとに両腕の叩きつけ(大きな衝撃)が加わる
   const V = (...v) => v[lv];
   for (let rep = 0; rep < V(2, 3, 3, 4); rep++) {
-    const tx = clamp(G.P.x, 70, W - 70), ty = clamp(G.P.y - 95, 150, 420), ap = V(24, 22, 20, 18), w1 = 10 + ap + 6;
+    const tx = clamp(G.P.x, 70, W - 70), ty = clamp(G.P.y - 95, 150, 420), ap = V(26, 19, 15, 14), w1 = 10 + ap + 6;
     G.marks.push({ k: "target", x: tx, y: ty + 95, t: 0, life: w1 - 6 });
     // 爪が届く範囲は、飛んでくる間に予告する(右の爪 → 左の爪 → 覚醒2からは叩きつけ)
-    zone({ shape: "circle", x: tx + 30, y: ty + 62, r: 68, warn: w1, dur: 8, col: "#fff4c8", claw: 1 });
-    zone({ shape: "circle", x: tx - 30, y: ty + 62, r: 68, warn: w1 + 20, dur: 8, col: "#fff4c8", claw: 1 });
-    if (lv >= 2) zone({ shape: "circle", x: tx, y: ty + 80, r: V(0, 0, 92, 104), warn: w1 + 44, dur: 14, col: "#ff8c28", boom: 1 });
+    const cx = V(30, 24, 20, 18), cy = ty + V(64, 76, 80, 82), cr = V(66, 81, 86, 88);       // 爪の範囲: 段階が進むほど大きく、自機の位置に寄る
+    zone({ shape: "circle", x: tx + cx, y: cy, r: cr, warn: w1, dur: 8, col: "#fff4c8", claw: 1 });
+    zone({ shape: "circle", x: tx - cx, y: cy, r: cr, warn: w1 + 20, dur: 8, col: "#fff4c8", claw: 1 });
+    if (lv >= 2) zone({ shape: "circle", x: tx, y: ty + 85, r: V(0, 0, 100, 116), warn: w1 + 44, dur: 14, col: "#ff8c28", boom: 1 });
     yield 10;
     bodyHit(ap + (lv >= 2 ? 90 : 66), 44);
     yield* glideTo(tx - 180, ty - 128, ap);
@@ -621,19 +622,20 @@ R.dragonRaid = function* (aw, lv) {
   yield 30;
 };
 R.dragonGale = function* (aw, lv) {
-  // 羽ばたきの暴風で、自機が横へ流される。風に乗って、大きな風の刃が横から飛んでくる。風向きは羽ばたきごとに変わる
+  // 羽ばたきの暴風で、自機が横へ流される。風に乗って、大きな風の刃が横から飛んでくる。風向きは羽ばたきごとに変わる。
+  // 羽ばたきの終わりに、両翼から自機狙いの風の刃(覚醒2から3方向)
   const V = (...v) => v[lv];
   let dir = rand() < 0.5 ? 1 : -1;
   for (let v = 0; v < V(4, 6, 7, 8); v++) {
     dir = aw ? (rand() < 0.5 ? 1 : -1) : -dir;
     G.marks.push({ k: "wind", dir, t: 0, life: V(26, 24, 22, 20) });
     yield V(26, 24, 22, 20);
-    G.wind = { x: dir * V(1.6, 2.0, 2.3, 2.6), y: V(0.5, 0.5, 0.8, 1.0) };
-    for (let k = 0; k < V(3, 5, 6, 7); k++) {
-      fire("gust", dir > 0 ? -20 : W + 20, 240 + rand() * 320, dir > 0 ? 0 : PI, 3.6 + rand() + lv * 0.3, { big: V(3.2, 3.2, 3.5, 3.8), r: V(11, 11, 12, 13), face: dir > 0 ? PI / 2 : -PI / 2 });
-      yield V(12, 10, 9, 8);
+    G.wind = { x: dir * V(1.5, 2.2, 2.7, 3.0), y: V(0.5, 0.6, 0.8, 1.0) };
+    for (let k = 0; k < V(3, 8, 10, 12); k++) {
+      fire("gust", dir > 0 ? -20 : W + 20, 240 + rand() * 330, dir > 0 ? 0 : PI, V(3.4, 4.3, 4.9, 5.3) + rand(), { big: V(3.2, 3.2, 3.5, 3.8), r: V(11, 12, 13, 14), face: dir > 0 ? PI / 2 : -PI / 2 });
+      yield V(12, 8, 7, 6);
     }
-    for (const side of [0, 1]) { const o = DWING(side); fire("gust", o.x, o.y, aimFrom(o), 3.2 + lv * 0.2, { big: 2.6, r: 9, face: aimFrom(o) + PI / 2 }); }
+    for (const side of [0, 1]) { const o = DWING(side); for (const d of lv >= 2 ? [-0.3, 0, 0.3] : [0]) fire("gust", o.x, o.y, aimFrom(o) + d, V(3.2, 3.6, 3.8, 4.0), { big: 2.6, r: 9, face: aimFrom(o) + d + PI / 2 }); }
     yield 14;
     G.wind = { x: 0, y: 0 };
   }
@@ -643,7 +645,7 @@ R.dragonInhale = function* (aw, lv) {
   // 息を吸い込む: 自機も火の粉も口へ引き寄せられる。自機の撃った弾も吸い込まれて食べられる(ボスに届かない)。
   // 吸い終わると、超巨大な火球を吐く。落ちた所で、画面の半分を焼く大爆発。そのあと、食べた自機の弾を撃ち返してくる(食べた数だけ)
   const V = (...v) => v[lv];
-  G.pull = { at: DMOUTH, f: V(0.75, 0.9, 1.0, 1.08) };
+  G.pull = { at: DMOUTH, f: V(0.7, 1.0, 1.3, 1.6) };
   let eaten = 0;
   for (let t = 0; t < 130; t++) {
     if (t % 5 === 0) fire("pshot", G.P.x, G.P.y - 12, -PI / 2, 6, { friendly: 1, u: b => {      // 自機の弾(試射場では、この技の間だけ撃つ)
@@ -657,17 +659,18 @@ R.dragonInhale = function* (aw, lv) {
     yield 1;
   }
   G.pull = null;
-  for (let n = 0; n < V(1, 2, 2, 3); n++) {
-    const m = DMOUTH(), tx = clamp(G.P.x, 60, W - 60), ty = clamp(G.P.y, 330, 520), Rr = V(150, 158, 165, 172), fl = V(60, 64, 66, 70);
+  // 火球は自機のいる所に落ちる(端に寄せない: 寄せると、隅にいるとき逃げきれない)。落ちるまで fl = 半径 ÷ 3.3 + 余裕(26 → 20 → 16 → 13 フレーム。気づいてから走って抜けられる)
+  for (let n = 0; n < V(1, 2, 3, 3); n++) {
+    const m = DMOUTH(), tx = G.P.x, ty = G.P.y, Rr = V(140, 154, 160, 168), fl = Math.round(Rr / 3.3) + V(26, 20, 16, 13);
     zone({ shape: "circle", x: tx, y: ty, r: Rr, warn: fl, dur: 26, col: "#ff8c28", boom: 1 });
     fire("sun", m.x, m.y, 0, 0, { big: V(5, 5, 5.5, 6), r: 26, life: fl, u: b => { const t = b.t / fl; b.x = m.x + (tx - m.x) * t; b.y = m.y + (ty - m.y) * t * t; } });
-    yield fl + V(40, 34, 30, 26);
+    yield fl + V(40, 20, 18, 12);
   }
   // 食べた弾を撃ち返す: 自機の弾と同じ見た目で、扇になって降ってくる
   const back = Math.min(eaten, V(24, 36, 48, 60));
   for (let i = 0; i < back; i++) {
-    const m = DMOUTH(); fire("pshot", m.x, m.y, aimFrom(m) + sin(i * 0.9) * 0.5, 4.2 + lv * 0.2, { big: 1.6, r: 3 });
-    yield lv >= 2 ? 2 : 3;
+    const m = DMOUTH(); for (const d of lv >= 3 ? [-0.25, 0, 0.25] : [0]) fire("pshot", m.x, m.y, aimFrom(m) + d + sin(i * 0.9) * 0.5, V(3.6, 4.2, 4.8, 5.4), { big: 1.6, r: 3 });
+    yield V(4, 3, 2, 2);
   }
   yield 40;
 };
@@ -677,14 +680,14 @@ R.dragonGlide = function* (aw, lv) {
   const V = (...v) => v[lv];
   yield* glideTo(0, -340, 26);
   for (let pass = 0; pass < V(3, 4, 5, 6); pass++) {
-    const dir = pass % 2 ? -1 : 1, hh = V(100, 120, 130, 140), y0 = clamp(G.P.y - hh / 2, 250, H - hh - 60), warn = V(50, 48, 46, 44), n = V(36, 34, 30, 28);
+    const dir = pass % 2 ? -1 : 1, hh = V(100, 124, 136, 148), y0 = G.P.y - hh / 2, warn = V(48, 35, 35, 34), n = V(36, 34, 30, 28);
     zone({ shape: "rect", x: 0, y: y0, w: W, h: hh, warn, dur: n, col: "#ff8c28", shadow: 1, fly: dir });
     yield warn;
     G.pose = dir > 0 ? "side_fly_r" : "side_fly_l";
     for (let i = 0; i < n; i++) {
       const x = dir > 0 ? -260 + i * (W + 520) / n : W + 260 - i * (W + 520) / n;
       G.Boff.x = x - 180 + dir * 20; G.Boff.y = y0 + hh / 2 - 24 - 128;
-      if (i % V(4, 3, 3, 2) === 0 && x > 10 && x < W - 10) fire("flame", x, y0 + hh / 2 + 16, PI / 2 + (rand() - 0.5) * 0.3, 1.6 + rand(), { big: 2.4, r: 8, life: 90 });
+      if (i % V(4, 3, 2, 2) === 0 && x > 10 && x < W - 10) fire("flame", x, y0 + hh / 2 + 16, PI / 2 + (rand() - 0.5) * 0.3, V(1.6, 1.9, 2.2, 2.5) + rand(), { big: 2.4, r: 8, life: 90 });
       yield 1;
     }
     G.pose = null; G.Boff.x = 0; G.Boff.y = -340;
@@ -698,7 +701,7 @@ R.dragonRoar = function* (aw, lv) {
   const V = (...v) => v[lv];
   for (let v = 0; v < V(3, 5, 6, 7); v++) {
     const m = DMOUTH(), gapA = aimFrom(m) + (rand() < 0.5 ? 1 : -1) * (0.3 + rand() * 0.25);
-    zone({ shape: "ring", at: DMOUTH, x: m.x, y: m.y, r: 10, vr: V(2.6, 2.9, 3.1, 3.3), th: V(16, 16, 18, 20), gapA, gapW: V(0.55, 0.50, 0.47, 0.45), warn: 0, dur: 200, bind: V(80, 85, 95, 110), col: "#ffdc8c" });
+    zone({ shape: "ring", at: DMOUTH, x: m.x, y: m.y, r: 10, vr: V(2.6, 2.9, 3.0, 3.4), th: V(16, 16, 18, 20), gapA, gapW: V(0.55, 0.50, 0.49, 0.42), warn: 0, dur: 200, bind: V(80, 85, 95, 110), col: "#ffdc8c" });
     yield V(34, 32, 30, 28);
     if (v % 2 === 1 || lv >= 2) {
       const o = DMOUTH();
@@ -709,65 +712,96 @@ R.dragonRoar = function* (aw, lv) {
   yield 70;
 };
 R.dragonQuake = function* (aw, lv) {
-  // 叩きつけで地面が裂ける。稲妻の形のひびが光って予告され、ひびに沿って炎の壁が噴き上がる。岩も飛び散る
+  // 叩きつけで地面が裂ける。稲妻の形のひびが光って予告され、ひびに沿って炎の壁が噴き上がる。岩も飛び散る。
+  // 覚醒2からは、ひびが2本同時に走る(2本目は自機から少し離れた所から。2本のあいだを抜ける)
   const V = (...v) => v[lv];
   for (let v = 0; v < V(2, 3, 4, 5); v++) {
-    const pts = []; let x = clamp(G.P.x + (rand() - 0.5) * 80, 40, W - 40);
-    for (let y = 150; y <= H + 20; y += 50) { pts.push({ x, y }); x = clamp(x + (rand() < 0.5 ? -1 : 1) * (30 + rand() * 40), 30, W - 30); }
-    const warn = V(44, 42, 40, 38);
-    G.marks.push({ k: "crack", pts, t: 0, life: warn });
-    yield warn;
-    for (let i = 0; i < pts.length - 1; i++) for (let k = 0; k < 2; k++) {
-      const a = pts[i], b = pts[i + 1], px = a.x + (b.x - a.x) * k / 2, py = a.y + (b.y - a.y) * k / 2;
-      zone({ shape: "circle", x: px, y: py, r: V(24, 24, 28, 30), warn: i * 2, dur: V(46, 50, 54, 58), col: "#ff8c28", pillar: 1 });
+    const warn = V(46, 38, 34, 30), r = V(22, 26, 30, 34), cracks = [];
+    const x0 = clamp(G.P.x + (rand() - 0.5) * 80, 40, W - 40);
+    for (const sx of lv >= 2 ? [x0, x0 + (x0 < W / 2 ? 1 : -1) * (110 + rand() * 40)] : [x0]) {
+      const pts = []; let x = clamp(sx, 30, W - 30);
+      for (let y = 150; y <= H + 20; y += 50) { pts.push({ x, y }); x = clamp(x + (rand() < 0.5 ? -1 : 1) * (30 + rand() * 40), 30, W - 30); }
+      G.marks.push({ k: "crack", pts, t: 0, life: warn, r }); cracks.push(pts);
     }
-    for (let k = 0; k < V(4, 6, 8, 10); k++) { const q = pts[1 + Math.floor(rand() * (pts.length - 2))]; fire("rock", q.x, q.y, -PI / 2 + (rand() - 0.5) * 1.4, 3 + rand() * 2, { big: 2.2, r: 8, spin: 1, u: b => { b.vy += 0.07; } }); }
+    yield warn;
+    for (const pts of cracks) {
+      for (let i = 0; i < pts.length - 1; i++) for (let k = 0; k < 2; k++) {
+        const a = pts[i], b = pts[i + 1], px = a.x + (b.x - a.x) * k / 2, py = a.y + (b.y - a.y) * k / 2;
+        zone({ shape: "circle", x: px, y: py, r, warn: i * 2, dur: V(46, 50, 54, 58), col: "#ff8c28", pillar: 1 });
+      }
+      for (let k = 0; k < V(4, 7, 7, 9); k++) { const q = pts[1 + Math.floor(rand() * (pts.length - 2))]; fire("rock", q.x, q.y, -PI / 2 + (rand() - 0.5) * 1.4, V(3, 3.4, 3.8, 4.2) + rand() * 2, { big: 2.2, r: 8, spin: 1, u: b => { b.vy += 0.07; } }); }
+    }
     yield V(64, 50, 44, 38);
   }
   yield 40;
 };
+// 尻尾の先の x(帯の当たり判定と、試射場の尻尾の絵の両方で使う)。尻尾の長さは TAIL_LEN、先のとげは前へ 40px。
+// 先は画面の外(-60)から入り、付け根まで画面の外へ抜けきる(W + TAIL_LEN + 20)まで、dur フレームで進む
+const TAIL_LEN = 380, tailTip = z => { const u = (z.t - z.warn) / z.dur, x = -60 + u * (W + TAIL_LEN + 80); return z.sweep > 0 ? x : W - x; };
 R.dragonTail = function* (aw, lv) {
-  // 尻尾の薙ぎ払い: 自機の高さに横一文字の帯が予告され、巨大な尻尾が画面を横切る。上下どちらかへ逃げる。通ったあと、トゲが上下に飛ぶ
+  // 尻尾の薙ぎ払い: 自機の高さに横一文字の帯が予告され、巨大な尻尾が画面を横切る(尻尾が通っている所だけが当たる)。上下どちらかへ逃げる。
+  // 通ったあと、トゲが上下に飛ぶ。覚醒2からは、通り過ぎた尻尾がすぐ反対から薙ぎ返してくる(2本目の帯は、そのときの自機の高さ)
   const V = (...v) => v[lv];
-  for (let v = 0; v < V(3, 4, 5, 6); v++) {
-    const hh = V(76, 96, 104, 112), y0 = clamp(G.P.y - hh / 2, 290, 470 - lv * 12), dir = v % 2 ? -1 : 1, warn = V(38, 36, 34, 32);
-    zone({ shape: "rect", x: 0, y: y0, w: W, h: hh, warn, dur: 14, col: "#ffc83c", sweep: dir });
-    yield warn;
-    const n = V(9, 9, 11, 13), sx0 = rand() * (W / n);
-    for (let k = 0; k < n; k++) { const x = sx0 + k * W / n; fire("spine", x, y0 + hh / 2, k % 2 ? PI / 2 : -PI / 2, 2.6 + lv * 0.25, { big: 2.2, r: 6 }); }
-    yield V(46, 34, 30, 26);
+  const sweep = function* (dir, warn) {
+    const hh = V(80, 112, 120, 132), y0 = G.P.y - hh / 2, dur = V(38, 34, 30, 27);
+    zone({ shape: "rect", x: 0, y: y0, w: W, h: hh, warn, dur, col: "#ffc83c", sweep: dir });
+    yield warn + Math.round(dur * 0.4);      // 尻尾の先が画面の反対側に届くころに、トゲを飛ばす
+    const n = V(7, 9, 12, 14), sx0 = rand() * (W / n);
+    for (let k = 0; k < n; k++) { const x = sx0 + k * W / n; fire("spine", x, y0 + hh / 2, k % 2 ? PI / 2 : -PI / 2, V(2.3, 2.8, 3.2, 3.6), { big: 2.2, r: 6 }); }
+  };
+  for (let v = 0; v < V(3, 4, 4, 5); v++) {
+    const dir = v % 2 ? -1 : 1;
+    yield* sweep(dir, V(34, 23, 26, 24));
+    if (lv >= 2) yield* sweep(-dir, V(0, 0, 32, 30));
+    yield V(50, 40, 30, 24);
   }
   yield 50;
 };
 R.dragonRampage = function* (aw, lv) {
   // 本体が画面じゅうを8の字に飛び回る。体に当たるとダメージ。飛んだ跡に炎の竜巻が残り、自機を引き寄せる。竜巻に当たるとバインド
   const V = (...v) => v[lv];
-  const T = V(210, 250, 280, 310), at = V([50, 110], [50, 110], [50, 110, 170], [40, 100, 160]);
-  bodyHit(T + 20, 44);
-  const tor = [];
+  const T = V(210, 250, 280, 300), at = V([60, 130], [50, 110, 170], [40, 95, 150, 205], [30, 80, 130, 180, 230]);
+  bodyHit(T + 20, V(40, 44, 48, 52));
+  const tor = []; let cx = 0;      // cx: 8の字の中心が、覚醒1から自機の横の位置へゆっくり寄る
   for (let t = 0; t < T; t++) {
-    const u = t / T * TAU * V(1.5, 2, 2.5, 3), e = Math.min(1, t / 30, (T - t) / 30);
-    G.Boff.x = sin(u) * 120 * e; G.Boff.y = (0.5 - 0.5 * cos(u * 2)) * 300 * e + sin(u) * 30 * e;
+    const u = t / T * TAU * V(1.5, 2, 2.6, 3.2), e = Math.min(1, t / 30, (T - t) / 30);
+    cx += (clamp(G.P.x - 180, -90, 90) * V(0, 0.4, 0.7, 0.9) - cx) * 0.03; G.Boff.x = (sin(u * 2) * V(110, 120, 130, 140) + cx) * e; G.Boff.y = (0.5 - 0.5 * cos(u)) * V(320, 340, 360, 385) * e;      // 縦の8の字: 上 → まん中で交差 → 下(自機のいる高さ)まで飛び込む。段階が進むほど深い
     if (at.includes(t)) {
       const b = fire("tornado", G.B.x, G.B.y + 40, 0, 0, { big: V(5, 5, 5.5, 6), r: V(22, 22, 24, 26), bind: V(50, 50, 60, 70), life: 260, x0: clamp(G.B.x, 60, W - 60), y0: clamp(G.B.y + 60, 280, 520), u: q => { q.x = q.x0 + sin(q.t * 0.03 + q.ph) * 60; q.y = q.y0 + sin(q.t * 0.05) * 16; } });
       tor.push(b);
     }
     const live = tor.filter(q => !q.dead);
-    G.pull = live.length ? { at: () => live.reduce((a, q) => hypot(q.x - G.P.x, q.y - G.P.y) < hypot(a.x - G.P.x, a.y - G.P.y) ? q : a), f: V(0.7, 0.7, 0.85, 1.0) } : null;
-    if (t % V(16, 14, 12, 10) === 0) fire("flame", G.B.x, G.B.y + 30, PI / 2 + (rand() - 0.5) * 0.8, 1.4, { big: 2.4, r: 8 });
+    G.pull = live.length ? { at: () => live.reduce((a, q) => hypot(q.x - G.P.x, q.y - G.P.y) < hypot(a.x - G.P.x, a.y - G.P.y) ? q : a), f: V(0.6, 0.9, 1.15, 1.4) } : null;
+    if (t % V(16, 12, 9, 7) === 0) fire("flame", G.B.x, G.B.y + 30, PI / 2 + (rand() - 0.5) * 0.8, V(1.4, 1.8, 2.2, 2.6), { big: 2.4, r: 8 });
     yield 1;
   }
   G.Boff.x = 0; G.Boff.y = 0;
   yield 120; G.pull = null;
 };
 R.dragonEnd = function* (aw, lv) {
-  // 終焉: 画面のほぼ全部が焼き尽くされる。当たると即死。光る輪の中だけが安全。覚醒すると輪が1つになり、予告のあいだ横へ動く
+  // 終焉: 画面のほぼ全部が焼き尽くされる。当たると即死。光る輪の中だけが安全。覚醒すると輪が1つになり、予告のあいだ横へ動く。
+  // 輪は「予告のあいだに、気づいてから(0.5秒)まっすぐ動けば届く」所にだけ出す(devtools/megido.js で検査)。覚醒1からは、予告中に火の玉が降る(焼き尽くす瞬間に消える)
   const V = (...v) => v[lv];
+  const ends = (c, warn) => { let x = c.x, vx = c.vx; for (let t = 0; t <= warn; t++) { x += vx; if (x < 50 || x > W - 50) vx = -vx; } return x; };   // 予告が終わる瞬間の輪の x(step と同じ動き)
   for (let v = 0; v < V(2, 2, 3, 3); v++) {
-    const n = V(2, 1, 1, 1), safe = [], sp = V(0, 0.5, 0.8, 1.1), warn = V(115, 100, 92, 85);
-    for (let k = 0; k < n; k++) { let x, y, tries = 0; do { x = 60 + rand() * (W - 120); y = 300 + rand() * 240; } while (safe.some(c => hypot(c.x - x, c.y - y) < 130) && ++tries < 20); safe.push({ x, y, r: V(46, 40, 36, 32), vx: sp * (rand() < 0.5 ? 1 : -1) }); }
+    const n = V(2, 1, 1, 1), safe = [], sp = V(0, 0.5, 0.8, 1.1), warn = V(115, 100, 92, 85), reach = 3.3 * (warn - 30), far = V(60, 80, 100, 110);
+    for (let k = 0; k < n; k++) {
+      let c, tries = 0;
+      do {
+        c = { x: 60 + rand() * (W - 120), y: 300 + rand() * 240, r: V(46, 40, 36, 32), vx: sp * (rand() < 0.5 ? 1 : -1) };
+        const d = hypot(ends(c, warn) - G.P.x, c.y - G.P.y) - (c.r - 14);
+        if (k === 0 ? d <= reach && d >= far : !safe.some(o => hypot(o.x - c.x, o.y - c.y) < 130)) break;
+      } while (++tries < 60);
+      if (k === 0 && tries >= 60) { c.x = clamp(G.P.x, 60, W - 60); c.y = clamp(G.P.y, 300, 540); c.vx = 0; }      // 念のため(届く所が見つからないときは、自機の近くに止まった輪)
+      safe.push(c);
+    }
     zone({ shape: "safe", safe, warn, dur: 22, kill: 1, col: "#ffdc8c" });
-    yield warn + V(60, 50, 40, 34);
+    const drops = [];
+    for (let t = 0; t < warn + V(60, 50, 40, 34); t++) {
+      if (lv >= 1 && t < warn - 20 && t > 4 && t % V(0, 9, 6, 4) === 0) { const x = 20 + rand() * (W - 40); fire("flame", x, 150 + rand() * 60, PI / 2 + (rand() - 0.5) * 0.2, V(0, 3.6, 4.2, 4.8), { big: 2.6, r: 9, life: 260 }); drops.push(G.bullets[G.bullets.length - 1]); }
+      if (t === warn) for (const b of drops) b.dead = 1;      // 火の玉は焼き尽くす瞬間に消える(輪の中で避けさせない)
+      yield 1;
+    }
   }
   yield 40;
 };
@@ -803,11 +837,13 @@ function danger(x, y) {
   let d = 0;
   for (const b of G.bullets) {
     if (b.friendly) continue;
-    const dx0 = b.x - x, dy0 = b.y - y; if (dx0 * dx0 + dy0 * dy0 > 110 * 110) continue;
-    for (let k = 2; k <= 14; k += 4) { const bx = b.x + b.vx * k, by = b.y + b.vy * k, q = (bx - x) ** 2 + (by - y) ** 2; d += (1 + b.r / 3) / (q + 4) * (18 - k); }
+    const dx0 = b.x - x, dy0 = b.y - y, big = b.r >= 10 ? b.r - 3 : 0; if (dx0 * dx0 + dy0 * dy0 > (110 + big) ** 2) continue;
+    const vx = b.mvx ?? b.vx, vy = b.mvy ?? b.vy;      // 大きい弾(本体・竜巻・大火球)は、ふちからの距離で見る
+    for (let k = 2; k <= 14; k += 4) { const bx = b.x + vx * k, by = b.y + vy * k, q = Math.max(0, hypot(bx - x, by - y) - big) ** 2; d += (1 + b.r / 3) / (q + 4) * (18 - k); }
   }
   for (const L of G.lasers) {
-    if (L.t > L.warn - 25) {
+    if (G.react && L.rx == null) L.rx = G.react * (0.5 + rand());
+    if (L.t > L.warn - 25 && L.t >= (L.rx || 0)) {
       const o = L.from(), ux = cos(L.a), uy = sin(L.a), px = x - o.x, py = y - o.y, pr = px * ux + py * uy;
       if (pr > 0 && pr < L.len) { const dist = Math.abs(px * uy - py * ux); if (dist < L.w / 2 + 16) d += (L.w / 2 + 16 - dist) * 0.5; }
     }
@@ -817,8 +853,17 @@ function danger(x, y) {
     const o = EYE(), ux = m.x - o.x, uy = m.y - o.y, l = hypot(ux, uy), px = x - o.x, py = y - o.y;
     const dist = Math.abs(px * uy / l - py * ux / l); if (dist < 34) d += (34 - dist) * 1.5;
   }
+  // 地割れの予告: ひびに沿って火柱が上がるので、ひびから離れる
+  for (const m of G.marks) if (m.k === "crack") {
+    if (G.react) { if (m.rx == null) m.rx = G.react * (0.5 + rand()); if (m.t < m.rx) continue; }
+    for (let i = 0; i < m.pts.length - 1; i++) {
+      const a = m.pts[i], b = m.pts[i + 1], ux = b.x - a.x, uy = b.y - a.y, l2 = ux * ux + uy * uy, u = clamp(((x - a.x) * ux + (y - a.y) * uy) / l2, 0, 1), q = hypot(x - a.x - ux * u, y - a.y - uy * u);
+      if (q < m.r + 16) d += 40 + (m.r + 16 - q) * 0.8;
+    }
+  }
   // 範囲攻撃(予告の間も避ける)
   for (const z of G.zones) {
+    if (G.react) { if (z.rx == null) z.rx = G.react * (0.5 + rand()); if (z.t < z.rx) continue; }        // 予告に気づくまでの時間(試射場は 0。devtools/sim.js は人に近づけるため、平均 G.react フレームでばらつかせる)
     if (z.shape === "rect") {
       if (x > z.x - 14 && x < z.x + z.w + 14 && y > z.y - 14 && y < z.y + z.h + 14) {      // いちばん近い出口へ向かう
         const ex = Math.min(z.x <= 0 ? 1e9 : x - (z.x - 14), z.x + z.w >= W ? 1e9 : z.x + z.w + 14 - x), ey = Math.min(z.y <= 230 ? 1e9 : y - (z.y - 14), z.y + z.h >= H ? 1e9 : z.y + z.h + 14 - y);
@@ -916,11 +961,12 @@ function step() {
     if (z.t > z.warn) {
       if (z.pillar && z.t % 2 === 0) spark(z.x, z.y + z.r * 0.5, 1, 4.5, { a: -PI / 2, spread: 0.7, life: 26, s: 3 });
       if (z.fly) for (let i = 0; i < 5; i++) spark(G.B.x - z.fly * (40 + rand() * 160), z.y + rand() * z.h, 1, 4, { a: z.fly > 0 ? PI : 0, spread: 1, life: 26, s: 3 });
-      if (z.sweep) { const u = (z.t - z.warn) / z.dur, x = z.sweep > 0 ? -160 + u * (W + 320) : W + 160 - u * (W + 320); for (let i = 0; i < 6; i++) spark(x, z.y + rand() * z.h, 1, 5, { a: z.sweep > 0 ? PI : 0, spread: 1.2, life: 22, s: 3 }); }
+      if (z.sweep) { const x = tailTip(z); for (let i = 0; i < 6; i++) spark(x, z.y + rand() * z.h, 1, 5, { a: z.sweep > 0 ? PI : 0, spread: 1.2, life: 22, s: 3 }); }
     }
     if (z.t <= z.warn || G.inv) continue;
     let h = false;
-    if (z.shape === "rect") h = P.x > z.x && P.x < z.x + z.w && P.y > z.y && P.y < z.y + z.h;
+    if (z.shape === "rect") { h = P.x > z.x && P.x < z.x + z.w && P.y > z.y && P.y < z.y + z.h;
+      if (z.sweep) { const tip = tailTip(z), d = z.sweep; h = h && d * (tip + d * 40 - P.x) > 0 && d * (P.x - (tip - d * TAIL_LEN)) > 0; } }      // 尻尾: 先のとげから付け根まで
     else if (z.shape === "circle") h = hypot(P.x - z.x, P.y - z.y) < z.r;
     else if (z.shape === "safe") h = !z.safe.some(c => hypot(P.x - c.x, P.y - c.y) < c.r);
     else if (z.shape === "ring") { const q = hypot(P.x - z.x, P.y - z.y); h = Math.abs(q - z.r) < z.th / 2 && angDiff(atan2(P.y - z.y, P.x - z.x), z.gapA) > z.gapW; }
