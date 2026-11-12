@@ -120,6 +120,8 @@ private struct TitleView: View {
             VStack(alignment: .leading, spacing: 5) {
                 ForEach(["swipe.rule.1", "swipe.rule.2", "swipe.rule.3", "swipe.rule.4", "swipe.rule.5"], id: \.self) { k in
                     Text(LocalizedStringKey(k)).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Color(uiColor: SwipePalette.text).opacity(0.9))
+                        // 背の低い iPhone(初代 SE など)でも、行の途中で「…」にしない(すき間の側を縮める)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }.padding(.horizontal, 28)
             StaminaBar(info: service.stamina).onTapGesture(perform: openStamina)

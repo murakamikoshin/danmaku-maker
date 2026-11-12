@@ -160,6 +160,9 @@ struct DailyRewardBanner: View {
                         Text("daily.title").font(.system(size: 15, weight: .heavy)).lineLimit(2).minimumScaleFactor(0.8)
                         Text(RewardArt.name(next)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).lineLimit(2)
                     }
+                    // 幅の狭い iPhone(初代 SE など)でも、文字が1文字ずつに潰れないように、文字の側を優先して幅を取る
+                    .frame(minWidth: 84, alignment: .leading)
+                    .layoutPriority(1)
                     Spacer(minLength: 4)
                     Button {
                         Task { await claim() }
@@ -172,7 +175,7 @@ struct DailyRewardBanner: View {
                             .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
                     }
                     .buttonStyle(.plain)
-                    .fixedSize(horizontal: true, vertical: true)
+                    .fixedSize(horizontal: false, vertical: true)
                     .disabled(!ready || busy).opacity(ready && !busy ? 1 : 0.5)
                     .accessibilityIdentifier("home.daily.claim")
                 }

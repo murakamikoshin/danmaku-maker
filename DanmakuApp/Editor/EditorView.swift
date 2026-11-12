@@ -38,11 +38,14 @@ struct EditorView: View {
                 Button { confirmRevert = true } label: {
                     Label("editor.revert", systemImage: "arrow.uturn.backward").font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(GameStyle.yellow).labelStyle(.titleAndIcon)
+                        // 長い言語(ロシア語など)や幅の狭い iPhone でも、縦に何行にも折り返さない
+                        .lineLimit(2).minimumScaleFactor(0.7).frame(maxWidth: 96)
                 }
                 .disabled(!model.canRevert).opacity(model.canRevert ? 1 : 0.35)
                 .accessibilityIdentifier("editor.revert")
                 Label("editor.autosaved", systemImage: "checkmark.icloud.fill").font(.system(size: 10, weight: .bold))
                     .foregroundStyle(GameStyle.green).labelStyle(.titleAndIcon)
+                    .lineLimit(2).minimumScaleFactor(0.7).frame(maxWidth: 88)
             }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
