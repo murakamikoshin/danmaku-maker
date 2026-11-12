@@ -385,6 +385,7 @@ struct ResultView: View {
                             CompatShareLink(item: text) { smallButton("detail.share", "square.and.arrow.up") }
                             if let url = ShareText.xIntentURL(text) { Link(destination: url) { smallButton("detail.share.x", "xmark") } }
                         }
+                        InviteShareHint()
                     }
                     if win, !isTest, rewardStore.canClaim, let next = rewardStore.upcoming.first {
                         // クリアしたごほうびに、今日の報酬を広告つきでその場で受け取れる

@@ -44,6 +44,7 @@ struct StageDetailView: View {
                             .accessibilityIdentifier("detail.play")
                     }
                     actions
+                    InviteShareHint().frame(maxWidth: .infinity, alignment: .leading)
                     if let message { Text(message).font(.footnote).foregroundStyle(.secondary) }
                     if remote.stage.hasRanking { RankingSection(stageID: remote.id, mode: remote.stage.mode) }
                     CommentsSection(stageID: remote.id, authorUid: remote.authorUid)

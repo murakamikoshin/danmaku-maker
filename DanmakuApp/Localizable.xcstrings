@@ -66517,6 +66517,71 @@
           }
         }
       }
+    },
+    "share.invite.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このリンクから新しくアプリを入れた人も、あなたの招待人数に数えられ、招待のごほうびがもらえます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New players who install the app from this link count as your invites, and you get invite rewards"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通过此链接新安装应用的玩家也会计入你的邀请人数，你可以获得邀请奖励"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "透過此連結新安裝 App 的玩家也會計入你的邀請人數，你可以獲得邀請獎勵"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 링크로 앱을 새로 설치한 사람도 초대 인원에 포함되어 초대 보상을 받을 수 있어요"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quien instale la app desde este enlace contará como tu invitado y recibirás recompensas por invitar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les nouveaux joueurs qui installent l’app via ce lien comptent comme tes invités, et tu reçois les récompenses d’invitation"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wer die App über diesen Link neu installiert, zählt als deine Einladung – du erhältst Einladungsbelohnungen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quem instalar o app por este link conta como seu convidado, e você ganha recompensas de convite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новые игроки, установившие приложение по этой ссылке, считаются твоими приглашёнными — ты получаешь награды за приглашения"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
