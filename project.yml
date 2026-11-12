@@ -270,9 +270,9 @@ targets:
           ADMOB_REWARDED_UNIT_ID: ca-app-pub-3863314847163872/5500185716
           ADMOB_INTERSTITIAL_UNIT_ID: ca-app-pub-3863314847163872/6771452085
           ADMOB_BANNER_UNIT_ID: ca-app-pub-3863314847163872/8149204246
-          # 一覧のネイティブ広告・結果画面のレクタングル。AdMob で広告ユニットを作ったら入れる(空のあいだは出さない)
-          ADMOB_NATIVE_UNIT_ID: ""
-          ADMOB_MREC_UNIT_ID: ""
+          # 一覧のネイティブ広告(world_native)・結果画面のレクタングル(result_mrec)。空にすると出さない
+          ADMOB_NATIVE_UNIT_ID: ca-app-pub-3863314847163872/2779662766
+          ADMOB_MREC_UNIT_ID: ca-app-pub-3863314847163872/2859408023
           REVENUECAT_API_KEY: "appl_EhUVgOXVczuSOnQUNULxohhhjMa"
       base:
         # 広告の効果計測(AppsFlyer)。Dev Key が空のあいだは計測なしで動く。キーは AppsFlyer の管理画面で発行
