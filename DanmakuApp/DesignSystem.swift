@@ -108,12 +108,13 @@ enum GameStyle {
         LinearGradient(colors: [Color(UIColor(hex: a)), Color(UIColor(hex: b))], startPoint: .leading, endPoint: .trailing)
     }
 
-    /// クリア条件ごとの色
+    /// クリア条件ごとの色(4つとも、どのテーマでも違う色にする)
     static func tint(_ mode: Mode) -> Color {
         switch mode {
         case .survive: return cyanColor
         case .boss: return pinkColor
-        case .damage: return yellow
+        // テーマ「従来」の yellow はピンク(ボスと同じ色になる)なので、ダメージ勝負は黄色にする
+        case .damage: return pick(0xFFD23F, 0xE6BE6A, 0xFFD23F)
         case .sequence: return violet
         }
     }
