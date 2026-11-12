@@ -120,7 +120,7 @@ describe("OGP 画像", () => {
 describe("共有ページ", () => {
   const stage = { name: "<b>渦</b>", authorName: "A&B", mode: "survive" as const, durationSec: 20, bossHp: null, plays: 10, clears: 4, likes: 2 };
   it("OGP タグと、HTML エスケープ", () => {
-    const { status, html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x" });
+    const { status, html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "https://alt.test/s/K7X2P", appId: "123" });
     expect(status).toBe(200);
     for (const tag of ['property="og:title"', 'property="og:description"', 'property="og:image" content="https://ex.test/og/K7X2P.png"', 'name="twitter:card" content="summary_large_image"']) expect(html).toContain(tag);
     expect(html).not.toContain("<b>渦</b>");
@@ -129,12 +129,30 @@ describe("共有ページ", () => {
     expect(html).toContain('<html lang="ja">');
   });
   it("英語", () => {
-    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "en", origin: "https://ex.test", appStoreUrl: "u" });
+    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "en", origin: "https://ex.test", appStoreUrl: "u", openUrl: "o", appId: "1" });
     expect(html).toContain('<html lang="en">');
     expect(html).toContain("Clear rate");
   });
+  it("ステージIDの表示と、アプリで開くボタン・帯", () => {
+    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: "https://apps.apple.com/x", openUrl: "https://alt.test/s/K7X2P", appId: "123" });
+    expect(html).toContain('<b id="sid">K7X2P</b>');
+    expect(html).toContain("ステージID");
+    // 同じサイトの中のリンクでは Universal Links が働かないので、別ドメインの同じページへ飛ばす
+    expect(html).toContain('class="btn primary" href="https://alt.test/s/K7X2P">アプリで遊ぶ');
+    expect(html).toContain('class="btn sub" href="https://apps.apple.com/x"');
+    // Safari の「開く」の帯。開くと共有ページの URL がアプリに渡り、今の版のアプリでもそのステージが開く
+    expect(html).toContain('<meta name="apple-itunes-app" content="app-id=123, app-argument=https://ex.test/s/K7X2P">');
+  });
+  it("クリア条件ごとに札の色が違う(ダメージ勝負はボスと別の色)", () => {
+    const badge = (mode: "survive" | "boss" | "damage" | "sequence") =>
+      renderSharePage({ id: "K7X2P", stage: { ...stage, mode, bossHp: 100 }, lang: "ja", origin: "https://ex.test", appStoreUrl: "u", openUrl: "o", appId: "1" }).html.match(/<span class="badge ?([a-z]*)">/)?.[1];
+    expect(badge("survive")).toBe("");
+    expect(badge("boss")).toBe("boss");
+    expect(badge("damage")).toBe("damage");
+    expect(badge("sequence")).toBe("sequence");
+  });
   it("存在しないステージは 404", () => {
-    const { status, html } = renderSharePage({ id: "ZZZZZ", stage: null, lang: "ja", origin: "https://ex.test", appStoreUrl: "u" });
+    const { status, html } = renderSharePage({ id: "ZZZZZ", stage: null, lang: "ja", origin: "https://ex.test", appStoreUrl: "u", openUrl: "o", appId: "1" });
     expect(status).toBe(404);
     expect(html).toContain("見つかりません");
     expect(html).toContain("noindex");
@@ -339,7 +357,7 @@ describe("validatePublish: 連戦(場面)", () => {
     const r = validatePublish(seq([waveSurvive(), waveBoss()], { durationSec: total(2, 80) }));
     if (!r.ok) throw new Error("invalid");
     expect(ogpSvg(r.stage, "ABCDE")).toContain("WAVES");
-    const html = renderSharePage({ id: "ABCDE", stage: { ...r.stage, plays: 0, clears: 0, likes: 0 } as never, lang: "ja", origin: "https://x.example", appStoreUrl: "https://a.example" });
+    const html = renderSharePage({ id: "ABCDE", stage: { ...r.stage, plays: 0, clears: 0, likes: 0 } as never, lang: "ja", origin: "https://x.example", appStoreUrl: "https://a.example", openUrl: "o", appId: "1" });
     expect(html.status).toBe(200);
     expect(html.html).toContain("連戦 2場面");
   });

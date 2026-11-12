@@ -25,6 +25,8 @@ const T = {
     desc: (a: string, mode: string, rate: string, plays: number) => `${a} さんが作った弾幕ステージ。${mode}・クリア率${rate}・挑戦${plays}回。クリアできる？`,
     by: "作者", plays: "挑戦", clears: "クリア", rate: "クリア率", likes: "いいね",
     open: "アプリで遊ぶ", store: "App Store でダウンロード",
+    id: "ステージID", copy: "コピー", copied: "コピーしました",
+    idHint: "アプリのホームの検索に、この ID を入れても遊べます。",
     tagline: "弾幕ステージを作って、投稿して、世界中で遊ぼう。",
     notFoundTitle: "ステージが見つかりません", notFoundBody: "URL が間違っているか、ステージが非公開になった可能性があります。",
     top: "弾幕メーカーについて",
@@ -38,22 +40,31 @@ const T = {
     desc: (a: string, mode: string, rate: string, plays: number) => `A bullet-hell stage by ${a}. ${mode} · ${rate} clear rate · ${plays} plays. Can you clear it?`,
     by: "By", plays: "Plays", clears: "Clears", rate: "Clear rate", likes: "Likes",
     open: "Play in the app", store: "Download on the App Store",
+    id: "Stage ID", copy: "Copy", copied: "Copied",
+    idHint: "You can also enter this ID in the search on the app's home screen.",
     tagline: "Build bullet-hell stages, share them, and dodge the world.",
     notFoundTitle: "Stage not found", notFoundBody: "The link may be wrong, or the stage is no longer public.",
     top: "About Danmaku Maker",
   },
 } as const;
 
-const CSS = `:root{color-scheme:dark;--ink:#110e26;--panel:#1c1740;--line:#332b62;--fg:#efeaff;--dim:#a39bd0;--pink:#ff6b9d;--gold:#ffd166}
+const CSS = `:root{color-scheme:dark;--ink:#110e26;--panel:#1c1740;--line:#332b62;--fg:#efeaff;--dim:#a39bd0;--pink:#ff6b9d;--gold:#ffd166;--cyan:#5ce1e6;--yellow:#ffd23f;--violet:#b28dff}
 *{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--fg);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.6}
 main{max-width:560px;margin:0 auto;padding:28px 16px 48px;display:flex;flex-direction:column;gap:18px}
 .brand{color:var(--pink);font-weight:700;letter-spacing:.06em}h1{font-size:28px;line-height:1.25;margin:0;overflow-wrap:anywhere}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .card div span{display:block;font-size:12px;color:var(--dim)}.card div b{font-size:20px;color:var(--gold)}
-.badge{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;border:1px solid currentColor;color:#5ce1e6;margin-right:8px}.badge.boss{color:var(--pink)}
+.badge{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;border:1px solid currentColor;color:var(--cyan);margin-right:8px}.badge.boss{color:var(--pink)}.badge.damage{color:var(--yellow)}.badge.sequence{color:var(--violet)}
+.sid{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.sid span{font-size:12px;color:var(--dim)}.sid b{font:800 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--fg);flex:1}
+.sid button{font-weight:700;font-size:14px;font-family:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
 .btn{display:block;text-align:center;padding:14px;border-radius:12px;font-weight:700;text-decoration:none}
 .btn.primary{background:var(--pink);color:#1a0b14}.btn.sub{border:1px solid var(--line);color:var(--fg)}
 p{margin:0;color:var(--dim)}`;
+
+/** ステージIDのコピーボタン */
+const COPY_SCRIPT = `(function(){var c=document.getElementById("copy");c.addEventListener("click",function(){var id=document.getElementById("sid").textContent;
+(navigator.clipboard?navigator.clipboard.writeText(id):Promise.reject()).then(function(){c.textContent=c.dataset.done;},function(){});});})();`;
 
 function shell(lang: Lang, head: string, body: string): string {
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${head}<style>${CSS}</style></head><body><main>${body}</main></body></html>`;
@@ -61,6 +72,10 @@ function shell(lang: Lang, head: string, body: string): string {
 
 export interface PageInput {
   id: string; stage: SharedStage | null; lang: Lang; origin: string; appStoreUrl: string;
+  /** 「アプリで遊ぶ」の行き先(別のドメインの同じページ。sharePage の説明を参照) */
+  openUrl: string;
+  /** Safari の上に出る「開く」の帯(スマートバナー)。開くと、この URL がアプリに渡る */
+  appId: string;
 }
 
 export function renderSharePage(i: PageInput): { status: number; html: string } {
@@ -87,12 +102,17 @@ export function renderSharePage(i: PageInput): { status: number; html: string } 
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${esc(`${i.origin}/og/${i.id}.png`)}">
-<link rel="canonical" href="${esc(url)}">`;
+<link rel="canonical" href="${esc(url)}">
+<meta name="apple-itunes-app" content="app-id=${esc(i.appId)}, app-argument=${esc(url)}">`;
   const body = `<div class="brand">${t.app}</div>
-<div><span class="badge ${s.mode === "survive" ? "" : "boss"}">${s.mode === "boss" ? "BOSS" : s.mode === "damage" ? "DAMAGE" : s.mode === "sequence" ? "WAVES" : "SURVIVE"}</span>${esc(modeText)}</div>
+<div><span class="badge ${s.mode === "survive" ? "" : s.mode}">${s.mode === "boss" ? "BOSS" : s.mode === "damage" ? "DAMAGE" : s.mode === "sequence" ? "WAVES" : "SURVIVE"}</span>${esc(modeText)}</div>
 <h1>${esc(s.name)}</h1><p>${t.by}: ${esc(s.authorName)}</p>
 <section class="card"><div><span>${t.rate}</span><b>${rate}</b></div><div><span>${t.likes}</span><b>${s.likes}</b></div><div><span>${t.plays}</span><b>${s.plays}</b></div><div><span>${t.clears}</span><b>${s.clears}</b></div></section>
-<a class="btn primary" href="${esc(i.appStoreUrl)}">${esc(t.store)}</a>
-<p>${esc(t.tagline)}</p>`;
+<div class="sid"><div><span>${t.id}</span><br><b id="sid">${esc(i.id)}</b></div><button type="button" id="copy" data-done="${esc(t.copied)}">${esc(t.copy)}</button></div>
+<a class="btn primary" href="${esc(i.openUrl)}">${esc(t.open)}</a>
+<a class="btn sub" href="${esc(i.appStoreUrl)}">${esc(t.store)}</a>
+<p>${esc(t.idHint)}</p>
+<p>${esc(t.tagline)}</p>
+<script>${COPY_SCRIPT}</script>`;
   return { status: 200, html: shell(i.lang, head, body) };
 }

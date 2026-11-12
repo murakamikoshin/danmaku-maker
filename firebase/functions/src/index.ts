@@ -29,6 +29,7 @@ initializeApp();
 const db = getFirestore();
 
 const APP_STORE_URL = process.env.APP_STORE_URL ?? "https://apps.apple.com/app/id6824245206";
+const APP_STORE_ID = "6824245206";
 const HIDE_REPORT_THRESHOLD = 5;
 const POST_INTERVAL_MS = 10_000;
 
@@ -441,7 +442,20 @@ export const sharePage = onRequest(async (req, res) => {
     const snap = await db.doc(`stages/${id}`).get();
     if (snap.exists && isOpen(snap.get("status"))) stage = snap.data() as never;
   }
-  const page = renderSharePage({ id, stage, lang, origin, appStoreUrl: APP_STORE_URL });
+  // 「アプリで遊ぶ」の仕組み: 同じサイトの中のリンクでは Universal Links が働かない(Safari の中で開いてしまう)。
+  // そこで、ボタンは別のドメイン(firebaseapp.com)の同じ URL へ飛ばし、ここで web.app に転送する。
+  // アプリが入っていれば、iOS が web.app/s/ID を受け取ってアプリで開く。開かずにここまで来たら(?open=1)、App Store へ進める
+  const host = req.get("x-forwarded-host") ?? req.get("host") ?? "";
+  if (host.endsWith(".firebaseapp.com") && isValidShortId(id)) {
+    res.set("Cache-Control", "no-store").redirect(302, `https://${host.replace(/\.firebaseapp\.com$/, ".web.app")}/s/${id}?open=1`);
+    return;
+  }
+  if (req.query.open === "1" && stage) {
+    res.set("Cache-Control", "no-store").redirect(302, APP_STORE_URL);
+    return;
+  }
+  const openUrl = host.endsWith(".web.app") ? `https://${host.replace(/\.web\.app$/, ".firebaseapp.com")}/s/${id}` : `${origin}/s/${id}`;
+  const page = renderSharePage({ id, stage, lang, origin, appStoreUrl: APP_STORE_URL, openUrl, appId: APP_STORE_ID });
   res.status(page.status).set("Content-Type", "text/html; charset=utf-8").set("Vary", "Accept-Language")
     .set("Cache-Control", page.status === 200 ? "public, max-age=300, s-maxage=600" : "public, max-age=60").send(page.html);
 });
