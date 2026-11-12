@@ -1,4 +1,4 @@
-"""最強のドラゴン(怪獣 + ドラゴン、赤と金)を書き出す: python3 make_dragon.py
+"""竜王(怪獣 + ドラゴン、赤と金)を書き出す: python3 make_dragon.py
 ほかのボスと作り方が違う(Koshin の指示「もっとぬるぬる、もっとかっこよく、動きの種類をめちゃくちゃ多く、覚醒は3段階」):
 - 元絵(source/dragon_art.png、Canva で生成した 1456×1088)を部位に分け、骨で動かしてから1コマごとにドット化する(rig.py)
 - 動きは moves.py: 待機48コマ + 技ごとの動き10種類(構え12・技中16・硬直6)。1コマ 0.04 秒
@@ -232,7 +232,7 @@ def export():
     for f in FORMS: gif(os.path.join(HERE, 'gif', f"{f['id']}_idle.gif"), frames['idle'], palette(f), K=2)
     n = sum(counts.values())
     open(os.path.join(HERE, 'README.txt'), 'w').write('\n'.join([
-        '最強のドラゴン(dragon) のドット絵', '',
+        '竜王(dragon) のドット絵', '',
         f'- 1コマ {FW}×{FH} ピクセル(ほかのボスは 112×112)、背景は透明。1コマ {FRAME_MS / 1000:g} 秒(25コマ/秒)。拡大は必ず最近傍補間',
         f'- 動きは全部で {len(counts)} 種類・{n} コマ: 待機 {moves.N_IDLE} コマ + 技ごとの動き {len(moves.MOVES)} 種類 ×(構え {moves.N_W}・技中 {moves.N_A}・硬直 {moves.N_R})+ 横向きに飛ぶ姿(左右)',
         '  技ごとの動き: ' + '、'.join(f"{moves.MOVE_NAMES[m]}({m})" for m in moves.MOVES),

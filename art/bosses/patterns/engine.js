@@ -29,7 +29,7 @@ const MAPS = {
   eye: ["..ooooo..", ".oWWWWWo.", "oWWRRRWWo", "oWRRkRRWo", "oWRkkkRWo", "oWRRkRRWo", "oWWRRRWWo", ".oWWWWWo.", "..ooooo.."],
   tooth: ["ooooo", "oWWWo", "oWWWo", ".oWo.", ".oWo.", "..o..", "..o.."],
   goo: [".kkk.", "kPGPk", "kGWGk", "kPGPk", ".kkk."],
-  // 最強のドラゴン: 大きい弾が中心(画面では big で拡大して使う)
+  // 竜王: 大きい弾が中心(画面では big で拡大して使う)
   flame: ["..ooo..", ".oYYYo.", "oYWWWYo", "oYWWWYo", "oOYWYOo", ".oOYOo.", ".oOOOo.", "..oOo..", "..oOo..", "...o..."],
   slash: ["......ooo", "....ooWWo", "..ooWWYo.", ".oWWYYo..", "oWWYYo...", "oWYYo....", "oWYo.....", "oWYo.....", ".oWYo....", "..oWYo...", "...ooo..."],
   gust: ["..oo.....", ".oWWoo...", "oWLLWWoo.", ".oLLLLWWo", "..ooLLLWo", "....oLLWo", "..ooLLWo.", ".oLLWWo..", "oWWWoo...", ".ooo....."],
@@ -562,7 +562,7 @@ R.puniOsusowake = function* (aw) {
   }
 };
 
-// ---------- 最強のドラゴン(絵は 240×200。口・胸・両手・翼の先・尻尾の先) ----------
+// ---------- 竜王(絵は 240×200。口・胸・両手・翼の先・尻尾の先) ----------
 // ほかのボスと違い、小さい弾は少なめで、大きい弾・範囲攻撃・本体の体当たりが中心。
 // 範囲攻撃は G.zones に入れる: {shape: "rect"|"circle"|"safe", warn: 予告のフレーム, dur: 当たるフレーム, bind: 当たると動けなくなるフレーム, kill: 当たると即死}
 const DMOUTH = () => pt(131, 86), DCHEST = () => pt(120, 94), DHAND = i => i ? pt(158, 108) : pt(80, 108), DWING = i => i ? pt(206, 112) : pt(34, 112), DTAIL = () => pt(103, 168);

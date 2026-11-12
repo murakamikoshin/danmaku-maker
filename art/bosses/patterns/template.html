@@ -52,7 +52,7 @@ footer{margin-top:24px;font-size:12.5px;color:var(--mute);max-width:72ch}
 </style>
 <div class="wrap">
   <h1>ボス専用技 試射場</h1>
-  <p class="lead">そのボスを選んでいるときだけステージに置ける、限定の弾幕パターン。8体。ふつうは1体5技、最強のドラゴンは10技で、姿も4つ(通常・覚醒1〜3)。弾も専用の見た目。自機は自動で避ける(ドラッグか矢印キーで自分でも動かせる)。</p>
+  <p class="lead">そのボスを選んでいるときだけステージに置ける、限定の弾幕パターン。8体。ふつうは1体5技、竜王は10技で、姿も4つ(通常・覚醒1〜3)。弾も専用の見た目。自機は自動で避ける(ドラッグか矢印キーで自分でも動かせる)。</p>
   <div class="main">
     <div>
       <div class="screen"><canvas id="field" width="720" height="1200" aria-label="試射場"></canvas></div>
@@ -210,7 +210,7 @@ function render() {
   // 被弾の瞬間は、画面のふちが赤く光る
   if (dr && G.inv > 28) { const g = ctx.createRadialGradient(W / 2, H / 2, 150, W / 2, H / 2, 380); g.addColorStop(0, "rgba(255,40,40,0)"); g.addColorStop(1, "rgba(255,40,40," + Math.min(0.5, (G.inv - 28) / 24) + ")"); ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40); }
   // カットイン: 姿が変わった瞬間だけ(技名のカットインは入れない。Koshin の判断)
-  if (dr && G.formCut != null && G.T < 64) { const nm = SHEETS.forms[G.formCut].name.split(" "); drawCutIn(G.T, 64, nm[1] ? "覚醒 第" + G.formCut + "段階" : "竜王", nm[1] || "最強のドラゴン"); }
+  if (dr && G.formCut != null && G.T < 64) { const nm = SHEETS.forms[G.formCut].name.split(" "); drawCutIn(G.T, 64, nm[1] ? "覚醒 第" + G.formCut + "段階" : "通常の姿", nm[1] || "竜王"); }
   // 技の名前と被弾
   if (G.banner) {
     const t = G.banner.t, name = G.pat.card.split(" / ")[G.aw && G.pat.card.includes(" / ") ? 1 : 0];
