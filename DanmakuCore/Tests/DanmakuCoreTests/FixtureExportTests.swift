@@ -43,6 +43,9 @@ final class FixtureExportTests: XCTestCase {
                 if i % 24 == 0 { dx = Int(r.unit() * 8) - 4; dy = Int(r.unit() * 6) - 3 }
                 out.append(Move(dx: Int8(dx), dy: Int8(dy)))
             case 2: out.append(Move(dx: Int8((i / 90) % 2 == 0 ? 3 : -3), dy: 0))   // 左右に往復
+            case 4:                                                          // ボスへまっすぐ上がり、ボスのまわりで揺れる(体当たりの確認用)
+                if i < 200 { out.append(Move(dx: 0, dy: -4)) }
+                else { out.append(Move(dx: Int8((i / 30) % 2 == 0 ? 4 : -4), dy: Int8((i / 45) % 2 == 0 ? 2 : -2))) }
             default:                                                         // 大きく速く動く
                 if i % 12 == 0 { dx = Int(r.unit() * 40) - 20; dy = Int(r.unit() * 30) - 15 }
                 out.append(Move(dx: Int8(dx), dy: Int8(dy)))
@@ -338,11 +341,28 @@ final class FixtureExportTests: XCTestCase {
         seqE.waves![0].mooksBreakable = true; seqE.waves![0].mookHits = 2; seqE.waves![0].mooksClear = true
         stages.append(("mooks-sequence-clear-easy", seqE.sanitized()))
 
+        // ボスの体に触れるとダメージ(1.3.0〜)。図形のボス・キャラクターのボス・ダメージ勝負・連戦の場面ごと
+        var bh1 = Stage(name: "bh", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1, emitters: emitters([.ring, .aim], boss: true), lifeMode: .lives, lifeCount: 3)
+        bh1.bodyHit = true
+        stages.append(("bodyhit-boss-lives3", bh1.sanitized()))
+        var bh2 = Stage(name: "bh", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 2, emitters: [Emitter(t: .angelFeather, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.2, c: 5, v: 2, r: 0, k: 1)],
+                        lifeMode: .hp, lifeCount: 5, bossSize: 55, bossLook: BossCharacter.fallenAngel.rawValue)
+        bh2.bodyHit = true
+        stages.append(("bodyhit-angel-hp5", bh2.sanitized()))
+        var bh3 = Stage(name: "bh", mode: .damage, durationSec: 30, bossMove: 0, emitters: emitters([.spiral], boss: true), lifeMode: .hp, lifeCount: 8, bossSize: 2)
+        bh3.bodyHit = true
+        stages.append(("bodyhit-damage-hp8", bh3.sanitized()))
+        var bh4 = Stage(name: "bh", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .lives, lifeCount: 4, waves: [
+            Wave(kind: .boss, durationSec: 30, bossHp: 150, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 6, v: 1.5, r: 0, k: 0)]),
+            Wave(kind: .boss, durationSec: 30, bossHp: 150, bossMove: 1, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2, c: 6, v: 1.5, r: 0, k: 2)])])
+        bh4.waves![0].bodyHit = true
+        stages.append(("bodyhit-seq", bh4.sanitized()))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {
             for shot in ShotType.allCases {
-                for style in 0..<4 {
+                for style in (name.hasPrefix("bodyhit") ? Array(0..<5) : Array(0..<4)) {
                     seed += 1
                     let limit = (st.timeLimitSec + 3) * 120 + 144
                     let mv = moves(style: style, count: limit, seed: seed)

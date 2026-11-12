@@ -144,10 +144,11 @@ export interface SimStage {
   mooksBreakable?: boolean | null;
   mookHits?: number | null;
   mooksClear?: boolean | null;
+  bodyHit?: boolean | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean; bodyHit: boolean }
 /** 倒せる雑魚の体力・当たる半径(アプリの DanmakuConfig.mookHp / Simulation.mookRadius と同じ) */
 const MOOK_HP = 20;
 /** 雑魚を倒すのに当てる回数(1〜50、無ければ 20)。アプリの Wave.sanitizedMookHits と同じ */
@@ -159,9 +160,9 @@ const INTERMISSION = 1.5;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true, bodyHit: w.kind === "boss" && w.bodyHit === true }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true, bodyHit: st.mode !== "survive" && st.bodyHit === true }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -564,6 +565,16 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         defeats += 1;
         if (wi + 1 < specs.length) advanceWave(dt); else outcome = "cleared";
         return;
+      }
+      // ボスの体に触れたら、弾と同じくダメージ(作者がオンにしたときだけ)。ライフ制でも HP 制でも少しの間無敵(アプリの Simulation と同じ)
+      if (sp.bodyHit && waveT >= 0 && !(invincible || tick < shieldUntil)) {
+        const dx = px - bx, dy = py - by;
+        const r = bossRadius + HIT_R;
+        if (dx * dx + dy * dy < r * r) {
+          lifeLeft -= 1;
+          if (lifeLeft <= 0) { outcome = "hit"; return; }
+          shieldUntil = tick + Math.round(LIFE_SHIELD_SECONDS / dt);
+        }
       }
     }
 

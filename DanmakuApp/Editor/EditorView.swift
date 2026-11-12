@@ -70,6 +70,7 @@ struct EditorView: View {
                                               mooksBreakable: $model.draft.mooksBreakable,
                                               mookHits: $model.draft.mookHits,
                                               mooksClear: model.draft.mode == .survive ? $model.draft.mooksClear : nil,
+                                              bodyHit: model.draft.mode != .survive ? $model.draft.bodyHit : nil,
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
@@ -332,6 +333,8 @@ private struct EnemyControls: View {
     @Binding var mookHits: Int
     /// 雑魚を全部倒したら次へ(耐える場面だけ。nil は出さない)
     var mooksClear: Binding<Bool>? = nil
+    /// ボスの体に触れるとダメージ(ボスを出すときだけ。nil は出さない)
+    var bodyHit: Binding<Bool>? = nil
     /// 連戦の場面か(説明の文を「次の場面へ」にする)
     var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
@@ -429,6 +432,17 @@ private struct EnemyControls: View {
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
                     Text("editor.awaken.note").font(.caption2).foregroundStyle(.secondary)
+                }
+                if let bodyHit {
+                    // ボスの体に触れたら、弾に当たったのと同じくダメージ(遊びが変わるので、変えたらテストプレイし直し)
+                    HStack(spacing: 10) {
+                        Image(systemName: "burst.fill").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 22)
+                        Text("editor.bodyhit").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                        Spacer()
+                        GameToggle(isOn: bodyHit)
+                    }
+                    .accessibilityIdentifier("editor.bodyhit")
+                    Text("editor.bodyhit.note").font(.caption2).foregroundStyle(.secondary)
                 }
             }
             Text("editor.enemy.mooks").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
@@ -1110,6 +1124,7 @@ private struct WaveCard: View {
                                   awaken: Binding(get: { wave.awaken }, set: { model.draft.waves[i].awaken = $0 }),
                                   mooksBreakable: Binding(get: { wave.mooksBreakable == true }, set: { model.draft.waves[i].mooksBreakable = $0 }),
                                   mookHits: Binding(get: { wave.mookHits ?? DanmakuConfig.mookHp }, set: { model.draft.waves[i].mookHits = $0 }),
+                                  bodyHit: Binding(get: { wave.bodyHit == true }, set: { model.draft.waves[i].bodyHit = $0 ? true : nil }),
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {

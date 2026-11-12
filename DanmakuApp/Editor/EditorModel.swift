@@ -99,6 +99,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var mookHits: Int?
     /// 雑魚を全部倒したら次の場面へ(耐える場面だけ)
     var mooksClear: Bool?
+    /// ボスの体に触れるとダメージ(ボスの場面だけ。nil・false は当たらない)
+    var bodyHit: Bool?
     /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
     var bossX: Double?
     var bossY: Double?
@@ -121,6 +123,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
         w.mooksBreakable = mooksBreakable == true ? true : nil
         w.mookHits = mooksBreakable == true ? mookHits : nil
         w.mooksClear = (kind == .survive && mooksBreakable == true && mooksClear == true) ? true : nil
+        w.bodyHit = (kind == .boss && bodyHit == true) ? true : nil
         return w
     }
 
@@ -174,6 +177,8 @@ struct Draft: Codable, Equatable {
     var waves: [DraftWave] = [DraftWave(kind: .survive), DraftWave(kind: .boss)]
     /// ボス戦・ダメージ勝負の、開始前の警告と、撃破の演出(DefeatEffect の番号)
     var bossWarning = false
+    /// ボスの体に触れるとダメージ(ボス戦・ダメージ勝負)
+    var bodyHit = false
     var bossDefeat = DefeatEffect.standard.rawValue
     /// 自機の撃ち方(ステージごと。遊ぶ全員が、この撃ち方になる)
     var shot = ShotType.standard
@@ -200,7 +205,7 @@ struct Draft: Codable, Equatable {
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -223,6 +228,7 @@ struct Draft: Codable, Equatable {
         customShip = try c.decodeIfPresent(Bool.self, forKey: .customShip) ?? false
         waves = try c.decodeIfPresent([DraftWave].self, forKey: .waves) ?? [DraftWave(kind: .survive), DraftWave(kind: .boss)]
         bossWarning = try c.decodeIfPresent(Bool.self, forKey: .bossWarning) ?? false
+        bodyHit = try c.decodeIfPresent(Bool.self, forKey: .bodyHit) ?? false
         bossDefeat = try c.decodeIfPresent(Int.self, forKey: .bossDefeat) ?? DefeatEffect.standard.rawValue
         shot = (try? c.decodeIfPresent(ShotType.self, forKey: .shot)) ?? .standard
         rewardFx = (try? c.decodeIfPresent([Int].self, forKey: .rewardFx)) ?? []
@@ -259,6 +265,7 @@ struct Draft: Codable, Equatable {
         st.mooksBreakable = (!isSeq && mooksBreakable) ? true : nil
         st.mookHits = (!isSeq && mooksBreakable) ? mookHits : nil
         st.mooksClear = (mode == .survive && mooksBreakable && mooksClear) ? true : nil
+        st.bodyHit = ((mode == .boss || mode == .damage) && bodyHit) ? true : nil
         st.shipSkin = shipSkin
         return st.sanitized()
     }

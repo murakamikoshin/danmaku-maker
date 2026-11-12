@@ -4,7 +4,7 @@ import Foundation
 public enum DanmakuConfig {
     public static let formatVersion = 1
     /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 2
+    public static let contentLevel = 3
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -328,6 +328,8 @@ public struct Wave: Codable, Equatable, Sendable {
     /// ボスの位置(動きの中心。画面の幅・高さに対する割合。x は 0.2〜0.8、y は 0.1〜0.3)。nil は標準(x=0.5, y=0.2)
     public var bossX: Double?
     public var bossY: Double?
+    /// ボスの体に自機が触れると、弾に当たったのと同じくダメージを受ける(ライフ・HP が1減り、少しの間無敵)。nil は当たらない(これまで通り)。ボスの場面だけ。1.3.0 から
+    public var bodyHit: Bool?
 
     public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil,
                 bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, awaken: Int? = nil, bossX: Double? = nil, bossY: Double? = nil) {
@@ -464,6 +466,7 @@ public struct Wave: Codable, Equatable, Sendable {
         out.mooksBreakable = (out.mooks != nil && mooksBreakable == true) ? true : nil
         out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
         out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: kind == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
+        out.bodyHit = (isBoss && bodyHit == true) ? true : nil
         return out
     }
 }
@@ -583,6 +586,8 @@ struct WaveSpec {
     /// ボスの位置のずらし量(px。標準の位置からの差)
     var homeDX = 0.0
     var homeDY = 0.0
+    /// ボスの体に触れるとダメージ
+    var bodyHit = false
     /// 専用の絵・動き・当たり判定を持つボス(nil は図形のボス)
     var character: BossCharacter? { BossCharacter.of(look: look) }
     /// キャラクターのボスの大きさの倍率(当たり判定の半径 ÷ 40)。指定がなければ 1。図形のボスは 1
@@ -647,6 +652,8 @@ public struct Stage: Codable, Equatable, Sendable {
     /// 作者が選んだドット絵の自機(招待のごほうびなど。ID)。遊ぶ全員に、その自機で見える。nil は自機の見た目(themeShip)、または遊ぶ人の自分の自機。
     /// 見た目だけで、計算(種・当たり判定)には関わらない。1.2.0 から
     public var shipSkin: String?
+    /// ボスの体に自機が触れると、ダメージを受ける(Wave.bodyHit と同じ。ボス戦・ダメージ勝負だけ。連戦は場面ごと)。nil は当たらない。1.3.0 から
+    public var bodyHit: Bool?
 
     public var lookBullets: Theme { themeBullets ?? .classic }
     public var lookBackground: Theme { themeBackground ?? .classic }
@@ -710,7 +717,7 @@ public struct Stage: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
         case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
-        case mooksBreakable, mookHits, mooksClear, shipSkin
+        case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit
     }
 
     static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
@@ -719,10 +726,10 @@ public struct Stage: Codable, Equatable, Sendable {
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height))
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height), bodyHit: w.kind == .boss && w.bodyHit == true)
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height))]
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), bodyHit: mode != .survive && bodyHit == true)]
     }
 
     /// 連戦のとき、最後まで通しての所要時間の上限(秒)。場面の合計と、切り替えの時間
@@ -787,6 +794,7 @@ public struct Stage: Codable, Equatable, Sendable {
         mookHits = try d.decodeIfPresent(Int.self, forKey: .mookHits)
         mooksClear = try d.decodeIfPresent(Bool.self, forKey: .mooksClear)
         shipSkin = try? d.decodeIfPresent(String.self, forKey: .shipSkin)
+        bodyHit = try? d.decodeIfPresent(Bool.self, forKey: .bodyHit)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -802,6 +810,7 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(mookHits, forKey: .mookHits)
         try c.encodeIfPresent(mooksClear, forKey: .mooksClear)
         try c.encodeIfPresent(shipSkin, forKey: .shipSkin)
+        try c.encodeIfPresent(bodyHit, forKey: .bodyHit)
         try c.encode(emitters, forKey: .emitters)
         try c.encode(formatVersion, forKey: .formatVersion)
         try c.encodeIfPresent(lifeMode, forKey: .lifeMode)
@@ -920,6 +929,7 @@ public struct Stage: Codable, Equatable, Sendable {
         out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
         out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: mode == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
         out.shipSkin = Stage.sanitizedSkin(shipSkin)
+        out.bodyHit = (isBossMode && bodyHit == true) ? true : nil
         return out
     }
 }

@@ -53,6 +53,8 @@ export interface Wave {
   mookHits?: number;
   /** 雑魚を全部倒したら次へ(クリア)。耐える場面で、倒せる雑魚がいるときだけ。1.2.0 から */
   mooksClear?: true;
+  /** ボスの体に触れるとダメージ(true だけ入れる)。ボスの場面・ボス戦・ダメージ勝負だけ。1.3.0 から(needs: 3) */
+  bodyHit?: true;
   /** ボスの見た目(1〜5。標準=0は入れない。5 は堕天使で、位置と当たる範囲が変わる)・雑魚の見た目(1〜4)。図形のボスと雑魚は見た目だけ */
   bossLook?: number;
   mookLook?: number;
@@ -100,6 +102,8 @@ export interface Stage {
   mookHits?: number;
   /** 雑魚を全部倒したら次へ(クリア)。耐える場面で、倒せる雑魚がいるときだけ。1.2.0 から */
   mooksClear?: true;
+  /** ボスの体に触れるとダメージ(true だけ入れる)。ボスの場面・ボス戦・ダメージ勝負だけ。1.3.0 から(needs: 3) */
+  bodyHit?: true;
   /** 作者が選んだドット絵の自機の ID(招待のごほうびなど)。遊ぶ全員にその自機で見える。持っているかは publishStage で確かめる。1.2.0 から */
   shipSkin?: string;
   bossLook?: number;
@@ -321,12 +325,16 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     if (!wHits.ok) return { ok: false, error: "wave-look" };
     const wClear = mooksClearVal(w.mooksClear, kind === "survive" && wBreak === true, em.list);
     if (!wClear.ok) return { ok: false, error: "wave-look" };
+    const wBody = (w as { bodyHit?: unknown }).bodyHit;
+    if (wBody !== undefined && wBody !== null && wBody !== true && wBody !== false) return { ok: false, error: "wave-look" };
+    if (wBody === true && kind !== "boss") return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
       ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}), ...(w.mooksBreakable === true && wMooks.v !== undefined ? { mooksBreakable: true as const, ...(wHits.v !== undefined ? { mookHits: wHits.v } : {}), ...(wClear.v ? { mooksClear: true as const } : {}) } : {}),
       ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}),
       ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}),
-      ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}) });
+      ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}),
+      ...(wBody === true ? { bodyHit: true as const } : {}) });
   }
   return { ok: true, list, total: total + INTERMISSION_BUDGET * (list.length - 1) };
 }
@@ -449,6 +457,12 @@ export function validatePublish(input: unknown): Validated {
   if (!bHits.ok) return { ok: false, error: "look" };
   const bClear = mooksClearVal(input.mooksClear, mode === "survive" && bBreak === true, emitters);
   if (!bClear.ok) return { ok: false, error: "look" };
+  const bBody = (input as { bodyHit?: unknown }).bodyHit;
+  if (bBody !== undefined && bBody !== null && bBody !== true && bBody !== false) return { ok: false, error: "look" };
+  if (bBody === true && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
+  // 遊べるアプリの版: 体当たり(1.3.0〜)は 3、新しいボスなど(1.2.0〜)は 2
+  const needs = bBody === true || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+    : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;
   if (skinRaw !== undefined && skinRaw !== null && (typeof skinRaw !== "string" || !/^[a-z0-9_]{1,40}$/.test(skinRaw))) return { ok: false, error: "look" };
@@ -496,13 +510,14 @@ export function validatePublish(input: unknown): Validated {
   return {
     ok: true,
     clearReplay: replay,
-    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) }) > 1 ? { needs: 2 } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(shipSkin ? { shipSkin } : {}), ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
+    stage: { name, authorName, mode, durationSec, bossHp, bossMove, emitters, formatVersion: 1, ...(needs > 1 ? { needs } : {}), ...(lifeMode ? { lifeMode, lifeCount } : {}), ...(bgm !== undefined ? { bgm } : {}), ...look, ...(shipSkin ? { shipSkin } : {}), ...(hideMarkers ? { hideMarkers } : {}), ...(waves ? { waves } : {}), ...(bossWarning ? { bossWarning } : {}), ...(bossDefeat !== undefined ? { bossDefeat } : {}),
       ...(bSize.v !== undefined ? { bossSize: bSize.v } : {}), ...(bMooks.v !== undefined ? { mooks: bMooks.v } : {}), ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const, ...(bHits.v !== undefined ? { mookHits: bHits.v } : {}), ...(bClear.v ? { mooksClear: true as const } : {}) } : {}),
       ...(bBossLook.v !== undefined ? { bossLook: bBossLook.v } : {}), ...(bMookLook.v !== undefined ? { mookLook: bMookLook.v } : {}),
       ...(bAwaken.v !== undefined ? { awaken: bAwaken.v } : {}),
       ...(bHx.v !== undefined ? { bossX: bHx.v } : {}), ...(bHy.v !== undefined ? { bossY: bHy.v } : {}),
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
-      ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}) },
+      ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}),
+      ...(bBody === true ? { bodyHit: true as const } : {}) },
   };
 }
 

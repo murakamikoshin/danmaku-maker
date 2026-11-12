@@ -316,6 +316,12 @@ describe("validatePublish: 連戦(場面)", () => {
   });
   const total = (n: number, d: number) => d + 2 * (n - 1);
 
+  it("ボスに触れるとダメージは、ボスの場面だけ付けられ、そのステージは needs: 3", () => {
+    const r = validatePublish(seq([waveSurvive(), waveBoss({ bodyHit: true })], { durationSec: total(2, 20 + 60) }));
+    expect(r.ok && [r.stage.waves![1]!.bodyHit, r.stage.needs]).toEqual([true, 3]);
+    expect(validatePublish(seq([waveSurvive({ bodyHit: true }), waveBoss()], { durationSec: total(2, 20 + 60) }))).toEqual({ ok: false, error: "wave-look" });
+  });
+
   it("正しい連戦(雑魚 → 中ボス → 大ボス)を通し、合計の時間が一致している", () => {
     const waves = [waveSurvive(), waveBoss({ durationSec: 30, bossHp: 200 }), waveBoss({ durationSec: 90, bossHp: 800, warning: true, defeat: 3 })];
     const r = validatePublish(seq(waves, { durationSec: total(3, 20 + 30 + 90) }));
@@ -603,6 +609,17 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       expect(ok.ok && ok.stage.emitters[0]!.t).toBe(t);
       for (const look of [2, 5, 6, 7, 8, 9, 10]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
     }
+  });
+
+  it("ボスに触れるとダメージ(1.3.0)は、ボス戦・ダメージ勝負だけ受け付け、そのステージは needs: 3(1.3.0 以降が必要)", () => {
+    const ok = validatePublish(boss({ bodyHit: true }));
+    expect(ok.ok && [ok.stage.bodyHit, ok.stage.needs]).toEqual([true, 3]);
+    const withNewBoss = validatePublish(boss({ emitters: [em({ t: "kitsuneTorii" })], bossLook: 6, bossMove: 0, bodyHit: true }));
+    expect(withNewBoss.ok && withNewBoss.stage.needs).toBe(3);
+    const off = validatePublish(boss({ bodyHit: false }));
+    expect(off.ok && ["bodyHit" in off.stage, "needs" in off.stage]).toEqual([false, false]);
+    expect(validatePublish(good({ bodyHit: true }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bodyHit: "yes" }))).toEqual({ ok: false, error: "look" });
   });
 
   it("新しいボス(九尾以降)のステージには、必要な内容のレベル needs: 2 が付き、堕天使までのステージには付かない", () => {

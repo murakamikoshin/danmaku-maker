@@ -963,6 +963,18 @@ public struct Simulation {
                 if waveIndex + 1 < specs.count { advanceWave() } else { outcome = .cleared }
                 return
             }
+            // ボスの体に触れたら、弾に当たったのと同じくダメージ(作者がオンにしたときだけ)。
+            // 体は残るので、ライフ制でも HP 制でも、少しの間無敵にする(触れ続けて一気に減らないように)
+            if spec.bodyHit && waveT >= 0 && !(invincible || tick < shieldUntilTick) {
+                let dx = player.x - bp.x, dy = player.y - bp.y
+                let r = bossHitRadius + DanmakuConfig.hitRadius
+                if dx * dx + dy * dy < r * r {
+                    lifeLeft -= 1
+                    if lifeLeft <= 0 { outcome = .hit; return }
+                    shieldUntilTick = tick + Int((Simulation.lifeShieldSeconds / dt).rounded())
+                    hitFlash = 0.5
+                }
+            }
         }
 
         if !isBoss && breakableMooks {
