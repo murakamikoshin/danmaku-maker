@@ -54,7 +54,10 @@ export async function submitFeedback(db: Firestore, uid: string, raw: unknown, n
     await mailer.send(FEEDBACK_RECIPIENTS, subject, body);
     await ref.update({ mailed: true });
     return { mailed: true };
-  } catch {
+  } catch (e) {
+    // 送信に失敗しても要望は feedback に残っている。原因が分かるよう、ログには残す(パスワードなどは含まれない)
+    const err = e as { code?: string; responseCode?: number; message?: string };
+    console.error("feedback mail failed", { id: ref.id, code: err.code, responseCode: err.responseCode, message: String(err.message ?? "").slice(0, 200) });
     return { mailed: false };
   }
 }
