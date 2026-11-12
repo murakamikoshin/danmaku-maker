@@ -40213,61 +40213,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "At the chosen phase, the boss changes form with a flashy effect."
+            "value": "At the chosen phase, the boss transforms with an effect and its special moves get stronger (more or faster bullets, etc.). The same settings fire a different pattern before and after awakening."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "選んだ段階になると、ボスが演出とともに姿を変えます。"
+            "value": "選んだ段階になると、ボスが演出とともに姿を変え、専用の技も強くなります(弾が増える・速くなるなど)。同じ設定でも、覚醒の前と後で弾幕が変わります。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "到达所选阶段时，BOSS 会伴随特效变换形态。"
+            "value": "到达所选阶段时，Boss 会伴随演出改变外形，专属招式也会变强（弹幕变多、变快等）。即使设置相同，觉醒前后的弹幕也会不同。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "到達所選階段時，BOSS 會伴隨特效變換形態。"
+            "value": "到達所選階段時，Boss 會伴隨演出改變外形，專屬招式也會變強（彈幕變多、變快等）。即使設定相同，覺醒前後的彈幕也會不同。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "선택한 페이즈가 되면 보스가 연출과 함께 모습을 바꿉니다."
+            "value": "선택한 페이즈가 되면 보스가 연출과 함께 모습을 바꾸고, 전용 기술도 강해져요(탄이 늘거나 빨라지는 등). 같은 설정이라도 각성 전후로 탄막이 달라져요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En la fase elegida, el jefe cambia de forma con un efecto especial."
+            "value": "En la fase elegida, el jefe se transforma con un efecto y sus movimientos especiales se vuelven más fuertes (más balas, más rápidas, etc.). Con los mismos ajustes, el patrón cambia antes y después del despertar."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "À la phase choisie, le boss change de forme avec un effet spectaculaire."
+            "value": "À la phase choisie, le boss se transforme avec un effet et ses attaques spéciales deviennent plus fortes (plus de balles, plus rapides, etc.). Avec les mêmes réglages, le motif change avant et après l'éveil."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "In der gewählten Phase wechselt der Boss mit einem Effekt seine Gestalt."
+            "value": "In der gewählten Phase verwandelt sich der Boss mit einem Effekt, und seine Spezialangriffe werden stärker (mehr oder schnellere Kugeln usw.). Bei gleichen Einstellungen ändert sich das Muster vor und nach dem Erwachen."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Na fase escolhida, o chefe muda de forma com um efeito especial."
+            "value": "Na fase escolhida, o chefe se transforma com um efeito e seus golpes especiais ficam mais fortes (mais balas, mais rápidas etc.). Com as mesmas configurações, o padrão muda antes e depois do despertar."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "На выбранной фазе босс меняет облик с эффектом."
+            "value": "В выбранной фазе босс преображается с эффектом, а его особые приёмы усиливаются (больше пуль, они быстрее и т. п.). При тех же настройках узор до и после пробуждения отличается."
           }
         }
       }
@@ -67415,6 +67415,518 @@
           "stringUnit": {
             "state": "translated",
             "value": "Если корабль коснётся босса, вы теряете 1 жизнь/HP, как от пули (затем ненадолго неуязвимы). Недоступно в версиях до 1.3.0."
+          }
+        }
+      }
+    },
+    "editor.phase.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick two phases to fire in both (e.g. Phase 2 and Phase 3)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2つの段階を選ぶと、その両方で撃ちます(例: 第2段階と第3段階)。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择两个阶段时，会在这两个阶段都发射（例：第2阶段和第3阶段）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選擇兩個階段時，會在這兩個階段都發射（例：第2階段和第3階段）。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "두 페이즈를 고르면 둘 다에서 발사해요 (예: 페이즈 2와 페이즈 3)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige dos fases para disparar en ambas (p. ej., fase 2 y fase 3)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez deux phases pour tirer dans les deux (ex. : phase 2 et phase 3)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle zwei Phasen, um in beiden zu feuern (z. B. Phase 2 und Phase 3)."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha duas fases para disparar em ambas (ex.: fase 2 e fase 3)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите две фазы, чтобы стрелять в обеих (например, фаза 2 и фаза 3)."
+          }
+        }
+      }
+    },
+    "editor.nudge.down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrease slightly"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少し下げる"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍微减少"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍微減少"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조금 줄이기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajar un poco"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diminuer un peu"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etwas verringern"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diminuir um pouco"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Немного уменьшить"
+          }
+        }
+      }
+    },
+    "editor.nudge.up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Increase slightly"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少し上げる"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍微增加"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍微增加"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조금 늘리기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subir un poco"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Augmenter un peu"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etwas erhöhen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aumentar um pouco"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Немного увеличить"
+          }
+        }
+      }
+    },
+    "publish.desc.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description (optional)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "説明(なくてもOK)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说明（可不填）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明（可不填）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명 (선택)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descripción (opcional)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description (facultative)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beschreibung (optional)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descrição (opcional)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Описание (необязательно)"
+          }
+        }
+      }
+    },
+    "publish.desc.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A note for players, hints, etc. (line breaks OK)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遊ぶ人へのひとことや、攻略のヒントなど(改行できます)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "给玩家的一句话、攻略提示等（可换行）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "給玩家的一句話、攻略提示等（可換行）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "플레이어에게 한마디, 공략 힌트 등 (줄바꿈 가능)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un mensaje para los jugadores, pistas, etc. (puedes usar saltos de línea)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un mot pour les joueurs, des astuces… (retours à la ligne possibles)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Hinweis für Spieler, Tipps usw. (Zeilenumbrüche möglich)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um recado para os jogadores, dicas etc. (pode quebrar linha)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пара слов игрокам, подсказки и т. п. (можно с переносами строк)"
+          }
+        }
+      }
+    },
+    "error.publish.desc-length": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The description must be 200 characters and 10 lines or fewer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "説明は200文字・10行までにしてください。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说明请控制在200字、10行以内。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明請控制在200字、10行以內。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명은 200자, 10줄 이내로 써 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La descripción debe tener como máximo 200 caracteres y 10 líneas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La description doit faire au plus 200 caractères et 10 lignes."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Beschreibung darf höchstens 200 Zeichen und 10 Zeilen lang sein."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A descrição deve ter no máximo 200 caracteres e 10 linhas."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Описание должно быть не длиннее 200 символов и 10 строк."
+          }
+        }
+      }
+    },
+    "error.publish.desc-ng-word": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The description contains a word that isn't allowed."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "説明に使えない言葉が含まれています。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说明中含有不能使用的词语。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明中含有不能使用的詞語。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명에 사용할 수 없는 단어가 있어요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La descripción contiene una palabra no permitida."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La description contient un mot interdit."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Beschreibung enthält ein nicht erlaubtes Wort."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A descrição contém uma palavra não permitida."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Описание содержит недопустимое слово."
+          }
+        }
+      }
+    },
+    "error.publish.desc-link": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Links (URLs) aren't allowed in the description."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "説明にリンク(URL)は書けません。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说明中不能写链接（URL）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明中不能寫連結（URL）。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명에는 링크(URL)를 쓸 수 없어요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se permiten enlaces (URL) en la descripción."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les liens (URL) ne sont pas autorisés dans la description."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Links (URLs) sind in der Beschreibung nicht erlaubt."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não é permitido colocar links (URL) na descrição."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В описании нельзя размещать ссылки (URL)."
           }
         }
       }

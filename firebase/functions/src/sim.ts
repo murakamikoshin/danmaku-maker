@@ -1,4 +1,4 @@
-import type { Emitter, Stage } from "./validate.js";
+import { firesInPhase, type Emitter, type Stage } from "./validate.js";
 
 /** OGP 画像用の簡易シミュレーション。自機は動かさず、弾の配置だけを求める（クライアントの Swift 版とは別物） */
 export const W = 360;
@@ -96,7 +96,7 @@ export function snapshot(stage0: Stage): { bullets: Dot[]; at: number } {
   const bossPos = { x: W / 2, y: H * 0.18 };
   for (let t = 0; t < at; t += dt) {
     stage.emitters.forEach((m, idx) => {
-      if (boss && !(m.ph === 0 || m.ph === 1)) return;
+      if (boss && !firesInPhase(m.ph, 1)) return;
       const end = boss ? Infinity : Math.min(m.e, stage.durationSec);
       while (t >= next[idx]! && next[idx]! < end) {
         const cx = boss && m.p !== 1 ? bossPos.x : m.x * W, cy = boss && m.p !== 1 ? bossPos.y : m.y * H;

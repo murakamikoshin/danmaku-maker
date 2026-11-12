@@ -4,7 +4,7 @@ import { beamHits, blastHits } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KINDS } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
-import { validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
+import { firesInPhase, validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
 import { afterGrant, afterPost, checkPost, FREE_DAILY_POSTS, HARD_DAILY_POSTS, jstDay, MAX_EXTRA_TICKETS, readQuota } from "../src/quota.js";
 import { pathPosition, validatePath } from "../src/custompath.js";
 import { nameKeys, normalizeName, queryGram } from "../src/search.js";
@@ -217,7 +217,7 @@ describe("validatePublish: ダメージ勝負・ライフ・新しいパター�
 
 describe("validateComment", () => {
   it("空白をそろえて通す", () => {
-    expect(validateComment("  むずい\n\nけど  好き ")).toEqual({ ok: true, text: "むずい けど 好き" });
+    expect(validateComment("  むずい  けど  好き ")).toEqual({ ok: true, text: "むずい けど 好き" });
     expect(validateComment("あ".repeat(80)).ok).toBe(true);
   });
   it.each([
@@ -235,6 +235,46 @@ describe("validateComment", () => {
   });
   it("ふつうの文や顔文字は通る", () => {
     expect(validateComment("やっと倒せた！！(^o^) 3.5秒はやい").ok).toBe(true);
+  });
+  it("改行は残す(1.3.0)。空行は続けて1つまで、最初と最後の空行は消す", () => {
+    expect(validateComment("  むずい\n\n\nけど  好き \n\n")).toEqual({ ok: true, text: "むずい\n\nけど 好き" });
+    expect(validateComment("\r\n1行目\r\n2行目")).toEqual({ ok: true, text: "1行目\n2行目" });
+    expect(validateComment("1\n2\n3\n4\n5").ok).toBe(true);
+    expect(validateComment("1\n2\n3\n4\n5\n6")).toEqual({ ok: false, error: "comment-length" });
+  });
+  it("改行をまたいだ NG ワード・URL も拒否する", () => {
+    expect(validateComment("し\nね")).toEqual({ ok: false, error: "comment-ng-word" });
+    expect(validateComment("example\n.com")).toEqual({ ok: false, error: "comment-link" });
+  });
+});
+
+describe("撃つ段階(firesInPhase)", () => {
+  it("0 は全部、1〜3 はその段階だけ、12・13・23 は2つの段階", () => {
+    const on = (ph: number) => [1, 2, 3].filter((p) => firesInPhase(ph, p));
+    expect([0, 1, 2, 3, 12, 13, 23].map(on)).toEqual([[1, 2, 3], [1], [2], [3], [1, 2], [1, 3], [2, 3]]);
+  });
+});
+
+describe("ステージの説明(desc、1.3.0)", () => {
+  it("なし・空は入れない。改行は残し、200文字・10行まで", () => {
+    const none = validatePublish(good());
+    expect(none.ok && "desc" in none.stage).toBe(false);
+    const empty = validatePublish(good({ desc: " \n " }));
+    expect(empty.ok && "desc" in empty.stage).toBe(false);
+    const d = validatePublish(good({ desc: "  第2段階が\n本番です  " }));
+    expect(d.ok && d.stage.desc).toBe("第2段階が\n本番です");
+    expect(validatePublish(good({ desc: "あ".repeat(200) })).ok).toBe(true);
+    expect(validatePublish(good({ desc: "あ".repeat(201) }))).toEqual({ ok: false, error: "desc-length" });
+    expect(validatePublish(good({ desc: Array(11).fill("a").join("\n") }))).toEqual({ ok: false, error: "desc-length" });
+    expect(validatePublish(good({ desc: 3 }))).toEqual({ ok: false, error: "desc-length" });
+  });
+  it("NGワードとURLは拒否", () => {
+    expect(validatePublish(good({ desc: "しね" }))).toEqual({ ok: false, error: "desc-ng-word" });
+    expect(validatePublish(good({ desc: "https://a.example" }))).toEqual({ ok: false, error: "desc-link" });
+  });
+  it("説明だけでは、必要な版(needs)は上がらない(古いアプリは読み飛ばす)", () => {
+    const d = validatePublish(good({ desc: "説明" }));
+    expect(d.ok && "needs" in d.stage).toBe(false);
   });
 });
 
@@ -620,6 +660,17 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(off.ok && ["bodyHit" in off.stage, "needs" in off.stage]).toEqual([false, false]);
     expect(validatePublish(good({ bodyHit: true }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bodyHit: "yes" }))).toEqual({ ok: false, error: "look" });
+  });
+
+  it("撃つ段階を2つ選んだ発射台(12・13・23、1.3.0)は、ボスなら受け付けて needs: 3。ほかの値・耐える場面は拒否", () => {
+    for (const ph of [12, 13, 23]) {
+      const r = validatePublish(boss({ emitters: [em({ ph })] }));
+      expect(r.ok && [r.stage.emitters[0]!.ph, r.stage.needs]).toEqual([ph, 3]);
+    }
+    const single = validatePublish(boss({ emitters: [em({ ph: 2 })] }));
+    expect(single.ok && "needs" in single.stage).toBe(false);
+    for (const ph of [4, 11, 21, 123, -1]) expect(validatePublish(boss({ emitters: [em({ ph })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ ph: 12 })] }))).toEqual({ ok: false, error: "emitter-range" });
   });
 
   it("新しいボス(九尾以降)のステージには、必要な内容のレベル needs: 2 が付き、堕天使までのステージには付かない", () => {

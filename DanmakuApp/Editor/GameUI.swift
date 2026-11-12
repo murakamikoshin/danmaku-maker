@@ -397,9 +397,9 @@ struct PatternTiles: View {
     /// 専用の絵を持つボスを選んでいるときは、そのボスだけの技も出す
     var character: BossCharacter? = nil
     @EnvironmentObject private var cosmetics: CosmeticsStore
-    @State private var showShop = false
-    /// ショップで移動する先(押したパターンの商品のカード)
-    @State private var shopFocus = "patterns"
+    /// 持っていないパターンを押したとき(ショップのその商品を開く。開く画面は外で持つ。
+    /// この一覧は畳んだり、スクロールで作り直されたりするので、ここで画面を持つと、開いた画面が壊れて暗いまま止まることがあった)
+    var onLocked: (String) -> Void = { _ in }
     /// パターンが入っている、ショップのカードの名札
     static func shopCard(for p: DanmakuCore.Pattern) -> String {
         if DanmakuCore.Pattern.ad.contains(p) { return "adpatterns" }
@@ -429,7 +429,6 @@ struct PatternTiles: View {
             grid(DanmakuCore.Pattern.pack2)
             customSection
         }
-        .sheet(isPresented: $showShop) { ShopView(focus: shopFocus) }
     }
 
     /// 最初から使えるパターン。旧「渦巻き」(spiral)は放射と同じ計算なので出さず、新しい渦巻き(swirl)をその場所に出す
@@ -488,7 +487,7 @@ struct PatternTiles: View {
                 let locked = !cosmetics.ownership.has(p) && selection != p
                 Button {
                     gameTap()
-                    if locked { shopFocus = Self.shopCard(for: p); showShop = true; return }
+                    if locked { onLocked(Self.shopCard(for: p)); return }
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection = p }
                 } label: {
                     VStack(spacing: 3) {

@@ -19,6 +19,8 @@ enum CommentError: Error { case signIn, ngWord, link, tooLong, tooFast, badName,
 /// ステージへのコメント。書けるのは Apple でサインインした人だけ。通報・ブロック・削除ができる
 enum CommentService {
     static let maxLength = 80
+    /// 行数の上限(サーバーの MAX_COMMENT_LINES と同じ。改行は 1.3.0 から)
+    static let maxLines = 5
     static let pageSize = 30
 
     static func list(stageID: String) async throws -> [StageComment] {
@@ -55,5 +57,16 @@ enum CommentService {
 
     static func report(stageID: String, commentID: String, reason: String) async throws {
         _ = try await Backend.functions.httpsCallable("reportComment").call(["stageId": stageID, "commentId": commentID, "reason": reason])
+    }
+}
+
+/// 改行できる入力欄の制限(文字数と行数。超えた分は切る)
+enum MultilineText {
+    static func limited(_ v: String, maxLength: Int, maxLines: Int) -> String {
+        var out = v
+        let lines = out.components(separatedBy: "\n")
+        if lines.count > maxLines { out = lines.prefix(maxLines).joined(separator: "\n") }
+        if out.count > maxLength { out = String(out.prefix(maxLength)) }
+        return out
     }
 }

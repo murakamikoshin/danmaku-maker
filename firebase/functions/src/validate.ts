@@ -106,6 +106,8 @@ export interface Stage {
   bodyHit?: true;
   /** 作者が選んだドット絵の自機の ID(招待のごほうびなど)。遊ぶ全員にその自機で見える。持っているかは publishStage で確かめる。1.2.0 から */
   shipSkin?: string;
+  /** 作者が書いたステージの説明(200文字・10行まで。なければ入れない)。見た目だけで、計算には関わらない。1.3.0 から */
+  desc?: string;
   bossLook?: number;
   mookLook?: number;
   /** 覚醒する段階(2 か 3)。ボス戦・ダメージ勝負だけ */
@@ -206,6 +208,11 @@ function mooksClearVal(v: unknown, allowed: boolean, ems: readonly Emitter[]): {
   if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner"].includes(m.t))) return { ok: false };
   return { ok: true, v: true };
 }
+/** 撃つ段階の値: 0 = 全部、1〜3 = その段階だけ、12・13・23 = 2つの段階(1.3.0 から。アプリの Emitter.phaseCodes と同じ) */
+export const PHASE_CODES: readonly number[] = [0, 1, 2, 3, 12, 13, 23];
+/** この段階で撃つか(アプリの Emitter.fires(inPhase:) と同じ) */
+export const firesInPhase = (ph: number, phase: number): boolean =>
+  ph === 0 || ph === phase || (ph >= 10 && (Math.floor(ph / 10) === phase || ph % 10 === phase));
 type LevelPart = { bossLook?: number; bossSize?: number; bossMove?: number | null; bossX?: number; bossY?: number; mooksBreakable?: true };
 /** 1 つの場面(または 1 面のステージ)が、1.2.0 以降の内容を使うか */
 const needsNew = (p: LevelPart): boolean =>
@@ -250,7 +257,8 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (!isObj(item) || !(PATTERNS as readonly unknown[]).includes(item.t)) return { ok: false, error: "emitter-pattern" };
     const x = num(item.x, 0, 1), y = num(item.y, 0, 0.6), s = num(item.s, 0, 180), e = num(item.e, 0, 180);
     const i = num(item.i, 0.05, 15), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
-    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 3);
+    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 23);
+    if (ph !== null && !PHASE_CODES.includes(ph)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
     const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
@@ -350,6 +358,11 @@ export function validatePublish(input: unknown): Validated {
   const authorName = typeof input.authorName === "string" ? input.authorName.trim() : "";
   if (len(authorName) < 1 || len(authorName) > MAX_AUTHOR) return { ok: false, error: "author-length" };
   if (containsNgWord(authorName)) return { ok: false, error: "author-ng-word" };
+
+  // ステージの説明(なくてもよい)
+  const dv = validateDesc((input as { desc?: unknown }).desc);
+  if (!dv.ok) return dv;
+  const desc = dv.desc;
 
   if (input.mode !== "survive" && input.mode !== "boss" && input.mode !== "damage" && input.mode !== "sequence") return { ok: false, error: "mode" };
   const mode: Mode = input.mode;
@@ -461,7 +474,9 @@ export function validatePublish(input: unknown): Validated {
   if (bBody !== undefined && bBody !== null && bBody !== true && bBody !== false) return { ok: false, error: "look" };
   if (bBody === true && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
   // 遊べるアプリの版: 体当たり(1.3.0〜)は 3、新しいボスなど(1.2.0〜)は 2
-  const needs = bBody === true || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 2つの段階で撃つ発射台(1.3.0〜)も 3
+  const multiPhase = [...emitters, ...(waves ?? []).flatMap((w) => w.emitters)].some((m) => m.ph > 3);
+  const needs = bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;
@@ -517,7 +532,7 @@ export function validatePublish(input: unknown): Validated {
       ...(bHx.v !== undefined ? { bossX: bHx.v } : {}), ...(bHy.v !== undefined ? { bossY: bHy.v } : {}),
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
       ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}),
-      ...(bBody === true ? { bodyHit: true as const } : {}) },
+      ...(bBody === true ? { bodyHit: true as const } : {}), ...(desc ? { desc } : {}) },
   };
 }
 
@@ -541,11 +556,49 @@ export type ReportReason = (typeof REPORT_REASONS)[number];
 export const MAX_COMMENT = 80;
 export type CommentCheck = { ok: true; text: string } | { ok: false; error: string };
 
-/** コメントの検証。前後の空白を除き、1〜80文字、NGワードとURLは拒否する */
+/** コメントの行数の上限(改行は 1.3.0 から) */
+export const MAX_COMMENT_LINES = 5;
+
+/**
+ * 改行を残して整える。行ごとに空白を1つにまとめて前後を除き、空行は続けて1つまで、最初と最後の空行は消す。
+ * 行数が maxLines を超えたら null
+ */
+export function normalizeMultiline(raw: unknown, maxLines: number): string | null {
+  if (typeof raw !== "string") return "";
+  const kept: string[] = [];
+  for (const line of raw.replace(/\r\n?/g, "\n").split("\n").map((l) => l.replace(/\s+/g, " ").trim())) {
+    if (line === "" && (kept.length === 0 || kept[kept.length - 1] === "")) continue;
+    kept.push(line);
+  }
+  while (kept.length > 0 && kept[kept.length - 1] === "") kept.pop();
+  return kept.length > maxLines ? null : kept.join("\n");
+}
+
+const LINK_RE = /https?:|www\.|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
+/** NGワード(改行をまたいで書いたものも見る) */
+const hasNg = (text: string) => containsNgWord(text) || containsNgWord(text.replace(/\n/g, ""));
+
+/** コメントの検証。前後の空白を除き、1〜80文字・5行まで、NGワードとURLは拒否する */
 export function validateComment(raw: unknown): CommentCheck {
-  const text = typeof raw === "string" ? raw.replace(/\s+/g, " ").trim() : "";
+  const text = normalizeMultiline(raw, MAX_COMMENT_LINES);
+  if (text === null) return { ok: false, error: "comment-length" };
   if (len(text) < 1 || len(text) > MAX_COMMENT) return { ok: false, error: "comment-length" };
-  if (/https?:|www\.|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i.test(text)) return { ok: false, error: "comment-link" };
-  if (containsNgWord(text)) return { ok: false, error: "comment-ng-word" };
+  if (LINK_RE.test(text) || LINK_RE.test(text.replace(/\n/g, ""))) return { ok: false, error: "comment-link" };
+  if (hasNg(text)) return { ok: false, error: "comment-ng-word" };
   return { ok: true, text };
+}
+
+/** ステージの説明(1.3.0 から。なくてもよい)の長さと行数 */
+export const MAX_DESC = 200;
+export const MAX_DESC_LINES = 10;
+/** ステージの説明の検証。空は「なし」(undefined)。200文字・10行まで、NGワードとURLは拒否する */
+export function validateDesc(raw: unknown): { ok: true; desc: string | undefined } | { ok: false; error: string } {
+  if (raw === undefined || raw === null) return { ok: true, desc: undefined };
+  if (typeof raw !== "string") return { ok: false, error: "desc-length" };
+  const text = normalizeMultiline(raw, MAX_DESC_LINES);
+  if (text === null || len(text) > MAX_DESC) return { ok: false, error: "desc-length" };
+  if (text === "") return { ok: true, desc: undefined };
+  if (LINK_RE.test(text) || LINK_RE.test(text.replace(/\n/g, ""))) return { ok: false, error: "desc-link" };
+  if (hasNg(text)) return { ok: false, error: "desc-ng-word" };
+  return { ok: true, desc: text };
 }

@@ -115,6 +115,15 @@ struct StageDetailView: View {
                     }
                 }
             }
+            if let desc = remote.desc {
+                // 作者が書いたステージの説明
+                Text(desc).font(.system(size: 14, weight: .medium)).foregroundStyle(GameStyle.text.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                    .accessibilityIdentifier("detail.desc")
+            }
             HStack(spacing: 10) {
                 statTile(ring: remote.clearRatePercent, label: "world.clearrate")
                 statTile(value: "\(remote.plays)", label: "world.plays")

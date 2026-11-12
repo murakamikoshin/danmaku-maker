@@ -806,7 +806,7 @@ public struct Simulation {
     public var untilNextShot: Double? {
         guard isBoss, waveT >= 0 else { return nil }
         var best: Double?
-        for (idx, m) in spec.emitters.enumerated() where m.ph == 0 || m.ph == phase {
+        for (idx, m) in spec.emitters.enumerated() where m.fires(inPhase: phase) {
             let d = max(0, next[idx] - waveT)
             if best == nil || d < best! { best = d }
         }
@@ -1010,7 +1010,7 @@ public struct Simulation {
             for (idx, m) in spec.emitters.enumerated() {
                 if mookDestroyed(idx) { continue }
                 if isBoss {
-                    if !(m.ph == 0 || m.ph == phase) || banner > 0 { next[idx] = waveT; continue }
+                    if !m.fires(inPhase: phase) || banner > 0 { next[idx] = waveT; continue }
                     while waveT >= next[idx] {
                         // ボス戦でも、好きな場所から出せる(p == 1)。雨は、これまでどおり位置を使わない
                         let fx = m.firesFromPoint ? m.x * W : bp.x

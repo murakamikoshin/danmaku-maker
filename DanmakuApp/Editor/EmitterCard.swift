@@ -19,7 +19,42 @@ enum IntervalScale {
         return min(maxIndex, fineSteps - 1 + Int(((v - 2.0) / 0.5).rounded()))
     }
 
-    static func label(_ s: Double) -> String { s <= 2 ? String(format: "%.2fs", s) : String(format: "%.1fs", s) }
+    static func label(_ s: Double) -> String { String(format: "%.2fs", s) }
+
+    /// − / + で、0.01 秒ずつ動かす(範囲の中に収める)
+    static func nudged(_ s: Double, by dir: Int) -> Double {
+        let v = ((s * 100).rounded() + Double(dir)) / 100
+        return min(max(v, Emitter.minInterval), Emitter.maxInterval)
+    }
+}
+
+/// ボスの、撃つ段階の選択。「全部」か、第1〜第3段階から1つ・2つを選ぶ(3つ全部を選ぶと「全部」と同じ)
+private struct PhaseChips: View {
+    @Binding var code: Int
+    let index: Int
+
+    var body: some View {
+        let set = Emitter.phases(of: code)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: 8, alignment: .leading)], alignment: .leading, spacing: 8) {
+            chip(L("phase.all"), selected: code == 0, id: "0") { code = 0 }
+            ForEach(1...3, id: \.self) { n in
+                chip(L("phase.\(n)"), selected: set.contains(n), id: "\(n)") {
+                    var next = set
+                    if next.contains(n) { next.remove(n) } else { next.insert(n) }
+                    code = Emitter.phaseCode(next)
+                }
+            }
+        }
+    }
+
+    private func chip(_ title: String, selected: Bool, id: String, action: @escaping () -> Void) -> some View {
+        Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { action() } } label: {
+            Chip(title: title, selected: selected)
+        }
+        .buttonStyle(BounceButtonStyle())
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("emitter.phase.\(index).\(id)")
+    }
 }
 
 struct EmitterCard: View {
@@ -44,6 +79,9 @@ struct EmitterCard: View {
 
     /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
     @State private var patternOpen = false
+    /// 持っていないパターンを押したときに開くショップ(開く先の商品のカード)。一覧の外のカード全体で持つ
+    @State private var shopFocus: ShopFocus?
+    struct ShopFocus: Identifiable { let id: String }
 
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
     private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
@@ -98,7 +136,8 @@ struct EmitterCard: View {
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
                 }
                 if patternOpen {
-                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil, emitter: $emitter)
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil,
+                                 onLocked: { shopFocus = ShopFocus(id: $0) }, emitter: $emitter)
                 }
             }
 
@@ -138,8 +177,8 @@ struct EmitterCard: View {
                     }
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.phase").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                        ChipGrid(items: [(0, L("phase.all")), (1, L("phase.1")), (2, L("phase.2")), (3, L("phase.3"))],
-                                 selection: $emitter.ph, idPrefix: "emitter.phase.\(index)", minimum: 64)
+                        PhaseChips(code: $emitter.ph, index: index)
+                        Text("editor.phase.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 } else {
                     SliderRow(label: "editor.x", value: $emitter.x, range: 0...1, step: 0.05, disabled: positionless) { "\(Int($0 * 100))%" }
@@ -154,14 +193,19 @@ struct EmitterCard: View {
                 SliderRow(label: "editor.y", value: $emitter.y, range: 0...0.6, step: 0.05) { "\(Int($0 * 100))%" }
             }
             // 間隔: 2 秒までは 0.05 秒きざみ(これまでと同じ)、それより先は 0.5 秒きざみで 15 秒まで(1本のスライダーのまま)
+            // − / + で 0.01 秒ずつ細かく決められる(スライダーの目盛りの間の値も使える)
             SliderRow(label: "editor.interval", value: Binding(get: { Double(IntervalScale.index(emitter.i)) }, set: { emitter.i = IntervalScale.seconds(Int($0)) }),
-                      range: 0...Double(IntervalScale.maxIndex), step: 1) { IntervalScale.label(IntervalScale.seconds(Int($0))) }
+                      range: 0...Double(IntervalScale.maxIndex), step: 1,
+                      nudge: { emitter.i = IntervalScale.nudged(emitter.i, by: $0) }) { _ in IntervalScale.label(emitter.i) }
             SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
             SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
+            // 向き: スライダーは 15° きざみ、− / + で 1° ずつ
             SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),
-                      range: -180...180, step: 15, disabled: !emitter.canRotate) { "\(Int($0))°" }
+                      range: -180...180, step: 15, disabled: !emitter.canRotate,
+                      nudge: { emitter.a = min(180, max(-180, emitter.a + $0)) }) { "\(Int($0))°" }
             if advanced {
-                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }
+                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart,
+                          nudge: { emitter.r = min(90, max(-90, emitter.r.rounded() + Double($0))) }) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }
             }
             }   // if !collapsed
         }
@@ -170,6 +214,7 @@ struct EmitterCard: View {
         .overlay(PixelRect(cornerRadius: 18).stroke(GameStyle.edge))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
+        .sheet(item: $shopFocus) { ShopView(focus: $0.id) }
     }
 
     /// 撃つ場所を選ぶ。「好きな場所」にしたとき、場所がボスのすぐ近く(初期値のまま)なら、少し離して変わったことが分かるようにする

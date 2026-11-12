@@ -556,21 +556,47 @@ struct SliderRow: View {
     let range: ClosedRange<Double>
     let step: Double
     var disabled = false
+    /// あれば、値の左右に − / + を出して、細かく動かせるようにする(-1 か +1 を渡す)
+    var nudge: ((Int) -> Void)? = nil
     let format: (Double) -> String
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: nudge == nil ? 8 : 6) {
             Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
-                .frame(width: 84, alignment: .leading)
+                .frame(width: nudge == nil ? 84 : 72, alignment: .leading)
             GameSlider(value: $value, range: range, step: step).allowsHitTesting(!disabled)
-            Text(format(value))
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .padding(.vertical, 4).padding(.horizontal, 6)
-                .frame(width: 64)
-                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+            if let nudge {
+                HStack(spacing: 2) {
+                    nudgeButton("minus", -1, nudge)
+                    valueBox.frame(width: 58)
+                    nudgeButton("plus", 1, nudge)
+                }
+                .allowsHitTesting(!disabled)
+            } else {
+                valueBox.frame(width: 64)
+            }
         }
         .opacity(disabled ? 0.35 : 1)
+    }
+
+    private var valueBox: some View {
+        Text(format(value))
+            .font(.system(size: 12, weight: .bold, design: .monospaced))
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .padding(.vertical, 4).padding(.horizontal, 4)
+            .frame(maxWidth: .infinity)
+            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+    }
+
+    private func nudgeButton(_ image: String, _ dir: Int, _ action: @escaping (Int) -> Void) -> some View {
+        Button { gameTap(); action(dir) } label: {
+            Image(systemName: image).font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.text)
+                .frame(width: 24, height: 26)
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 7))
+        }
+        .buttonStyle(BounceButtonStyle())
+        .accessibilityLabel(Text(dir < 0 ? "editor.nudge.down" : "editor.nudge.up"))
     }
 }
 

@@ -204,3 +204,19 @@ struct PhotoPickerSheet: UIViewControllerRepresentable {
         }
     }
 }
+
+/// 改行できる入力欄(iOS 16 以降。行数に合わせて縦にのびる)。iOS 15 は、改行できない1行の入力欄になる
+struct CompatMultilineField: View {
+    @Binding var text: String
+    let prompt: LocalizedStringKey
+    let minLines: Int
+    let maxLines: Int
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            TextField("", text: $text, prompt: Text(prompt), axis: .vertical).lineLimit(minLines...maxLines)
+        } else {
+            TextField("", text: $text, prompt: Text(prompt))
+        }
+    }
+}

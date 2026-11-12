@@ -10,7 +10,7 @@ import { emitWitch, isWitchPattern } from "./witch.js";
 import { emitReaper, isReaperPattern } from "./reaper.js";
 import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
-import { BOSS_MOVE_COUNT, PATTERNS, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
+import { BOSS_MOVE_COUNT, PATTERNS, firesInPhase, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
  * ゲーム計算の完全版(アプリの DanmakuCore.Simulation の移植)。ランキングの記録を、
@@ -608,7 +608,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       sp.emitters.forEach((m, idx) => {
         if (mookDestroyed(idx)) return;
         if (sp.boss) {
-          if (!(m.ph === 0 || m.ph === phase) || banner > 0) { next[idx] = waveT; return; }
+          if (!firesInPhase(m.ph, phase) || banner > 0) { next[idx] = waveT; return; }
           while (waveT >= next[idx]!) {
             emit(m, shotCount[idx]!, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by, px, py, rng, bullets,
               sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);

@@ -450,7 +450,7 @@ public struct Wave: Codable, Equatable, Sendable {
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Int(clamp(Double(m.ph), 0, 3)) : 0,
+                    k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Emitter.sanitizedPhase(m.ph) : 0,
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
@@ -516,6 +516,33 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
     public static let minInterval = 0.05
     public static let maxInterval = 15.0
+
+    /// 撃つ段階(ボスだけ)の値: 0 = 全部、1〜3 = その段階だけ、12・13・23 = 2つの段階(1.3.0 から。例: 23 は第2と第3)
+    public static let phaseCodes = [0, 1, 2, 3, 12, 13, 23]
+    /// 値を、撃つ段階の集まりにする(0 は空 = 全部)
+    public static func phases(of code: Int) -> Set<Int> {
+        switch code {
+        case 1, 2, 3: return [code]
+        case 12: return [1, 2]
+        case 13: return [1, 3]
+        case 23: return [2, 3]
+        default: return []
+        }
+    }
+    /// 撃つ段階の集まりを、値にする(空・3つ全部は 0)
+    public static func phaseCode(_ set: Set<Int>) -> Int {
+        let s = set.filter { (1...3).contains($0) }
+        if s.isEmpty || s.count == 3 { return 0 }
+        return s.sorted().reduce(0) { $0 * 10 + $1 }
+    }
+    /// 範囲外の値を直す(これまでどおり 0〜3 に収め、2つの段階の値はそのまま。123 は全部)
+    public static func sanitizedPhase(_ v: Int) -> Int {
+        if phaseCodes.contains(v) { return v }
+        if v == 123 { return 0 }
+        return min(3, max(0, v))
+    }
+    /// この段階で撃つか
+    public func fires(inPhase phase: Int) -> Bool { ph == 0 || ph == phase || Emitter.phases(of: ph).contains(phase) }
 
     /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
     public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner].contains(t) }
@@ -893,7 +920,7 @@ public struct Stage: Codable, Equatable, Sendable {
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: Int(clamp(Double(m.ph), 0, 3)),
+                    k: Int(clamp(Double(m.k), 0, 4)), ph: Emitter.sanitizedPhase(m.ph),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,

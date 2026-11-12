@@ -64,16 +64,18 @@ struct CommentsSection: View {
 
     @ViewBuilder private var composer: some View {
         if auth.isMember {
-            HStack(spacing: 8) {
-                TextField("", text: $text, prompt: Text("comment.placeholder"))
+            HStack(alignment: .bottom, spacing: 8) {
+                // 改行できる(5行まで)。送るのは右のボタン
+                CompatMultilineField(text: $text, prompt: "comment.placeholder", minLines: 1, maxLines: 5)
                     .textFieldStyle(.plain)
                     .font(.system(size: 15, weight: .semibold))
                     .padding(.vertical, 10).padding(.horizontal, 12)
                     .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
                     .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
-                    .onChange(of: text) { v in if v.count > CommentService.maxLength { text = String(v.prefix(CommentService.maxLength)) } }
-                    .submitLabel(.send)
-                    .onSubmit { Task { await send() } }
+                    .onChange(of: text) { v in
+                        let fixed = MultilineText.limited(v, maxLength: CommentService.maxLength, maxLines: CommentService.maxLines)
+                        if fixed != v { text = fixed }
+                    }
                     .accessibilityIdentifier("comment.field")
                 Button { gameTap(); Task { await send() } } label: {
                     Image(systemName: "paperplane.fill").font(.system(size: 16, weight: .heavy)).foregroundStyle(GameStyle.ink)

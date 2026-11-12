@@ -358,6 +358,18 @@ final class FixtureExportTests: XCTestCase {
         bh4.waves![0].bodyHit = true
         stages.append(("bodyhit-seq", bh4.sanitized()))
 
+        // 撃つ段階を2つ選んだ発射台(1.3.0〜。12・13・23)。HP を低くして、段階が進むところまで入れる
+        let mp: [Emitter] = [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.8, c: 10, v: 1.6, r: 6, k: 0, ph: 12),
+                             Emitter(t: .aim, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.9, c: 3, v: 2.2, r: 30, k: 1, ph: 23),
+                             Emitter(t: .flower, x: 0.3, y: 0.3, s: 0, e: 60, i: 1.1, c: 12, v: 1.5, r: 6, k: 2, ph: 13, p: 1)]
+        stages.append(("multiphase-boss", Stage(name: "mp", mode: .boss, durationSec: 60, bossHp: 150, bossMove: 1, emitters: mp, lifeMode: .lives, lifeCount: 3).sanitized()))
+        stages.append(("multiphase-awaken", Stage(name: "mp", mode: .boss, durationSec: 60, bossHp: 150, bossMove: 0,
+                                                  emitters: [Emitter(t: .mechOverload, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.6, c: 16, v: 2, r: 0, k: 0, ph: 23),
+                                                             Emitter(t: .mechLockOn, x: 0.5, y: 0.2, s: 0, e: 60, i: 2, c: 1, v: 2, r: 0, k: 1, ph: 12)],
+                                                  lifeMode: .hp, lifeCount: 6, bossLook: BossCharacter.mech.rawValue, awaken: 3).sanitized()))
+        stages.append(("multiphase-seq", Stage(name: "mp", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .lives, lifeCount: 3, waves: [
+            Wave(kind: .boss, durationSec: 40, bossHp: 120, bossMove: 0, emitters: mp)]).sanitized()))
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

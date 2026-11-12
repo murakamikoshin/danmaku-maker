@@ -24,6 +24,8 @@ struct PublishFlowView: View {
     @AppStorage("terms.accepted.v1") private var termsAccepted = false
     @State private var phase: Phase = .start
     @State private var error: String?
+    /// ステージの説明(なくてもよい。改行できる)
+    @State private var desc = ""
 
     enum Phase: Equatable { case start, publishing, done(String) }
 
@@ -82,6 +84,7 @@ struct PublishFlowView: View {
                     }
                     Spacer(minLength: 0)
                 }
+                descField
                 if replay == nil {
                     Text("publish.unlisted.note").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
@@ -120,6 +123,28 @@ struct PublishFlowView: View {
                         .accessibilityIdentifier("publish.submit")
                 }
             }
+        }
+    }
+
+    /// ステージの説明の入力(遊ぶ人がステージの詳しい画面で読む)
+    private var descField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("publish.desc.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                Spacer()
+                Text("\(desc.count)/\(PublishService.descMaxLength)").font(.system(size: 11, weight: .semibold, design: .monospaced)).foregroundStyle(.secondary)
+            }
+            CompatMultilineField(text: $desc, prompt: "publish.desc.placeholder", minLines: 3, maxLines: 8)
+                .textFieldStyle(.plain)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.vertical, 10).padding(.horizontal, 12)
+                .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
+                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.edge))
+                .onChange(of: desc) { v in
+                    let fixed = MultilineText.limited(v, maxLength: PublishService.descMaxLength, maxLines: PublishService.descMaxLines)
+                    if fixed != v { desc = fixed }
+                }
+                .accessibilityIdentifier("publish.desc")
         }
     }
 
@@ -194,7 +219,7 @@ struct PublishFlowView: View {
             async let adShown: Bool = purchases.isPremium ? false : ads.showInterstitialNow()
             let id: String
             do {
-                id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium)
+                id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium, desc: desc)
             } catch {
                 _ = await adShown
                 throw error

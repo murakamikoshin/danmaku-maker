@@ -16,6 +16,8 @@ struct RemoteStage: Identifiable, Hashable {
     let comments: Int
     /// 遊ぶのに必要な内容のレベル(サーバーが付ける。ないステージは 1)
     var needs = 1
+    /// 作者が書いたステージの説明(1.3.0 から。なければ nil)
+    var desc: String? = nil
     /// 作者が決めた見せ場の静止画があるか(あれば一覧はそれを出す。なければ動くプレビュー)
     var hasPreviewImage = false
     var previewImageURL: URL { AppConfig.webBase.appendingPathComponent("pv/\(id).png") }
@@ -156,7 +158,8 @@ struct StageRepository {
         // Stage の全項目(見た目・撃ち方・連戦の場面なども)。足りないと、世界のステージで作者の設定が反映されない
         for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm",
                     "themeBullets", "themeBackground", "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat",
-                    "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY"] {
+                    "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY",
+                    "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit"] {
             if let v = d[key], !(v is NSNull) { json[key] = v }
         }
         json["formatVersion"] = 1
@@ -164,6 +167,7 @@ struct StageRepository {
               let stage = try? JSONDecoder().decode(Stage.self, from: data) else { return nil }
         func int(_ k: String) -> Int { (d[k] as? NSNumber)?.intValue ?? 0 }
         return RemoteStage(id: id, authorUid: d["authorUid"] as? String ?? "", authorName: d["authorName"] as? String ?? "",
-                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")), hasPreviewImage: (d["pv"] as? Bool) == true && ((d["pvv"] as? NSNumber)?.intValue ?? 0) >= 2)
+                           name: stage.name, stage: stage.sanitized(), plays: int("plays"), clears: int("clears"), likes: int("likes"), comments: int("comments"), needs: max(1, int("needs")), desc: (d["desc"] as? String).flatMap { $0.isEmpty ? nil : $0 },
+                           hasPreviewImage: (d["pv"] as? Bool) == true && ((d["pvv"] as? NSNumber)?.intValue ?? 0) >= 2)
     }
 }
