@@ -88,5 +88,6 @@ Koshin の指示(もっとぬるぬる・もっとかっこよく・飛び回る
 - **姿は4つ**(通常 / 覚醒1 蒼炎 / 覚醒2 紫電 / 覚醒3 白金): 絵は「色の番号」で1組だけ持ち(`sheets/`)、姿ごとの色の表(`forms.json`)で塗り分ける
 - **書き出し**: `python3 dragon/make_dragon.py`。試射場(`patterns/build.py`)とボス図鑑(`tools/build_viewer.py`)は `sheets/` があるボスを特別扱いする
 - **技**: 弾より、範囲攻撃・本体の体当たり・風・引き寄せ・バインド・即死・自機の弾の吸収が中心。試射場のエンジン(`patterns/engine.js`)に仕組みを足した。ゲーム本体にはまだ無い仕組みなので、入れるときは `docs/BOSS_EXCLUSIVE_PATTERNS.md` の注意を読むこと
+- 経緯・今の状態・まだやっていないことは `dragon/HANDOFF.md`。確認用の道具は `patterns/devtools/`(`sim.js` = 自動で避ける自機での被弾、`shots.py` = 技ごとの画面を撮る)
 - 新しいボスをこの方式で作るなら、`dragon/` をまねる(部位の範囲と関節を元絵の座標で書く。座標は必ず目盛りの数字で読むこと)
 
