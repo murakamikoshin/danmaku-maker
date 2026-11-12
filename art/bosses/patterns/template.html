@@ -209,9 +209,8 @@ function render() {
   }
   // 被弾の瞬間は、画面のふちが赤く光る
   if (dr && G.inv > 28) { const g = ctx.createRadialGradient(W / 2, H / 2, 150, W / 2, H / 2, 380); g.addColorStop(0, "rgba(255,40,40,0)"); g.addColorStop(1, "rgba(255,40,40," + Math.min(0.5, (G.inv - 28) / 24) + ")"); ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40); }
-  // カットイン: 姿が変わった瞬間と、終焉の構え
+  // カットイン: 姿が変わった瞬間だけ(技名のカットインは入れない。Koshin の判断)
   if (dr && G.formCut != null && G.T < 64) { const nm = SHEETS.forms[G.formCut].name.split(" "); drawCutIn(G.T, 64, nm[1] ? "覚醒 第" + G.formCut + "段階" : "竜王", nm[1] || "最強のドラゴン"); }
-  else if (dr && G.pat.id === "dragonEnd" && G.banner && G.anim !== "idle" && G.anim !== "recover" && G.banner.t < 58) { const nm = G.pat.card.split(" / ")[0].split("「"); drawCutIn(G.banner.t, 58, nm[0], (nm[1] || "").replace("」", "")); }
   // 技の名前と被弾
   if (G.banner) {
     const t = G.banner.t, name = G.pat.card.split(" / ")[G.aw && G.pat.card.includes(" / ") ? 1 : 0];
