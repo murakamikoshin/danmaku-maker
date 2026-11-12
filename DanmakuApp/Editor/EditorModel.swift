@@ -115,7 +115,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
 
     var wave: Wave {
         var w = Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
-             emitters: emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
+             emitters: kind == .boss ? Emitter.withoutHiddenStart(emitters) : emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
              bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil,
              bossX: kind == .boss ? bossX : nil, bossY: kind == .boss ? bossY : nil)
         w.mooksBreakable = mooksBreakable == true ? true : nil
@@ -245,7 +245,7 @@ struct Draft: Codable, Equatable {
         var st = Stage(name: name, mode: mode, durationSec: isSeq ? 0 : duration,
               bossHp: mode == .boss ? bossHp : nil,
               bossMove: (mode == .boss || mode == .damage) ? bossMove : nil,
-              emitters: isSeq ? [] : emitters,
+              emitters: isSeq ? [] : (mode == .survive ? emitters : Emitter.withoutHiddenStart(emitters)),
               lifeMode: lifeMode, lifeCount: lifeCount, bgm: bgm,
               themeBullets: themeBullets, themeBackground: themeBackground, themeShip: themeShip,
               hideMarkers: hideMarkers ? true : nil,
@@ -417,5 +417,14 @@ final class EditorModel: ObservableObject {
         baseline = draft
         store.update(entry)
         objectWillChange.send()
+    }
+}
+
+extension Emitter {
+    /// ボス戦(ダメージ勝負・連戦のボスの場面も)では、エディタに「開始」の欄がない。
+    /// 耐える(開始秒を決められる)からボス戦に変えると、見えない開始秒が残り、その秒数まで撃たなかった
+    /// (プレビューはすぐ撃つので「テストプレイだけ弾が出ない」と見えた)。ボス戦では、開始を 0 秒にそろえる
+    static func withoutHiddenStart(_ list: [Emitter]) -> [Emitter] {
+        list.map { var m = $0; m.s = 0; return m }
     }
 }
