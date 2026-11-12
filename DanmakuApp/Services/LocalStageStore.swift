@@ -126,10 +126,14 @@ final class LocalStageStore: ObservableObject {
 
 
 extension Stage {
-    /// 名前以外が同じか(名前は、遊びの結果に関わらない)
+    /// 遊びの中身が同じか。名前・一覧のプレビュー(開始秒・見せない)・BGM は、遊びの結果に関わらないので比べない
+    /// (変えても、テストプレイのやり直しは要らない。サーバーも、投稿されたステージでリプレイを計算し直すので問題ない)
     func samePlay(as other: Stage) -> Bool {
         var a = self
         a.name = other.name
+        a.previewStart = other.previewStart
+        a.noPreview = other.noPreview
+        a.bgm = other.bgm
         return a == other
     }
 }
