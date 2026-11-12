@@ -75,6 +75,13 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     var bannerUnitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_BANNER_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/2435281174"
     }
+    /// 結果画面の中くらいの広告(レクタングル 300×250)。ビルド設定 ADMOB_MREC_UNIT_ID。空なら出さない
+    var mrecUnitID: String? { Self.optionalUnit("ADMOB_MREC_UNIT_ID") }
+    /// ビルド設定の広告ユニット ID(空・未設定なら nil)
+    static func optionalUnit(_ key: String) -> String? {
+        guard let v = Bundle.main.object(forInfoDictionaryKey: key) as? String, v.hasPrefix("ca-app-pub-") else { return nil }
+        return v
+    }
     private var interstitialUnitID: String {
         Bundle.main.object(forInfoDictionaryKey: "ADMOB_INTERSTITIAL_UNIT_ID") as? String ?? "ca-app-pub-3940256099942544/4411468910"
     }
@@ -232,6 +239,11 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
 
     /// 結果画面が出たとき(テストプレイ以外)に数える
     func countPlay() { playsSinceAd += 1 }
+
+    /// 次に結果画面から進むとき、全画面広告が出る見込みか(結果画面のレクタングルは、出ないときだけ出す)
+    var interstitialIsDue: Bool {
+        playsSinceAd >= Self.playsBetweenInterstitials && Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds && interstitial != nil
+    }
 
     /// 次へ進むときに、出す条件がそろっていれば全画面広告を出す(閉じるまで待つ)。出さなかったら false
     @discardableResult

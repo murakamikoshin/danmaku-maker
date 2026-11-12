@@ -133,6 +133,8 @@ struct PlayView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @State private var showStore = false
+    /// この結果画面に、レクタングル広告を出してよいか(結果が出たときに決める)
+    @State private var mrecAllowed = false
 
     init(stage: Stage, title: String, isTest: Bool = false, trial: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
          onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
@@ -166,7 +168,7 @@ struct PlayView: View {
                 }
                 .overlay {
                     if let r = model.result {
-                        ResultView(result: r, isTest: isTest, trial: trial, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
+                        ResultView(result: r, isTest: isTest, trial: trial, mrecUnitID: mrecAllowed ? ads.mrecUnitID : nil, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
                                    back: { Task { await adBreak(); onExit() } })
                     }
@@ -191,6 +193,8 @@ struct PlayView: View {
             AudioManager.shared.stopBGM()
             AudioManager.shared.se(outcome == .cleared ? .clear : .fail)
             if !isTest { ads.countPlay() }
+            // 広告削除の購入者・テストプレイ・このあと全画面広告が出る回には、結果画面のレクタングルを出さない
+            mrecAllowed = !isTest && !purchases.isPremium && ads.canShowBanner && !ads.interstitialIsDue
         }
         .onChange(of: model.generation) { _ in AudioManager.shared.play(.forNumber(model.stage.effectiveBGM)) }
         .onDisappear { AudioManager.shared.play(.menu) }
@@ -309,6 +313,8 @@ struct ResultView: View {
     var isTest = false
     /// ショップのボスのお試し(isTest と一緒に true)
     var trial = false
+    /// 結果のパネルの下に出すレクタングル広告のユニット ID(nil は出さない)。下に空きがあるときだけ出す
+    var mrecUnitID: String?
     var share: ShareContext?
     var ranking: RankingContext?
     var moves: [Move] = []
@@ -323,6 +329,10 @@ struct ResultView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @State private var claiming = false
+    /// レクタングル広告: 結果の画面の高さと、パネルの高さ(空きがあるときだけ出す。一度出したら、パネルが伸びても消さない)
+    @State private var areaHeight: CGFloat = 0
+    @State private var panelHeight: CGFloat = 0
+    @State private var mrecShown = false
     private var win: Bool { result.outcome == .cleared }
     private var timeText: String { String(format: "%.1f", result.time) }
 
@@ -441,11 +451,31 @@ struct ResultView: View {
                 .padding(20)
                 .gamePanel(radius: 22, edge: win ? GameStyle.yellow : GameStyle.edge)
                 .hardShadow(radius: 22, depth: 5)
+                .background(GeometryReader { g in Color.clear.onAppear { panelHeight = g.size.height }.onChange(of: g.size.height) { panelHeight = $0 } })
                 .padding(24)
+                if let unit = mrecUnitID, mrecShown {
+                    // ボタンから離して、パネルの下に置く(押し間違いを防ぐ)。「広告」の印つき
+                    VStack(spacing: 4) {
+                        Text("ad.badge").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
+                        MrecAdView(unitID: unit)
+                            .frame(width: MrecAdView.size.width, height: MrecAdView.size.height)
+                    }
+                    .padding(.top, 8).padding(.bottom, 16)
+                    .accessibilityIdentifier("result.mrec")
+                }
             }
             .compatBounceBasedOnSize()
         }
+        .background(GeometryReader { g in Color.clear.onAppear { areaHeight = g.size.height }.onChange(of: g.size.height) { areaHeight = $0 } })
+        .onChange(of: mrecFits) { if $0 { mrecShown = true } }
+        .onAppear { if mrecFits { mrecShown = true } }
         .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
+    }
+
+    /// パネルの下に、レクタングル(印と余白を含めて約 290pt)が収まるか。小さい画面や、パネルが長いときは出さない
+    private var mrecFits: Bool {
+        guard mrecUnitID != nil, areaHeight > 0, panelHeight > 0, MrecAdView.size.width + 16 <= UIScreen.main.bounds.width else { return false }
+        return areaHeight - (panelHeight + 48) >= MrecAdView.size.height + 44
     }
 
     private func claimReward() async {

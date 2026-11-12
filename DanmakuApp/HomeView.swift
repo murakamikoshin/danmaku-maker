@@ -5,6 +5,9 @@ struct HomeView: View {
     @EnvironmentObject private var auth: AuthService
     @EnvironmentObject private var blocks: BlockStore
     @EnvironmentObject private var deepLink: DeepLink
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @ObservedObject private var nativeAds = NativeAdStore.shared
     @StateObject private var world = WorldViewModel()
     @State private var tab: Tab = .samples
     /// 世界のステージの絞り込み欄(クリア条件・難しさ)を開いているか。はじめは畳んでおく(場所を取るので)
@@ -241,12 +244,19 @@ struct HomeView: View {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
             }
             let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) }
-            ForEach(visible) { s in
+            let showAds = !purchases.isPremium && ads.canShowBanner
+            ForEach(Array(visible.enumerated()), id: \.element.id) { i, s in
                 Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
                     .buttonStyle(.plain)
                     // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
                     .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
+                // ステージ N 行ごとに、ネイティブ広告を1枠(広告削除の購入者・広告を始められていないときは出さない)
+                if showAds, (i + 1) % NativeAdStore.every == 0, let ad = nativeAds.ad(slot: (i + 1) / NativeAdStore.every - 1) {
+                    NativeAdRow(ad: ad)
+                }
             }
+            .onAppear { if showAds { nativeAds.fill() } }
+            .onChange(of: visible.count) { _ in if showAds { nativeAds.fill() } }
             if world.isLoading { HStack { Spacer(); ProgressView().tint(GameStyle.pinkColor); Spacer() }.padding(.vertical, 8) }
             // 念のため、続きがあるときは「もっと見る」も出す(自動で読まれなかったときに、古いステージまでたどれるように)
             if !world.isLoading && !world.reachedEnd && !world.failed && !world.searching && !visible.isEmpty {

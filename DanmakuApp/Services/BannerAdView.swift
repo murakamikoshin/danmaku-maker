@@ -23,6 +23,22 @@ struct BannerAdView: UIViewRepresentable {
     func updateUIView(_ banner: BannerView, context: Context) {}
 }
 
+/// 結果画面の中くらいの広告(レクタングル 300×250)
+struct MrecAdView: UIViewRepresentable {
+    let unitID: String
+    static let size = CGSize(width: 300, height: 250)
+
+    func makeUIView(context: Context) -> BannerView {
+        let banner = BannerView(adSize: AdSizeMediumRectangle)
+        banner.adUnitID = unitID
+        banner.rootViewController = AdsService.topViewController()
+        banner.load(Request())
+        return banner
+    }
+
+    func updateUIView(_ banner: BannerView, context: Context) {}
+}
+
 /// 全画面のゲーム画面に付ける。表示している間は、メニューの下のバナーを外す
 private struct HidesBannerWhileShown: ViewModifier {
     @EnvironmentObject private var ads: AdsService

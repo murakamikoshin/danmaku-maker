@@ -15,6 +15,11 @@ typealias FullScreenContentDelegate = GADFullScreenContentDelegate
 typealias FullScreenPresentingAd = GADFullScreenPresentingAd
 typealias BannerView = GADBannerView
 typealias AdSize = GADAdSize
+typealias AdLoader = GADAdLoader
+typealias NativeAd = GADNativeAd
+typealias NativeAdView = GADNativeAdView
+typealias MediaView = GADMediaView
+typealias NativeAdLoaderDelegate = GADNativeAdLoaderDelegate
 
 extension GADMobileAds {
     static var shared: GADMobileAds { sharedInstance() }
@@ -37,6 +42,8 @@ extension GADInterstitialAd {
         present(fromRootViewController: viewController)
     }
 }
+
+let AdSizeMediumRectangle = GADAdSizeMediumRectangle
 
 func currentOrientationAnchoredAdaptiveBanner(width: CGFloat) -> GADAdSize {
     GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
