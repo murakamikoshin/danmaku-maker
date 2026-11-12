@@ -66,6 +66,15 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(Product.all.count, 48)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個)
     }
 
+    func testLifetimeGrantsPurchasableBossesButNotInviteOnly() {
+        let own = Ownership(owned: [.lifetime])
+        for b in BossCharacter.allCases where b.purchasable { XCTAssertTrue(own.has(b), "永久買い切りで \(b) が使える") }
+        XCTAssertFalse(own.has(.puni), "招待限定のぷにまるは、永久買い切りでは使えない")
+        var invited = own
+        invited.freeBosses = [.puni]
+        XCTAssertTrue(invited.has(.puni), "招待の特典でもらえば使える")
+    }
+
     func testProductIDRoundTrip() {
         XCTAssertEqual(Product.all.count, 48)
         XCTAssertEqual(Set(Product.all.map(\.id)).count, 48)

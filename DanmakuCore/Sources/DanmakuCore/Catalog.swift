@@ -170,7 +170,8 @@ public struct Ownership: Equatable, Sendable {
     }
 
     /// そのボスを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)
-    public func has(_ boss: BossCharacter) -> Bool { hasLifetime || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
+    /// 永久買い切りで使えるのは、買えるボスだけ(招待限定のぷにまるは、招待の特典でしか手に入らない)
+    public func has(_ boss: BossCharacter) -> Bool { (hasLifetime && boss.purchasable) || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
 
     /// 弾幕パターン作成モードを使えるか
     public var hasPatternMaker: Bool { hasLifetime || owned.contains(.patternMaker) }
