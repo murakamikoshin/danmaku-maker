@@ -48,7 +48,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--mute);max-width:72ch}
 </style>
 <div class="wrap">
 <header>
-  <h1>弾幕メーカー ボス図鑑<small>9体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最強のドラゴンは姿が4つ・動きが31種類 / 最近傍補間で3倍表示</small></h1>
+  <h1>弾幕メーカー ボス図鑑<small>9体 × 通常・覚醒 × 待機・構え・技中・硬直 / 最強のドラゴンは姿が4つ・動きが33種類 / 最近傍補間で3倍表示</small></h1>
   <div class="controls">
     <div class="bar"><span class="lab">全員まとめて</span><div class="bar form" id="allForm"></div><div class="bar" id="allAct"></div></div>
     <div class="bar"><button id="speed" type="button" aria-pressed="false">ゆっくり再生</button></div>
@@ -78,7 +78,7 @@ function sheetFrames(b,formIdx,anim){
   b._c.set(key,out); if(b._c.size>8)b._c.delete(b._c.keys().next().value);
   return out;
 }
-function animOf(c){return c.act==="idle"?"idle":c.move+"_"+c.act}
+function animOf(c){return c.extra||(c.act==="idle"?"idle":c.move+"_"+c.act)}
 function framesOf(c){
   if(!c.b.sheets)return c.b.frames[c.form+":"+c.act];
   return sheetFrames(c.b,Math.max(0,c.b.forms.findIndex(f=>f.id===c.form)),animOf(c))||[];
@@ -95,6 +95,9 @@ DATA.forEach(b=>{
     // 技ごとの動き(構え・技中・硬直が、技ごとに違う)
     c.moveG=group(b.anim.moves.map(m=>({id:m.id,label:m.name})),"moves",v=>{c.move=v;set(c,c.form,c.act==="idle"?"windup":c.act)});
     rows.push(el("div",{class:"row"},el("span",{class:"lab"},"技ごとの動き"),c.moveG));
+    // ほかの動き(横向きに飛ぶ姿など。待機・構え…とは別の、1つだけのループ)
+    c.extraG=group((b.anim.extras||[]).map(m=>({id:m.id,label:m.name})),"moves",v=>{c.extra=v;set(c,c.form,c.act,true)});
+    rows.push(el("div",{class:"row"},el("span",{class:"lab"},"ほかの動き"),c.extraG));
     b._img={}; for(const a in b.sheets){const im=new Image(); im.onload=()=>{if(animOf(c)===a)set(c,c.form,c.act)}; im.src=b.sheets[a]; b._img[a]=im}
   }
   c.card=el("article",{class:"card"+(b.sheets?" wide":"")},el("div",{class:"stage"},c.img,c.tag,c.fno),
@@ -102,15 +105,16 @@ DATA.forEach(b=>{
       ...rows,c.strip,c.order));
   document.getElementById("grid").append(c.card); cards.push(c); set(c,"normal","idle");
 });
-function set(c,form,act){
+function set(c,form,act,keepExtra){
+  if(!keepExtra)c.extra=null;
   if(c.b.sheets&&!c.b.forms.some(f=>f.id===form))form=form==="awake"?c.b.forms[1].id:"normal";       // 「全員まとめて 覚醒」は、覚醒1にする
   c.form=form;c.act=act;c.i=0;c.hold=0;c.paused=reduce;
-  press(c.formG,form);press(c.actG,act);if(c.moveG)press(c.moveG,act==="idle"?"":c.move);
+  press(c.formG,form);press(c.actG,c.extra?"":act);if(c.moveG)press(c.moveG,c.extra||act==="idle"?"":c.move);if(c.extraG)press(c.extraG,c.extra||"");
   c.card.classList.toggle("awake",form!=="normal");c.tag.textContent=form==="normal"?"":(c.b.sheets?c.b.forms.find(f=>f.id===form).name:"覚醒");
   const a=ACTS.find(x=>x.id===act), f=framesOf(c);
   c.strip.replaceChildren(...f.map((src,i)=>{const t=el("img",{src,alt:a.label+" "+i});t.onclick=()=>{c.i=i;c.paused=true;draw(c)};return t}));
   const name=(form!=="normal"?"覚醒・":"")+a.label, file=c.b.sheets?"sheets/"+animOf(c)+".png":act+(form==="awake"?"_awakened":"");
-  c.order.textContent=name+"("+file+"): "+(a.mode==="loop"?"0→"+(f.length-1)+" でループ":"0→"+(f.length-1)+" の順に1回")+(c.b.ms!==120?" / 1コマ "+c.b.ms/1000+"秒":"");
+  c.order.textContent=name+"("+file+"): "+(a.mode==="loop"||c.extra?"0→"+(f.length-1)+" でループ":"0→"+(f.length-1)+" の順に1回")+(c.b.ms!==120?" / 1コマ "+c.b.ms/1000+"秒":"");
   draw(c)}
 function draw(c){const f=framesOf(c);if(!f.length)return;c.img.src=f[c.i%f.length];c.fno.textContent=c.i+" / "+(f.length-1);
   [...c.strip.children].forEach((t,k)=>t.classList.toggle("on",k===c.i))}
@@ -118,7 +122,7 @@ function draw(c){const f=framesOf(c);if(!f.length)return;c.img.src=f[c.i%f.lengt
 const TICK=20;
 function tick(){cards.forEach(c=>{if(c.paused)return;c.acc=(c.acc||0)+TICK;const ms=frameMs*(c.b.ms||120)/120;if(c.acc<ms)return;c.acc-=ms;
   const a=ACTS.find(x=>x.id===c.act),n=framesOf(c).length;if(!n)return;
-  if(a.mode==="once"&&c.i===n-1){if(++c.hold<Math.round(6*120/(c.b.ms||120)))return;c.hold=0;c.i=0}else c.i=(c.i+1)%n;draw(c)});setTimeout(tick,TICK)}
+  if(a.mode==="once"&&!c.extra&&c.i===n-1){if(++c.hold<Math.round(6*120/(c.b.ms||120)))return;c.hold=0;c.i=0}else c.i=(c.i+1)%n;draw(c)});setTimeout(tick,TICK)}
 let gForm="normal", gAct="idle";
 const allForm=group(FORMS,"form",v=>{gForm=v;press(allForm,v);cards.forEach(c=>set(c,v,c.act))});
 const allAct=group(ACTS,"tabs",v=>{gAct=v;press(allAct,v);cards.forEach(c=>set(c,c.form,v))});

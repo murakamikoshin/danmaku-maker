@@ -21,10 +21,13 @@ def _poly_mask(shape, poly):
     return m.astype(bool)
 
 PCFG_ = {q['name']: q for q in CFG['parts']}
-def _prepare():
-    art = np.array(Image.open(os.path.join(HERE, 'source', 'dragon_art.png')).convert('RGB')).astype(np.int32)
+def _prepare(CFG=CFG, art_file='dragon_art.png'):
+    """元絵を読み、部位ごとの点(位置・色の番号・重み)を作る。横向きの絵(side.py)も同じ処理を使う"""
+    PCFG_ = {q['name']: q for q in CFG['parts']}; STRIDE = CFG['stride']
+    art = np.array(Image.open(os.path.join(HERE, 'source', art_file)).convert('RGB')).astype(np.int32)
     H, W = art.shape[:2]
     # 背景: ふちからつながった白と、まわりを囲まれた大きな白(口のまわりの牙は残す)
+    anchors = CFG.get('anchors') or globals()['CFG']['anchors']
     white = (art.min(2) > 232) & (art.max(2) - art.min(2) < 22)
     lab, n = ndimage.label(white)
     border = set(lab[0]) | set(lab[-1]) | set(lab[:, 0]) | set(lab[:, -1])
@@ -36,10 +39,10 @@ def _prepare():
         elif sizes[i - 1] >= 500:
             m = lab == i
             if (m & mouth).sum() < 0.5 * sizes[i - 1]: bg |= m
-    for poly in CFG['erase']: bg |= _poly_mask((H, W), poly)
+    for poly in CFG.get('erase', []): bg |= _poly_mask((H, W), poly)
     opaque = ndimage.binary_erosion(~bg, iterations=2)      # 背景とのにじみを落とす
     # 元絵の1ドットごとの色の番号
-    anc = np.array(CFG['anchors'], float)
+    anc = np.array(anchors, float)
     d = ((art[:, :, None, :] - anc[None, None, :, :3]) ** 2).sum(3)
     near = d.argmin(2); label = anc[near, 3].astype(np.uint8); weight = anc[near, 4].astype(np.float32)
     # 口の中・牙の色は、口のまわりだけ(ほかの場所のにじみが化けるのを防ぐ)
@@ -90,8 +93,8 @@ def S(c, sx, sy=None):
 def ap(M, xy): return xy @ M[:2, :2].T + M[:2, 2]
 
 # ---------- 鎖(首・尻尾・腕・脚): 関節ごとに曲がり、関節のまわりはなめらかにつなぐ ----------
-def _chain_setup(name, h=0.38):
-    P = PARTS[name]; J = np.array(P['cfg']['joints'], float); xy = P['xy']; nb = len(J) - 1
+def _chain_setup(name, h=0.38, parts=None):
+    P = (parts or PARTS)[name]; J = np.array(P['cfg']['joints'], float); xy = P['xy']; nb = len(J) - 1
     best = np.full(len(xy), 1e18); c = np.zeros(len(xy))
     for i in range(nb):
         a, b = J[i], J[i + 1]; ab = b - a; t = ((xy - a) @ ab) / (ab @ ab)
@@ -105,15 +108,15 @@ def _chain_setup(name, h=0.38):
     P['chain'] = dict(J=J, k=k, wp=w_prev, wn=w_next, nb=nb)
 for _n in ('tail', 'neck', 'armL', 'armR', 'legL', 'legR'): _chain_setup(_n)
 
-def chain_mats(name, parent, angles):
+def chain_mats(name, parent, angles, parts=None):
     """骨ごとの行列。angles[i] は関節 i での曲げ(度)。足りないぶんは 0"""
-    C = PARTS[name]['chain']; M = parent; out = []
+    C = (parts or PARTS)[name]['chain']; M = parent; out = []
     for i in range(C['nb']):
         M = M @ R(C['J'][i], angles[i] if i < len(angles) else 0.0); out.append(M)
     return out
 
-def chain_pos(name, mats):
-    P = PARTS[name]; C = P['chain']; xy = P['xy']; res = np.zeros_like(xy, dtype=float)
+def chain_pos(name, mats, parts=None):
+    P = (parts or PARTS)[name]; C = P['chain']; xy = P['xy']; res = np.zeros_like(xy, dtype=float)
     k = C['k']
     for i, M in enumerate(mats):
         w = np.where(k == i, 1 - C['wp'] - C['wn'], 0.0) + np.where(k == i + 1, C['wp'], 0.0) + np.where(k == i - 1, C['wn'], 0.0)

@@ -101,7 +101,7 @@ function sheetFor(lv, anim) {
 }
 function bossFrame() {
   if (SH && G.boss.id === SHEETS.id) {
-    const A = SHEETS.anim, an = animOf(G.anim), n = A.anims[an], mode = ANIM[G.anim][1], i = Math.floor(G.animT / (7 * A.frame_ms / 120));
+    const A = SHEETS.anim, an = G.pose || animOf(G.anim), n = A.anims[an], mode = G.pose ? "loop" : ANIM[G.anim][1], i = Math.floor(G.animT / (7 * A.frame_ms / 120));
     const k = mode === "loop" ? i % n : Math.min(i, n - 1), c = sheetFor(G.lv, an);
     return c ? { c, x: (k % A.cols) * A.w, y: Math.floor(k / A.cols) * A.h, w: A.w, h: A.h } : null;
   }
@@ -118,8 +118,10 @@ function drawSprite(type, x, y, a, sc) {
   ctx.drawImage(s, -w / 2, -h / 2, w, h); ctx.restore();
 }
 function render() {
-  ctx.setTransform(2, 0, 0, 2, 0, 0); ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = "#0d0a18"; ctx.fillRect(0, 0, W, H);
+  // 画面のゆれ(大きな攻撃の瞬間)
+  const sk = G.shake > 0.6 ? G.shake : 0;
+  ctx.setTransform(2, 0, 0, 2, Math.round((Math.random() - 0.5) * sk) * 2, Math.round((Math.random() - 0.5) * sk) * 2); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "#0d0a18"; ctx.fillRect(-20, -20, W + 40, H + 40);
   for (const [x, y, s] of STARS) { const yy = (y + G.T * 0.3 * s) % H; ctx.fillStyle = s > 1 ? "#5a5078" : "#2e2846"; ctx.fillRect(x | 0, yy | 0, 1, 1); }
   // ボス
   // 範囲攻撃の予告(ボスより後ろに描く)
@@ -152,14 +154,18 @@ function render() {
     const o = L.from(), x2 = o.x + cos(L.a) * L.len, y2 = o.y + sin(L.a) * L.len;
     ctx.lineCap = "butt";
     if (L.fire) { L.col = [["#f0541e", "#ffdc8c"], ["#1e78f0", "#b4e6ff"], ["#aa28a0", "#ffb4fa"], ["#ffc83c", "#ffffff"]][G.lv]; }
-    if (L.t <= L.warn) { ctx.strokeStyle = L.col[0]; ctx.globalAlpha = (L.t >> 2) % 2 ? 0.8 : 0.35; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); ctx.globalAlpha = 1; }
-    else if (L.fire) {      // 炎の柱(ドラゴン): ふちがゆらめく3層
-      const k = Math.min(1, (L.t - L.warn) / 8, (L.warn + L.dur - L.t) / 8), fl = 1 + 0.07 * sin(L.t * 0.9);
-      const dk = ["#7a1408", "#0a2a6a", "#3c0a50", "#a06414"][G.lv];
-      for (const [c, wd] of [[dk, 1.0 * fl], [L.col[0], 0.84 / fl], [L.col[1], 0.5 * fl], ["#ffffff", 0.16]]) { ctx.strokeStyle = c; ctx.lineWidth = L.w * wd * k; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); }
+    if (L.t <= L.warn && L.fire) {      // 炎の柱の予告: 太さが分かる点線と、口元にたまる光
+      const C = FXC[G.lv], ux = cos(L.a), uy = sin(L.a), k = L.t / L.warn;
+      ctx.strokeStyle = C[1]; ctx.globalAlpha = 0.25 + 0.35 * k; ctx.lineWidth = 1; ctx.setLineDash([6, 5]);
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(o.x - uy * sd * L.w * 0.5 * k, o.y + ux * sd * L.w * 0.5 * k); ctx.lineTo(x2 - uy * sd * L.w * 0.5 * k, y2 + ux * sd * L.w * 0.5 * k); ctx.stroke(); }
+      ctx.setLineDash([]); ctx.globalAlpha = 1; fxBegin(); glow(o.x, o.y, 6 + 14 * k + (L.t % 4), C); fxEnd(true);
     }
+    else if (L.t <= L.warn) { ctx.strokeStyle = L.col[0]; ctx.globalAlpha = (L.t >> 2) % 2 ? 0.8 : 0.35; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); ctx.globalAlpha = 1; }
+    else if (L.fire) { fxBegin(); flameBeam(L, o); fxEnd(); }
     else { const k = Math.min(1, (L.t - L.warn) / 6); ctx.strokeStyle = L.col[0]; ctx.lineWidth = L.w * k; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(x2, y2); ctx.stroke(); ctx.strokeStyle = L.col[1]; ctx.lineWidth = L.w * 0.4 * k; ctx.stroke(); }
   }
+  // 大きい弾のまわりの光(ドラゴン)
+  drawHalos();
   // 弾
   for (const b of G.bullets) {
     let a = 0, sc = 1;
@@ -171,6 +177,8 @@ function render() {
     if (b.big) sc = b.big;
     drawSprite(b.type, b.x, b.y, a, sc);
   }
+  // 爆発・斬撃・火花
+  drawFlashes(); drawParticles();
   // バインド中: 自機に鎖の輪
   if (G.bind > 0) { ctx.strokeStyle = (G.bind >> 2) % 2 ? "#ffdc8c" : "#ff8c28"; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(G.P.x, G.P.y, 15, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   // 自機
@@ -203,36 +211,168 @@ function render() {
   if (G.heat > 0) { G.heat--; ctx.fillStyle = "rgba(255,255,255," + (G.heat / 40) + ")"; ctx.fillRect(0, 0, W, H); }
   ctx.fillStyle = "#9d94b8"; ctx.textAlign = "right"; ctx.fillText("被弾 " + G.hits + (G.kills ? " / 即死 " + G.kills : "") + (G.bind > 0 ? " / バインド中" : ""), W - 8, H - 10); ctx.textAlign = "left";
 }
-// 範囲攻撃(ドラゴン): 予告は点滅する枠と薄い色、当たっている間は明るい色。front=false は予告、true は当たっている間
+// ---------- ドラゴンの攻撃の演出 ----------
+// 効果は、いったん等倍の小さな絵(360×600)に描いてから2倍に拡大する(ボスのドット絵と同じ粗さにそろえる)
+const fxc = document.createElement("canvas"); fxc.width = W; fxc.height = H; const fx = fxc.getContext("2d");
+const FXC = [["#7a1408", "#f0541e", "#ffb428", "#fff4c8"], ["#0a2a6a", "#1e78f0", "#5ad2ff", "#f0fcff"], ["#3c0a50", "#aa28a0", "#ff5adc", "#ffe6fa"], ["#a06414", "#ffc83c", "#fff0aa", "#ffffff"]];   // 姿ごと: 濃い・中・明るい・白
+function fxBegin() { fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalAlpha = 1; fx.globalCompositeOperation = "source-over"; fx.clearRect(0, 0, W, H); }
+function fxEnd(add) { ctx.globalCompositeOperation = add ? "lighter" : "source-over"; ctx.drawImage(fxc, 0, 0); ctx.globalCompositeOperation = "source-over"; }
+function disc(x, y, r, c, a) { if (r <= 0) return; fx.globalAlpha = a === undefined ? 1 : a; fx.fillStyle = c; fx.beginPath(); fx.arc(Math.round(x), Math.round(y), r, 0, TAU); fx.fill(); fx.globalAlpha = 1; }
+function glow(x, y, r, C) { disc(x, y, r, C[1], 0.45); disc(x, y, r * 0.7, C[2], 0.7); disc(x, y, r * 0.4, C[3]); }
+function flameBeam(L, o) {      // 炎の柱: 4層の炎がふちで波打ち、中を光の筋が流れる。口元は細く、先へ行くほど太い
+  const C = FXC[G.lv], ux = cos(L.a), uy = sin(L.a), k = Math.min(1, (L.t - L.warn) / 8, (L.warn + L.dur - L.t) / 8), n = 44, len = 760;
+  for (const [ci, wd, amp, sp] of [[0, 1.14, 0.16, 0.5], [1, 0.94, 0.14, 0.7], [2, 0.62, 0.13, 0.9], [3, 0.26, 0.12, 1.2]]) {
+    fx.fillStyle = C[ci]; fx.beginPath();
+    for (const side of [1, -1]) for (let i = 0; i <= n; i++) {
+      const j = side > 0 ? i : n - i, d = j / n * len, flare = 0.35 + 0.65 * Math.min(1, d / 70);
+      const w = L.w * 0.5 * wd * k * flare * (1 + amp * sin(d * 0.07 - L.t * sp + ci * 1.7 + side) + amp * 0.6 * sin(d * 0.19 + L.t * sp * 1.7 - side * 2));
+      const x = o.x + ux * d - uy * side * w, y = o.y + uy * d + ux * side * w; if (i === 0 && side > 0) fx.moveTo(x, y); else fx.lineTo(x, y);
+    }
+    fx.closePath(); fx.fill();
+  }
+  fx.strokeStyle = C[3]; fx.lineWidth = 1;
+  for (let q = 0; q < 9; q++) { const off = (q / 8 - 0.5) * L.w * 0.7 * k, d0 = (L.t * 16 + q * 97) % len, l = 30 + q % 3 * 14; fx.globalAlpha = 0.8; fx.beginPath(); fx.moveTo(o.x + ux * d0 - uy * off, o.y + uy * d0 + ux * off); fx.lineTo(o.x + ux * (d0 + l) - uy * off, o.y + uy * (d0 + l) + ux * off); fx.stroke(); }
+  fx.globalAlpha = 1; glow(o.x, o.y, L.w * 0.42 * k + (L.t % 3), C);
+}
+function flameTongue(x, y, r, t, C) {      // 噴き上がる炎(地割れ)
+  for (const [ci, wd, hd] of [[0, 1.0, 1.0], [1, 0.8, 0.86], [2, 0.55, 0.66], [3, 0.26, 0.4]]) {
+    const h = r * 3.4 * hd * (0.85 + 0.15 * sin(t * 0.7 + ci)), w = r * wd;
+    fx.fillStyle = C[ci]; fx.beginPath(); fx.moveTo(x - w, y + r * 0.6);
+    for (let i = 1; i <= 8; i++) { const u = i / 8; fx.lineTo(x - w * (1 - u) ** 0.7 + sin(t * 0.9 + u * 6 + ci) * w * 0.25 * u, y + r * 0.6 - h * u); }
+    for (let i = 7; i >= 0; i--) { const u = i / 8; fx.lineTo(x + w * (1 - u) ** 0.7 + sin(t * 0.9 + u * 6 + ci + 2) * w * 0.25 * u, y + r * 0.6 - h * u); }
+    fx.closePath(); fx.fill();
+  }
+}
+function drawHalos() {
+  if (!G.bullets.some(b => b.big >= 2)) return;
+  const C = FXC[G.lv]; fxBegin();
+  for (const b of G.bullets) {
+    if (!(b.big >= 2) || !SPRITES[b.type]) continue;
+    const r = b.r * (b.type === "sun" ? 2.6 : 2.0) + (b.t % 4 < 2 ? 1 : 0);
+    disc(b.x, b.y, r, C[1], 0.22); disc(b.x, b.y, r * 0.62, C[2], 0.28);
+    if (b.type === "sun") { fx.strokeStyle = C[2]; fx.lineWidth = 2; fx.globalAlpha = 0.7; for (let i = 0; i < 10; i++) { const a = i * TAU / 10 + b.t * 0.08, r0 = b.r * 1.5, r1 = b.r * (2.4 + 0.5 * sin(b.t * 0.4 + i * 2)); fx.beginPath(); fx.moveTo(b.x + cos(a) * r0, b.y + sin(a) * r0); fx.lineTo(b.x + cos(a) * r1, b.y + sin(a) * r1); fx.stroke(); } fx.globalAlpha = 1; }
+  }
+  fxEnd(true);
+}
+function drawFlashes() {
+  if (!G.flashes.length) return;
+  const C = FXC[G.lv];
+  fxBegin();
+  for (const f of G.flashes) {
+    const u = f.t / f.life, e = 1 - (1 - u) * (1 - u);
+    if (f.slash) {        // 爪の斬撃: 3本の弓なりの光が走る
+      const s = f.slash, k = Math.min(1, u * 3), a = 1 - Math.max(0, (u - 0.4) / 0.6);
+      for (const [off, ci, w] of [[-16, 1, 5], [0, 3, 7], [16, 2, 5]]) {
+        fx.strokeStyle = C[ci]; fx.lineWidth = w * a; fx.globalAlpha = a; fx.lineCap = "round"; fx.beginPath();
+        const x0 = f.x + s * f.r * 0.7 + off, y0 = f.y - f.r * 0.9, x1 = f.x - s * f.r * 0.8 + off, y1 = f.y + f.r * 0.9;
+        fx.moveTo(x0, y0); fx.quadraticCurveTo(f.x + off - s * 26, f.y - 10, x0 + (x1 - x0) * k, y0 + (y1 - y0) * k); fx.stroke();
+      }
+      fx.globalAlpha = 1; fx.lineCap = "butt"; continue;
+    }
+    // 大爆発: 白い光 → 炎の層が広がる → 中から消えていく。まわりに光のとげと衝撃波の輪
+    const R = f.r * (0.55 + 0.45 * e), hole = Math.max(0, (u - 0.45) / 0.55);
+    if (u < 0.14) disc(f.x, f.y, f.r * 0.95, C[3]);
+    else {
+      disc(f.x, f.y, R, C[0], 0.9); disc(f.x, f.y, R * 0.88, C[1]); disc(f.x, f.y, R * 0.68, C[2]); disc(f.x, f.y, R * 0.42 * (1 - u), C[3]);
+      if (hole > 0) { fx.globalCompositeOperation = "destination-out"; disc(f.x, f.y, R * hole * 1.02, "#000"); fx.globalCompositeOperation = "source-over"; }
+    }
+    if (u < 0.75) { fx.fillStyle = C[2]; for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + f.r, r0 = R * 0.95, r1 = R + f.r * (0.25 + 0.5 * e) * (i % 2 ? 1 : 0.6), wa = 0.09; fx.beginPath(); fx.moveTo(f.x + cos(a - wa) * r0, f.y + sin(a - wa) * r0); fx.lineTo(f.x + cos(a) * r1, f.y + sin(a) * r1); fx.lineTo(f.x + cos(a + wa) * r0, f.y + sin(a + wa) * r0); fx.fill(); } }
+    fx.strokeStyle = C[3]; fx.lineWidth = Math.max(1, 5 * (1 - u)); fx.globalAlpha = 1 - u; fx.beginPath(); fx.arc(f.x, f.y, f.r * (0.7 + 1.1 * e), 0, TAU); fx.stroke(); fx.globalAlpha = 1;
+  }
+  fxEnd();
+}
+function drawParticles() {
+  if (!G.fx.length) return;
+  const C = FXC[G.lv];
+  // 煙は暗く重ね、火花・火の粉・風の筋は光として足す
+  ctx.fillStyle = "#1c1424";
+  for (const q of G.fx) if (q.k === 1) { const u = q.t / q.life, s = q.s * (1 + u * 2); ctx.globalAlpha = 0.5 * (1 - u); ctx.fillRect(Math.round(q.x - s / 2), Math.round(q.y - s / 2), Math.round(s), Math.round(s)); }
+  ctx.globalAlpha = 1;
+  fxBegin();
+  for (const q of G.fx) {
+    if (q.k === 1) continue;
+    const u = q.t / q.life;
+    if (q.k === 3) { fx.strokeStyle = "#fff6dc"; fx.globalAlpha = 0.5 * (1 - u); fx.lineWidth = 1; fx.beginPath(); fx.moveTo(q.x, q.y); fx.lineTo(q.x - q.vx * 2.4, q.y - q.vy * 2.4); fx.stroke(); fx.globalAlpha = 1; continue; }
+    fx.fillStyle = q.k === 2 ? ((q.t >> 2) % 2 ? C[2] : C[1]) : (u < 0.25 ? C[3] : u < 0.55 ? C[2] : u < 0.8 ? C[1] : C[0]);
+    const s = Math.max(1, Math.round(q.s * (1 - u * 0.6)));
+    fx.fillRect(Math.round(q.x - s / 2), Math.round(q.y - s / 2), s, s);
+  }
+  fxEnd(true);
+}
+// 範囲攻撃: front=false は予告(ボスより後ろ)、true は当たっている間(ボスより手前)
 function drawZones(front) {
-  const C = [["#ff8c28", "#ffdc8c"], ["#3c96ff", "#b4e6ff"], ["#c83cc8", "#ffb4fa"], ["#ffdc64", "#ffffff"]][G.lv] || ["#ff8c28", "#ffdc8c"];
+  if (!G.zones.length) return;
+  const C = FXC[G.lv];
+  fxBegin();
   for (const z of G.zones) {
     const on = z.t > z.warn, k = Math.min(1, z.t / Math.max(1, z.warn)), blink = (z.t >> 2) % 2;
-    if (z.shape === "ring") {
+    if (z.shape === "ring") {       // 咆哮の衝撃波: 太い輪 + 白い先頭 + うしろに薄い輪。外へ光のとげ
       if (!front) continue;
-      ctx.strokeStyle = blink ? C[1] : C[0]; ctx.lineWidth = z.th; ctx.globalAlpha = 0.75; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, z.gapA + z.gapW, z.gapA - z.gapW + TAU); ctx.stroke(); ctx.globalAlpha = 1;
+      const a0 = z.gapA + z.gapW, a1 = z.gapA - z.gapW + TAU;
+      for (const [dr, w, c, al] of [[-z.th * 0.9, 3, C[0], 0.5], [-z.th * 0.5, 2, C[1], 0.6], [0, z.th, C[1], 0.85], [0, z.th * 0.5, C[2], 1], [z.th * 0.45, 2, C[3], 1]]) {
+        if (z.r + dr <= 1) continue; fx.strokeStyle = c; fx.lineWidth = w; fx.globalAlpha = al; fx.beginPath(); fx.arc(z.x, z.y, z.r + dr, a0, a1); fx.stroke();
+      }
+      fx.globalAlpha = 1; fx.strokeStyle = C[3]; fx.lineWidth = 1;
+      for (let a = a0; a < a1; a += 0.16) { const j = (Math.round(a * 20) + z.t) % 3; fx.beginPath(); fx.moveTo(z.x + cos(a) * (z.r + z.th * 0.6), z.y + sin(a) * (z.r + z.th * 0.6)); fx.lineTo(z.x + cos(a) * (z.r + z.th * 0.6 + 4 + j * 4), z.y + sin(a) * (z.r + z.th * 0.6 + 4 + j * 4)); fx.stroke(); }
       continue;
     }
     if (on !== front) continue;
     if (z.shape === "rect") {
-      if (!on) { ctx.fillStyle = z.shadow ? "rgba(0,0,0," + (0.25 + 0.3 * k) + ")" : "rgba(255,200,60," + (0.08 + 0.14 * k) + ")"; ctx.fillRect(z.x, z.y, z.w, z.h); ctx.strokeStyle = blink ? C[1] : C[0]; ctx.lineWidth = 1; ctx.setLineDash([5, 4]); ctx.strokeRect(z.x + .5, z.y + .5, z.w - 1, z.h - 1); ctx.setLineDash([]); }
-      else if (z.sweep) {      // 尻尾が横切る
-        const u = (z.t - z.warn) / z.dur, x = z.sweep > 0 ? -160 + u * (W + 320) : W + 160 - u * (W + 320);
-        ctx.fillStyle = C[0]; ctx.globalAlpha = 0.35; ctx.fillRect(z.x, z.y, z.w, z.h); ctx.globalAlpha = 1;
-        ctx.fillStyle = "#861422"; ctx.fillRect(Math.min(x, x - z.sweep * 300), z.y + z.h * 0.2, 300, z.h * 0.6);
-        ctx.fillStyle = C[1]; ctx.fillRect(Math.min(x, x - z.sweep * 300), z.y + z.h * 0.2, 300, 4); ctx.fillStyle = C[0]; ctx.fillRect(x - 6, z.y, 12, z.h);
-      } else { ctx.fillStyle = C[0]; ctx.globalAlpha = 0.5; ctx.fillRect(z.x, z.y, z.w, z.h); ctx.globalAlpha = 1; }
+      if (!on) {      // 予告: 影の帯と、流れる矢印
+        fx.fillStyle = "#000"; fx.globalAlpha = 0.25 + 0.3 * k; fx.fillRect(z.x, z.y, z.w, z.h);
+        fx.globalAlpha = 0.5 + 0.4 * k; fx.fillStyle = blink ? C[2] : C[1]; fx.fillRect(z.x, z.y, z.w, 2); fx.fillRect(z.x, z.y + z.h - 2, z.w, 2);
+        const d = z.fly || z.sweep || 1;
+        for (let i = 0; i < 7; i++) { const x = ((i * 60 + z.t * 5 * d) % (W + 60) + W + 60) % (W + 60) - 30, y = z.y + z.h / 2; fx.beginPath(); fx.moveTo(x - d * 8, y - 10); fx.lineTo(x + d * 6, y); fx.lineTo(x - d * 8, y + 10); fx.lineTo(x - d * 3, y); fx.fill(); }
+        fx.globalAlpha = 1;
+      } else if (z.sweep) {      // 尻尾の薙ぎ払い: 帯が光り、巨大な尻尾が横切る(うしろに残像)
+        const u = (z.t - z.warn) / z.dur, d = z.sweep, x = d > 0 ? -160 + u * (W + 320) : W + 160 - u * (W + 320), cy = z.y + z.h / 2, hh = z.h * 0.34;
+        fx.fillStyle = C[1]; fx.globalAlpha = 0.3; fx.fillRect(z.x, z.y, z.w, z.h); fx.fillStyle = C[2]; fx.globalAlpha = 0.5; fx.fillRect(d > 0 ? 0 : x, cy - hh * 0.5, d > 0 ? x : W - x, hh);
+        fx.globalAlpha = 1;
+        const body = ["#c62828", "#3a3060", "#461e64", "#faf4e2"][G.lv], belly = ["#f6d092", "#96dcff", "#e696f0", "#ffecb4"][G.lv];
+        fx.fillStyle = body; fx.beginPath(); fx.moveTo(x, cy); fx.lineTo(x - d * 60, cy - hh * 0.5); fx.lineTo(x - d * 330, cy - hh); fx.lineTo(x - d * 330, cy + hh); fx.lineTo(x - d * 60, cy + hh * 0.5); fx.closePath(); fx.fill();
+        fx.fillStyle = belly; fx.beginPath(); fx.moveTo(x - d * 30, cy + hh * 0.2); fx.lineTo(x - d * 330, cy + hh * 0.45); fx.lineTo(x - d * 330, cy + hh); fx.lineTo(x - d * 60, cy + hh * 0.5); fx.closePath(); fx.fill();
+        fx.fillStyle = C[2]; for (let i = 0; i < 9; i++) { const sx = x - d * (50 + i * 32), top = cy - hh * (0.5 + 0.5 * Math.min(1, (50 + i * 32 - 60) / 270)); fx.beginPath(); fx.moveTo(sx, top + 2); fx.lineTo(sx - d * 14, top - 12); fx.lineTo(sx - d * 16, top + 2); fx.fill(); }
+        fx.fillStyle = C[3]; fx.beginPath(); fx.moveTo(x + d * 46, cy); fx.lineTo(x - d * 6, cy - 12); fx.lineTo(x - d * 6, cy + 12); fx.fill();
+        fx.beginPath(); fx.moveTo(x + d * 14, cy - 20); fx.lineTo(x - d * 20, cy - 6); fx.lineTo(x - d * 4, cy - 4); fx.fill(); fx.beginPath(); fx.moveTo(x + d * 14, cy + 20); fx.lineTo(x - d * 20, cy + 6); fx.lineTo(x - d * 4, cy + 4); fx.fill();
+      } else {       // 本体が横切る帯: 炎が尾を引く
+        fx.fillStyle = C[1]; fx.globalAlpha = 0.28; fx.fillRect(z.x, z.y, z.w, z.h); fx.globalAlpha = 1;
+        const d = z.fly || 1, bx = G.B.x;
+        for (let i = 0; i < 14; i++) { const y = z.y + 6 + (i * 37 + z.t * 3) % (z.h - 12), l = 60 + (i * 53) % 120, x = bx - d * (30 + (i * 29) % 60); fx.fillStyle = C[1 + i % 3]; fx.globalAlpha = 0.85; fx.fillRect(d > 0 ? x - l : x, y, l, 2 + i % 2); }
+        fx.globalAlpha = 1;
+      }
     } else if (z.shape === "circle") {
-      if (!on) { if (z.warn > 4 && z.t > z.warn - 60) { ctx.strokeStyle = blink ? C[1] : C[0]; ctx.lineWidth = 1; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = "rgba(255,140,40," + (0.05 + 0.12 * k) + ")"; ctx.beginPath(); ctx.arc(z.x, z.y, z.r * (z.boom ? k : 1), 0, TAU); ctx.fill(); } }
-      else { const u = (z.t - z.warn) / z.dur; ctx.fillStyle = u < 0.3 ? C[1] : C[0]; ctx.globalAlpha = z.claw ? 0.5 : 0.85 * (1 - u * 0.6); ctx.beginPath(); ctx.arc(z.x, z.y, z.r * (z.pillar ? 0.8 + 0.2 * Math.sin(z.t) : 1), 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
+      if (!on) {      // 予告: 点滅する輪と、中心へ集まる光(大爆発は着弾までの残り時間が輪の大きさで分かる)
+        if (z.warn > 4 && z.t > z.warn - 70) {
+          disc(z.x, z.y, z.r, C[1], 0.07 + 0.1 * k);
+          fx.strokeStyle = blink ? C[3] : C[1]; fx.lineWidth = 2; fx.setLineDash([6, 5]); fx.lineDashOffset = -z.t; fx.beginPath(); fx.arc(z.x, z.y, z.r, 0, TAU); fx.stroke(); fx.setLineDash([]);
+          if (z.boom) { fx.strokeStyle = C[2]; fx.lineWidth = 1; fx.beginPath(); fx.arc(z.x, z.y, Math.max(2, z.r * (1 - k)), 0, TAU); fx.stroke(); fx.fillStyle = C[3]; fx.fillRect(z.x - 6, z.y, 13, 1); fx.fillRect(z.x, z.y - 6, 1, 13); }
+        }
+      } else if (z.pillar) flameTongue(z.x, z.y, z.r, z.t, C);
     } else if (z.shape === "safe") {
-      if (!on) { ctx.fillStyle = "rgba(255,60,30," + (0.05 + 0.3 * k) + ")"; ctx.fillRect(0, 0, W, H); }
-      else { ctx.fillStyle = (z.t >> 1) % 2 ? "#ffffff" : C[1]; ctx.fillRect(0, 0, W, H); }
-      for (const c of z.safe) { ctx.save(); ctx.globalCompositeOperation = "destination-out"; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, TAU); ctx.fill(); ctx.restore();
-        ctx.fillStyle = "#0d0a18"; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, TAU); ctx.fill();
-        ctx.strokeStyle = blink ? "#ffffff" : C[1]; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, TAU); ctx.stroke(); }
+      if (!on) {      // 終焉の予告: 画面が下から赤く染まり、光が走る
+        fx.fillStyle = C[0]; fx.globalAlpha = 0.1 + 0.45 * k; fx.fillRect(0, 0, W, H);
+        fx.fillStyle = C[1]; fx.globalAlpha = 0.25 + 0.35 * k;
+        fx.beginPath(); fx.moveTo(0, H); for (let x = 0; x <= W; x += 12) fx.lineTo(x, H - k * H * 0.75 - 14 * sin(x * 0.05 + z.t * 0.2) - 8 * sin(x * 0.13 - z.t * 0.33)); fx.lineTo(W, H); fx.fill();
+        fx.fillStyle = C[2]; fx.globalAlpha = 0.2 + 0.3 * k;
+        fx.beginPath(); fx.moveTo(0, H); for (let x = 0; x <= W; x += 12) fx.lineTo(x, H - k * H * 0.45 - 12 * sin(x * 0.07 - z.t * 0.25)); fx.lineTo(W, H); fx.fill();
+        fx.globalAlpha = 1;
+      } else {         // 全画面の炎: 白い閃光のあと、炎の層が画面を埋める
+        const u = (z.t - z.warn) / z.dur;
+        fx.fillStyle = u < 0.25 ? "#ffffff" : C[2]; fx.fillRect(0, 0, W, H);
+        if (u >= 0.25) for (const [ci, ph, amp] of [[1, 0, 40], [0, 2, 60], [3, 4, 30]]) { fx.fillStyle = C[ci]; fx.globalAlpha = 0.8; for (let i = 0; i < 6; i++) { const y = ((i * 110 - z.t * 30 + ph * 50) % (H + 120) + H + 120) % (H + 120) - 60; fx.beginPath(); fx.moveTo(0, y); for (let x = 0; x <= W; x += 15) fx.lineTo(x, y + amp * 0.3 * sin(x * 0.06 + i + z.t)); fx.lineTo(W, y + 26); fx.lineTo(0, y + 26); fx.fill(); } }
+        fx.globalAlpha = 1;
+      }
+      for (const c of z.safe) {      // 安全な輪: 中は暗いまま。二重の光の輪と、回る印
+        fx.globalCompositeOperation = "destination-out"; disc(c.x, c.y, c.r, "#000"); fx.globalCompositeOperation = "source-over";
+        disc(c.x, c.y, c.r, "#0d0a18", 0.85);
+        fx.strokeStyle = C[3]; fx.lineWidth = 3; fx.beginPath(); fx.arc(c.x, c.y, c.r, 0, TAU); fx.stroke();
+        fx.strokeStyle = C[2]; fx.lineWidth = 1; fx.beginPath(); fx.arc(c.x, c.y, c.r - 5, 0, TAU); fx.stroke();
+        fx.lineWidth = 3; fx.setLineDash([8, 10]); fx.lineDashOffset = z.t * 1.5; fx.beginPath(); fx.arc(c.x, c.y, c.r + 6, 0, TAU); fx.stroke(); fx.setLineDash([]);
+        for (let i = 0; i < 6; i++) { const a = i * TAU / 6 - z.t * 0.05; fx.fillStyle = C[3]; fx.fillRect(Math.round(c.x + cos(a) * (c.r - 12)) - 1, Math.round(c.y + sin(a) * (c.r - 12)) - 1, 3, 3); }
+      }
     }
   }
+  fxEnd();
 }
 const dark = document.createElement("canvas"); dark.width = W; dark.height = H; const dk = dark.getContext("2d");
 

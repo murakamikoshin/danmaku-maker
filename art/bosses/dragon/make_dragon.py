@@ -12,7 +12,7 @@ import sys, os, json, math
 import numpy as np
 from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-import rig, moves
+import rig, moves, side
 ID = 'dragon'; FRAME_MS = 40; FW, FH = rig.FW, rig.FH; BG = (16, 12, 28)
 
 # ---------- 姿ごとの色の表(色の番号 → 色。None は透明) ----------
@@ -65,54 +65,91 @@ def burst(im, x, y, r0, r1, n, ph, c, a0=0.0, a1=2 * math.pi):
         a = a0 + (a1 - a0) * (k + 0.5) / n + ph
         for rr in range(int(r0), int(r1) + 1): put(im, x + math.cos(a) * rr, y + math.sin(a) * rr, c)
 
+def disc(im, x, y, r, c, over=True):
+    yy, xx = np.ogrid[0:FH, 0:FW]; m = (xx - x) ** 2 + (yy - y) ** 2 <= r * r
+    if not over: m &= im == 0
+    im[m] = c
+def orb(im, x, y, r, i=0):
+    """光の玉: 外から 色1 → 色2 → 白。まわりに十字の光"""
+    disc(im, x, y, r, 16); disc(im, x, y, max(1, r * 0.66), 17); disc(im, x, y, max(0.6, r * 0.34), 18)
+    L = r * (1.7 + 0.25 * (i % 2))
+    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)): line(im, x + dx * r, y + dy * r, x + dx * L, y + dy * L, 17)
+def flame_cone(im, x, y, ang, length, half, i):
+    """口から吹き出す炎: 扇形に3色。ふちは波打つ"""
+    yy, xx = np.mgrid[0:FH, 0:FW]; dx, dy = xx - x, yy - y
+    d = dx * math.cos(ang) + dy * math.sin(ang); side = -dx * math.sin(ang) + dy * math.cos(ang)
+    wob = 1 + 0.18 * np.sin(d * 0.55 - i * 1.3) + 0.1 * np.sin(d * 1.3 + i * 2.1)
+    w = (2.5 + d * math.tan(half)) * wob
+    for c, kw, kl in ((16, 1.0, 1.0), (17, 0.62, 0.8), (18, 0.3, 0.55)):
+        im[(d > 0) & (d < length * kl) & (np.abs(side) < w * kw)] = c
+def arc(im, x0, y0, x1, y1, bend, w, c):
+    """弓なりの線(爪や尻尾の軌跡)"""
+    mx, my = (x0 + x1) / 2, (y0 + y1) / 2; nx, ny = -(y1 - y0), x1 - x0; L = max(1e-6, math.hypot(nx, ny))
+    cx, cy = mx + nx / L * bend, my + ny / L * bend; px, py = x0, y0
+    for k in range(1, 13):
+        t = k / 12; qx = (1 - t) ** 2 * x0 + 2 * t * (1 - t) * cx + t * t * x1; qy = (1 - t) ** 2 * y0 + 2 * t * (1 - t) * cy + t * t * y1
+        line(im, px, py, qx, qy, c, max(1, round(w * math.sin(math.pi * t) + 0.5))); px, py = qx, qy
+
 def effects(im, anim, i, mk, prev):
     """動きごとの光。mk: 口・手・翼の先などの位置。prev: 1つ前のコマの位置(軌跡を描く)"""
-    m, _, st = anim.partition('_'); mx, my = mk['mouth']
+    m, _, st = anim.partition('_'); mx, my = mk['mouth']; cx, cy = mk['chest']
     if st == 'windup' and m in ('breath', 'inhale', 'roar', 'wrath', 'gale', 'cyclone', 'slam'):
-        t = (i + 1) / moves.N_W; cx, cy = (mx, my) if m in ('breath', 'inhale', 'roar') else mk['chest']
-        converge(im, cx, cy, 30 - 22 * t, 10, i * 0.35)
-        if i >= 3: converge(im, cx, cy, 40 - 26 * t, 6, -i * 0.5)
-        star(im, cx, cy, max(1, round(1 + 4 * t)))
+        t = (i + 1) / moves.N_W; x, y = (mx, my) if m in ('breath', 'inhale', 'roar') else (cx, cy)
+        for k in range(3): converge(im, x, y, max(3, 40 - 30 * t - k * 7 + (i % 2)), 9 + k * 2, i * 0.4 * (1 if k % 2 else -1) + k)
+        orb(im, x, y, 1.5 + 5.5 * t, i)
+        if t > 0.6: ring(im, x, y, 10 + (i % 3) * 5, 17, gap=2, over=False)
     if anim == 'breath_attack':
-        burst(im, mx, my + 3, 6, 14 + i % 3 * 3, 7, 0.1 * (i % 2), 17 if i % 2 else 16, math.radians(50), math.radians(130))
-        ring(im, mx, my + 2, 5 + (i % 4) * 3, 16, gap=2); star(im, mx, my + 1, 5 + i % 2)
+        flame_cone(im, mx, my + 2, math.pi / 2 + 0.06 * math.sin(i * 0.8), 46 + (i % 3) * 5, math.radians(17), i)
+        orb(im, mx, my + 1, 5 + i % 2, i)
+        for k in range(6): put(im, mx + (k - 2.5) * 5 + (i * 3 + k * 7) % 5, my + 30 + (i * 5 + k * 11) % 26, 17 if k % 2 else 18, False)
     elif anim == 'inhale_attack':
-        for k in range(3): converge(im, mx, my, 44 - ((i * 5 + k * 15) % 44), 8, i * 0.4 + k)
-        star(im, mx, my, 3 + (i // 2) % 4)
+        for k in range(4): converge(im, mx, my, 54 - ((i * 5 + k * 13) % 50), 9, i * 0.45 + k * 1.1)
+        for k in range(3): ring(im, mx, my, 46 - ((i * 4 + k * 15) % 42), 16, gap=3, over=False)
+        orb(im, mx, my, 3 + (i % 8) * 0.7, i)
     elif anim == 'roar_attack':
-        for k in range(3): ring(im, mx, my, 5 + ((i * 4 + k * 12) % 36), 17 if k % 2 else 16, gap=2 if k else 0, over=False)
-        star(im, mx, my, 4 + i % 2)
+        for k in range(4): ring(im, mx, my, 6 + ((i * 5 + k * 13) % 52), 17 if k % 2 else 16, gap=0 if k % 2 else 2, over=False)
+        for k in range(2): ring(im, mx, my, 7 + ((i * 5 + k * 26) % 52), 18, over=False)
+        burst(im, mx, my, 9, 16 + i % 3 * 3, 12, i * 0.2, 17); orb(im, mx, my, 4 + i % 2, i)
     elif anim == 'dive_attack':
-        for h, on in (('handR', 3 <= i <= 7), ('handL', 11 <= i <= 15)):
-            if on and prev:
-                (x0, y0), (x1, y1) = prev[h], mk[h]
-                line(im, x0, y0 + 6, x1, y1 + 6, 18, 2); line(im, x0 - 5, y0 + 9, x1 - 5, y1 + 9, 17, 2); line(im, x0 + 5, y0 + 3, x1 + 5, y1 + 3, 17, 1)
+        for h, f0 in (('handR', 3), ('handL', 11)):
+            k = i - f0
+            if 0 <= k <= 5 and prev:
+                (x0, y0), (x1, y1) = prev[h], mk[h]; s_ = 1 if h == 'handR' else -1
+                ax, ay = mk[h][0] + s_ * 26, mk[h][1] - 30; bx, by = mk[h][0] - s_ * 30, mk[h][1] + 34       # 爪の跡: 3本の弓なりの光
+                for o_, c in ((-8, 16), (0, 18), (8, 17)):
+                    arc(im, ax + o_, ay, bx + o_, by, -s_ * 12, 3 if c == 18 else 2, c)
+                if k < 2: orb(im, x1, y1, 4, i)
     elif anim == 'gale_attack':
-        if math.sin(4 * math.pi * i / moves.N_A + 1.2) < -0.2:                          # 打ち下ろしの間、翼の下に風の筋
-            for h in ('wtipL', 'wtipR', 'wristL', 'wristR'):
+        if math.sin(4 * math.pi * i / moves.N_A + 1.2) < -0.1:                          # 打ち下ろしの間、翼の下に風の弧
+            for h, s_ in (('wtipL', -1), ('wtipR', 1), ('wristL', -1), ('wristR', 1)):
                 x, y = mk[h]
-                for k in range(3): line(im, x - 8 + k * 8, y + 10 + k * 3, x - 8 + k * 8, y + 24 + k * 5, 17 if k == 1 else 16, 1, over=False)
+                for k in range(3): arc(im, x - 14, y + 12 + k * 9, x + 14, y + 12 + k * 9, 5, 2 if k == 1 else 1, 18 if k == 1 else 17)
     elif anim == 'glide_attack':
-        for h in ('wristL', 'wristR', 'wtipL', 'wtipR'):
-            x, y = mk[h]; line(im, x, y - 6 - i % 3 * 2, x, y - 20 - i % 3 * 3, 17 if i % 2 else 16, 1, over=False)
-        star(im, mx, my, 3)
-    elif anim == 'slam_attack' and 3 <= i <= 8:
+        for h in ('wristL', 'wristR', 'wtipL', 'wtipR', 'handL', 'handR'):
+            x, y = mk[h]
+            for k in range(2): line(im, x + k * 3 - 1, y - 6 - (i * 3 + k * 5) % 7, x + k * 3 - 1, y - 24 - (i * 4 + k * 9) % 12, 18 if k else 17, 1, over=False)
+        orb(im, mx, my, 3 + i % 2, i)
+    elif anim == 'slam_attack' and 3 <= i <= 9:
+        k = i - 3
         for h in ('handL', 'handR'):
-            x, y = mk[h]; r = 4 + (i - 3) * 5
-            burst(im, x, y + 8, r, r + 6, 9, 0, 17 if i % 2 else 16, math.radians(200), math.radians(340)); star(im, x, y + 8, max(2, 6 - (i - 3)))
+            x, y = mk[h]; r = 5 + k * 6
+            burst(im, x, y + 8, r, r + 9 - k, 11, 0, 18 if k < 2 else (17 if i % 2 else 16), math.radians(195), math.radians(345))
+            line(im, x - r * 1.3, y + 12, x + r * 1.3, y + 12, 17, 2 if k < 3 else 1)
+            if k < 4: orb(im, x, y + 8, 6 - k, i)
     elif anim == 'tail_attack' and prev:
         (x0, y0), (x1, y1) = prev['tailtip'], mk['tailtip']
-        line(im, x0, y0, x1, y1, 18, 2); line(im, x0, y0 + 4, x1, y1 + 4, 17, 1, over=False)
+        arc(im, x0, y0, x1, y1, 4, 4, 18); arc(im, x0, y0 + 5, x1, y1 + 5, 4, 2, 17); arc(im, x0, y0 - 5, x1, y1 - 5, 4, 2, 16)
     elif anim == 'cyclone_attack':
         for k, h in enumerate(('wtipL', 'wtipR')):
             x, y = mk[h]
-            for j in range(10):
-                a = i * 0.8 + j * 0.5 + k * 3; r = 4 + j * 1.3; put(im, x + math.cos(a) * r, y + math.sin(a) * r * 0.5, 17 if j % 2 else 16, False)
+            for j in range(22):
+                a = i * 0.9 + j * 0.42 + k * 3; r = 3 + j * 0.9; put(im, x + math.cos(a) * r, y - j * 0.8 + math.sin(a) * r * 0.45, (18, 17, 16)[j % 3], False)
     elif anim == 'wrath_attack':
-        cx, cy = mk['chest']
-        burst(im, cx, cy, 60 + i % 2 * 6, 78 + i % 3 * 6, 18, i * 0.17, 17 if i % 2 else 16)
-        for e in ('eyeL', 'eyeR'): star(im, *mk[e], 3)
-        ring(im, cx, cy, 20 + (i * 6) % 60, 16, gap=2, over=False)
+        burst(im, cx, cy, 56 + i % 2 * 6, 84 + i % 3 * 7, 22, i * 0.17, 17 if i % 2 else 16)
+        burst(im, cx, cy, 70, 96, 11, -i * 0.11, 18)
+        for k in range(3): ring(im, cx, cy, 16 + ((i * 6 + k * 22) % 66), 16 if k % 2 else 17, gap=2, over=False)
+        for e in ('eyeL', 'eyeR'): orb(im, *mk[e], 2.4, i)
+        orb(im, mx, my, 3 + i % 2, i)
 
 def aura(im, i):
     """覚醒した姿だけで見える光: 体のふちの点滅(19)、うしろの光(20・21)、のぼる火の粉(22)。通常の姿では透明"""
@@ -141,6 +178,16 @@ def render_all():
             effects(im, name, i, mk, prev); prev = mk
             lst.append(aura(im, i))
         frames[name] = lst
+    # 横向きに飛ぶ姿(左向きと、それを裏返した右向き)。うしろに速さの線、口に炎
+    L = []
+    for i in range(side.N_FLY):
+        im, mk = side.render(i); mx, my = mk['mouth']
+        flame_cone(im, mx - 1, my, math.pi + 0.12 * math.sin(i), 8 + i % 3 * 2, math.radians(20), i)
+        for k in range(7):
+            y = 70 + (k * 23 + 11) % 80; x = 60 + (k * 53 + i * 17) % 170
+            line(im, x, y, x + 12 + (k % 3) * 6, y, 17 if k % 2 else 16, 1, over=False)
+        L.append(aura(im, i))
+    frames['side_fly_l'] = L; frames['side_fly_r'] = [np.ascontiguousarray(im[:, ::-1]) for im in L]
     return frames
 
 def rgba(lab, pal): return Image.fromarray(pal[lab], 'RGBA')
@@ -172,6 +219,7 @@ def export():
     rest = rig.markers(moves.idle(0))
     json.dump(dict(frame_ms=FRAME_MS, w=FW, h=FH, cols=8, counts=dict(idle=moves.N_IDLE, windup=moves.N_W, attack=moves.N_A, recover=moves.N_R),
                    moves=[dict(id=m, name=moves.MOVE_NAMES[m]) for m in moves.MOVES], anims=counts,
+                   extras=[dict(id='side_fly_l', name='横に飛ぶ(左向き)'), dict(id='side_fly_r', name='横に飛ぶ(右向き)')],
                    origins={k: [round(v[0]), round(v[1])] for k, v in rest.items()}, label_step=10),
               open(os.path.join(HERE, 'anim.json'), 'w'), ensure_ascii=False, indent=1)
     # ほかのボスと同じ名前の絵(通常・覚醒1。構え・技中・硬直はブレス)
@@ -186,8 +234,9 @@ def export():
     open(os.path.join(HERE, 'README.txt'), 'w').write('\n'.join([
         '最強のドラゴン(dragon) のドット絵', '',
         f'- 1コマ {FW}×{FH} ピクセル(ほかのボスは 112×112)、背景は透明。1コマ {FRAME_MS / 1000:g} 秒(25コマ/秒)。拡大は必ず最近傍補間',
-        f'- 動きは全部で {len(counts)} 種類・{n} コマ: 待機 {moves.N_IDLE} コマ + 技ごとの動き {len(moves.MOVES)} 種類 ×(構え {moves.N_W}・技中 {moves.N_A}・硬直 {moves.N_R})',
+        f'- 動きは全部で {len(counts)} 種類・{n} コマ: 待機 {moves.N_IDLE} コマ + 技ごとの動き {len(moves.MOVES)} 種類 ×(構え {moves.N_W}・技中 {moves.N_A}・硬直 {moves.N_R})+ 横向きに飛ぶ姿(左右)',
         '  技ごとの動き: ' + '、'.join(f"{moves.MOVE_NAMES[m]}({m})" for m in moves.MOVES),
+        '  ほかに、横向きに飛ぶ姿(side_fly_l 左向き / side_fly_r 右向き、各24コマのループ。元絵は source/dragon_side_art.png、骨組みは side.py)',
         '- 姿は4つ: ' + ' / '.join(f['name'] for f in FORMS) + '。絵は1組だけで、姿ごとの色の表(forms.json)で塗り分ける',
         '- sheets/<動き>.png: 色の番号の絵を1行8コマで並べたもの(赤の値 ÷ 10 = 色の番号、透明 = 0)。番号の意味は rig.py の先頭',
         '  覚醒の姿だけで見える光(体のふちの点滅 19、うしろの光 20・21、火の粉 22)も同じ絵に入っていて、通常の色の表では透明になる',

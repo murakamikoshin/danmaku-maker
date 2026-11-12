@@ -82,8 +82,20 @@
   "cyclone_recover": 6,
   "wrath_windup": 12,
   "wrath_attack": 16,
-  "wrath_recover": 6
+  "wrath_recover": 6,
+  "side_fly_l": 24,
+  "side_fly_r": 24
  },
+ "extras": [
+  {
+   "id": "side_fly_l",
+   "name": "横に飛ぶ(左向き)"
+  },
+  {
+   "id": "side_fly_r",
+   "name": "横に飛ぶ(右向き)"
+  }
+ ],
  "origins": {
   "mouth": [
    131,

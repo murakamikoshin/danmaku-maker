@@ -90,7 +90,9 @@ const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, pla
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
   B: { x: 180, y: 128 }, P: { x: 180, y: 500 }, aw: false, lv: 0, boss: null, pat: null, anim: "idle", animT: 0, auto: true, target: null, manualUntil: 0,
   // ここから下は、ドラゴンの技で使う: ボス本体の移動、自機を流す風・引き寄せ、バインド(動けない)、範囲攻撃、即死
-  Boff: { x: 0, y: 0 }, wind: { x: 0, y: 0 }, pull: null, bind: 0, zones: [], kills: 0, heat: 0 };
+  Boff: { x: 0, y: 0 }, wind: { x: 0, y: 0 }, pull: null, bind: 0, zones: [], kills: 0, heat: 0,
+  // 見た目だけの粒(火花・煙・火の粉)と、画面のゆれ・ボスの絵の差し替え(横向きに飛ぶ姿)
+  fx: [], shake: 0, flashes: [], pose: null };
 
 function pt(sx, sy) { const b = G.boss, w = b.w, h = b.h; return { x: G.B.x - w + sx * 2, y: G.B.y - h + sy * 2 }; }
 function aimFrom(o) { return atan2(G.P.y - o.y, G.P.x - o.x); }
@@ -106,6 +108,22 @@ function steer(b, max) {
 }
 function angDiff(a, b) { let d = a - b; while (d > PI) d -= TAU; while (d < -PI) d += TAU; return Math.abs(d); }
 function spawn(gen) { G.tasks.push({ g: gen, wait: 0 }); }
+// ---------- 見た目だけの粒: k=0 火花(白 → 明るい色 → 濃い色)、1 煙、2 ゆっくりのぼる火の粉、3 風の筋 ----------
+function spark(x, y, n, sp, o) {
+  o = o || {};
+  for (let i = 0; i < n && G.fx.length < 900; i++) {
+    const a = o.a !== undefined ? o.a + (rand() - 0.5) * (o.spread === undefined ? 0.6 : o.spread) : rand() * TAU, v = sp * (0.3 + rand() * 0.9), j = o.jit || 0;
+    G.fx.push({ x: x + (rand() - 0.5) * j, y: y + (rand() - 0.5) * j, vx: cos(a) * v, vy: sin(a) * v, t: 0, life: (o.life || 24) * (0.6 + rand() * 0.8), s: o.s || 2, g: o.g || 0, k: o.k || 0, drag: o.drag || 0.95 });
+  }
+}
+function shake(n) { G.shake = Math.max(G.shake, n); }
+function boom(x, y, r) {       // 大爆発: 火花・破片・煙・画面のゆれ・光の輪
+  shake(Math.min(16, 4 + r / 12));
+  spark(x, y, Math.min(90, r * 0.6 | 0), r / 8, { life: 36, s: 3, g: 0.04 });
+  spark(x, y, 26, r / 14, { life: 60, s: 5, k: 1, g: -0.03, jit: r * 0.8 });
+  spark(x, y, 30, r / 20, { life: 70, s: 2, k: 2, g: -0.02, jit: r });
+  G.flashes.push({ x, y, r, t: 0, life: 30 });
+}
 
 // ---------- 技 ----------
 const R = {};
@@ -642,22 +660,22 @@ R.dragonInhale = function* (aw, lv) {
   yield 40;
 };
 R.dragonGlide = function* (aw, lv) {
-  // 画面の外へ飛び去り、影が通った列を、本体が炎をまとって上から下へ突っ切る。3回
-  yield* glideTo(0, -330, 26);
-  for (let pass = 0; pass < 3; pass++) {
-    const lanes = [0, 1, 2], mine = clamp(Math.floor(G.P.x / 120), 0, 2);
-    const hit = aw ? [mine, mine === 1 ? (G.P.x < W / 2 ? 2 : 0) : 2 - mine] : [mine];      // 覚醒: 2列。安全な列は必ずとなりで、自機に近い側
-    hit.forEach(l => zone({ shape: "rect", x: l * 120, y: 0, w: 120, h: H, warn: 52, dur: 30, col: "#ff8c28", shadow: 1 }));
-    yield 52;
-    const l0 = hit[0];
-    G.Boff.x = l0 * 120 + 60 - 180; G.Boff.y = -330;
-    for (let i = 0; i < 30; i++) {
-      G.Boff.y = -330 + i * 34;
-      if (i % 3 === 0) hit.forEach(l => fire("flame", l * 120 + 20 + rand() * 80, clamp(G.B.y + 40, -20, H), PI / 2, 0.6, { big: 2.4, r: 8, life: 50 }));
+  // 画面の外へ飛び去り、横向きの姿で、自機の高さを右へ左へ突っ切る(体に当たるとダメージ)。通る帯は影で予告する。
+  // 飛びながら下へ大きな火の玉を落とすので、帯の下にも長居できない
+  yield* glideTo(0, -340, 26);
+  for (let pass = 0; pass < (aw ? 4 : 3); pass++) {
+    const dir = pass % 2 ? -1 : 1, hh = aw ? 120 : 100, y0 = clamp(G.P.y - hh / 2, 250, H - hh - 60);
+    zone({ shape: "rect", x: 0, y: y0, w: W, h: hh, warn: 50, dur: 36, col: "#ff8c28", shadow: 1, fly: dir });
+    yield 50;
+    G.pose = dir > 0 ? "side_fly_r" : "side_fly_l";
+    for (let i = 0; i < 36; i++) {
+      const x = dir > 0 ? -260 + i * (W + 520) / 36 : W + 260 - i * (W + 520) / 36;
+      G.Boff.x = x - 180 + dir * 20; G.Boff.y = y0 + hh / 2 - 24 - 128;
+      if (i % (aw ? 3 : 4) === 0 && x > 10 && x < W - 10) fire("flame", x, y0 + hh / 2 + 16, PI / 2 + (rand() - 0.5) * 0.3, 1.6 + rand(), { big: 2.4, r: 8, life: 90 });
       yield 1;
     }
-    G.Boff.y = -330; G.Boff.x = 0;
-    yield 18;
+    G.pose = null; G.Boff.x = 0; G.Boff.y = -340;
+    yield aw ? 10 : 18;
   }
   yield* glideTo(0, 0, 30);
   yield 20;
@@ -744,7 +762,7 @@ function* director() {
     yield G.pat.anim ? 30 : 28;
     G.anim = "attack"; G.animT = 0;
     yield* R[G.pat.id](G.aw, G.lv);
-    G.Boff.x = 0; G.Boff.y = 0; G.wind = { x: 0, y: 0 }; G.pull = null;
+    G.Boff.x = 0; G.Boff.y = 0; G.wind = { x: 0, y: 0 }; G.pull = null; G.pose = null;
     G.anim = "recover"; G.animT = 0; yield G.pat.anim ? 15 : 14;
     G.anim = "idle"; G.animT = 0; yield 50;
   }
@@ -753,6 +771,7 @@ function* director() {
 function reset() {
   G.bullets = []; G.lasers = []; G.marks = []; G.tasks = []; G.walls = []; G.hits = 0; G.inv = 0; G.dark = 0; G.T = 0;
   G.Boff = { x: 0, y: 0 }; G.wind = { x: 0, y: 0 }; G.pull = null; G.bind = 0; G.zones = []; G.kills = 0; G.heat = 0;
+  G.fx = []; G.shake = 0; G.flashes = []; G.pose = null;
   G.P = { x: 180, y: 500 };
   spawn(director());
 }
@@ -833,6 +852,10 @@ function step() {
   const P = G.P;
   for (const b of G.bullets) {
     b.t++; if (b.u) b.u(b); b.x += b.vx; b.y += b.vy;
+    if (b.big >= 2 && b.type !== "body") {       // 大きい弾は火花の尾を引く
+      if (b.type === "tornado") { spark(b.x + (rand() - 0.5) * 50, b.y + 20, 1, 2.4, { a: -PI / 2, spread: 0.8, life: 30, s: 2 }); if (b.t % 3 === 0) spark(b.x, b.y + 24, 1, 1, { k: 2, life: 40, jit: 40, g: -0.04 }); }
+      else if (b.t % 2 === 0) spark(b.x, b.y, b.type === "sun" ? 3 : 1, b.type === "sun" ? 2 : 0.7, { life: b.type === "sun" ? 26 : 16, s: b.type === "sun" ? 3 : 2, jit: b.r });
+    }
     if (b.life && b.t > b.life) b.dead = 1;
     if (b.x < -40 || b.x > W + 40 || b.y < -60 || b.y > H + 40) { if (b.t > 30 || b.y > H) b.dead = 1; }
     if (!G.inv && !b.dead && !b.friendly && (b.x - P.x) ** 2 + (b.y - P.y) ** 2 < (b.r + 2.5) ** 2) hit(b);
@@ -840,6 +863,13 @@ function step() {
   G.bullets = G.bullets.filter(b => !b.dead);
   for (const L of G.lasers) {
     L.t++; if (L.t > L.warn) L.a += L.va;
+    if (L.fire && L.t > L.warn) {      // 炎の柱: ふちから火花が散り、口元と画面の下で炎がはじける
+      const o = L.from(), ux = cos(L.a), uy = sin(L.a);
+      for (let i = 0; i < 4; i++) { const d = rand() * 640, sd = rand() < 0.5 ? 1 : -1; spark(o.x + ux * d - uy * sd * L.w * 0.5, o.y + uy * d + ux * sd * L.w * 0.5, 1, 2.2, { a: L.a + sd * 1.1, spread: 0.9, life: 22, s: 2 }); }
+      spark(o.x, o.y, 2, 3.5, { a: L.a, spread: 2.2, life: 16, s: 3 });
+      if (uy > 0.2) { const d = (H - o.y) / uy; spark(o.x + ux * d, H - 4, 3, 4, { a: -PI / 2, spread: 2.4, life: 26, s: 3, g: 0.12 }); if (L.t % 4 === 0) spark(o.x + ux * d, H - 6, 1, 1.5, { k: 1, a: -PI / 2, life: 44, s: 6, jit: L.w }); }
+      if (L.t === L.warn + 1) shake(8); else if (L.t % 6 === 0) shake(2);
+    }
     if (L.track) { let d = aimFrom(L.from()) - L.a; while (d > PI) d -= TAU; while (d < -PI) d += TAU; L.a += clamp(d, -L.track, L.track); }
     if (L.t > L.warn && !G.inv) {
       const o = L.from(), ux = cos(L.a), uy = sin(L.a), px = P.x - o.x, py = P.y - o.y, pr = px * ux + py * uy;
@@ -852,6 +882,20 @@ function step() {
     z.t++;
     if (z.shape === "ring") { if (z.at && z.t < 4) { const o = z.at(); z.x = o.x; z.y = o.y; } z.r += z.vr; }
     if (z.shape === "safe") for (const c of z.safe) { c.x += c.vx || 0; if (c.x < 50 || c.x > W - 50) c.vx = -(c.vx || 0); }
+    if (z.t === z.warn + 1) {       // 当たり始めの瞬間
+      if (z.shape === "circle" && z.boom) boom(z.x, z.y, z.r);
+      else if (z.shape === "circle" && z.claw) { shake(7); spark(z.x, z.y, 30, 6, { life: 20, s: 3 }); G.flashes.push({ x: z.x, y: z.y, r: z.r, t: 0, life: 14, slash: z.x > G.B.x ? 1 : -1 }); }
+      else if (z.shape === "circle" && z.pillar) { spark(z.x, z.y, 8, 5, { a: -PI / 2, spread: 1.2, life: 30, s: 3, g: 0.1 }); shake(5); }
+      else if (z.shape === "rect") { shake(9); }
+      else if (z.shape === "safe") { shake(18); for (let i = 0; i < 120; i++) spark(rand() * W, rand() * H, 1, 5, { life: 40, s: 3 }); }
+    }
+    if (z.shape === "ring") { for (let i = 0; i < 3; i++) { const a = z.gapA + z.gapW + rand() * (TAU - 2 * z.gapW); spark(z.x + cos(a) * z.r, z.y + sin(a) * z.r, 1, 1.5, { a, spread: 0.8, life: 18, s: 2 }); } }
+    if (z.shape === "safe" && z.t <= z.warn) { for (let i = 0; i < 2 + (z.t / z.warn) * 5; i++) spark(rand() * W, H + 4, 1, 3 + 3 * z.t / z.warn, { a: -PI / 2, spread: 0.5, life: 60, s: 2, k: 2, g: -0.05 }); if (z.t > z.warn * 0.6) shake(2); }
+    if (z.t > z.warn) {
+      if (z.pillar && z.t % 2 === 0) spark(z.x, z.y + z.r * 0.5, 1, 4.5, { a: -PI / 2, spread: 0.7, life: 26, s: 3 });
+      if (z.fly) for (let i = 0; i < 5; i++) spark(G.B.x - z.fly * (40 + rand() * 160), z.y + rand() * z.h, 1, 4, { a: z.fly > 0 ? PI : 0, spread: 1, life: 26, s: 3 });
+      if (z.sweep) { const u = (z.t - z.warn) / z.dur, x = z.sweep > 0 ? -160 + u * (W + 320) : W + 160 - u * (W + 320); for (let i = 0; i < 6; i++) spark(x, z.y + rand() * z.h, 1, 5, { a: z.sweep > 0 ? PI : 0, spread: 1.2, life: 22, s: 3 }); }
+    }
     if (z.t <= z.warn || G.inv) continue;
     let h = false;
     if (z.shape === "rect") h = P.x > z.x && P.x < z.x + z.w && P.y > z.y && P.y < z.y + z.h;
@@ -861,12 +905,20 @@ function step() {
     if (h) hit(z);
   }
   G.zones = G.zones.filter(z => z.t < z.warn + z.dur && !(z.shape === "ring" && z.r > 760));
+  // 風の筋・吸い込みの筋(見た目だけ)
+  if (G.wind.x) for (let i = 0; i < 3; i++) spark(G.wind.x > 0 ? -10 : W + 10, 180 + rand() * 420, 1, 9, { a: G.wind.x > 0 ? 0.08 : PI - 0.08, spread: 0.05, life: 50, s: 2, k: 3, drag: 1 });
+  if (G.pull && G.pull.f) { const o = G.pull.at(); if (o.y < 200) for (let i = 0; i < 2; i++) { const a = rand() * PI, d = 180 + rand() * 260, x = o.x + cos(a) * d, y = o.y + sin(a) * d; spark(x, y, 1, 7, { a: atan2(o.y - y, o.x - x), spread: 0.1, life: 30, s: 2, k: 3, drag: 1.02 }); } }
+  for (const q of G.fx) { q.t++; q.x += q.vx; q.y += q.vy; q.vy += q.g; q.vx *= q.drag; q.vy *= q.drag; }
+  G.fx = G.fx.filter(q => q.t < q.life);
+  for (const f of G.flashes) f.t++;
+  G.flashes = G.flashes.filter(f => f.t < f.life);
+  if (G.shake > 0) G.shake *= 0.86;
   for (const m of G.marks) m.t++;
   G.marks = G.marks.filter(m => !m.dead && m.t < m.life);
   if (G.inv) G.inv--;
 }
 function hit(src) {
-  G.hits++; G.inv = 40;
+  G.hits++; G.inv = 40; spark(G.P.x, G.P.y, 20, 4, { life: 20, s: 2 }); shake(5);
   if (src && src.bind) G.bind = src.bind;        // バインド: しばらく動けない
   if (src && src.kill) { G.kills++; G.inv = 90; G.heat = 30; }      // 即死
 }
