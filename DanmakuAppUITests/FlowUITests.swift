@@ -112,6 +112,8 @@ final class FlowUITests: XCTestCase {
         tap("tab.shop", timeout: 20)
         for t in ["deals", "patterns", "shots", "looks", "bosses"] { tap("shop.tab.\(t)"); snap("shop-\(t)") }
         let hire = app.descendants(matching: .any)["shop.boss.hire"].firstMatch
+        // 一覧は画面の近くのカードだけを作るので、いちばん下の金魚姫は、下へ送ってから探す
+        for _ in 0..<10 where !hire.waitForExistence(timeout: 1) { app.swipeUp() }
         XCTAssertTrue(hire.waitForExistence(timeout: 10), "金魚姫のカードがない")
         scrollTo(hire)
         snap("shop-bosses-hire")
