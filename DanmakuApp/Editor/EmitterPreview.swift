@@ -11,8 +11,17 @@ final class PreviewEngine {
     private var last: Date?
     private(set) var bullets: [Bullet] = []
     private(set) var player = Point(x: 180, y: PreviewEngine.height - 40)
+    /// いま流しているパターン(変わったら、最初からやり直す)
+    private var pattern: Pattern?
 
     func advance(to now: Date, emitter m: Emitter, boss: Bool, character: BossCharacter? = nil, characterScale: Double = 1) {
+        // パターンを変えたら、前のパターンの撃つ時刻・弾を捨てて、すぐ撃ち始める(前の間隔が長いと、数秒なにも出なかった)
+        if pattern != m.t {
+            pattern = m.t
+            t = 0; next = 0; shot = 0; bullets = []; rng = Mulberry32(seed: 1)
+        }
+        // 間隔を短くしたときも、待たずに次を撃つ
+        if next - t > max(0.05, m.i) { next = t }
         let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
         last = now
         t += dt
@@ -334,7 +343,11 @@ final class MiniStageEngine {
         s.invincible = true
         while s.t < 0 && s.outcome == .playing { s.step(.zero) }
         let target = Double(stage.effectivePreviewStart)
-        while s.t < target {
+        // 開始秒ちょうどは、撃った直後で弾がほとんど写らない(一覧の画像が背景だけに見えた)。
+        // 少なくとも leadSec 秒進め、弾がそろうまで(最大 maxLeadSec 秒)さらに進める。
+        // 撃ち始めが遅いステージも、最初の弾が出るところから流れる(弾が出る前に最初へ戻り続けていた)
+        while s.t < target + maxLeadSec {
+            if s.t >= target + leadSec && s.bullets.count >= enoughBullets { break }
             var next = s
             tick(&next)
             if crossed(next) { break }
@@ -342,6 +355,11 @@ final class MiniStageEngine {
         }
         return s
     }
+
+    /// 頭出しで、開始秒から最低限進める秒数・弾がそろったとみなす数・最大で進める秒数
+    static let leadSec = 1.5
+    static let enoughBullets = 8
+    static let maxLeadSec = 10.0
 
     func restart() {
         sim = origin

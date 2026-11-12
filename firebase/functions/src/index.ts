@@ -472,7 +472,9 @@ export const savePreviewImage = onCall({ memory: "256MiB" }, async (req) => {
   const snap = await ref.get();
   if (!snap.exists || snap.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
   await getStorage().bucket().file(`pv/${id}.png`).save(png, { contentType: "image/png", metadata: { cacheControl: "public, max-age=3600" } });
-  await ref.update({ pv: true });
+  // pvv: 静止画の作り方の版。2 = 弾が出そろうところまで進めて撮ったもの(1.2.1〜)。それより前の画像は、弾がほとんど写っていない
+  const v = Number((req.data as { v?: unknown })?.v);
+  await ref.update(v === 2 ? { pv: true, pvv: 2 } : { pv: true });
   return { ok: true };
 });
 
@@ -595,7 +597,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "needs", "pv",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "needs", "pv", "pvv",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {
