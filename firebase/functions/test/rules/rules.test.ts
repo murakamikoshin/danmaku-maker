@@ -202,6 +202,12 @@ describe("通知を受け取る端末", () => {
     await assertFails(getDoc(doc(member("p3"), "users/p2/pushDevices/d1")));
     await assertFails(setDoc(doc(member("p3"), "users/p2/pushDevices/d2"), dev));
   });
+  it("1.2.0〜の rewards・1.3.0〜の events も書ける(古い版は送らない)", async () => {
+    await assertSucceeds(setDoc(doc(anon("p6"), "users/p6/pushDevices/d1"), { ...dev, rewards: true }));
+    await assertSucceeds(setDoc(doc(anon("p6"), "users/p6/pushDevices/d1"), { ...dev, rewards: true, events: false }));
+    await assertFails(setDoc(doc(anon("p6"), "users/p6/pushDevices/d1"), { ...dev, rewards: "yes" }));
+    await assertFails(setDoc(doc(anon("p6"), "users/p6/pushDevices/d1"), { ...dev, events: 1 }));
+  });
   it("型や項目が違うものは書けない", async () => {
     await assertFails(setDoc(doc(anon("p4"), "users/p4/pushDevices/d1"), { ...dev, likes: "yes" }));
     await assertFails(setDoc(doc(anon("p4"), "users/p4/pushDevices/d1"), { ...dev, admin: true }));

@@ -6,7 +6,9 @@ import UserNotifications
 
 /// 通知の種類。サーバー(firebase/functions/src/notify.ts の PushKind)と同じ名前
 enum PushKind: String, CaseIterable, Identifiable {
-    case likes, comments, plays, rewards
+    case likes, comments, plays, rewards, events
+    /// はじめからオンの種類か。お知らせ(events)は宣伝にあたるので、本人がオンにしたときだけ(Apple の規定)
+    var defaultOn: Bool { self != .events }
     var id: String { rawValue }
     /// LocalizedStringKey("…\\(rawValue)") と書くと、キーが "settings.notify.%@" になって翻訳が引けないので、文字列をつないで作る
     var titleKey: LocalizedStringKey { LocalizedStringKey("settings.notify." + rawValue) }
@@ -16,6 +18,7 @@ enum PushKind: String, CaseIterable, Identifiable {
         case .comments: "text.bubble.fill"
         case .plays: "flag.checkered"
         case .rewards: "gift.fill"
+        case .events: "trophy.fill"
         }
     }
 }
@@ -34,6 +37,12 @@ final class NotificationService: NSObject, ObservableObject {
     @Published private(set) var authorization: UNAuthorizationStatus = .notDetermined
     /// 通知を開いたときに、そのステージを開く
     var onOpenStage: ((String) -> Void)?
+    /// お知らせ(ランキング戦の開始)の通知を開いたときに、スワイプ弾幕を開く
+    /// (アプリが閉じていて、通知から起動したときは、画面の準備ができてから開く)
+    var onOpenSwipe: (() -> Void)? {
+        didSet { if pendingSwipe, let f = onOpenSwipe { pendingSwipe = false; f() } }
+    }
+    private var pendingSwipe = false
 
     private var uid: String?
     private var token: String?
@@ -52,7 +61,7 @@ final class NotificationService: NSObject, ObservableObject {
     private override init() {
         enabled = defaults.bool(forKey: Self.enabledKey)
         var k: [PushKind: Bool] = [:]
-        for kind in PushKind.allCases { k[kind] = defaults.object(forKey: Self.kindKey(kind)) as? Bool ?? true }
+        for kind in PushKind.allCases { k[kind] = defaults.object(forKey: Self.kindKey(kind)) as? Bool ?? kind.defaultOn }
         kinds = k
         super.init()
     }
@@ -105,7 +114,7 @@ final class NotificationService: NSObject, ObservableObject {
         sync()
     }
 
-    func isOn(_ kind: PushKind) -> Bool { kinds[kind] ?? true }
+    func isOn(_ kind: PushKind) -> Bool { kinds[kind] ?? kind.defaultOn }
 
     fileprivate func didReceive(token: String?) {
         self.token = token
@@ -124,6 +133,10 @@ final class NotificationService: NSObject, ObservableObject {
     }
 
     fileprivate func open(userInfo: [AnyHashable: Any]) {
+        if (userInfo["kind"] as? String) == PushKind.events.rawValue {
+            if let f = onOpenSwipe { f() } else { pendingSwipe = true }
+            return
+        }
         guard let id = userInfo["stageId"] as? String, !id.isEmpty else { return }
         onOpenStage?(id)
     }

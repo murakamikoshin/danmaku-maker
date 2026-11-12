@@ -62,7 +62,10 @@ service cloud.firestore {
     match /users/{uid}/pushDevices/{deviceId} {
       allow read, delete: if signedIn() && request.auth.uid == uid;
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['token', 'lang', 'enabled', 'likes', 'comments', 'plays', 'updatedAt'])
+        // rewards(ごほうびの通知、1.2.0〜)・events(お知らせ、1.3.0〜)は、古い版のアプリは送らないので、あれば真偽値
+        && request.resource.data.keys().hasOnly(['token', 'lang', 'enabled', 'likes', 'comments', 'plays', 'rewards', 'events', 'updatedAt'])
+        && (!('rewards' in request.resource.data) || request.resource.data.rewards is bool)
+        && (!('events' in request.resource.data) || request.resource.data.events is bool)
         && request.resource.data.token is string && request.resource.data.token.size() < 4096
         && request.resource.data.lang is string && request.resource.data.lang.size() < 32
         && request.resource.data.enabled is bool && request.resource.data.likes is bool

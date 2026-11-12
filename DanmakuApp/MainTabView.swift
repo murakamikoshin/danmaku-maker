@@ -78,6 +78,8 @@ struct MainTabView: View {
             AudioManager.shared.play(.menu)
             // テーマを変えた直後は、設定の画面へ戻す
             if UIThemeStore.shared.consumeReturnToSettings() { tab = .settings; opened.insert(.settings) }
+            // お知らせ(ランキング戦の開始)の通知を開いたら、スワイプ弾幕へ(出していないときは、あそぶのまま)
+            NotificationService.shared.onOpenSwipe = { if swipeConfig.enabled { tab = .swipe; opened.insert(.swipe) } }
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }

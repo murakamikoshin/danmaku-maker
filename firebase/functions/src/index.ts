@@ -19,7 +19,7 @@ import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
-import { crossedMilestone, notifyAuthor } from "./notify.js";
+import { crossedMilestone, notifyAuthor, notifyMonthlyEvent } from "./notify.js";
 import { backfillNameKeys, nameKeys, queryGram, normalizeName } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
 import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
@@ -650,6 +650,10 @@ export const rankedJoinQueue = onCall(async (req) => rankedJoin(requireAny(req))
 export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
 export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => rankedBot(requireAny(req), req.data?.lang));
 export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => rankedSubmit(requireAny(req), req.data));
+/** 毎月1日 12:00(日本時間)に、お知らせをオンにしている人へ「今月のスワイプ弾幕ランキング戦が始まりました」を送る */
+export const notifyMonthlyRanking = onSchedule({ schedule: "0 12 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 300, memory: "256MiB" }, async () => {
+  await notifyMonthlyEvent(db);
+});
 export const rankedSweep = onSchedule({ schedule: "every 5 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 120, memory: "256MiB" }, async () => {
   const r = await sweepRanked();
   if (r.closed || r.roomsRemoved) logger.info("rankedSweep", r);

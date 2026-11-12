@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor } from "../src/titles.js";
 import { beamHits, blastHits } from "../src/fullsim.js";
-import { crossedMilestone, pushLang, pushText } from "../src/notify.js";
+import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KINDS } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
 import { validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
@@ -752,6 +752,22 @@ describe("validatePublish(描いた軌道の弾幕)", () => {
 });
 
 describe("notify", () => {
+  it("お知らせ(events): 月の名前つきの文面・日本時間の月・本人がオンにしたときだけ", () => {
+    expect(pushText("ja", "events", "", "11")).toEqual({ title: "ランキング戦が始まりました!", body: "11月のスワイプ弾幕ランキング戦が始まりました!今すぐ参加しよう" });
+    expect(pushText("en", "events", "", "11").body).toBe("The November Swipe Danmaku ranking has begun! Join now");
+    expect(pushText("de", "events", "", "3").body).toContain("März");
+    for (const l of ["ja", "en", "zh-Hans", "zh-Hant", "ko", "es", "fr", "de", "pt-BR", "ru"]) {
+      const b = pushText(l, "events", "", "12").body;
+      expect(b.length).toBeGreaterThan(10);
+      expect(b).not.toContain("undefined");
+    }
+    // 11/30 15:00 UTC = 12/1 0:00 JST
+    expect(tokyoMonth(Date.UTC(2026, 10, 30, 15, 0))).toBe(12);
+    expect(tokyoMonth(Date.UTC(2026, 10, 30, 14, 59))).toBe(11);
+    expect(PUSH_KINDS).toContain("events");
+    expect(OPT_IN_KINDS).toEqual(["events"]);
+  });
+
   it("遊ばれた回数の節目を越えたときだけ返す", () => {
     expect(crossedMilestone(9, 10)).toBe(10);
     expect(crossedMilestone(10, 11)).toBeUndefined();
