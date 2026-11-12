@@ -359,7 +359,7 @@ private struct EnemyControls: View {
 
     private var isCharacter: Bool { BossCharacter.of(look: bossLook) != nil }
 
-    /// 見た目を選ぶ。ぷにまるは覚醒が秘密なので、覚醒の段階を選ばせず、はじめから覚醒するようにする(ほかのボスに替えたら戻す)
+    /// 見た目を選ぶ。ぷにまるは覚醒で技が別物になるので、選んだときは第3段階で覚醒する設定にしておく(段階はほかのボスと同じく選び直せる。ほかのボスに替えたら戻す)
     private func select(_ new: Int) {
         let was = BossCharacter.of(look: bossLook) == .puni
         // 図形のボスとキャラクターのボスでは、大きさの範囲が違う。行き来したら標準の大きさに戻す
@@ -419,7 +419,7 @@ private struct EnemyControls: View {
                     .accessibilityIdentifier("editor.boss.trial")
                     .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: "boss.\(b.productKey)") }
                 }
-                if isCharacter && BossCharacter.of(look: bossLook) != .puni {
+                if isCharacter {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
