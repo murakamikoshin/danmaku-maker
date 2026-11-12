@@ -957,8 +957,13 @@ final class PatternDemoEngine {
 private struct BossShopCard: View {
     let boss: BossCharacter
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
     /// チケットを使う前の確認(チケットは1枚しかないので、押し間違いを防ぐ)
     @State private var confirmTicket = false
+    /// お試しで戦うステージ(広告を見たあとに出す)
+    @State private var trialStage: TrialPlay?
+    @State private var trialBusy = false
 
     var body: some View {
         ShopCard(title: LocalizedStringKey(L("enemy.boss.\(boss.rawValue)")), footer: "shop.boss.footer") {
@@ -972,6 +977,7 @@ private struct BossShopCard: View {
                     .frame(maxWidth: .infinity)
                     .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                     Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
+                    if !cosmetics.ownership.has(boss) { trialButton }
                     // チケットの枚数は上の行に分ける(ボタン 2 つと同じ行だと、狭い画面で文字が縦に折れる)
                     VStack(alignment: .trailing, spacing: 8) {
                         if cosmetics.ownership.has(boss) {
@@ -1002,9 +1008,40 @@ private struct BossShopCard: View {
             }
         }
         .accessibilityIdentifier("shop.boss.\(boss.productKey)")
+        .fullScreenCover(item: $trialStage) { t in
+            PlayView(stage: t.stage, title: L("shop.boss.trial.prefix") + t.stage.name, trial: true) { trialStage = nil }
+        }
         .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: "ticket.confirm.message") {
             [GameDialogAction(title: "ticket.confirm.use") { Task { await cosmetics.claimBossTicket(boss) } }, .cancel()]
         }
+    }
+
+    /// 広告を見て、このボスと1回戦ってみる(広告削除の購入者は、広告なし)
+    @ViewBuilder private var trialButton: some View {
+        let ready = purchases.isPremium || ads.isReady
+        VStack(spacing: 4) {
+            Button { Task { await startTrial() } } label: {
+                Label(purchases.isPremium ? "shop.boss.trial.free" : "shop.boss.trial.ad", systemImage: purchases.isPremium ? "gamecontroller.fill" : "play.rectangle.fill")
+                    .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                    .frame(maxWidth: .infinity).padding(.vertical, 9).padding(.horizontal, 12)
+                    .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
+            }
+            .buttonStyle(.plain)
+            .disabled(!ready || trialBusy)
+            .opacity(ready && !trialBusy ? 1 : 0.5)
+            .accessibilityIdentifier("shop.boss.trial")
+            if !ready { Text("daily.loading").font(.caption2).foregroundStyle(.secondary) }
+        }
+    }
+
+    private func startTrial() async {
+        trialBusy = true
+        defer { trialBusy = false }
+        if !purchases.isPremium {
+            guard await ads.showRewarded() else { return }
+        }
+        trialStage = TrialPlay(stage: BossTrial.stage(for: boss))
     }
 
     private func sprite(awakened: Bool) -> some View {
@@ -1017,4 +1054,10 @@ private struct BossShopCard: View {
             }
         }
     }
+}
+
+/// ボスのお試しで遊ぶステージ(fullScreenCover の item 用)
+private struct TrialPlay: Identifiable {
+    let id = UUID()
+    let stage: Stage
 }

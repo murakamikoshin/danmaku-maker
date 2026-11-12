@@ -122,6 +122,8 @@ final class PlayModel: ObservableObject {
 struct PlayView: View {
     let title: String
     let isTest: Bool
+    /// ショップのボスのお試し(テストプレイと同じく記録・全画面広告・復活なし。もう一度はリワード広告を見てから)
+    let trial: Bool
     let share: ShareContext?
     let ranking: RankingContext?
     let onStart: (() -> Void)?
@@ -132,15 +134,16 @@ struct PlayView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @State private var showStore = false
 
-    init(stage: Stage, title: String, isTest: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
+    init(stage: Stage, title: String, isTest: Bool = false, trial: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
          onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
-        self.isTest = isTest
+        self.isTest = isTest || trial
+        self.trial = trial
         self.share = share
         self.ranking = ranking
         self.onStart = onStart
         self.onExit = onExit
-        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest, customs: customs))
+        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest || trial, customs: customs))
         m.onResult = onResult
         _model = StateObject(wrappedValue: m)
     }
@@ -163,7 +166,7 @@ struct PlayView: View {
                 }
                 .overlay {
                     if let r = model.result {
-                        ResultView(result: r, isTest: isTest, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
+                        ResultView(result: r, isTest: isTest, trial: trial, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
                                    back: { Task { await adBreak(); onExit() } })
                     }
@@ -273,6 +276,12 @@ struct PlayView: View {
 
     /// 「もう一度」。広告削除の購入者・テストプレイ以外は、続けて3回押すごとに全画面広告を出してから始める
     private func retryWithAdBreak() async {
+        // ボスのお試し: もう一度遊ぶにも、リワード広告を見る(広告削除の購入者はそのまま)
+        if trial, !purchases.isPremium {
+            guard await ads.showRewarded() else { return }
+            model.restart(); onStart?()
+            return
+        }
         if !isTest, !purchases.isPremium {
             if ads.countRetryIsDue() { await ads.showInterstitialNow() }
         }
@@ -298,6 +307,8 @@ struct PlayView: View {
 struct ResultView: View {
     let result: PlayResult
     var isTest = false
+    /// ショップのボスのお試し(isTest と一緒に true)
+    var trial = false
     var share: ShareContext?
     var ranking: RankingContext?
     var moves: [Move] = []
@@ -324,6 +335,7 @@ struct ResultView: View {
     }
 
     private var message: String {
+        if trial { return L(win ? "result.trial.ok" : "result.trial.ng") }
         if isTest { return L(win ? "result.test.ok" : "result.test.ng") }
         switch result.outcome {
         case .cleared:
@@ -409,8 +421,14 @@ struct ResultView: View {
                             .accessibilityIdentifier("result.useboss")
                     }
                     HStack(spacing: 10) {
-                        GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
-                            .accessibilityIdentifier("result.retry")
+                        if trial && !purchases.isPremium {
+                            // お試しのもう一度は、広告を見てから
+                            GameActionButton(title: "result.trial.retry", systemImage: "play.rectangle.fill", fill: GameStyle.reward, enabled: ads.isReady, action: retry)
+                                .accessibilityIdentifier("result.retry")
+                        } else {
+                            GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
+                                .accessibilityIdentifier("result.retry")
+                        }
                         Button { gameTap(); back() } label: {
                             Text("result.back").font(.display(14)).foregroundStyle(GameStyle.text)
                                 .frame(maxWidth: .infinity).padding(.vertical, 13)
