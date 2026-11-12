@@ -20,6 +20,30 @@ final class InviteService: ObservableObject {
     private let defaults = UserDefaults.standard
     private static let pendingKey = "invite.pendingCode"
     private static let founderKey = "invite.founderGranted"
+    nonisolated private static let myCodeKey = "invite.myCode"
+
+    /// 自分の招待コード(一度読めたら端末に覚えておく。ステージの共有リンクに付ける)
+    nonisolated static var cachedCode: String? {
+        guard let c = UserDefaults.standard.string(forKey: myCodeKey), c.count == 8,
+              c.allSatisfy({ "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".contains($0) }) else { return nil }
+        return c
+    }
+
+    /// 招待リンク(OneLink)にステージIDが入っていたとき、そのステージを開く(アプリ側で設定する)
+    var onOpenStage: ((String) -> Void)?
+
+    /// まだ自分のコードを覚えていなければ、サーバーから読む(起動のたびに呼んでも、覚えていれば何もしない)
+    func ensureMyCode() async {
+        if Self.cachedCode == nil { await refresh() }
+    }
+
+    /// OneLink の URL の deep_link_sub2 に入っている、ステージID(5文字)
+    static func stageID(from url: URL) -> String? {
+        guard let host = url.host, host.hasSuffix("onelink.me"),
+              let v = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "deep_link_sub2" })?.value else { return nil }
+        let id = v.uppercased()
+        return id.count == 5 ? id : nil
+    }
 
     /// OneLink の招待リンク。コードは、リンクの deep_link_sub1 に入れる(AppsFlyer のテンプレート F1m3)
     static func shareURL(code: String) -> URL {
@@ -86,6 +110,7 @@ final class InviteService: ObservableObject {
             CosmeticsStore.shared.setOwnedSkins(d["ships"] as? [String] ?? [])
             if let uid = Auth.auth().currentUser?.uid { await CosmeticsStore.shared.refreshBossTickets(uid: uid) }   // ボスのチケットが増えているかもしれない
             info = Info(code: code, count: (d["count"] as? NSNumber)?.intValue ?? 0, rewarded: (d["rewarded"] as? NSNumber)?.intValue ?? 0, joinedBy: d["joinedBy"] as? Bool ?? false)
+            if Self.isValid(code) { defaults.set(code, forKey: Self.myCodeKey) }
             loadFailed = false
         } catch { loadFailed = true }
     }

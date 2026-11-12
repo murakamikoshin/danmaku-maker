@@ -43,6 +43,10 @@ struct DanmakuApp: App {
                     Task { await swipeConfig.refresh() }
                     // 自分のステージへの反応の通知。開いたら、そのステージを開く
                     NotificationService.shared.onOpenStage = { deepLink.stageID = $0.uppercased() }
+                    // ステージの共有ページ(招待リンク経由)から入れた人: そのステージを開く
+                    InviteService.shared.onOpenStage = { deepLink.stageID = $0.uppercased() }
+                    // ステージの共有リンクに付ける、自分の招待コードを用意しておく(サインインを待ってから)
+                    Task { try? await Task.sleep(nanoseconds: 3_000_000_000); await InviteService.shared.ensureMyCode() }
                     NotificationService.shared.start()
                     purchases.start()
                     await purchases.refresh()
@@ -87,7 +91,11 @@ final class DeepLink: ObservableObject {
 
     func handle(_ url: URL?) {
         // 招待リンク(OneLink)をアプリで直接開いたとき。コードは deep_link_sub1 に入っている
-        if let url, let code = InviteService.code(from: url) { InviteService.shared.receive(code: code); return }
+        if let url, let code = InviteService.code(from: url) {
+            InviteService.shared.receive(code: code)
+            if let id = InviteService.stageID(from: url) { stageID = id }
+            return
+        }
         guard let url, let id = Self.stageID(from: url) else { return }
         stageID = id
     }
