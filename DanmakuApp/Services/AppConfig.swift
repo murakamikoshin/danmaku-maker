@@ -8,7 +8,14 @@ enum AppConfig {
     static let appStoreURL = URL(string: "https://apps.apple.com/app/id6824245206")!
 
     static var webBase: URL { URL(string: "https://\(webHost)")! }
-    static func shareURL(_ id: String) -> URL { webBase.appendingPathComponent("s/\(id)") }
+    /// ステージの共有リンク。自分の招待コードが分かっていれば ?r=<コード> を付ける
+    /// (共有ページの「App Store」ボタンが招待リンク経由になり、そこから入れた人が招待として数えられる)
+    static func shareURL(_ id: String) -> URL {
+        let url = webBase.appendingPathComponent("s/\(id)")
+        guard let code = InviteService.cachedCode, var c = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
+        c.queryItems = [URLQueryItem(name: "r", value: code)]
+        return c.url ?? url
+    }
 
     /// 端末の言語に合わせた規約ページ（ja / en）
     static var webLang: String { Locale.preferredLanguages.first?.hasPrefix("ja") == true ? "ja" : "en" }

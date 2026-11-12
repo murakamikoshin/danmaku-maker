@@ -15,9 +15,14 @@ final class AttributionService {
     /// OneLink(招待リンク)を開いた・インストール後に最初に開いたとき、リンクの中身を受け取る(UDL)
     private final class LinkDelegate: NSObject, AppsFlyerDeepLinkDelegate {
         func didResolveDeepLink(_ result: DeepLinkResult) {
-            guard result.status == .found, let link = result.deepLink,
-                  let sub = link.clickEvent["deep_link_sub1"] as? String else { return }
-            Task { @MainActor in InviteService.shared.receive(code: sub) }
+            guard result.status == .found, let link = result.deepLink else { return }
+            let sub = link.clickEvent["deep_link_sub1"] as? String
+            // ステージの共有ページから来たとき: deep_link_sub2 にステージID。入れたあと、そのステージを開く
+            let stage = (link.clickEvent["deep_link_sub2"] as? String)?.uppercased()
+            Task { @MainActor in
+                if let sub { InviteService.shared.receive(code: sub) }
+                if let stage, stage.count == 5 { InviteService.shared.onOpenStage?(stage) }
+            }
         }
     }
     private let linkDelegate = LinkDelegate()

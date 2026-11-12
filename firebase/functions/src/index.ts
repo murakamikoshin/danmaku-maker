@@ -17,7 +17,7 @@ import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { prepareWeek, rankedBot, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
-import { pickLang, renderSharePage } from "./share.js";
+import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
 import { crossedMilestone, notifyAuthor } from "./notify.js";
 import { backfillNameKeys, nameKeys, queryGram, normalizeName } from "./search.js";
@@ -445,7 +445,11 @@ export const sharePage = onRequest(async (req, res) => {
   // 「アプリで遊ぶ」は、アプリ専用の URL(danmakumaker://s/ID。1.2.1 から)で開く。
   // Universal Links は、同じサイトの中のリンク・転送・LINE や X のアプリ内ブラウザでは働かないため
   const openUrl = `danmakumaker://s/${id}`;
-  const page = renderSharePage({ id, stage, lang, origin, appStoreUrl: APP_STORE_URL, openUrl, appId: APP_STORE_ID });
+  // ?r=<招待コード>(1.3.0 から、共有した人のコードが付く): 「App Store」ボタンを招待リンク(OneLink)経由にする。
+  // そこから入れた人は招待として数えられ、入れたあとにこのステージが開く
+  const ref = typeof req.query.r === "string" ? req.query.r.toUpperCase() : "";
+  const storeUrl = isInviteCode(ref) ? inviteStageUrl(ref, id) : APP_STORE_URL;
+  const page = renderSharePage({ id, stage, lang, origin, appStoreUrl: storeUrl, openUrl, appId: APP_STORE_ID });
   res.status(page.status).set("Content-Type", "text/html; charset=utf-8").set("Vary", "Accept-Language")
     .set("Cache-Control", page.status === 200 ? "public, max-age=300, s-maxage=600" : "public, max-age=60").send(page.html);
 });

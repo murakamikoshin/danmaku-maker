@@ -128,7 +128,11 @@ const aasa = JSON.stringify({
 write('.well-known/apple-app-site-association', aasa);
 write('apple-app-site-association', aasa);
 // AdMob のアプリ確認(広告配信の制限解除)用
-const appAds = 'google.com, pub-3863314847163872, DIRECT, f08c47fec0942fa0\n';
+// 広告の販売元の一覧。AdMob と、メディエーションで入札する Unity Ads(Organization core ID)。AppLovin は承認後に足す
+const appAds = [
+  'google.com, pub-3863314847163872, DIRECT, f08c47fec0942fa0',
+  'unity.com, 15669668771527, DIRECT, 96cabb5fbdde37a7',
+].join('\n') + '\n';
 // ストアの開発者サイト URL が /ja/ /en/ 付きなので、そこにも同じものを置く
 for (const rel of ['app-ads.txt', 'ja/app-ads.txt', 'en/app-ads.txt']) write(rel, appAds);
 console.log('pages generated in', out);

@@ -7,6 +7,16 @@ export interface SharedStage {
   bossHp: number | null; plays: number; clears: number; likes: number;
 }
 
+/** 招待コード(サーバーが作るのと同じ文字・8文字。紛らわしい 0/O/1/I は使わない) */
+export function isInviteCode(s: string): boolean {
+  return /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/.test(s);
+}
+
+/** 招待リンク(AppsFlyer の OneLink、テンプレート F1m3)。sub1 = 招待コード、sub2 = 開くステージ */
+export function inviteStageUrl(code: string, stageId: string): string {
+  return `https://danmaku-maker.onelink.me/F1m3?deep_link_value=stage&deep_link_sub1=${encodeURIComponent(code)}&deep_link_sub2=${encodeURIComponent(stageId)}`;
+}
+
 export function pickLang(acceptLanguage: string | undefined, override?: string): Lang {
   if (override === "ja" || override === "en") return override;
   const first = (acceptLanguage ?? "").split(",")[0]?.trim().toLowerCase() ?? "";

@@ -10,7 +10,7 @@ import { pathPosition, validatePath } from "../src/custompath.js";
 import { nameKeys, normalizeName, queryGram } from "../src/search.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
-import { pickLang, renderSharePage } from "../src/share.js";
+import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "../src/share.js";
 
 const em = (o: object = {}) => ({ t: "ring", x: 0.5, y: 0.2, s: 0, e: 20, i: 1, c: 16, v: 2, r: 6, k: 0, ph: 0, ...o });
 const good = (o: object = {}) => ({
@@ -150,6 +150,14 @@ describe("共有ページ", () => {
     expect(badge("boss")).toBe("boss");
     expect(badge("damage")).toBe("damage");
     expect(badge("sequence")).toBe("sequence");
+  });
+  it("招待コードつきの共有リンク: App Store ボタンを招待リンク経由にする", () => {
+    expect(isInviteCode("ABCD2345")).toBe(true);
+    for (const bad of ["ABCD234", "ABCD23450", "ABCD2340", "abcd2345", "ABCD-345", ""]) expect(isInviteCode(bad)).toBe(false);
+    const u = inviteStageUrl("ABCD2345", "K7X2P");
+    expect(u).toBe("https://danmaku-maker.onelink.me/F1m3?deep_link_value=stage&deep_link_sub1=ABCD2345&deep_link_sub2=K7X2P");
+    const { html } = renderSharePage({ id: "K7X2P", stage, lang: "ja", origin: "https://ex.test", appStoreUrl: u, openUrl: "o", appId: "1" });
+    expect(html).toContain('class="btn sub" href="https://danmaku-maker.onelink.me/F1m3?deep_link_value=stage&amp;deep_link_sub1=ABCD2345&amp;deep_link_sub2=K7X2P"');
   });
   it("存在しないステージは 404", () => {
     const { status, html } = renderSharePage({ id: "ZZZZZ", stage: null, lang: "ja", origin: "https://ex.test", appStoreUrl: "u", openUrl: "o", appId: "1" });
