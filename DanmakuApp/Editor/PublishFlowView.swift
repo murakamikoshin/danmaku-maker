@@ -181,6 +181,7 @@ struct PublishFlowView: View {
             if let url = ShareText.xIntentURL(text) {
                 Link(destination: url) { Chip(title: L("detail.share.x"), selected: false) }
             }
+            InviteShareHint()
             Button { gameTap(); dismiss() } label: { Text("editor.close").font(.system(size: 14, weight: .bold)).foregroundStyle(.secondary) }
         }
     }

@@ -1,5 +1,6 @@
 import DanmakuCore
 import Foundation
+import SwiftUI
 
 struct ShareContext {
     var id: String
@@ -39,5 +40,21 @@ enum ShareText {
         var c = URLComponents(string: "https://x.com/intent/post")
         c?.queryItems = [URLQueryItem(name: "text", value: text)]
         return c?.url
+    }
+}
+
+/// 共有ボタンの下に出す案内: ステージの共有リンクから新しく入れた人も、招待として数えられる
+/// (共有リンクに自分の招待コードが付くときだけ出す)
+struct InviteShareHint: View {
+    var body: some View {
+        if InviteService.cachedCode != nil {
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Image(systemName: "gift.fill").foregroundStyle(GameStyle.gold)
+                Text("share.invite.hint").foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .font(.system(size: 11, weight: .bold))
+            .multilineTextAlignment(.leading)
+            .accessibilityIdentifier("share.invite.hint")
+        }
     }
 }
