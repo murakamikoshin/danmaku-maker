@@ -58,9 +58,7 @@ struct EditorView: View {
                         NameFields(draft: $model.draft)
                     }
                     ShotPanel(model: model)
-                    if model.draft.mode == .sequence {
-                        WavesSection(model: model, advanced: advanced)
-                    } else {
+                    if model.draft.mode != .sequence {
                         TimingPanel(model: model)
                         // ボスの見た目・大きさ・覚醒(と雑魚)。ボスの動きの欄(時間の欄)のすぐ下に置く。
                         // ボス戦では「かんたん」でも出す(奥にあって見つけにくかったため)。耐久の雑魚は「くわしく」だけ
@@ -87,7 +85,10 @@ struct EditorView: View {
                         MarkerPanel(model: model)
                         CustomLookPanel(model: model)
                     }
-                    if model.draft.mode != .sequence {
+                    if model.draft.mode == .sequence {
+                        // 連戦の場面(場面ごとの時間・敵・発射台)。ほかのクリア条件と同じく、発射台はライフ・BGM・見た目などの下に置く
+                        WavesSection(model: model, advanced: advanced)
+                    } else {
                         ForEach(Array(model.draft.emitters.indices), id: \.self) { i in
                             // プレビューは、カードの設定を動かしている間も画面の上に残す(下の項目を設定しながら見える)
                             Section {
