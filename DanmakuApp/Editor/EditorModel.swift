@@ -116,7 +116,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var wave: Wave {
         var w = Wave(kind: kind, durationSec: duration, bossHp: kind == .boss ? bossHp : nil, bossMove: kind == .boss ? bossMove : nil,
              emitters: kind == .boss ? Emitter.withoutHiddenStart(emitters) : emitters, warning: kind == .boss && warning ? true : nil, defeat: kind == .boss ? defeat : nil,
-             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? Draft.effectiveAwaken(awaken, look: bossLook) : nil,
+             bossSize: bossSize, mooks: mooks, bossLook: bossLook, mookLook: mookLook, awaken: kind == .boss ? awaken : nil,
              bossX: kind == .boss ? bossX : nil, bossY: kind == .boss ? bossY : nil)
         w.mooksBreakable = mooksBreakable == true ? true : nil
         w.mookHits = mooksBreakable == true ? mookHits : nil
@@ -143,11 +143,6 @@ struct DraftWave: Codable, Equatable, Identifiable {
 }
 
 struct Draft: Codable, Equatable {
-    /// ぷにまるは、いつも第3段階で覚醒する(覚醒は秘密なので選ばせない)。ほかの道すじで覚醒の設定が抜けても、覚醒するようにする
-    static func effectiveAwaken(_ awaken: Int?, look: Int?) -> Int? {
-        BossCharacter.of(look: look ?? 0) == .puni ? (awaken ?? 3) : awaken
-    }
-
     var name = ""
     var authorName = ""
     var mode: Mode = .survive
@@ -258,7 +253,7 @@ struct Draft: Codable, Equatable {
               bossWarning: bossWarning ? true : nil,
               bossDefeat: mode == .boss ? bossDefeat : nil,
               bossSize: bossSize, mooks: isSeq ? nil : mooks, bossLook: bossLook, mookLook: mookLook,
-              shot: shot, rewardFx: rewardFx, awaken: Draft.effectiveAwaken(awaken, look: bossLook),
+              shot: shot, rewardFx: rewardFx, awaken: awaken,
               previewStart: previewStart > 0 ? previewStart : nil, noPreview: noPreview ? true : nil,
               bossX: bossX, bossY: bossY)
         st.mooksBreakable = (!isSeq && mooksBreakable) ? true : nil
