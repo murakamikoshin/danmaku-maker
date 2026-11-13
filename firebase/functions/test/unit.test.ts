@@ -11,6 +11,7 @@ import { matchesQuery, nameKeys, normalizeName, queryGram, searchKeys } from "..
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "../src/share.js";
+import { shareIdFromPath } from "../src/shortId.js";
 
 const em = (o: object = {}) => ({ t: "ring", x: 0.5, y: 0.2, s: 0, e: 20, i: 1, c: 16, v: 2, r: 6, k: 0, ph: 0, ...o });
 const good = (o: object = {}) => ({
@@ -965,5 +966,17 @@ describe("月間ランキングの金の自機", () => {
     expect(g(100, 1000)).toEqual(["phantom_gold"]);
     expect(g(101, 1000)).toEqual([]);   // 上位50% だけの人は、自機なし
     expect(g(2, 5)).toEqual(all.slice(1));
+  });
+});
+
+describe("共有 URL のステージID", () => {
+  it("後ろに文字がくっついても、先頭の5文字を読む", () => {
+    expect(shareIdFromPath("HJWYB")).toBe("HJWYB");
+    expect(shareIdFromPath("hjwyb")).toBe("HJWYB");
+    expect(shareIdFromPath("HJWYB%E3%80%8D")).toBe("HJWYB");
+    expect(shareIdFromPath("HJWYB%20%23%E5%BC%BE%E5%B9%95")).toBe("HJWYB");
+    expect(shareIdFromPath("HJWYBXYZ")).toBe("HJWYB");
+    expect(shareIdFromPath("%E3%80%8CHJWYB")).toBe("");
+    expect(shareIdFromPath("%E0%A4%A")).toBe("");
   });
 });
