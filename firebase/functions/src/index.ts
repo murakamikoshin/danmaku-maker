@@ -20,7 +20,7 @@ import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
 import { crossedMilestone, notifyAuthor, notifyMonthlyEvent } from "./notify.js";
-import { backfillNameKeys, nameKeys, queryGram, normalizeName } from "./search.js";
+import { backfillAuthorKeys, backfillNameKeys, matchesQuery, queryGram, searchKeys } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
 import { MAX_REPLAY_CHARS, REPORT_REASONS, timeLimitSec, validateComment, validateDisplayName, validatePublish, type Stage } from "./validate.js";
 
@@ -103,7 +103,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     const candidate = newShortId();
     try {
       await db.doc(`stages/${candidate}`).create({
-        authorUid: uid, ...v.stage, nameKeys: nameKeys(v.stage.name), ogImagePath: "", status: unlisted ? "unlisted" : "published",
+        authorUid: uid, ...v.stage, nameKeys: searchKeys(v.stage.name, v.stage.authorName), ogImagePath: "", status: unlisted ? "unlisted" : "published",
         plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
@@ -592,10 +592,12 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
   const n = await refreshTrending(db, Date.now());
   // これまでのステージに、名前検索の手がかりを付ける(全部に付け終わったら、以後は何もしない)
   const b = await backfillNameKeys(db);
-  logger.info("trending-refreshed", { stages: n, nameKeysAdded: b });
+  // これまでのステージに、作者名の手がかりも足す(全部に足し終わったら、以後は何もしない)
+  const a = await backfillAuthorKeys(db);
+  logger.info("trending-refreshed", { stages: n, nameKeysAdded: b, authorKeysAdded: a });
 });
 
-/** 世界のステージを、ステージ名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
+/** 世界のステージを、ステージ名か作者名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
   "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "desc", "needs", "pv", "pvv",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
@@ -630,10 +632,10 @@ export const searchStages = onCall(async (req) => {
     if (typeof d.mode !== "string" || !["survive", "boss", "damage", "sequence"].includes(d.mode)) throw new HttpsError("invalid-argument", "mode");
     q = q.where("mode", "==", d.mode);
   }
-  // 手がかりで絞った中から、検索語を全部含むものだけを、いいねの多い順に最大30件
+  // 手がかりで絞った中から、ステージ名か作者名が検索語を全部含むものだけを、いいねの多い順に最大30件
   const snap = await q.orderBy("likes", "desc").limit(80).get();
   const stages = snap.docs
-    .filter((doc) => normalizeName(String(doc.get("name") ?? "")).includes(g.norm))
+    .filter((doc) => matchesQuery(g.norm, String(doc.get("name") ?? ""), String(doc.get("authorName") ?? "")))
     .slice(0, 30)
     .map((doc) => {
       const o: Record<string, unknown> = { id: doc.id };

@@ -13766,61 +13766,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stage name or ID (5 chars)"
+            "value": "Stage name, creator, or ID (5 chars)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ステージ名 または ID（5文字）"
+            "value": "ステージ名・作者名 または ID（5文字）"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "关卡名称或ID(5位)"
+            "value": "关卡名称、作者或ID(5位)"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "關卡名稱或ID(5位)"
+            "value": "關卡名稱、作者或ID(5位)"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "스테이지 이름 또는 ID(5자)"
+            "value": "스테이지 이름, 제작자 또는 ID(5자)"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nombre del nivel o ID (5)"
+            "value": "Nombre del nivel, autor o ID (5)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nom du niveau ou ID (5)"
+            "value": "Nom du niveau, auteur ou ID (5)"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Level-Name oder ID (5)"
+            "value": "Level-Name, Ersteller oder ID (5)"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nome da fase ou ID (5)"
+            "value": "Nome da fase, autor ou ID (5)"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Название уровня или ID (5)"
+            "value": "Название уровня, автор или ID (5)"
           }
         }
       }
