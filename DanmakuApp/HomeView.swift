@@ -45,6 +45,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     CreateHero { newStage() }
                     DailyRewardBanner()
+                    HomePromoCards()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
                     switch tab {
@@ -632,5 +633,71 @@ private struct HeroBullets: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// 「あそぶ」画面のお知らせカード: スワイプ弾幕の今月のランキング戦の賞品と、友だち招待のごほうび。
+/// どちらも奥の画面にしか入口がなく気づかれにくいので、ここに出す。× で閉じると7日間は出さない
+struct HomePromoCards: View {
+    @EnvironmentObject private var swipeConfig: SwipeConfig
+    @EnvironmentObject private var auth: AuthService
+    @AppStorage("home.promo.ranking.hiddenUntil") private var rankingHiddenUntil: Double = 0
+    @AppStorage("home.promo.invite.hiddenUntil") private var inviteHiddenUntil: Double = 0
+    @State private var showPrizes = false
+    @State private var showInvite = false
+    static let hideSeconds: Double = 7 * 24 * 3600
+
+    var body: some View {
+        let now = Date().timeIntervalSince1970
+        VStack(spacing: 10) {
+            if swipeConfig.enabled && now >= rankingHiddenUntil {
+                card(id: "ranking", icon: "trophy.fill", color: GameStyle.yellow,
+                     title: "home.promo.ranking.title", body: "home.promo.ranking.body",
+                     open: { showPrizes = true }, close: { rankingHiddenUntil = now + Self.hideSeconds })
+            }
+            if now >= inviteHiddenUntil {
+                card(id: "invite", icon: "person.2.fill", color: GameStyle.green,
+                     title: "home.promo.invite.title", body: "home.promo.invite.body",
+                     open: { showInvite = true }, close: { inviteHiddenUntil = now + Self.hideSeconds })
+            }
+        }
+        .sheet(isPresented: $showPrizes) {
+            SeasonPrizesView(openRanking: { NotificationService.shared.onOpenSwipe?() })
+        }
+        .sheet(isPresented: $showInvite) { InviteView().environmentObject(auth).environmentObject(CosmeticsStore.shared) }
+    }
+
+    private func card(id: String, icon: String, color: Color, title: LocalizedStringKey, body: LocalizedStringKey,
+                      open: @escaping () -> Void, close: @escaping () -> Void) -> some View {
+        HStack(spacing: 12) {
+            Button(action: open) {
+                HStack(spacing: 12) {
+                    Image(systemName: icon).font(.system(size: 22, weight: .heavy)).foregroundStyle(color)
+                        .frame(width: 44, height: 44)
+                        .background(color.opacity(0.16), in: PixelRect(cornerRadius: 12))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            .lineLimit(2).minimumScaleFactor(0.8)
+                        Text(body).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                            .lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(color)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.promo.\(id)")
+            Button(action: close) {
+                Image(systemName: "xmark").font(.system(size: 11, weight: .heavy)).foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("home.promo.close"))
+            .accessibilityIdentifier("home.promo.\(id).close")
+        }
+        .padding(12)
+        .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+        .overlay(PixelRect(cornerRadius: 16).stroke(color.opacity(0.5)))
     }
 }
