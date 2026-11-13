@@ -561,21 +561,18 @@ struct SliderRow: View {
     let format: (Double) -> String
 
     var body: some View {
-        HStack(spacing: nudge == nil ? 8 : 6) {
+        // − / + のある行とない行で、スライダーの左右の端と値の枠の位置をそろえる(ない行は、ボタンの場所を空けておく)
+        HStack(spacing: 6) {
             Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
-                .frame(width: nudge == nil ? 84 : 72, alignment: .leading)
+                .frame(width: 72, alignment: .leading)
             GameSlider(value: $value, range: range, step: step).allowsHitTesting(!disabled)
-            if let nudge {
-                HStack(spacing: 2) {
-                    nudgeButton("minus", -1, nudge)
-                    valueBox.frame(width: 58)
-                    nudgeButton("plus", 1, nudge)
-                }
-                .allowsHitTesting(!disabled)
-            } else {
-                valueBox.frame(width: 64)
+            HStack(spacing: 2) {
+                if let nudge { nudgeButton("minus", -1, nudge) } else { Color.clear.frame(width: 24, height: 26) }
+                valueBox.frame(width: 58)
+                if let nudge { nudgeButton("plus", 1, nudge) } else { Color.clear.frame(width: 24, height: 26) }
             }
+            .allowsHitTesting(!disabled)
         }
         .opacity(disabled ? 0.35 : 1)
     }
