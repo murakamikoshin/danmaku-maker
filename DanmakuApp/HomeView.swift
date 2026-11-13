@@ -44,7 +44,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     CreateHero { newStage() }
-                    DailyRewardBanner()
+                    HomePromoCards()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
                     switch tab {
@@ -632,5 +632,92 @@ private struct HeroBullets: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// 「あそぶ」画面の上の札3枚: 毎日のごほうび・スワイプ弾幕の今月のランキング戦・友だち招待。
+/// ランキングと招待は奥の画面にしか入口がなく気づかれにくいので、ここに出しっぱなしにする。場所を取らないように横に3つ並べる
+struct HomePromoCards: View {
+    @EnvironmentObject private var swipeConfig: SwipeConfig
+    @EnvironmentObject private var auth: AuthService
+    @EnvironmentObject private var rewards: RewardStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var showPrizes = false
+    @State private var showInvite = false
+    @State private var busy = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            if let next = rewards.upcoming.first { dailyTile(next) }
+            if swipeConfig.enabled {
+                tile(id: "ranking", color: GameStyle.yellow, title: "home.promo.ranking.title", sub: Text("home.promo.ranking.body"),
+                     icon: AnyView(symbol("trophy.fill", GameStyle.yellow))) { showPrizes = true }
+            }
+            tile(id: "invite", color: GameStyle.green, title: "home.promo.invite.title", sub: Text("home.promo.invite.body"),
+                 icon: AnyView(symbol("person.2.fill", GameStyle.green))) { showInvite = true }
+        }
+        .onAppear { rewards.refreshDay() }
+        .onChange(of: scenePhase) { if $0 == .active { rewards.refreshDay() } }
+        .sheet(isPresented: $showPrizes) {
+            SeasonPrizesView(openRanking: { NotificationService.shared.onOpenSwipe?() })
+        }
+        .sheet(isPresented: $showInvite) { InviteView().environmentObject(auth).environmentObject(CosmeticsStore.shared) }
+    }
+
+    /// 毎日のごほうび: 受け取れる日は押すと受け取る(広告削除の購入者は広告なし)。受け取ったあとは「受け取り済み」で押せない
+    private func dailyTile(_ next: Reward) -> some View {
+        let ready = rewards.canClaim && (purchases.isPremium || ads.isReady) && !busy
+        let sub: Text = !rewards.canClaim ? Text("home.daily.done") : Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+        return tile(id: "daily", color: GameStyle.yellow, title: "daily.title", sub: sub,
+                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !rewards.canClaim) {
+            Task { await claim() }
+        }
+        .disabled(!ready)
+        .accessibilityIdentifier("home.daily.claim")
+    }
+
+    private func claim() async {
+        busy = true
+        defer { busy = false }
+        if purchases.isPremium {
+            rewards.claim()
+        } else if await ads.showRewarded() {
+            rewards.claim()
+        }
+        if rewards.justClaimed != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
+        }
+    }
+
+    private func symbol(_ name: String, _ color: Color) -> some View {
+        Image(systemName: name).font(.system(size: 15, weight: .heavy)).foregroundStyle(color)
+            .frame(width: 30, height: 30)
+            .background(color.opacity(0.16), in: PixelRect(cornerRadius: 9))
+    }
+
+    private func tile(id: String, color: Color, title: LocalizedStringKey, sub: Text, icon: AnyView, dim: Bool = false,
+                      open: @escaping () -> Void) -> some View {
+        Button(action: open) {
+            VStack(alignment: .leading, spacing: 6) {
+                icon
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
+                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                    sub.font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(10)
+            .background(GameStyle.panel, in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).stroke(color.opacity(dim ? 0.2 : 0.5)))
+            .opacity(dim ? 0.6 : 1)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("home.promo.\(id)")
     }
 }
