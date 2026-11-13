@@ -7,7 +7,7 @@ import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../sr
 import { firesInPhase, validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
 import { afterGrant, afterPost, checkPost, FREE_DAILY_POSTS, HARD_DAILY_POSTS, jstDay, MAX_EXTRA_TICKETS, readQuota } from "../src/quota.js";
 import { pathPosition, validatePath } from "../src/custompath.js";
-import { nameKeys, normalizeName, queryGram } from "../src/search.js";
+import { matchesQuery, nameKeys, normalizeName, queryGram, searchKeys } from "../src/search.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "../src/share.js";
@@ -799,6 +799,18 @@ describe("search(ステージ名の検索)", () => {
     expect(queryGram("あ".repeat(21))).toBeNull();
     // 手がかりは、その名前に保存される手がかりに必ず含まれる(部分一致で見つかる)
     expect(nameKeys("きれいなネオンの渦")).toContain(queryGram("ネオン")!.gram);
+  });
+  it("作者名でも探せる: 手がかりに作者名の分も入り、作者名の部分一致でも当たる", () => {
+    const keys = searchKeys("ネオンの渦", "コウシン");
+    expect(keys).toContain(queryGram("ネオン")!.gram);
+    expect(keys).toContain(queryGram("こうしん")!.gram);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(matchesQuery(queryGram("こうしん")!.norm, "ネオンの渦", "コウシン")).toBe(true);
+    expect(matchesQuery(queryGram("ネオン")!.norm, "ネオンの渦", "コウシン")).toBe(true);
+    expect(matchesQuery(queryGram("たろう")!.norm, "ネオンの渦", "コウシン")).toBe(false);
+    // 作者名の手がかりは先頭20文字まで
+    expect(searchKeys("", "あ".repeat(10) + "い".repeat(30)).includes("いい")).toBe(true);
+    expect(searchKeys("", "あ".repeat(30) + "う").includes("う")).toBe(false);
   });
 });
 
