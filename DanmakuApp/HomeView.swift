@@ -44,7 +44,6 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     CreateHero { newStage() }
-                    DailyRewardBanner()
                     HomePromoCards()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
@@ -636,68 +635,89 @@ private struct HeroBullets: View {
     }
 }
 
-/// 「あそぶ」画面のお知らせカード: スワイプ弾幕の今月のランキング戦の賞品と、友だち招待のごほうび。
-/// どちらも奥の画面にしか入口がなく気づかれにくいので、ここに出す。× で閉じると7日間は出さない
+/// 「あそぶ」画面の上の札3枚: 毎日のごほうび・スワイプ弾幕の今月のランキング戦・友だち招待。
+/// ランキングと招待は奥の画面にしか入口がなく気づかれにくいので、ここに出しっぱなしにする。場所を取らないように横に3つ並べる
 struct HomePromoCards: View {
     @EnvironmentObject private var swipeConfig: SwipeConfig
     @EnvironmentObject private var auth: AuthService
-    @AppStorage("home.promo.ranking.hiddenUntil") private var rankingHiddenUntil: Double = 0
-    @AppStorage("home.promo.invite.hiddenUntil") private var inviteHiddenUntil: Double = 0
+    @EnvironmentObject private var rewards: RewardStore
+    @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showPrizes = false
     @State private var showInvite = false
-    static let hideSeconds: Double = 7 * 24 * 3600
+    @State private var busy = false
 
     var body: some View {
-        let now = Date().timeIntervalSince1970
-        VStack(spacing: 10) {
-            if swipeConfig.enabled && now >= rankingHiddenUntil {
-                card(id: "ranking", icon: "trophy.fill", color: GameStyle.yellow,
-                     title: "home.promo.ranking.title", body: "home.promo.ranking.body",
-                     open: { showPrizes = true }, close: { rankingHiddenUntil = now + Self.hideSeconds })
+        HStack(alignment: .top, spacing: 8) {
+            if let next = rewards.upcoming.first { dailyTile(next) }
+            if swipeConfig.enabled {
+                tile(id: "ranking", color: GameStyle.yellow, title: "home.promo.ranking.title", sub: Text("home.promo.ranking.body"),
+                     icon: AnyView(symbol("trophy.fill", GameStyle.yellow))) { showPrizes = true }
             }
-            if now >= inviteHiddenUntil {
-                card(id: "invite", icon: "person.2.fill", color: GameStyle.green,
-                     title: "home.promo.invite.title", body: "home.promo.invite.body",
-                     open: { showInvite = true }, close: { inviteHiddenUntil = now + Self.hideSeconds })
-            }
+            tile(id: "invite", color: GameStyle.green, title: "home.promo.invite.title", sub: Text("home.promo.invite.body"),
+                 icon: AnyView(symbol("person.2.fill", GameStyle.green))) { showInvite = true }
         }
+        .onAppear { rewards.refreshDay() }
+        .onChange(of: scenePhase) { if $0 == .active { rewards.refreshDay() } }
         .sheet(isPresented: $showPrizes) {
             SeasonPrizesView(openRanking: { NotificationService.shared.onOpenSwipe?() })
         }
         .sheet(isPresented: $showInvite) { InviteView().environmentObject(auth).environmentObject(CosmeticsStore.shared) }
     }
 
-    private func card(id: String, icon: String, color: Color, title: LocalizedStringKey, body: LocalizedStringKey,
-                      open: @escaping () -> Void, close: @escaping () -> Void) -> some View {
-        HStack(spacing: 12) {
-            Button(action: open) {
-                HStack(spacing: 12) {
-                    Image(systemName: icon).font(.system(size: 22, weight: .heavy)).foregroundStyle(color)
-                        .frame(width: 44, height: 44)
-                        .background(color.opacity(0.16), in: PixelRect(cornerRadius: 12))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(title).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
-                            .lineLimit(2).minimumScaleFactor(0.8)
-                        Text(body).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
-                            .lineLimit(3).fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(color)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("home.promo.\(id)")
-            Button(action: close) {
-                Image(systemName: "xmark").font(.system(size: 11, weight: .heavy)).foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28).contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("home.promo.close"))
-            .accessibilityIdentifier("home.promo.\(id).close")
+    /// 毎日のごほうび: 受け取れる日は押すと受け取る(広告削除の購入者は広告なし)。受け取ったあとは「受け取り済み」で押せない
+    private func dailyTile(_ next: Reward) -> some View {
+        let ready = rewards.canClaim && (purchases.isPremium || ads.isReady) && !busy
+        let sub: Text = !rewards.canClaim ? Text("home.daily.done") : Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+        return tile(id: "daily", color: GameStyle.yellow, title: "daily.title", sub: sub,
+                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !rewards.canClaim) {
+            Task { await claim() }
         }
-        .padding(12)
-        .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
-        .overlay(PixelRect(cornerRadius: 16).stroke(color.opacity(0.5)))
+        .disabled(!ready)
+        .accessibilityIdentifier("home.daily.claim")
+    }
+
+    private func claim() async {
+        busy = true
+        defer { busy = false }
+        if purchases.isPremium {
+            rewards.claim()
+        } else if await ads.showRewarded() {
+            rewards.claim()
+        }
+        if rewards.justClaimed != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
+        }
+    }
+
+    private func symbol(_ name: String, _ color: Color) -> some View {
+        Image(systemName: name).font(.system(size: 15, weight: .heavy)).foregroundStyle(color)
+            .frame(width: 30, height: 30)
+            .background(color.opacity(0.16), in: PixelRect(cornerRadius: 9))
+    }
+
+    private func tile(id: String, color: Color, title: LocalizedStringKey, sub: Text, icon: AnyView, dim: Bool = false,
+                      open: @escaping () -> Void) -> some View {
+        Button(action: open) {
+            VStack(alignment: .leading, spacing: 6) {
+                icon
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
+                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                    sub.font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(10)
+            .background(GameStyle.panel, in: PixelRect(cornerRadius: 12))
+            .overlay(PixelRect(cornerRadius: 12).stroke(color.opacity(dim ? 0.2 : 0.5)))
+            .opacity(dim ? 0.6 : 1)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("home.promo.\(id)")
     }
 }

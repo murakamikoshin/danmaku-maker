@@ -67943,7 +67943,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This Month's Ranking"
+            "value": "Monthly Ranking"
           }
         },
         "zh-Hans": {
@@ -67979,7 +67979,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rangliste des Monats"
+            "value": "Monatsrangliste"
           }
         },
         "pt-BR": {
@@ -68002,61 +68002,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "スワイプ弾幕で上位に入ると、金の自機・王冠・称号などがもらえる"
+            "value": "上位に金の自機・王冠"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Place high in Swipe Danmaku to win gold ships, crowns, titles and more"
+            "value": "Gold ships & crowns"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "在滑动弹幕中名列前茅，可获得金色自机、王冠、称号等"
+            "value": "前几名得金色自机・王冠"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "在滑動彈幕中名列前茅，可獲得金色自機、王冠、稱號等"
+            "value": "前幾名得金色自機・王冠"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "스와이프 탄막에서 상위에 들면 금색 기체, 왕관, 칭호 등을 받아요"
+            "value": "상위권에 금색 기체・왕관"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Queda entre los mejores en Swipe Danmaku y gana naves doradas, coronas, títulos y más"
+            "value": "Naves doradas y coronas"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Classez-vous en haut de Swipe Danmaku pour gagner vaisseaux dorés, couronnes, titres et plus"
+            "value": "Vaisseaux dorés et couronnes"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Platziere dich bei Swipe Danmaku weit oben und gewinne goldene Schiffe, Kronen, Titel und mehr"
+            "value": "Goldschiffe & Kronen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fique no topo do Swipe Danmaku e ganhe naves douradas, coroas, títulos e mais"
+            "value": "Naves douradas e coroas"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Займите высокое место в Swipe Danmaku и получите золотые корабли, короны, титулы и не только"
+            "value": "Золотые корабли и короны"
           }
         }
       }
@@ -68067,61 +68067,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "友達を招待してごほうび"
+            "value": "友達を招待"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Invite Friends for Rewards"
+            "value": "Invite Friends"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "邀请好友领奖励"
+            "value": "邀请好友"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "邀請好友領獎勵"
+            "value": "邀請好友"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "친구 초대 보상"
+            "value": "친구 초대"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Invita amigos y gana premios"
+            "value": "Invita amigos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Invitez des amis, gagnez des récompenses"
+            "value": "Invite des amis"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Freunde einladen & Belohnungen erhalten"
+            "value": "Freunde einladen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Convide amigos e ganhe prêmios"
+            "value": "Convide amigos"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Пригласите друзей — получите награды"
+            "value": "Пригласить друзей"
           }
         }
       }
@@ -68132,126 +68132,126 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "友達が3回遊ぶと、2人に自機や称号が届く。31人目には招待限定のボス"
+            "value": "2人にごほうび・限定ボス"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When a friend plays 3 times, you both get ships and titles. Your 31st invite unlocks an invite-only boss"
+            "value": "Rewards & a secret boss"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友玩3次后，两人都能获得自机和称号。第31人可解锁邀请限定的Boss"
+            "value": "双方得奖励・限定Boss"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "好友玩3次後，兩人都能獲得自機和稱號。第31人可解鎖邀請限定的Boss"
+            "value": "雙方得獎勵・限定Boss"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "친구가 3번 플레이하면 두 사람 모두 기체와 칭호를 받아요. 31명째에는 초대 한정 보스"
+            "value": "두 사람 모두 보상・한정 보스"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cuando un amigo juega 3 veces, ambos reciben naves y títulos. Con la invitación 31 desbloqueas un jefe exclusivo"
+            "value": "Premios y jefe exclusivo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quand un ami joue 3 fois, vous recevez tous deux vaisseaux et titres. La 31e invitation débloque un boss exclusif"
+            "value": "Récompenses et boss exclusif"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spielt ein Freund 3-mal, bekommt ihr beide Schiffe und Titel. Die 31. Einladung schaltet einen exklusiven Boss frei"
+            "value": "Belohnungen & Geheimboss"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quando um amigo joga 3 vezes, vocês dois ganham naves e títulos. O 31º convite libera um chefe exclusivo"
+            "value": "Prêmios e chefe exclusivo"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Когда друг сыграет 3 раза, вы оба получите корабли и титулы. 31-е приглашение открывает эксклюзивного босса"
+            "value": "Награды и тайный босс"
           }
         }
       }
     },
-    "home.promo.close": {
+    "home.daily.done": {
       "extractionState": "manual",
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "閉じる"
+            "value": "受け取り済み"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Close"
+            "value": "Claimed"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "关闭"
+            "value": "已领取"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "關閉"
+            "value": "已領取"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "닫기"
+            "value": "받기 완료"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cerrar"
+            "value": "Recogido"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fermer"
+            "value": "Récupéré"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schließen"
+            "value": "Abgeholt"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fechar"
+            "value": "Resgatado"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Закрыть"
+            "value": "Получено"
           }
         }
       }
