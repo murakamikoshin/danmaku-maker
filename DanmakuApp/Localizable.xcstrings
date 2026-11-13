@@ -67937,61 +67937,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "今月のランキング戦"
+            "value": "ランキング戦"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Monthly Ranking"
+            "value": "Rankings"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "本月排行榜赛"
+            "value": "排行榜赛"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "本月排行榜賽"
+            "value": "排行榜賽"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이번 달 랭킹전"
+            "value": "랭킹전"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking del mes"
+            "value": "Ranking"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Classement du mois"
+            "value": "Classement"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Monatsrangliste"
+            "value": "Rangliste"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking do mês"
+            "value": "Ranking"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рейтинг месяца"
+            "value": "Рейтинг"
           }
         }
       }
@@ -68002,61 +68002,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "上位に金の自機・王冠"
+            "value": "毎月、上位に報酬"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gold ships & crowns"
+            "value": "Monthly top prizes"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "前几名得金色自机・王冠"
+            "value": "每月前几名有奖励"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "前幾名得金色自機・王冠"
+            "value": "每月前幾名有獎勵"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "상위권에 금색 기체・왕관"
+            "value": "매달 상위권 보상"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Naves doradas y coronas"
+            "value": "Premios cada mes"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vaisseaux dorés et couronnes"
+            "value": "Prix chaque mois"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Goldschiffe & Kronen"
+            "value": "Monatliche Preise"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Naves douradas e coroas"
+            "value": "Prêmios todo mês"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Золотые корабли и короны"
+            "value": "Призы каждый месяц"
           }
         }
       }

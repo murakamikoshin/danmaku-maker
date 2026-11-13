@@ -704,8 +704,9 @@ struct HomePromoCards: View {
             VStack(alignment: .leading, spacing: 6) {
                 icon
                 VStack(alignment: .leading, spacing: 1) {
+                    // 題は1行に収める(2行にすると「戦」のように最後の1文字だけ折り返すため、はみ出す分は縮める)
                     Text(title).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
-                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(1).minimumScaleFactor(0.6)
                     sub.font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
                         .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
                 }
