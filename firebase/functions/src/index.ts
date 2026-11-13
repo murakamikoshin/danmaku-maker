@@ -16,7 +16,7 @@ import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina
 import { decodeReplay, isShotType, simulate } from "./fullsim.js";
 import { prepareWeek, rankedBot, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
-import { isValidShortId, newShortId, normalizeShortId } from "./shortId.js";
+import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
 import { crossedMilestone, notifyAuthor, notifyMonthlyEvent } from "./notify.js";
@@ -433,9 +433,12 @@ export const reportComment = onCall(async (req) => {
 });
 
 /** /s/{id} … OGP つきの共有ページ */
+/** アプリ専用の URL(danmakumaker://)を受け取れる版(1.2.1)が配信されたら true にしてデプロイする */
+const APP_SCHEME_RELEASED = false;
+
 export const sharePage = onRequest(async (req, res) => {
   const lang = pickLang(req.get("accept-language"), typeof req.query.lang === "string" ? req.query.lang : undefined);
-  const id = normalizeShortId(req.path.split("/").filter(Boolean).pop() ?? "");
+  const id = shareIdFromPath(req.path.split("/").filter(Boolean).pop() ?? "");
   const origin = `${req.get("x-forwarded-proto")?.split(",")[0] ?? "https"}://${req.get("x-forwarded-host") ?? req.get("host")}`;
   let stage = null;
   if (isValidShortId(id)) {
@@ -443,8 +446,21 @@ export const sharePage = onRequest(async (req, res) => {
     if (snap.exists && isOpen(snap.get("status"))) stage = snap.data() as never;
   }
   // 「アプリで遊ぶ」は、アプリ専用の URL(danmakumaker://s/ID。1.2.1 から)で開く。
-  // Universal Links は、同じサイトの中のリンク・転送・LINE や X のアプリ内ブラウザでは働かないため
-  const openUrl = `danmakumaker://s/${id}`;
+  // Universal Links は、同じサイトの中のリンク・転送・LINE や X のアプリ内ブラウザでは働かないため。
+  // 1.2.1 が配信されるまでは(1.2.0 はこの URL を受け取れない)、これまでどおり別ドメインを経由する開き方にする
+  let openUrl = `danmakumaker://s/${id}`;
+  if (!APP_SCHEME_RELEASED) {
+    const host = req.get("x-forwarded-host") ?? req.get("host") ?? "";
+    if (host.endsWith(".firebaseapp.com") && isValidShortId(id)) {
+      res.set("Cache-Control", "no-store").redirect(302, `https://${host.replace(/\.firebaseapp\.com$/, ".web.app")}/s/${id}?open=1`);
+      return;
+    }
+    if (req.query.open === "1" && stage) {
+      res.set("Cache-Control", "no-store").redirect(302, APP_STORE_URL);
+      return;
+    }
+    openUrl = host.endsWith(".web.app") ? `https://${host.replace(/\.web\.app$/, ".firebaseapp.com")}/s/${id}` : `${origin}/s/${id}`;
+  }
   // ?r=<招待コード>(1.3.0 から、共有した人のコードが付く): 「App Store」ボタンを招待リンク(OneLink)経由にする。
   // そこから入れた人は招待として数えられ、入れたあとにこのステージが開く
   const ref = typeof req.query.r === "string" ? req.query.r.toUpperCase() : "";
