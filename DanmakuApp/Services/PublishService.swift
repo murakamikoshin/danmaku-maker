@@ -26,10 +26,13 @@ enum PublishService {
         } catch let e as PublishError {
             throw e
         } catch {
-            let code = (error as NSError).localizedDescription
+            let ns = error as NSError
+            let code = ns.localizedDescription
             let key = "error.publish.\(code)"
             let text = L(key)
-            throw PublishError(message: text == key ? L("error.publish.generic") : text)
+            // 同じ中身のステージが既にあるとき、サーバーはその ID を返す(公開はできていたのに通信が切れて送り直した場合など)
+            let existing = code == "duplicate" ? ((ns.userInfo[FunctionsErrorDetailsKey] as? [String: Any])?["id"] as? String) : nil
+            throw PublishError(message: text == key ? L("error.publish.generic") : text, existingID: existing)
         }
     }
 }
@@ -44,6 +47,8 @@ extension PublishService {
 
 struct PublishError: LocalizedError {
     let message: String
+    /// 同じ中身で既にあるステージの ID(あれば、端末の「投稿済み」の印をその ID で付ける)
+    var existingID: String? = nil
     var errorDescription: String? { message }
 }
 
