@@ -25,8 +25,21 @@ struct BattleHomeView: View {
             }
         }
         .task { await model.loadStatus() }
-        // 確認を出している間に当たって終わったら、確認は閉じる
-        .onChange(of: model.phase) { p in if p != .playing { confirmForfeit = false } }
+        // 確認を出している間に当たって終わったら、確認は閉じる。
+        // 3・2・1 の間に離れたまま対戦が始まったときも、3秒の降参の判定を始める
+        .onChange(of: model.phase) { p in
+            if p != .playing { confirmForfeit = false }
+            if p == .playing, !model.appActive {
+                let seq = model.inactiveSeq
+                Task {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    if seq == model.inactiveSeq, !model.appActive, model.phase == .playing { model.forfeit() }
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .battleTabVisible)) { note in
+            model.setVisible((note.object as? Bool) ?? true)
+        }
         .gameDialog("battle.forfeit", isPresented: $confirmForfeit, message: "battle.forfeit.confirm") {
             [GameDialogAction(title: "battle.forfeit", role: .destructive) { model.forfeit() }, .cancel()]
         }

@@ -31,6 +31,9 @@ final class BattleModel: ObservableObject {
     private var waitTask: Task<Void, Never>?
     /// アプリが前面にあるか(画面の scenePhase を写す。少し離れただけかを、あとで確かめるため)
     var appActive = true
+    /// 下のタブでバトルの画面が見えているか。見えていない間は、対戦の画面の描画を止める
+    func setVisible(_ visible: Bool) { scene?.isPaused = !visible }
+
     /// 前面から離れた回数(3秒の降参の判定で、どの「離れた」かを見分けるため)
     var inactiveSeq = 0
     /// 対戦中の表示: 自分の秒、相手が生きているか・落ちた秒
@@ -258,4 +261,9 @@ final class BattleModel: ObservableObject {
         scene = nil
         botSim = nil
     }
+}
+
+extension Notification.Name {
+    /// 下のタブが変わった(object は、バトルのタブが見えているか)
+    static let battleTabVisible = Notification.Name("battleTabVisible")
 }

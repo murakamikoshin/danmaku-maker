@@ -275,8 +275,6 @@ struct PublishFlowView: View {
             }
         } catch {
             self.error = error.localizedDescription
-            // 同じ中身のステージが既に公開されているなら、その ID で「投稿済み」にする(送り直しで二重に出さないため)
-            if let id = (error as? PublishError)?.existingID { onPublished(id) }
             phase = .start
         }
     }

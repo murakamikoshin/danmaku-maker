@@ -1255,7 +1255,7 @@ describe("公開の水増し・出し直し対策", () => {
 
 describe("URL の検査で、笑いの表現を URL と間違えない(3回目の検証)", () => {
   it("www… や ｗｗｗ．．． は URL ではない", () => {
-    for (const t of ["むずいwww…", "神ステージwww…!", "草ｗｗｗ．．．", "www", "笑www.", "ｗｗｗ‥"]) expect(hasLink(t), t).toBe(false);
+    for (const t of ["むずいwww…", "神ステージwww…!", "草ｗｗｗ．．．", "www", "笑www.", "ｗｗｗ‥", "ｗｗｗ．２回目でクリア"]) expect(hasLink(t), t).toBe(false);
   });
   it("本物の URL は、これまでどおり見つける", () => {
     for (const t of ["www.example.com", "ｗｗｗ．ｅｘａｍｐｌｅ．ｃｏｍ", "https://x", "discord․gg", "example．com"]) expect(hasLink(t), t).toBe(true);

@@ -54,6 +54,12 @@ final class NotificationService: NSObject, ObservableObject {
     @Published private(set) var remindersOn: Bool = UserDefaults.standard.object(forKey: "notify.reminders") as? Bool ?? UserDefaults.standard.bool(forKey: "notify.enabled")
     private static let reminderAskedKey = "notify.reminders.asked"
 
+    /// 毎日のお知らせを、まだ選んでいない人は、初めて起動したときの反応の通知の値で決めて保存する
+    /// (あとで反応の通知を切り替えても、毎日のお知らせが黙って変わらないように)
+    private func fixReminderDefault() {
+        if defaults.object(forKey: "notify.reminders") == nil { defaults.set(remindersOn, forKey: "notify.reminders") }
+    }
+
     private var uid: String?
     private var token: String?
     private let defaults = UserDefaults.standard
@@ -74,6 +80,7 @@ final class NotificationService: NSObject, ObservableObject {
         for kind in PushKind.allCases { k[kind] = defaults.object(forKey: Self.kindKey(kind)) as? Bool ?? kind.defaultOn }
         kinds = k
         super.init()
+        fixReminderDefault()
     }
 
     /// 起動時に呼ぶ。許可済みなら、通知を受け取る準備をする

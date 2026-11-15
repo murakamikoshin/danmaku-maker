@@ -68,7 +68,11 @@ struct MainTabView: View {
                 }
             }
         }
-        .onChange(of: tab) { opened.insert($0); if $0 == .battle { battleSeen = true } }
+        .onChange(of: tab) {
+            opened.insert($0); if $0 == .battle { battleSeen = true }
+            // バトルの画面は消さずに残すので、ほかのタブを見ている間は、対戦の画面の描画を止める(相手を待つ間など)
+            NotificationCenter.default.post(name: .battleTabVisible, object: $0 == .battle)
+        }
         .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty }, set: { if !$0 { notice.pending = [] } })) {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
         }
