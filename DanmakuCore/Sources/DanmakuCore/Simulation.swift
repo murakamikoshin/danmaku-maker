@@ -757,6 +757,8 @@ public struct Simulation {
     }
     /// いまの場面の、倒せる雑魚がいるか(いれば、耐久のステージでも自機が撃つ)
     private var breakableMooks: Bool { spec.mooksBreakable && spec.mooks != nil }
+    /// いまの場面で、自機が弾を撃つか(ボスの場面と、雑魚を倒せる場面)。画面はこのときだけ自機の弾を描く
+    public var playerShoots: Bool { firesShots && (isBoss || breakableMooks) }
     /// 「雑魚を全部倒したら次へ」で、場面を抜けた回数(画面の演出用)
     public private(set) var mookClears = 0
     /// いまの場面が「雑魚を全部倒したら次へ」か

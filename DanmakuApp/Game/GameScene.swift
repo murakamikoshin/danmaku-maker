@@ -635,22 +635,9 @@ final class GameScene: SKScene {
             centerLabel.isHidden = false
             if warningLeft <= 0 { warningOverlay.alpha = 0 }
         }
-        if sim.isBoss {
-            let bp = sim.bossPosition
-            bossNode.position = pos(bp.x, bp.y)
-            updateAwaken(at: bp)
-            animateBossMotion(to: CGPoint(x: bp.x, y: bp.y))
-            if let normal = characterNormal {
-                let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
-                let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
-                // キャラクターのボスの大きさ(当たり判定と同じ倍率)
-                bossNode.size = CGSize(width: art.size.width * sim.bossScale, height: art.size.height * sim.bossScale)
-                let (frames, flashFrames) = bossFrames(art: art)
-                let i = bossFrameIndex(count: frames.count)
-                bossNode.texture = sim.flash > 0 ? flashFrames[i] : frames[i]
-            } else {
-                bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
-            }
+        // 自機の弾: ボスの場面と、雑魚を倒せる場面(耐えきる・連戦の雑魚の場面)で描く。
+        // 撃たない場面(雑魚を倒せない耐えきる場面など)では、前の場面で描いた弾がその場に止まって残らないように隠す
+        if sim.playerShoots {
             let ss = sim.shots
             while shotNodes.count < ss.count {
                 let n = SKSpriteNode(color: Palette.gold, size: CGSize(width: 3, height: 10))
@@ -668,12 +655,28 @@ final class GameScene: SKScene {
                 }
                 else { shotNodes[i].isHidden = true }
             }
+        } else {
+            for n in shotNodes where !n.isHidden { n.isHidden = true }
+        }
+        if sim.isBoss {
+            let bp = sim.bossPosition
+            bossNode.position = pos(bp.x, bp.y)
+            updateAwaken(at: bp)
+            animateBossMotion(to: CGPoint(x: bp.x, y: bp.y))
+            if let normal = characterNormal {
+                let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
+                let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
+                // キャラクターのボスの大きさ(当たり判定と同じ倍率)
+                bossNode.size = CGSize(width: art.size.width * sim.bossScale, height: art.size.height * sim.bossScale)
+                let (frames, flashFrames) = bossFrames(art: art)
+                let i = bossFrameIndex(count: frames.count)
+                bossNode.texture = sim.flash > 0 ? flashFrames[i] : frames[i]
+            } else {
+                bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
+            }
             let ratio = sim.isDamageRace ? 1.0 : max(0, Double(sim.hp)) / Double(max(1, sim.waveBossHp))
             barFill.size.width = max(0.001, W * CGFloat(ratio))
         } else {
-            // ボスのいない場面(連戦でボスを倒したあとの耐えきる場面など)では、自機の弾は撃たない。
-            // 前の場面で描いた弾が、その場に止まって残らないように隠す
-            for n in shotNodes where !n.isHidden { n.isHidden = true }
             // 発射台の印：撃ち始める0.6秒前から点滅し、撃ち終わったら消す
             var idx = 0
             for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {

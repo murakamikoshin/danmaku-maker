@@ -136,4 +136,26 @@ final class MooksBreakableTests: XCTestCase {
         let back = try? JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(clean))
         XCTAssertEqual(back?.waves?[0].mooksClear, true)
     }
+
+    /// 画面が自機の弾を描くか(playerShoots)。雑魚を倒せる場面では、ボスがいなくても描く(連戦の雑魚の場面で、弾が見えなかった不具合)
+    func testPlayerShootsInBreakableMookScenes() {
+        XCTAssertTrue(Simulation(stage: survive(breakable: true)).playerShoots, "耐えきる + 雑魚を倒せる")
+        XCTAssertFalse(Simulation(stage: survive(breakable: nil)).playerShoots, "雑魚を倒せない耐えきるでは撃たない")
+        var s = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [
+            Wave(kind: .boss, durationSec: 40, bossHp: 1, emitters: [em(p: 1)]),
+            Wave(kind: .survive, durationSec: 30, emitters: [em()], mooks: 1),
+            Wave(kind: .survive, durationSec: 30, emitters: [em()], mooks: 1)])
+        s.waves![1].mooksBreakable = true
+        var sim = Simulation(stage: s.sanitized()); sim.invincible = true
+        XCTAssertTrue(sim.playerShoots, "ボスの場面")
+        while sim.waveIndex == 0 && sim.tick < 120 * 40 { sim.step(.zero) }
+        XCTAssertEqual(sim.waveIndex, 1)
+        XCTAssertTrue(sim.playerShoots, "連戦の、雑魚を倒せる場面")
+        for _ in 0..<(120 * 4) { sim.step(.zero) }
+        XCTAssertFalse(sim.shots.isEmpty, "雑魚の場面でも、弾を撃っている")
+        while sim.waveIndex == 1 && sim.tick < 120 * 120 { sim.step(.zero) }
+        XCTAssertEqual(sim.waveIndex, 2)
+        XCTAssertFalse(sim.playerShoots, "雑魚を倒せない場面では撃たない")
+        XCTAssertFalse(Simulation(swipeStage: survive(breakable: true)).playerShoots, "スワイプは撃たない")
+    }
 }
