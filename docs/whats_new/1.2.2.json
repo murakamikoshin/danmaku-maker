@@ -1,12 +1,12 @@
 {
- "ja": "不具合の修正\n・ステージを投稿したとき、ボスの無料チケットを新しくもらっていないのに「ボスの無料チケットをもらいました！」と表示されることがある問題を直しました(チケットが余分に配られていたわけではありません)。",
- "en": "Bug fix\n- Fixed an issue where \"You got a free boss ticket!\" could appear after publishing a stage even when no new ticket was given (no extra tickets were actually handed out).",
- "zh-Hans": "错误修复\n・修复了发布关卡时,即使没有获得新的免费首领券,也可能显示「获得了首领免费券!」的问题(并没有多发放券)。",
- "zh-Hant": "錯誤修正\n・修正了發布關卡時,即使沒有獲得新的免費首領券,也可能顯示「獲得了首領免費券!」的問題(並沒有多發放券)。",
- "ko": "버그 수정\n・스테이지를 투고했을 때 새 보스 무료 티켓을 받지 않았는데도 「보스 무료 티켓을 받았어요!」가 표시될 수 있던 문제를 고쳤어요(티켓이 실제로 더 지급된 것은 아니에요).",
- "es": "Corrección de errores\n- Se corrigió que al publicar un nivel pudiera aparecer «¡Conseguiste un boleto de jefe gratis!» aunque no se hubiera dado ningún boleto nuevo (no se repartieron boletos de más).",
- "fr": "Correction de bug\n- Correction d’un problème où « Vous avez reçu un ticket de boss gratuit ! » pouvait s’afficher après la publication d’un niveau alors qu’aucun nouveau ticket n’avait été donné (aucun ticket supplémentaire n’a été distribué).",
- "de": "Fehlerbehebung\n- Behoben: Nach dem Veröffentlichen eines Levels konnte „Du hast ein kostenloses Boss-Ticket erhalten!“ erscheinen, obwohl kein neues Ticket vergeben wurde (es wurden keine zusätzlichen Tickets verteilt).",
- "pt-BR": "Correção de erro\n- Corrigido um problema em que \"Você ganhou um bilhete de chefe grátis!\" podia aparecer ao publicar uma fase mesmo sem receber um novo bilhete (nenhum bilhete extra foi distribuído).",
- "ru": "Исправление ошибки\n- Исправлено: после публикации уровня могло появляться «Вы получили бесплатный билет босса!», хотя новый билет не выдавался (лишних билетов на самом деле не выдавалось)."
+ "ja": "不具合の修正\n・ステージを投稿したとき、ボスの無料チケットを新しくもらっていないのに「ボスの無料チケットをもらいました！」と表示されることがある問題を直しました(チケットが余分に配られていたわけではありません)。\n・投稿のためにAppleでサインインしても、投稿できないことがある問題を直しました。うまくいかないときは、原因に合わせた案内が出ます。",
+ "en": "Bug fix\n- Fixed an issue where \"You got a free boss ticket!\" could appear after publishing a stage even when no new ticket was given (no extra tickets were actually handed out).\n- Fixed an issue where you sometimes couldn't publish even after signing in with Apple. If sign-in fails, you'll now see guidance for the cause.",
+ "zh-Hans": "错误修复\n・修复了发布关卡时,即使没有获得新的免费首领券,也可能显示「获得了首领免费券!」的问题(并没有多发放券)。\n・修复了即使通过 Apple 登录也有时无法发布的问题。登录失败时,会根据原因显示提示。",
+ "zh-Hant": "錯誤修正\n・修正了發布關卡時,即使沒有獲得新的免費首領券,也可能顯示「獲得了首領免費券!」的問題(並沒有多發放券)。\n・修正了即使使用 Apple 登入也有時無法發布的問題。登入失敗時,會依原因顯示提示。",
+ "ko": "버그 수정\n・스테이지를 투고했을 때 새 보스 무료 티켓을 받지 않았는데도 「보스 무료 티켓을 받았어요!」가 표시될 수 있던 문제를 고쳤어요(티켓이 실제로 더 지급된 것은 아니에요).\n・Apple로 로그인해도 투고할 수 없는 경우가 있던 문제를 고쳤어요. 잘 안 될 때는 원인에 맞는 안내가 나와요.",
+ "es": "Corrección de errores\n- Se corrigió que al publicar un nivel pudiera aparecer «¡Conseguiste un boleto de jefe gratis!» aunque no se hubiera dado ningún boleto nuevo (no se repartieron boletos de más).\n- Se corrigió que a veces no se pudiera publicar aun después de iniciar sesión con Apple. Si falla, ahora verás una guía según la causa.",
+ "fr": "Correction de bug\n- Correction d’un problème où « Vous avez reçu un ticket de boss gratuit ! » pouvait s’afficher après la publication d’un niveau alors qu’aucun nouveau ticket n’avait été donné (aucun ticket supplémentaire n’a été distribué).\n- Correction d’un problème où il était parfois impossible de publier même après s’être connecté avec Apple. En cas d’échec, des conseils adaptés à la cause s’affichent.",
+ "de": "Fehlerbehebung\n- Behoben: Nach dem Veröffentlichen eines Levels konnte „Du hast ein kostenloses Boss-Ticket erhalten!“ erscheinen, obwohl kein neues Ticket vergeben wurde (es wurden keine zusätzlichen Tickets verteilt).\n- Behoben: Manchmal konnte man trotz „Mit Apple anmelden“ nicht veröffentlichen. Schlägt die Anmeldung fehl, gibt es jetzt passende Hinweise.",
+ "pt-BR": "Correção de erro\n- Corrigido um problema em que \"Você ganhou um bilhete de chefe grátis!\" podia aparecer ao publicar uma fase mesmo sem receber um novo bilhete (nenhum bilhete extra foi distribuído).\n- Corrigido um problema em que às vezes não era possível publicar mesmo após entrar com a Apple. Se falhar, agora aparece uma orientação de acordo com a causa.",
+ "ru": "Исправление ошибки\n- Исправлено: после публикации уровня могло появляться «Вы получили бесплатный билет босса!», хотя новый билет не выдавался (лишних билетов на самом деле не выдавалось).\n- Исправлено: иногда нельзя было опубликовать уровень даже после входа через Apple. При неудаче теперь показываются подсказки по причине."
 }
