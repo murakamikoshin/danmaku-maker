@@ -69,6 +69,8 @@ struct MainTabView: View {
             }
         }
         .onChange(of: tab) {
+            // 対戦中(3・2・1 と対戦)は、通知を開いたときなどでもタブを移さない(移ると、見えないまま止まって抜け出せなくなる)
+            if ads.playingTabs.contains("battle"), $0 != .battle { tab = .battle; return }
             opened.insert($0); if $0 == .battle { battleSeen = true }
             // バトルの画面は消さずに残すので、ほかのタブを見ている間は、対戦の画面の描画を止める(相手を待つ間など)
             NotificationCenter.default.post(name: .battleTabVisible, object: $0 == .battle)

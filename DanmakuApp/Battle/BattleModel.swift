@@ -32,7 +32,11 @@ final class BattleModel: ObservableObject {
     /// アプリが前面にあるか(画面の scenePhase を写す。少し離れただけかを、あとで確かめるため)
     var appActive = true
     /// 下のタブでバトルの画面が見えているか。見えていない間は、対戦の画面の描画を止める
-    func setVisible(_ visible: Bool) { scene?.isPaused = !visible }
+    func setVisible(_ visible: Bool) {
+        scene?.isPaused = !visible
+        // 相手を探している間にほかのタブへ移ったら、探すのをやめる(見えないまま対戦が始まって負けないように)
+        if !visible, case .searching = phase { cancel() }
+    }
 
     /// 前面から離れた回数(3秒の降参の判定で、どの「離れた」かを見分けるため)
     var inactiveSeq = 0

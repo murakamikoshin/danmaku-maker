@@ -193,6 +193,13 @@ final class NotificationService: NSObject, ObservableObject {
         guard !defaults.bool(forKey: Self.reminderAskedKey) else { return }
         defaults.set(true, forKey: Self.reminderAskedKey)
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        authorization = status
+        if status == .authorized || status == .provisional {
+            // もう通知を許可している人(反応の通知などで)は、聞かずにオンにする(設定でいつでも切れる)
+            remindersOn = true
+            defaults.set(true, forKey: "notify.reminders")
+            return
+        }
         guard status == .notDetermined else { return }
         _ = await setReminders(true)
     }
