@@ -21,6 +21,8 @@ struct PublishFlowView: View {
     @AppStorage("publish.notifyAsked") private var notifyAsked = false
     /// 通知の許可を前に断っていた(設定アプリでしか変えられない)
     @State private var notifyDenied = false
+    /// この投稿で、初公開のボスの無料チケットをもらえたか
+    @State private var gotTicket = false
     /// ショップで移動する先(このステージのボスの商品)
     @State private var shopFocus: String? = nil
     @State private var claimingTicket = false
@@ -198,8 +200,9 @@ struct PublishFlowView: View {
                 Image(systemName: "checkmark.seal.fill").font(.system(size: 48)).foregroundStyle(GameStyle.gold)
             }
             Text("publish.done").font(.display(23)).foregroundStyle(GameStyle.gold)
-            if BossCharacter.editorEnabled && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
-                // 初めての公開のごほうび: ボスの無料チケット
+            if BossCharacter.editorEnabled && gotTicket && cosmetics.bossTickets > 0 && BossCharacter.allCases.contains(where: { $0.ticketEligible && !cosmetics.ownership.has($0) }) {
+                // 初めての公開のごほうび: ボスの無料チケット。この投稿で実際にもらえたときだけ出す
+                // (前は、使っていないチケットを持っていると、投稿するたびに「もらいました」と出ていた)
                 Button { gameTap(); shopFocus = "bosses"; showShop = true } label: {
                     HStack(spacing: 8) { TicketArtView(height: 18); Text("publish.done.ticket") }.font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -246,6 +249,9 @@ struct PublishFlowView: View {
     private func publish() async {
         error = nil
         phase = .publishing
+        // 投稿の前に、初公開のチケットをもう受け取っているかを確かめておく(この投稿でもらえたかを、あとで判断する)
+        if BossCharacter.editorEnabled { await cosmetics.refreshBossTickets(uid: auth.uid) }
+        let firstTicket = !cosmetics.ticketGranted && replay != nil
         do {
             // アップロードを待つあいだに、全画面広告を流す(広告削除の購入者には出さない)。両方が終わってから完了画面へ
             async let adShown: Bool = purchases.isPremium ? false : ads.showInterstitialNow()
@@ -261,7 +267,12 @@ struct PublishFlowView: View {
             Task { await PublishService.uploadPreview(id: id, stage: stage) }   // 一覧に出す見せ場の静止画
             AudioManager.shared.se(.get)
             onPublished(id)
-            if BossCharacter.editorEnabled { Task { await cosmetics.refreshBossTickets(uid: auth.uid) } }
+            if BossCharacter.editorEnabled {
+                Task {
+                    await cosmetics.refreshBossTickets(uid: auth.uid)
+                    gotTicket = firstTicket && cosmetics.ticketGranted
+                }
+            }
         } catch {
             self.error = error.localizedDescription
             phase = .start
