@@ -80,7 +80,11 @@ struct MainTabView: View {
         .onChange(of: ads.playingTabs) { tabs in
             if !tabs.contains("battle"), let next = pendingTab { pendingTab = nil; tab = next }
         }
-        .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty }, set: { if !$0 { notice.pending = [] } })) {
+        // ごほうびのお知らせは、弾幕バトルの対戦中(3・2・1 と対戦)には出さず、終わってから出す。相手探しの最中なら探すのをやめる
+        .onChange(of: notice.pending.isEmpty) { empty in
+            if !empty { NotificationCenter.default.post(name: .cancelBattleSearch, object: nil) }
+        }
+        .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty && !ads.playingTabs.contains("battle") }, set: { if !$0 { notice.pending = [] } })) {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
         }
         .task { await notice.check() }
