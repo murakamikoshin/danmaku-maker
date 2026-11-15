@@ -59,9 +59,10 @@ final class AuthService: ObservableObject {
                         } else {
                             _ = try await Auth.auth().signIn(with: credential)
                         }
-                    } catch let e as NSError where e.code != AuthErrorCode.networkError.rawValue {
-                        // 匿名のアカウントが使えなくなっている(期限切れ・消えた)などで、つなげなかったときは、
-                        // 匿名の分はあきらめて、Apple で直接サインインする(ずっと登録できないままにならないように)
+                    } catch let e as NSError where Self.anonymousUnusable.contains(e.code) {
+                        // 匿名のアカウントが使えなくなっている(期限切れ・消えた・トークンが壊れた)ときだけ、
+                        // 匿名の分はあきらめて、Apple で直接サインインする(ずっと登録できないままにならないように)。
+                        // 一時的な失敗では切り替えない(匿名で遊んだ分が、黙って引き継がれなくなるため)
                         _ = try await Auth.auth().signIn(with: credential)
                     }
                 } else {
@@ -75,6 +76,12 @@ final class AuthService: ObservableObject {
             }
         }
     }
+
+    /// 匿名のアカウントがもう使えないことを表す失敗(期限切れ・見つからない・トークンが壊れた・もう一度ログインが要る)
+    private static let anonymousUnusable: Set<Int> = [
+        AuthErrorCode.userTokenExpired.rawValue, AuthErrorCode.userNotFound.rawValue,
+        AuthErrorCode.invalidUserToken.rawValue, AuthErrorCode.requiresRecentLogin.rawValue,
+    ]
 
     /// サインインのあと、トークンを作り直す(つなぐ前の「匿名」のトークンのままだと、投稿などがサインインを求められて失敗する)。
     /// 失敗しても、サーバーはアカウントの実際の状態も見るので、投稿はできる
