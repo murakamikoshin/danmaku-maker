@@ -2,40 +2,89 @@ import GoogleMobileAds
 import SwiftUI
 import UIKit
 
-/// 世界のステージ一覧に混ぜる、ネイティブ広告(一覧の行になじむ形の広告)。
-/// 何本か先に読んでおき、一覧の N 行ごとに1枠出す。広告削除の購入者・SDK を始められていないときは出さない
+/// 世界のステージ一覧に混ぜる、ネイティブ広告(一覧の行になじむ形の広告)。一覧の N 行ごとに1枠出す。
+/// 1つの広告は1つの枠にだけ出す(使い回すと、2回目からは表示として数えられず、前の枠のタップの計測も外れる)。
+/// スクロールに合わせて、少し先の枠の分だけ読んでおく(読んだのに見せない広告が増えないように)。
+/// 読めていない枠は出さない。広告削除の購入者・SDK を始められていないときは出さない
 @MainActor
 final class NativeAdStore: NSObject, ObservableObject {
     static let shared = NativeAdStore()
 
     /// 一覧の何行ごとに1枠入れるか
     static let every = 8
-    /// 先に読んでおく本数(枠が多くても、この本数を順に使い回す)
-    private static let poolSize = 3
-    /// 読んだ広告の有効時間(Google の決まりは1時間。少し手前で捨てる)
+    /// 手元に置いておく、まだ枠に入れていない広告の本数(一覧を開いてすぐの枠に間に合わせるため)
+    private static let spare = 2
+    /// 今いる位置から何枠先まで、広告を入れておくか
+    private static let ahead = 2
+    /// 1回の起動で使う広告の上限(メモリを使いすぎないように)。これより先の枠は出さない
+    static let maxSlots = 30
+    /// 枠に入れる前の広告の有効時間(Google の決まりは1時間。少し手前で捨てる)
     private static let lifetime: TimeInterval = 55 * 60
 
-    @Published private(set) var ads: [NativeAd] = []
-    private var loadedAt: [ObjectIdentifier: Date] = [:]
+    /// 枠番号(0, 1, 2, ...)→ その枠の広告
+    @Published private(set) var assigned: [Int: NativeAd] = [:]
+    /// 読んだが、まだ枠に入れていない広告(読んだ時刻つき)
+    private var spares: [(ad: NativeAd, at: Date)] = []
+    /// 一覧で映った行のうち、いちばん下の行番号
+    private var lowestRow = -1
     private var loader: AdLoader?
     private var loading = false
     private var failures = 0
+    private var retryTask: Task<Void, Never>?
 
     /// Info.plist 経由(ビルド設定 ADMOB_NATIVE_UNIT_ID。開発中は Google のテスト広告 ID)。空なら読まない
     private var unitID: String? { AdsService.optionalUnit("ADMOB_NATIVE_UNIT_ID") }
 
-    /// 一覧の枠番号(0, 1, 2, ...)に出す広告。読めていなければ nil(枠ごと出さない)
-    func ad(slot: Int) -> NativeAd? {
-        guard !ads.isEmpty else { return nil }
-        return ads[slot % ads.count]
+    /// 枠 slot を置く、直前の行番号(この行のすぐ下に出す)
+    static func row(ofSlot slot: Int) -> Int { (slot + 1) * every - 1 }
+    /// 行 row のすぐ下に枠があれば、その枠番号
+    static func slot(afterRow row: Int) -> Int? {
+        let s = (row + 1) / every - 1
+        return (row + 1) % every == 0 && s < maxSlots ? s : nil
     }
 
-    /// 足りない分を読む(何度呼んでもよい)
-    func fill() {
+    /// 一覧の枠に出す広告。まだ入っていなければ nil(枠ごと出さない)
+    func ad(slot: Int) -> NativeAd? { assigned[slot] }
+
+    /// 一覧を開いたとき。手元の広告を用意しておく(何度呼んでもよい)
+    func prepare() { fill() }
+
+    /// 一覧の行が映ったとき。そこから少し先までの枠に、広告を入れる
+    func rowAppeared(_ row: Int) {
+        if row > lowestRow { lowestRow = row }
+        fill()
+    }
+
+    /// 一覧を読み直したとき(並び順・絞り込み・検索・引っぱって更新)。枠の広告を外して、上からやり直す
+    func reset() {
+        assigned = [:]
+        lowestRow = -1
+        fill()
+    }
+
+    /// 広告を入れたい枠(まだ入っていないもの)を、上から順に
+    private func wantedSlots() -> [Int] {
+        // 今いちばん下に映っている行の1枠上(まだ画面の中にあるかもしれない枠)から、ahead 枠先まで
+        let first = max(0, (lowestRow + 1) / Self.every - 1)
+        let last = min(Self.maxSlots - 1, (max(lowestRow, 0) + 1) / Self.every + Self.ahead - 1)
+        guard first <= last else { return [] }
+        return (first...last).filter { assigned[$0] == nil }
+    }
+
+    /// 手元の広告を枠に入れ、足りない分を読む
+    private func fill() {
         let now = Date()
-        let fresh = ads.filter { now.timeIntervalSince(loadedAt[ObjectIdentifier($0)] ?? .distantPast) < Self.lifetime }
-        if fresh.count != ads.count { ads = fresh }
-        guard let unitID, !loading, ads.count < Self.poolSize, failures < 3 else { return }
+        spares.removeAll { now.timeIntervalSince($0.at) >= Self.lifetime }
+        if lowestRow >= 0 {
+            var next = assigned
+            for slot in wantedSlots() {
+                guard !spares.isEmpty else { break }
+                next[slot] = spares.removeFirst().ad
+            }
+            if next.count != assigned.count { assigned = next }
+        }
+        let need = (lowestRow >= 0 ? wantedSlots().count : 0) + Self.spare
+        guard let unitID, !loading, retryTask == nil, spares.count < need, assigned.count + spares.count < Self.maxSlots else { return }
         loading = true
         let l = AdLoader(adUnitID: unitID, rootViewController: AdsService.topViewController(), adTypes: [.native], options: nil)
         l.delegate = self
@@ -46,14 +95,21 @@ final class NativeAdStore: NSObject, ObservableObject {
     private func received(_ ad: NativeAd) {
         loading = false
         failures = 0
-        loadedAt[ObjectIdentifier(ad)] = Date()
-        ads.append(ad)
+        spares.append((ad, Date()))
         fill()
     }
 
+    /// 読めなかったら、少し待ってからやり直す(15秒・30秒・60秒…最大5分)。在庫がないときに何度も頼まないように
     private func failed() {
         loading = false
         failures += 1
+        let wait = min(300.0, 15.0 * pow(2.0, Double(failures - 1)))
+        retryTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+            guard let self, !Task.isCancelled else { return }
+            self.retryTask = nil
+            self.fill()
+        }
     }
 }
 

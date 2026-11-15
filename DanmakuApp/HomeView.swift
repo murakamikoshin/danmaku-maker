@@ -248,15 +248,20 @@ struct HomeView: View {
             ForEach(Array(visible.enumerated()), id: \.element.id) { i, s in
                 Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
                     .buttonStyle(.plain)
-                    // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)
-                    .onAppear { if s.id == visible.last?.id { Task { await loadMoreWorld() } } }
-                // ステージ N 行ごとに、ネイティブ広告を1枠(広告削除の購入者・広告を始められていないときは出さない)
-                if showAds, (i + 1) % NativeAdStore.every == 0, let ad = nativeAds.ad(slot: (i + 1) / NativeAdStore.every - 1) {
+                    // 一覧に出ている最後の行が見えたら、続きを読む(ブロックした人のステージが最後でも止まらない)。
+                    // 広告は、映った行から少し先の枠の分まで読む
+                    .onAppear {
+                        if s.id == visible.last?.id { Task { await loadMoreWorld() } }
+                        if showAds { nativeAds.rowAppeared(i) }
+                    }
+                // ステージ N 行ごとに、ネイティブ広告を1枠(枠ごとに別の広告。読めていない枠・広告削除の購入者には出さない)
+                if showAds, let slot = NativeAdStore.slot(afterRow: i), let ad = nativeAds.ad(slot: slot) {
                     NativeAdRow(ad: ad)
                 }
             }
-            .onAppear { if showAds { nativeAds.fill() } }
-            .onChange(of: visible.count) { _ in if showAds { nativeAds.fill() } }
+            .onAppear { if showAds { nativeAds.prepare() } }
+            // 一覧が入れ替わったら(並び順・絞り込み・検索・引っぱって更新)、広告の枠も上からやり直す
+            .onChange(of: visible.first?.id) { _ in if showAds { nativeAds.reset() } }
             if world.isLoading { HStack { Spacer(); ProgressView().tint(GameStyle.pinkColor); Spacer() }.padding(.vertical, 8) }
             // 念のため、続きがあるときは「もっと見る」も出す(自動で読まれなかったときに、古いステージまでたどれるように)
             if !world.isLoading && !world.reachedEnd && !world.failed && !world.searching && !visible.isEmpty {
