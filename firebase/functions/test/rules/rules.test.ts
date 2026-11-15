@@ -114,6 +114,14 @@ describe("サーバー専用コレクション", () => {
     await assertFails(getDoc(doc(db, "stageReplays/AAAAA")));
     await assertFails(setDoc(doc(db, "admin_alerts/z"), { a: 1 }));
   });
+  it("stageTombs(消した非表示ステージの目印)は、本人でも読み書きできない", async () => {
+    const db = member("u1");
+    await assertFails(getDoc(doc(db, "stageTombs/u1")));
+    await assertFails(setDoc(doc(db, "stageTombs/u1"), { hashes: [] }));
+  });
+  it("購入の記録(users.entitlements)は、本人でも書き換えられない", async () => {
+    await assertFails(updateDoc(doc(member("u1"), "users/u1"), { entitlements: { removeads: true } }));
+  });
 });
 
 

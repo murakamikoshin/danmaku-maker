@@ -83,11 +83,41 @@ export function unlistedUsedToday(user: { get(f: string): unknown }, now: number
 
 /** 新しく公開したステージに付ける「急上昇」の初めの点数(2 日で半分になる。遊ばれ方しだいで、上にも下にも動く) */
 export const NEW_STAGE_TREND = 8;
+/** 初めの点数を付けるのは、1 人 1 日(日本時間)に公開した最初のこの本数まで(たくさん出して急上昇を埋めるのを防ぐ) */
+export const NEW_STAGE_TREND_PER_DAY = 3;
 
-/** 遊び方に関わらない項目(名前・説明・見た目・音・演出)。同じステージの出し直しを見分けるとき、比べない */
+/** 新しいステージの急上昇の初めの点数。listedBefore: その日、この投稿の前に公開した本数(「URLを知っている人だけ」は数えない) */
+export const initialTrend = (listedBefore: number, unlisted: boolean): number =>
+  !unlisted && listedBefore < NEW_STAGE_TREND_PER_DAY ? NEW_STAGE_TREND : 0;
+
+/** 通報で非表示になったステージを作者が消したとき、目印を残しておく数(stageTombs/{uid}.hashes。新しいものから) */
+export const MAX_TOMBS = 200;
+
+/** 目印の一覧に足す(同じものは足さない。多すぎたら古いものから捨てる) */
+export function addTomb(list: unknown, hash: string): string[] {
+  const cur = Array.isArray(list) ? list.filter((h): h is string => typeof h === "string" && h !== hash) : [];
+  return [hash, ...cur].slice(0, MAX_TOMBS);
+}
+
+/**
+ * 同じ作者の、遊ぶ中身の同じステージ(statuses: 見つかったものの status)があるとき、出し直しを断るか。
+ * 公開(一覧に載る)なら、「URLを知っている人だけ」のものしか無ければ通す(限定公開で試してから公開に出す流れ)。
+ * 公開中・非表示・消した非表示のもの(tombstoned)と同じなら断る。「URLを知っている人だけ」の出し直しは、同じものがあれば断る
+ */
+export function isDuplicatePost(statuses: unknown[], tombstoned: boolean, unlisted: boolean): boolean {
+  if (tombstoned) return true;
+  if (unlisted) return statuses.length > 0;
+  return statuses.some((s) => s !== "unlisted");
+}
+
+/**
+ * 遊び方に関わらない項目(名前・説明・見た目・音・演出)。同じステージの出し直しを見分けるとき、比べない。
+ * ボスの見た目(bossLook)は比べる: キャラクターのボス(5 以上)は、当たり判定や位置が変わるため(場面ごとの bossLook も同じ)。
+ * bossSize・bossX・bossY も比べる(ここに入れない)
+ */
 const COSMETIC_KEYS = new Set([
   "name", "authorName", "desc", "phaseInfo", "themeBullets", "themeBackground", "themeShip", "bgm", "rewardFx",
-  "previewStart", "noPreview", "shipSkin", "bossLook", "mookLook", "bossWarning", "bossDefeat", "hideMarkers", "formatVersion", "needs",
+  "previewStart", "noPreview", "shipSkin", "mookLook", "bossWarning", "bossDefeat", "hideMarkers", "formatVersion", "needs",
 ]);
 
 function canonical(v: unknown): unknown {

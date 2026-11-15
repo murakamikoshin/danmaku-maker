@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createSim, decodeReplay } from "../src/fullsim.js";
 import { rankedStage, rankedScore, rankedCompare, ratingDelta, rankOf, RANKED_DURATION } from "../src/ranked.js";
-import { encodeReplay, GONE_GRACE_MS, MAX_RANKED_REPLAY, opponentGone, queueRowExpired, safeName, SEEDS_PER_WEEK, weekSeeds } from "../src/rankedfns.js";
+import { encodeReplay, GONE_GRACE_MS, GONE_LAG_MS, MAX_RANKED_REPLAY, opponentGone, queueRowExpired, safeName, SEEDS_PER_WEEK, weekSeeds } from "../src/rankedfns.js";
 import { pairKey, PAIR_RATED_PER_DAY } from "../src/abuse.js";
 
 interface Fixture {
@@ -90,15 +90,23 @@ describe("弾幕バトルの不正対策", () => {
     expect(queueRowExpired({ r: 1000, at: now - 16_000 }, now)).toBe(true);
     expect(queueRowExpired(null, now)).toBe(true);
   });
-  it("相手がいなくなったか(位置の更新が止まった・一度も来ない)", () => {
+  it("相手がいなくなったか(位置の更新が止まった・一度も来ない・大きく遅れた)", () => {
     const start = 1_000_000;
-    expect(opponentGone(null, start, start + GONE_GRACE_MS - 1)).toBe(false);
-    expect(opponentGone(null, start, start + GONE_GRACE_MS + 1)).toBe(true);
-    // 60 秒遊んだところで止まった
-    expect(opponentGone({ t: 60 * 120 }, start, start + 60_000 + GONE_GRACE_MS - 1)).toBe(false);
-    expect(opponentGone({ t: 60 * 120 }, start, start + 60_000 + GONE_GRACE_MS + 1)).toBe(true);
+    expect(opponentGone(null, null, start, start + GONE_GRACE_MS - 1)).toBe(false);
+    expect(opponentGone(null, null, start, start + GONE_GRACE_MS + 1)).toBe(true);
+    // 遅い端末: ゲームの時計が 30 秒以上遅れていても、更新が続いていれば、いなくなったとはしない
+    expect(opponentGone({ t: 60 * 120 }, null, start, start + 60_000 + 40_000)).toBe(false);
+    expect(opponentGone({ t: 60 * 120 }, { t: 59 * 120, at: start + 70_000 }, start, start + 100_000)).toBe(false);
+    // 遅れだけで決めるのは GONE_LAG_MS(75 秒)から
+    expect(GONE_LAG_MS).toBeGreaterThanOrEqual(75_000);
+    expect(opponentGone({ t: 60 * 120 }, null, start, start + 60_000 + GONE_LAG_MS - 1)).toBe(false);
+    expect(opponentGone({ t: 60 * 120 }, null, start, start + 60_000 + GONE_LAG_MS + 1)).toBe(true);
+    // 位置の更新が止まった: 前に見た t のまま 30 秒過ぎたら、いない(遅れが小さくても)
+    const seen = { t: 60 * 120, at: start + 61_000 };
+    expect(opponentGone({ t: 60 * 120 }, seen, start, start + 61_000 + GONE_GRACE_MS - 1)).toBe(false);
+    expect(opponentGone({ t: 60 * 120 }, seen, start, start + 61_000 + GONE_GRACE_MS)).toBe(true);
     // まだ遊んでいる(遅れが少ない)
-    expect(opponentGone({ t: 100 * 120 }, start, start + 102_000)).toBe(false);
+    expect(opponentGone({ t: 100 * 120 }, null, start, start + 102_000)).toBe(false);
   });
   it("相手に見せる名前は NG ワードの検査を通ったものだけ", () => {
     expect(safeName("アリス")).toBe("アリス");

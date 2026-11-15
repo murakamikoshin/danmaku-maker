@@ -20,6 +20,12 @@ const CHUNK = 2000;
 const HANDLE_CHOICES = 16;
 export const DRINK_PRODUCT = "com.koshin.danmakumaker.stamina.drink";
 export const PASS_PRODUCT = "com.koshin.danmakumaker.pass.stamina.monthly";
+/**
+ * 広告削除・永久買い切りパック(アプリの PurchaseService.removeAdsID と Product.lifetime)。
+ * 買ったことを users/{uid}.entitlements.{removeads | lifetime} に残す(公開の本数で、購入者の扱いにする)。
+ * これより前に買った人には記録が無いので、アプリの申告(premium)も、これまでどおり受け付ける
+ */
+export const NO_ADS_PRODUCTS = ["com.koshin.danmakumaker.removeads", "com.koshin.danmakumaker.lifetime"];
 
 const isMemberToken = (token: { firebase?: { sign_in_provider?: string } } | undefined) => !!token && token.firebase?.sign_in_provider !== "anonymous";
 
@@ -361,6 +367,15 @@ export async function applyPurchaseEvent(event: { id?: string; type?: string; ap
       } else if (type === "EXPIRATION") {
         tx.set(userRef, { ...(user.exists ? {} : base), pass: { until: Math.min(until || Date.now(), Date.now()) } }, { merge: true });
         outcome = "pass-expired";
+      }
+    } else if (NO_ADS_PRODUCTS.includes(product)) {
+      if (["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"].includes(type)) {
+        tx.set(userRef, { ...(user.exists ? {} : base), entitlements: { [product.split(".").pop()!]: true } }, { merge: true });
+        outcome = "no-ads";
+      } else if (type === "CANCELLATION" || type === "EXPIRATION") {
+        // 買い切りの取り消しは、返金のとき
+        tx.set(userRef, { ...(user.exists ? {} : base), entitlements: { [product.split(".").pop()!]: false } }, { merge: true });
+        outcome = "no-ads-revoked";
       }
     }
     tx.set(evRef, { type, uid, product, outcome, createdAt: Date.now() });

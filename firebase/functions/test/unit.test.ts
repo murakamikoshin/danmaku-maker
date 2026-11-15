@@ -5,7 +5,7 @@ import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KI
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
 import { firesInPhase, hasLink, validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
-import { applyDailyCap, contentHash, parseResults, readDaily, reportThreshold, RESULT_PLAYS_PER_CALL, RESULT_PLAYS_PER_DAY, RESULT_STAGES_PER_DAY, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "../src/abuse.js";
+import { addTomb, applyDailyCap, contentHash, initialTrend, isDuplicatePost, MAX_TOMBS, NEW_STAGE_TREND, NEW_STAGE_TREND_PER_DAY, parseResults, readDaily, reportThreshold, RESULT_PLAYS_PER_CALL, RESULT_PLAYS_PER_DAY, RESULT_STAGES_PER_DAY, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "../src/abuse.js";
 import { afterGrant, afterPost, checkPost, FREE_DAILY_POSTS, HARD_DAILY_POSTS, jstDay, MAX_EXTRA_TICKETS, readQuota } from "../src/quota.js";
 import { pathPosition, validatePath } from "../src/custompath.js";
 import { matchesQuery, nameKeys, normalizeName, queryGram, searchKeys } from "../src/search.js";
@@ -273,6 +273,13 @@ describe("ステージの説明(desc、1.3.0)", () => {
   it("NGワードとURLは拒否", () => {
     expect(validatePublish(good({ desc: "しね" }))).toEqual({ ok: false, error: "desc-ng-word" });
     expect(validatePublish(good({ desc: "https://a.example" }))).toEqual({ ok: false, error: "desc-link" });
+    // 名前・作者名・段階の名前にも URL は書けない(全角の点などで書いたものも)
+    expect(validatePublish(good({ name: "見てexample.com" }))).toEqual({ ok: false, error: "name-link" });
+    expect(validatePublish(good({ name: "www．example" }))).toEqual({ ok: false, error: "name-link" });
+    expect(validatePublish(good({ authorName: "https://x" }))).toEqual({ ok: false, error: "author-link" });
+    expect(validatePublish(good({ authorName: "abc.jp" }))).toEqual({ ok: false, error: "author-link" });
+    expect(validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, phaseInfo: [{ n: "a.com" }, {}, {}] }))).toEqual({ ok: false, error: "phase-link" });
+    expect(validatePublish(good({ name: "弾幕1.5倍" })).ok).toBe(true);   // ふつうの点は通る
   });
   it("説明だけでは、必要な版(needs)は上がらない(古いアプリは読み飛ばす)", () => {
     const d = validatePublish(good({ desc: "説明" }));
@@ -719,6 +726,10 @@ describe("validateDisplayName(ランキング・コメントに出す投稿者�
     expect(validateDisplayName("あ".repeat(13))).toEqual({ ok: false });
     expect(validateDisplayName(123)).toEqual({ ok: false });
     expect(validateDisplayName("しね")).toEqual({ ok: false });
+    // URL も出さない(ランキング・コメント・バトルの相手に見える名前)
+    expect(validateDisplayName("example.com")).toEqual({ ok: false });
+    expect(validateDisplayName("ｗｗｗ．ab")).toEqual({ ok: false });
+    expect(validateDisplayName("Ver1.2")).toEqual({ ok: true, name: "Ver1.2" });
   });
 });
 
@@ -1181,6 +1192,56 @@ describe("公開の水増し・出し直し対策", () => {
     expect(contentHash(a.stage)).toBe(contentHash(b.stage));
     expect(contentHash(a.stage)).not.toBe(contentHash(c.stage));
     expect(contentHash({ ...a.stage, durationSec: 30 })).not.toBe(contentHash(a.stage));
+  });
+  it("ボスの見た目(場面ごとのものも)・大きさ・位置が違えば、別の目印(キャラクターのボスは当たり判定や位置が変わる)", () => {
+    const b = (o: object = {}) => { const r = validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, emitters: [em()], ...o })); if (!r.ok) throw new Error(r.error); return contentHash(r.stage); };
+    expect(b({ bossLook: 5 })).not.toBe(b({ bossLook: 0 }));
+    expect(b({ bossLook: 5 })).not.toBe(b({ bossLook: 6 }));
+    expect(b({ bossLook: 5, bossSize: 52 })).not.toBe(b({ bossLook: 5 }));
+    expect(b({ bossLook: 5, bossX: 0.3 })).not.toBe(b({ bossLook: 5 }));
+    expect(b({ bossLook: 5, bossY: 0.25 })).not.toBe(b({ bossLook: 5 }));
+    // 場面ごとの bossLook も比べる
+    const wave = (look: number) => ({ kind: "boss", durationSec: 30, bossHp: 100, bossMove: 0, emitters: [em()], bossLook: look });
+    const seq = (look: number) => { const r = validatePublish(good({ mode: "sequence", durationSec: 30, emitters: [], waves: [wave(look)] })); if (!r.ok) throw new Error(r.error); return contentHash(r.stage); };
+    expect(seq(5)).not.toBe(seq(0));
+    // 雑魚の見た目・名前は、これまでどおり比べない
+    expect(b({ bossLook: 5, name: "べつ" })).toBe(b({ bossLook: 5 }));
+  });
+  it("急上昇の初めの点数は、1 日に公開した最初の 3 本まで(URL限定には付けない)", () => {
+    expect(NEW_STAGE_TREND_PER_DAY).toBe(3);
+    expect([0, 1, 2].map((n) => initialTrend(n, false))).toEqual([NEW_STAGE_TREND, NEW_STAGE_TREND, NEW_STAGE_TREND]);
+    expect(initialTrend(3, false)).toBe(0);
+    expect(initialTrend(29, false)).toBe(0);
+    expect(initialTrend(0, true)).toBe(0);
+  });
+  it("出し直しの判定: 公開は、URL限定のものしか無ければ通す。公開中・非表示・消した非表示と同じなら断る", () => {
+    expect(isDuplicatePost([], false, false)).toBe(false);
+    expect(isDuplicatePost(["unlisted"], false, false)).toBe(false);   // URL限定で試してから公開
+    expect(isDuplicatePost(["unlisted", "published"], false, false)).toBe(true);
+    expect(isDuplicatePost(["published"], false, false)).toBe(true);
+    expect(isDuplicatePost(["hidden"], false, false)).toBe(true);
+    expect(isDuplicatePost([], true, false)).toBe(true);   // 非表示にされて消したもの
+    // URL限定の出し直しは、同じものがあれば断る
+    expect(isDuplicatePost(["unlisted"], false, true)).toBe(true);
+    expect(isDuplicatePost(["published"], false, true)).toBe(true);
+    expect(isDuplicatePost([], true, true)).toBe(true);
+    expect(isDuplicatePost([], false, true)).toBe(false);
+  });
+  it("消した非表示ステージの目印は、新しいものから MAX_TOMBS 個まで。同じものは増やさない", () => {
+    expect(addTomb(undefined, "a")).toEqual(["a"]);
+    expect(addTomb(["b", "a"], "a")).toEqual(["a", "b"]);
+    expect(addTomb(["x", 3, null], "a")).toEqual(["a", "x"]);
+    const many = Array.from({ length: MAX_TOMBS }, (_, i) => `h${i}`);
+    const next = addTomb(many, "new");
+    expect(next.length).toBe(MAX_TOMBS);
+    expect(next[0]).toBe("new");
+    expect(next).not.toContain(`h${MAX_TOMBS - 1}`);
+  });
+  it("購入者の申告(premium)があっても、1 日 HARD_DAILY_POSTS(30)本まで", () => {
+    const q = { day: 1, used: 0, extra: 0, grants: 0 };
+    expect(HARD_DAILY_POSTS).toBe(30);
+    expect(checkPost({ ...q, used: 29 }, true)).toBe("ok");
+    expect(checkPost({ ...q, used: 30 }, true)).toBe("daily-limit");
   });
   it("始めたばかり(7 日以内)の作者は 2 人、ほかは 5 人の通報で非表示", () => {
     const now = Date.UTC(2026, 10, 15);

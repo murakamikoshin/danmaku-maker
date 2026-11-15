@@ -135,6 +135,65 @@ describe("ランク戦のサーバー", () => {
     expect(rejoin.matchId).not.toBe(id);
   }, 60_000);
 
+  it("ボット戦は引き直せない: 始まる前に次を頼むと、前のボット戦は負け。5 秒より早くは頼めない。入り直しても負け", async () => {
+    const uid = await signUp("ひきなおし");
+    const first = await call("rankedStartBot", { lang: "ja" });
+    expect(await callErr("rankedStartBot", { lang: "ja" })).toBe("too-fast");
+    // まだ始まっていなくても、取り消しではなく負け(来なかった扱い)
+    await db.doc(`rankedMeta/${uid}`).update({ lastBotAt: Date.now() - 6000 });
+    const second = await call("rankedStartBot", { lang: "ja" });
+    expect(second.matchId).not.toBe(first.matchId);
+    const prev = (await db.doc(`rankedMatches/${first.matchId}`).get()).data()!;
+    expect(prev.status).toBe("done");
+    expect(prev.changes[uid].result).toBe(0);
+    expect((await db.doc(`rankedPlayers/${uid}`).get()).get("losses")).toBe(1);
+    // 待ち行列に入り直しても、途中のボット戦は負けで締める
+    await rtdb.ref("rq").remove();
+    await call("rankedJoinQueue");
+    await call("rankedLeaveQueue");
+    const sec = (await db.doc(`rankedMatches/${second.matchId}`).get()).data()!;
+    expect(sec.status).toBe("done");
+    expect((await db.doc(`rankedPlayers/${uid}`).get()).get("losses")).toBe(2);
+    // 終わった対戦の結果は、あとから出しても変わらない(ふつうの流れ: 終わってから「もう一戦」は、これまでどおり)
+    await db.doc(`rankedMeta/${uid}`).update({ lastBotAt: Date.now() - 6000 });
+    const third = await call("rankedStartBot", { lang: "ja" });
+    await db.doc(`rankedMatches/${third.matchId}`).update({ startAt: Date.now() - 10_000 });
+    const res = await call("rankedSubmitRun", { matchId: third.matchId, replay: still(240).replay });
+    expect(res.pending).toBe(false);
+    await db.doc(`rankedMeta/${uid}`).update({ lastBotAt: Date.now() - 6000 });
+    await call("rankedStartBot", { lang: "ja" });
+    expect((await db.doc(`rankedMatches/${third.matchId}`).get()).get(`changes.${uid}.after`)).toBe(res.ratingAfter);
+    expect((await db.doc(`rankedPlayers/${uid}`).get()).get("games")).toBe(3);
+  }, 180_000);
+
+  it("相手の位置の更新が 30 秒止まったら、rankedClaimWin で決着。遅れていても更新が続いていれば待つ", async () => {
+    await rtdb.ref("rq").remove();
+    const emailA = `sa${Date.now()}@test.dev`, emailB = `sb${Date.now()}@test.dev`;
+    await signOut(auth);
+    const ua = (await createUserWithEmailAndPassword(auth, emailA, "password123")).user.uid;
+    await call("rankedJoinQueue");
+    await signOut(auth);
+    await createUserWithEmailAndPassword(auth, emailB, "password123");
+    const id = (await call("rankedJoinQueue")).matchId as string;
+    await db.doc(`rankedMatches/${id}`).update({ startAt: Date.now() - 50_000 });
+    await rtdb.ref(`rq/${ua}/s`).set(Date.now() - 50_000);
+    // A は 10 秒ぶんしか進んでいない(遅い端末。遅れは 40 秒)が、位置は届いている
+    await rtdb.ref(`rm/${id}/p/${ua}`).set({ x: 180, y: 460, t: 10 * 120 });
+    expect((await call("rankedSubmitRun", { matchId: id, replay: right(300).replay })).pending).toBe(true);
+    // 提出のときに、相手の位置を見た記録が残る
+    expect((await rtdb.ref(`rm/${id}/seen/${ua}`).get()).val()).toMatchObject({ t: 10 * 120 });
+    expect((await call("rankedClaimWin", { matchId: id })).pending).toBe(true);
+    // 進んでいれば待つ
+    await rtdb.ref(`rm/${id}/seen/${ua}`).set({ t: 10 * 120, at: Date.now() - 40_000 });
+    await rtdb.ref(`rm/${id}/p/${ua}`).set({ x: 180, y: 460, t: 11 * 120 });
+    expect((await call("rankedClaimWin", { matchId: id })).pending).toBe(true);
+    // 前に見たときから 30 秒以上止まっていたら決着
+    await rtdb.ref(`rm/${id}/seen/${ua}`).set({ t: 11 * 120, at: Date.now() - 31_000 });
+    const res = await call("rankedClaimWin", { matchId: id });
+    expect(res.pending).toBe(false);
+    expect(res.result).toBe("win");
+  }, 60_000);
+
   it("自分の出ていない対戦には出せない・壊れた記録は受け付けない", async () => {
     await signUp("よそもの");
     expect(await callErr("rankedSubmitRun", { matchId: "nonexistent000", replay: still(10).replay })).toMatch(/^match/);

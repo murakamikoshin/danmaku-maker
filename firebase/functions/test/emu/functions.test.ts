@@ -648,6 +648,60 @@ describe("不正対策(出し直し・限定公開の本数・利用停止・急
     await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
     try { await callRaw("publishStage", { ...stage, name: "べつの名前" }); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
   });
+  it("非表示にされたステージを消してから出し直しても duplicate(消したときに目印を残す)", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    const s1 = { ...stage, name: "けすもの", emitters: [{ ...emitter, s: 9.5 }] };
+    const first = (await callRaw("publishStage", s1)) as { id: string };
+    // 非表示でないステージを消しても、目印は残さない
+    await callRaw("deleteStage", { stageId: first.id });
+    expect((await db.doc(`stageTombs/${uid}`).get()).exists).toBe(false);
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    const again = (await callRaw("publishStage", s1)) as { id: string };
+    await db.doc(`stages/${again.id}`).update({ status: "hidden" });
+    await callRaw("deleteStage", { stageId: again.id });
+    expect((await db.doc(`stages/${again.id}`).get()).exists).toBe(false);
+    expect((await db.doc(`stageTombs/${uid}`).get()).get("hashes")).toHaveLength(1);
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    try { await callRaw("publishStage", { ...s1, name: "べつの名前" }); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
+    try { await callRaw("publishStage", { ...s1, unlisted: true, clearReplay: undefined }); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
+  }, 60000);
+  it("「URLを知っている人だけ」で出したものは、同じ中身を公開(一覧に載る)で出し直せる。URL限定の出し直しと、公開の二重は断る", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    const s1 = { ...stage, name: "限定から公開", emitters: [{ ...emitter, s: 9.25 }] };
+    await callRaw("publishStage", { ...s1, unlisted: true, clearReplay: undefined });
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    try { await callRaw("publishStage", { ...s1, unlisted: true, clearReplay: undefined }); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
+    const listed = (await callRaw("publishStage", s1)) as { id: string };
+    expect((await db.doc(`stages/${listed.id}`).get()).get("status")).toBe("published");
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    try { await callRaw("publishStage", s1); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
+  }, 60000);
+  it("急上昇の初めの点数は、その日の公開の最初の 3 本まで", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await db.doc(`users/${uid}`).set({ postDay: jstDay(Date.now()), postsToday: 3, displayName: "", blockedUids: [], postCount: 3 }, { merge: true });
+    const { id } = (await call("publishStage", { ...stage, premium: true })) as { id: string };
+    expect((await db.doc(`stages/${id}`).get()).get("trending")).toBe(0);
+  });
+  it("購入者の申告(premium)があっても 1 日 30 本まで。購入の記録(entitlements)があれば、申告がなくても 5 本を超えられる", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await db.doc(`users/${uid}`).set({ postDay: jstDay(Date.now()), postsToday: 30, displayName: "", blockedUids: [], postCount: 30 }, { merge: true });
+    expect(await callErr("publishStage", { ...stage, premium: true })).toMatch(/daily-limit/);
+    await db.doc(`users/${uid}`).set({ postsToday: 5, extraPosts: 0 }, { merge: true });
+    expect(await callErr("publishStage", stage)).toMatch(/daily-limit/);
+    await db.doc(`users/${uid}`).set({ entitlements: { removeads: false } }, { merge: true });
+    expect(await callErr("publishStage", stage)).toMatch(/daily-limit/);
+    await db.doc(`users/${uid}`).set({ entitlements: { lifetime: true } }, { merge: true });
+    expect(await callErr("publishStage", stage)).toBeNull();
+  });
+  it("名前・作者名に URL は書けない", async () => {
+    await signUp();
+    expect(await callErr("publishStage", { ...stage, name: "example.com" })).toMatch(/name-link/);
+    expect(await callErr("publishStage", { ...stage, authorName: "www.x" })).toMatch(/author-link/);
+  });
   it("「URLを知っている人だけ」も 1 日 20 本まで", async () => {
     await signUp();
     const uid = auth.currentUser!.uid;

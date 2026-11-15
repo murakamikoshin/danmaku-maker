@@ -255,6 +255,7 @@ function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: Pha
       const name = stripInvisible(item.n).trim();
       if (name !== "") {
         if (len(name) > MAX_PHASE_NAME || /[\r\n\u2028\u2029]/.test(name)) return { ok: false, error: "phase-info" };
+        if (hasLink(name)) return { ok: false, error: "phase-link" };
         if (containsNgWord(name)) return { ok: false, error: "phase-ng-word" };
         p.n = name;
       }
@@ -423,10 +424,13 @@ export function validatePublish(input: unknown): Validated {
 
   const name = typeof input.name === "string" ? input.name.trim() : "";
   if (len(name) < 1 || len(name) > MAX_NAME) return { ok: false, error: "name-length" };
+  // URL は名前にも書けない(コメント・説明と同じ)。古いアプリ(1.2.1)は知らない理由なので、「公開できませんでした」と出る
+  if (hasLink(name)) return { ok: false, error: "name-link" };
   if (containsNgWord(name)) return { ok: false, error: "name-ng-word" };
 
   const authorName = typeof input.authorName === "string" ? input.authorName.trim() : "";
   if (len(authorName) < 1 || len(authorName) > MAX_AUTHOR) return { ok: false, error: "author-length" };
+  if (hasLink(authorName)) return { ok: false, error: "author-link" };
   if (containsNgWord(authorName)) return { ok: false, error: "author-ng-word" };
 
   // ステージの説明(なくてもよい)
@@ -620,14 +624,14 @@ export function validatePublish(input: unknown): Validated {
 
 /**
  * ランキングとコメントに出す名前(投稿者名)の検査。未指定・空は「匿名で出す」ので undefined。
- * 長さ(1〜12文字)とNGワードを検査する。不正なら ok: false
+ * 長さ(1〜12文字)とNGワード・URL を検査する。不正なら ok: false
  */
 export function validateDisplayName(raw: unknown): { ok: true; name: string | undefined } | { ok: false } {
   if (raw === undefined || raw === null) return { ok: true, name: undefined };
   if (typeof raw !== "string") return { ok: false };
   const name = raw.replace(/\s+/g, " ").trim();
   if (name === "") return { ok: true, name: undefined };
-  if (len(name) > MAX_AUTHOR || containsNgWord(name)) return { ok: false };
+  if (len(name) > MAX_AUTHOR || containsNgWord(name) || hasLink(name)) return { ok: false };
   return { ok: true, name };
 }
 

@@ -20,7 +20,7 @@ import { validateDisplayName } from "./validate.js";
  * - rankedMatches/{id}: 対戦の記録と結果(二人とも読める)
  * - rankedRuns/{id}: 検証済みの人の記録(相手が見つからない人のボットの動きに使う)
  * - rankedBots/{week}_{i}: 自動で遊ぶボットの記録(週ごとに用意する)
- * - rankedMeta/{uid}: { lastSubmitAt(記録を最後に出した時刻), bot(遊んでいる途中のボット戦の ID) }。サーバーだけ
+ * - rankedMeta/{uid}: { lastSubmitAt(記録を最後に出した時刻), lastBotAt(ボット戦を最後に頼んだ時刻), bot(遊んでいる途中のボット戦の ID) }。サーバーだけ
  * - rankedPairs/{uid1}_{uid2}_{日}: 同じ二人が、その日に対戦した数 { n, at }。サーバーだけ
  */
 const db = (): Firestore => getFirestore();
@@ -41,8 +41,12 @@ const MAX_STEPS = (RANKED_DURATION + 3) * 120 + 144;
 export const MAX_RANKED_REPLAY = 90_000;
 /** 記録を出す間隔(これより早い 2 回目は断る) */
 const SUBMIT_INTERVAL_MS = 3_000;
-/** 相手の位置の更新が、遊んだ時間よりこれ以上遅れていたら、相手はいなくなったとみなす */
+/** ボット戦を頼む間隔(これより早い 2 回目は断る) */
+export const BOT_INTERVAL_MS = 5_000;
+/** 相手の位置の更新がこれだけ止まっていたら(または一度も届かないまま、これだけ過ぎたら)、相手はいなくなったとみなす */
 export const GONE_GRACE_MS = 30_000;
+/** 相手の位置(遊んだステップ数)が、始まってからの時間よりこれ以上遅れていたら、いなくなったとみなす(遅い端末の遅れより長く) */
+export const GONE_LAG_MS = 75_000;
 /** 人の記録(rankedRuns)を残す日数。種は週ごとに変わるので、古いものは使わない */
 const RUN_KEEP_MS = 14 * 86_400_000;
 
@@ -189,6 +193,8 @@ export function queueRowExpired(e: QueueEntry | null | undefined, now: number): 
 
 /** 待ち行列に入る。待っている人がいればその場でマッチする。{ matchId } が返れば対戦が決まった(無ければ、rq/{uid}/m を待つ) */
 export async function rankedJoin(uid: string, now = Date.now()) {
+  // 終わっていないボット戦があれば、先に負けで締める(レートも、そのあとの値で探す)
+  await settleOpenBot(uid, now);
   const me = await playerOf(uid);
   const newId = randomUUID().replace(/-/g, "").slice(0, 20);
   const pick: { other: string | null } = { other: null };
@@ -243,6 +249,21 @@ export async function rankedLeave(uid: string) {
 }
 
 /**
+ * ボット戦は 1 人 1 つまで。前のボット戦が終わっていなければ、始まる前でも負け(来なかった扱い = 0 秒)で締める。
+ * 返したボットの記録(相手の強さ)を見てから、取り消して引き直せないように(rankedStartBot・rankedJoinQueue の初めに呼ぶ)
+ */
+async function settleOpenBot(uid: string, now: number) {
+  const prevId = (await db().doc(`rankedMeta/${uid}`).get()).get("bot") as string | undefined;
+  if (!prevId) return;
+  const prevRef = db().doc(`rankedMatches/${prevId}`);
+  await db().runTransaction(async (tx) => {
+    const prev = await tx.get(prevRef);
+    if (!prev.exists || prev.get("status") !== "playing") return;
+    await finalize(tx, prevRef, prev.data()!, now);
+  });
+}
+
+/**
  * 相手が見つからなかった: ボットを相手にする。もし直前に人とマッチしていたら、そちらを返す。
  * 相手の動きは、その種を人が遊んだ検証済みの記録(レートが近いもの)、無ければ自動のボットの記録を、強さに合わせた長さで切ったもの
  */
@@ -257,18 +278,14 @@ export async function rankedBot(uid: string, lang: unknown, now = Date.now()) {
   });
   if (live.id) return { matchId: live.id };
 
-  // ボット戦は 1 人 1 つまで。前のボット戦が終わっていなければ、まだ始まっていないものは取り消し、始まっていたものは負け(来なかった扱い)で締める
+  // ボット戦を続けて頼むのを防ぐ(相手の記録を見てから引き直して、弱い相手を選ぶのを防ぐ。前のボット戦は下で負けになる)
   const metaRef = db().doc(`rankedMeta/${uid}`);
-  const prevId = (await metaRef.get()).get("bot") as string | undefined;
-  if (prevId) {
-    const prevRef = db().doc(`rankedMatches/${prevId}`);
-    await db().runTransaction(async (tx) => {
-      const prev = await tx.get(prevRef);
-      if (!prev.exists || prev.get("status") !== "playing") return;
-      if ((prev.get("startAt") as number) > now) tx.update(prevRef, { status: "cancelled", finishedAt: now });
-      else await finalize(tx, prevRef, prev.data()!, now);
-    });
-  }
+  await db().runTransaction(async (tx) => {
+    const last = ((await tx.get(metaRef)).get("lastBotAt") as number | undefined) ?? 0;
+    if (now - last < BOT_INTERVAL_MS && now >= last) throw new HttpsError("resource-exhausted", "too-fast");
+    tx.set(metaRef, { lastBotAt: now }, { merge: true });
+  });
+  await settleOpenBot(uid, now);
 
   const me = await playerOf(uid);
   const week = weekOf(now);
@@ -345,6 +362,11 @@ export async function rankedSubmit(uid: string, data: unknown, now = Date.now())
     }
     return finalize(tx, ref, { ...cur, results }, now);
   });
+  // 相手を待つことになったら、相手の位置をいま見ておく(あとで rankedClaimWin を押したとき、更新が止まっているか分かるように)
+  if (m.kind === "live" && final.status === "playing") {
+    const opp = (m.players as string[]).find((u) => u !== uid);
+    if (opp) await observeOpponent(matchId, opp, now).catch(() => undefined);
+  }
   if (sc.ticks >= 600) {
     const prof = await profileOf(uid);
     const me = await playerOf(uid);
@@ -445,15 +467,33 @@ export async function sweepRanked(now = Date.now()) {
 
 // ---- 相手を待つのをやめる ----
 
+/** 相手の位置の記録(t = 遊んだステップ数)。seen: サーバーが前に見た t と、その時刻(rm/{matchId}/seen/{uid}。サーバーだけ) */
+type Pos = { t?: unknown } | null;
+type Seen = { t: number; at: number } | null;
+
 /**
- * 相手がいなくなったか。rm/{matchId}/p/{相手} の位置の記録(t = 遊んだステップ数)を見る。
+ * 相手がいなくなったか。
  * - 一度も位置が届いていない: 始まってから GONE_GRACE_MS 過ぎたら、いない
- * - 位置が届いている: 遊んだはずの時間より、t が GONE_GRACE_MS 以上遅れていたら(更新が止まった・落ちてから記録を出さない)、いない
+ * - 位置の更新が止まった: サーバーが前に見た t から変わらないまま GONE_GRACE_MS 過ぎたら、いない
+ * - 遊んだはずの時間より、t が GONE_LAG_MS 以上遅れている(落ちてから記録を出さないなど)。
+ *   遅い端末は、ゲームの時計が実際の時間より遅れる(30 秒ほど遅れることもある)ので、遅れだけで決めるときは長めに待つ
+ * 締め切りを過ぎたら、これとは関係なく決着する(rankedClaim)
  */
-export function opponentGone(p: { t?: unknown } | null, startAt: number, now: number): boolean {
+export function opponentGone(p: Pos, seen: Seen, startAt: number, now: number): boolean {
   const elapsed = now - startAt;
   if (!p || typeof p.t !== "number") return elapsed > GONE_GRACE_MS;
-  return elapsed - (p.t / 120) * 1000 > GONE_GRACE_MS;
+  if (seen && seen.t === p.t && now - seen.at >= GONE_GRACE_MS) return true;
+  return elapsed - (p.t / 120) * 1000 > GONE_LAG_MS;
+}
+
+/** 相手の位置を読み、t が前に見たときから変わっていれば、見た時刻を記録し直す。返すのは、位置と「前に見た」記録 */
+async function observeOpponent(matchId: string, opp: string, now: number): Promise<{ p: Pos; seen: Seen }> {
+  const [ps, ss] = await Promise.all([rtdb().ref(`rm/${matchId}/p/${opp}`).get(), rtdb().ref(`rm/${matchId}/seen/${opp}`).get()]);
+  const p = ps.val() as Pos;
+  const raw = ss.val() as { t?: unknown; at?: unknown } | null;
+  const seen: Seen = raw && typeof raw.t === "number" && typeof raw.at === "number" ? { t: raw.t, at: raw.at } : null;
+  if (p && typeof p.t === "number" && seen?.t !== p.t) await rtdb().ref(`rm/${matchId}/seen/${opp}`).set({ t: p.t, at: now });
+  return { p, seen };
 }
 
 /**
@@ -474,7 +514,7 @@ export async function rankedClaim(uid: string, data: unknown, now = Date.now()) 
   const opp = players.find((u) => u !== uid)!;
   const startAt = m.startAt as number;
   let gone = now > startAt + SUBMIT_DEADLINE_MS;
-  if (!gone) gone = opponentGone((await rtdb().ref(`rm/${matchId}/p/${opp}`).get()).val() as { t?: unknown } | null, startAt, now);
+  if (!gone) { const o = await observeOpponent(matchId, opp, now); gone = opponentGone(o.p, o.seen, startAt, now); }
   if (!gone) return resultFor(uid, m);
   const final = await db().runTransaction(async (tx) => {
     const cur = (await tx.get(ref)).data()!;

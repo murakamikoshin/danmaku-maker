@@ -19,7 +19,7 @@ import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
-import { applyDailyCap, contentHash, NEW_STAGE_TREND, parseResults, readDaily, reportThreshold, RESULT_INTERVAL_MS, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "./abuse.js";
+import { addTomb, applyDailyCap, contentHash, initialTrend, isDuplicatePost, parseResults, readDaily, reportThreshold, RESULT_INTERVAL_MS, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "./abuse.js";
 import { crossedMilestone, notifyAuthor, notifyMonthlyEvent } from "./notify.js";
 import { backfillAuthorKeys, backfillNameKeys, matchesQuery, queryGram, searchKeys } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
@@ -37,9 +37,19 @@ const POST_INTERVAL_MS = 10_000;
 const isOpen = (status: unknown) => status === "published" || status === "unlisted";
 
 /** Sign in with Apple などでログイン済み（匿名ではない）ユーザーの uid を返す */
-function requireMember(req: CallableRequest): string {
+/**
+ * Apple でサインイン済みの人だけ通す。
+ * 匿名から Apple につないだ直後は、アプリの持つトークンが古いまま(つなぐ前の「匿名」)のことがある
+ * (トークンの更新に失敗したときなど)。そのときは、アカウントの実際の状態を見て、Apple につながっていれば通す
+ * (「投稿のための登録ができない」の不具合: 画面ではサインイン済みなのに、投稿がサインインを求められて失敗していた)
+ */
+async function requireMember(req: CallableRequest): Promise<string> {
   if (!req.auth) throw new HttpsError("unauthenticated", "sign-in-required");
-  if (req.auth.token.firebase?.sign_in_provider === "anonymous") throw new HttpsError("unauthenticated", "sign-in-required");
+  if (req.auth.token.firebase?.sign_in_provider !== "anonymous") return req.auth.uid;
+  const linked = await getAuth().getUser(req.auth.uid)
+    .then((u) => u.providerData.some((p) => p.providerId !== "anonymous"))
+    .catch(() => false);
+  if (!linked) throw new HttpsError("unauthenticated", "sign-in-required");
   return req.auth.uid;
 }
 
@@ -71,7 +81,7 @@ async function saveOgp(id: string, stage: Stage): Promise<string> {
 }
 
 export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
@@ -102,16 +112,23 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   if (Date.now() - last < POST_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
   if (user.get("banned") === true) throw new HttpsError("permission-denied", "banned");
   // 1日に公開できる数の上限(「URLを知っている人だけ」の投稿は数えない)
-  const premium = (req.data as { premium?: unknown }).premium === true;
+  // 購入者かどうかは、アプリの申告か、購入の通知(RevenueCat)で残した記録(users.entitlements)。申告だけでも、1日 HARD_DAILY_POSTS 本まで
+  const ent = user.get("entitlements") as { removeads?: unknown; lifetime?: unknown } | undefined;
+  const premium = (req.data as { premium?: unknown }).premium === true || ent?.removeads === true || ent?.lifetime === true;
   const quota = readQuota(user, Date.now());
   if (!unlisted && checkPost(quota, premium) !== "ok") throw new HttpsError("resource-exhausted", "daily-limit");
   // 「URLを知っている人だけ」の投稿も、1日 UNLISTED_DAILY_POSTS 本まで(1本ごとに共有用の画像を作るため)
   const unlistedToday = unlistedUsedToday(user, Date.now());
   if (unlisted && unlistedToday >= UNLISTED_DAILY_POSTS) throw new HttpsError("resource-exhausted", "daily-limit");
-  // 同じ作者が、遊ぶ中身の同じステージを出し直すのは断る(通報で非表示になったものの出し直しも)。目印のない古いステージとは比べない
+  // 同じ作者が、遊ぶ中身の同じステージを出し直すのは断る(通報で非表示になったもの・それを消したものの出し直しも)。目印のない古いステージとは比べない。
+  // 「URLを知っている人だけ」で出したものを、公開(一覧に載る)で出し直すのは通す
   const hash = contentHash(v.stage);
-  const dup = await db.collection("stages").where("authorUid", "==", uid).where("contentHash", "==", hash).limit(1).get();
-  if (!dup.empty) throw new HttpsError("already-exists", "duplicate");
+  const [dup, tomb] = await Promise.all([
+    db.collection("stages").where("authorUid", "==", uid).where("contentHash", "==", hash).limit(20).get(),
+    db.doc(`stageTombs/${uid}`).get(),
+  ]);
+  const tombstoned = ((tomb.get("hashes") as unknown[] | undefined) ?? []).includes(hash);
+  if (isDuplicatePost(dup.docs.map((d) => d.get("status")), tombstoned, unlisted)) throw new HttpsError("already-exists", "duplicate");
 
   const now = Date.now();
   let id = "";
@@ -120,8 +137,8 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     try {
       await db.doc(`stages/${candidate}`).create({
         authorUid: uid, ...v.stage, nameKeys: searchKeys(v.stage.name, v.stage.authorName), ogImagePath: "", status: unlisted ? "unlisted" : "published",
-        // 新しいステージは、急上昇に少しだけ点数を持って入る(出たばかりで埋もれないように。2日で半分になる)
-        plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: unlisted ? 0 : NEW_STAGE_TREND, trendUpdatedAt: now, contentHash: hash,
+        // 新しいステージは、急上昇に少しだけ点数を持って入る(出たばかりで埋もれないように。2日で半分になる)。1日に最初の3本まで
+        plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: initialTrend(quota.used, unlisted), trendUpdatedAt: now, contentHash: hash,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
       id = candidate;
@@ -167,7 +184,7 @@ const PAID_ONLY_BOSSES: string[] = ["puni"];
  * まだ一度も公開していない人も、その初めての公開で使うボスを、公開の前にもらえる(その場合は、チケットを使ったことになる)
  */
 export const claimBossTicket = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const boss = (req.data as { boss?: unknown })?.boss;
   if (typeof boss !== "string" || !BOSS_KEYS.includes(boss)) throw new HttpsError("invalid-argument", "boss");
   if (PAID_ONLY_BOSSES.includes(boss)) throw new HttpsError("failed-precondition", "paid-only");
@@ -188,7 +205,7 @@ export const claimBossTicket = onCall(async (req) => {
 
 /** 広告を見たことを報告して、今日の投稿の追加券を1枚もらう(1日5本を超えて公開したいとき) */
 export const grantExtraPost = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const userRef = db.doc(`users/${uid}`);
   return db.runTransaction(async (tx) => {
     const user = await tx.get(userRef);
@@ -257,7 +274,7 @@ export const submitResults = onCall(async (req) => {
 });
 
 export const toggleLike = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const id = stageIdFrom(req.data);
   await assertNotBanned(uid);
   const result = await db.runTransaction(async (tx) => {
@@ -280,7 +297,7 @@ export const toggleLike = onCall(async (req) => {
 });
 
 export const reportStage = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const id = stageIdFrom(req.data);
   const reason = (req.data as { reason?: unknown }).reason;
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
@@ -394,7 +411,7 @@ const COMMENT_HIDE_THRESHOLD = 3;
 
 /** ステージにコメントする。Apple でサインインした人だけ。NGワード・URL・連続投稿は拒否する */
 export const postComment = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const id = stageIdFrom(req.data);
   const d = req.data as { text?: unknown; handle?: { a?: unknown; n?: unknown }; name?: unknown };
   const v = validateComment(d.text);
@@ -452,7 +469,7 @@ export const deleteComment = onCall(async (req) => {
 
 /** コメントを通報する。1人1回で、3人が通報すると自動で非表示になる */
 export const reportComment = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const id = stageIdFrom(req.data);
   const cid = (req.data as { commentId?: unknown }).commentId;
   const reason = (req.data as { reason?: unknown }).reason;
@@ -587,6 +604,15 @@ export const deleteStage = onCall({ timeoutSeconds: 120, memory: "512MiB" }, asy
   const stage = await ref.get();
   if (!stage.exists) throw new HttpsError("not-found", "stage");
   if (stage.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
+  // 通報で非表示になったステージを消すときは、遊ぶ中身の目印を残す(消してから同じものを出し直すのを、出し直しの検査で断れるように)
+  const hash = stage.get("contentHash");
+  if (stage.get("status") === "hidden" && typeof hash === "string") {
+    const tombRef = db.doc(`stageTombs/${uid}`);
+    await db.runTransaction(async (tx) => {
+      const cur = await tx.get(tombRef);
+      tx.set(tombRef, { hashes: addTomb(cur.get("hashes"), hash), updatedAt: FieldValue.serverTimestamp() });
+    });
+  }
   await eraseStage(ref);
   logger.info("stage-deleted", { stageId: id });
   return { ok: true };
@@ -644,6 +670,7 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   await db.doc(`publicProfiles/${uid}`).delete();
   // 送信間隔などの記録と、弾幕バトルの人の記録(ボットの動きに使う。名前が入っている)
   await db.doc(`resultMeta/${uid}`).delete();
+  await db.doc(`stageTombs/${uid}`).delete();
   await db.doc(`rankedMeta/${uid}`).delete();
   const myRuns = await db.collection("rankedRuns").where("uid", "==", uid).limit(500).get();
   for (const r of myRuns.docs) await r.ref.delete();
@@ -670,7 +697,7 @@ const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emi
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {
-  const uid = requireMember(req);
+  const uid = await requireMember(req);
   const snap = await db.collection("stages").where("authorUid", "==", uid).get();
   const totals = { stages: 0, likes: 0, plays: 0, clears: 0, comments: 0 };
   const rows = snap.docs

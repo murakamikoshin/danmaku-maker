@@ -129,4 +129,15 @@ describe("スワイプ弾幕のサーバー", () => {
     await seedPool(["SWPE1", "SWPE2"]);
     for (let i = 0; i < 7; i++) expect((await call("swipeUseStamina", {})).unlimited).toBe(true);
   }, 60_000);
+
+  it("RevenueCat の通知: 広告削除・永久買い切りパックの購入を users.entitlements に残す。返金で外す(ほかの購入は残る)", async () => {
+    const uid = await signUp();
+    const url = "http://127.0.0.1:5001/demo-danmaku/asia-northeast1/revenuecatWebhook";
+    const post = (event: object) => fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer test-secret" }, body: JSON.stringify({ event }) });
+    await post({ id: `na-${uid}`, type: "NON_RENEWING_PURCHASE", app_user_id: uid, product_id: "com.koshin.danmakumaker.removeads" });
+    expect((await db.doc(`users/${uid}`).get()).get("entitlements")).toEqual({ removeads: true });
+    await post({ id: `lt-${uid}`, type: "NON_RENEWING_PURCHASE", app_user_id: uid, product_id: "com.koshin.danmakumaker.lifetime" });
+    await post({ id: `nc-${uid}`, type: "CANCELLATION", app_user_id: uid, product_id: "com.koshin.danmakumaker.removeads" });
+    expect((await db.doc(`users/${uid}`).get()).get("entitlements")).toEqual({ removeads: false, lifetime: true });
+  }, 60_000);
 });

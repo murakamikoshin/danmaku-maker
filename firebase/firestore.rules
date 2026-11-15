@@ -78,6 +78,8 @@ service cloud.firestore {
     // 通報・リプレイ・管理者向けアラートはクライアントから一切触れない
     match /reports/{id} { allow read, write: if false; }
     match /stageReplays/{id} { allow read, write: if false; }
+    // 通報で非表示になって作者が消したステージの、遊ぶ中身の目印(出し直しの検査に使う)。サーバーだけ
+    match /stageTombs/{uid} { allow read, write: if false; }
     match /scoreReplays/{id} { allow read, write: if false; }
     match /scoreMeta/{id} { allow read, write: if false; }
     match /commentMeta/{id} { allow read, write: if false; }
