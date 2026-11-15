@@ -125,7 +125,9 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         let updated = await Self.finishWithin(seconds: 8) { done in
             UMPConsentInformation.sharedInstance.requestConsentInfoUpdate(with: params) { error in done(error == nil) }
         }
-        if updated { await waitUntilNotBattling() }
+        // 同意の画面が実際に出るとき(同意が要る地域で、まだ同意していない)だけ、バトルの対戦が終わるのを待つ
+        if updated, UMPConsentInformation.sharedInstance.consentStatus == .required,
+           UMPConsentInformation.sharedInstance.formStatus == .available { await waitUntilNotBattling() }
         if updated, let vc = Self.topViewController() {
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
                 UMPConsentForm.loadAndPresentIfRequired(from: vc) { _ in c.resume() }
@@ -179,6 +181,8 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     private func waitUntilNotBattling() async {
         NotificationCenter.default.post(name: .cancelBattleSearch, object: nil)
         while playingTabs.contains("battle") { try? await Task.sleep(nanoseconds: 1_000_000_000) }
+        // 待っている間に、新しく相手探しを始めていたら、それもやめる(このあと画面を重ねるため)
+        NotificationCenter.default.post(name: .cancelBattleSearch, object: nil)
     }
 
     /// 説明画面の「続ける」
