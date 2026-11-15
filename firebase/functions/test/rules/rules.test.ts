@@ -82,9 +82,9 @@ describe("users", () => {
     await assertSucceeds(getDoc(doc(member("u1"), "users/u1")));
     await assertFails(getDoc(doc(member("u2"), "users/u1")));
   });
-  it("blockedUids と displayName は更新できる", async () => {
+  it("blockedUids は更新できる。displayName(相手に見える名前)は直接は書けない", async () => {
     await assertSucceeds(updateDoc(doc(member("u1"), "users/u1"), { blockedUids: ["bad"] }));
-    await assertSucceeds(updateDoc(doc(member("u1"), "users/u1"), { displayName: "B" }));
+    await assertFails(updateDoc(doc(member("u1"), "users/u1"), { displayName: "B" }));
   });
   it("postCount など他の項目は更新できない", async () => {
     await assertFails(updateDoc(doc(member("u1"), "users/u1"), { postCount: 0 }));
@@ -95,8 +95,9 @@ describe("users", () => {
     await assertFails(updateDoc(doc(anon("u1"), "users/u1"), { blockedUids: [] }));
   });
   it("作成は postCount 0 で、許可された項目だけ", async () => {
-    const ok = { displayName: "N", blockedUids: [], postCount: 0, createdAt: serverTimestamp() };
+    const ok = { displayName: "", blockedUids: [], postCount: 0, createdAt: serverTimestamp() };
     await assertSucceeds(setDoc(doc(member("u3"), "users/u3"), ok));
+    await assertFails(setDoc(doc(member("u6"), "users/u6"), { ...ok, displayName: "しね" }));
     await assertFails(setDoc(doc(member("u4"), "users/u4"), { ...ok, postCount: 100 }));
     await assertFails(setDoc(doc(member("u5"), "users/u5"), { ...ok, banned: false }));
   });
@@ -173,20 +174,25 @@ describe("comments(コメント)", () => {
 
 describe("マイステージのバックアップ", () => {
   const ok = { data: "{}", updatedAt: new Date() };
+  const S1 = "3F2504E0-4F89-11D3-9A0C-0305E82C3301", S2 = "3F2504E0-4F89-11D3-9A0C-0305E82C3302";
   it("本人(匿名も可)は読み書き・削除できる", async () => {
-    await assertSucceeds(setDoc(doc(anon("a1"), "users/a1/savedStages/s1"), ok));
-    await assertSucceeds(getDoc(doc(anon("a1"), "users/a1/savedStages/s1")));
+    await assertSucceeds(setDoc(doc(anon("a1"), `users/a1/savedStages/${S1}`), ok));
+    await assertSucceeds(getDoc(doc(anon("a1"), `users/a1/savedStages/${S1}`)));
     await assertSucceeds(getDocs(collection(anon("a1"), "users/a1/savedStages")));
-    await assertSucceeds(deleteDoc(doc(anon("a1"), "users/a1/savedStages/s1")));
+    await assertSucceeds(deleteDoc(doc(anon("a1"), `users/a1/savedStages/${S1}`)));
   });
   it("他人は読めず、書けない", async () => {
-    await assertSucceeds(setDoc(doc(member("a2"), "users/a2/savedStages/s1"), ok));
-    await assertFails(getDoc(doc(member("a3"), "users/a2/savedStages/s1")));
-    await assertFails(setDoc(doc(member("a3"), "users/a2/savedStages/s2"), ok));
+    await assertSucceeds(setDoc(doc(member("a2"), `users/a2/savedStages/${S1}`), ok));
+    await assertFails(getDoc(doc(member("a3"), `users/a2/savedStages/${S1}`)));
+    await assertFails(setDoc(doc(member("a3"), `users/a2/savedStages/${S2}`), ok));
   });
   it("決まった項目以外は書けない", async () => {
-    await assertFails(setDoc(doc(anon("a4"), "users/a4/savedStages/s1"), { ...ok, extra: 1 }));
-    await assertFails(setDoc(doc(anon("a4"), "users/a4/savedStages/s1"), { data: 1, updatedAt: new Date() }));
+    await assertFails(setDoc(doc(anon("a4"), `users/a4/savedStages/${S1}`), { ...ok, extra: 1 }));
+    await assertFails(setDoc(doc(anon("a4"), `users/a4/savedStages/${S1}`), { data: 1, updatedAt: new Date() }));
+  });
+  it("ID は UUID だけ・中身は 900,000 文字未満", async () => {
+    await assertFails(setDoc(doc(anon("a5"), "users/a5/savedStages/s1"), ok));
+    await assertFails(setDoc(doc(anon("a5"), `users/a5/savedStages/${S1}`), { data: "x".repeat(900_000), updatedAt: new Date() }));
   });
 });
 
@@ -227,7 +233,9 @@ describe("スワイプ弾幕", () => {
     });
     await assertSucceeds(getDoc(doc(anon("s1"), "swipePools/meta")));
     await assertSucceeds(getDoc(doc(member("s1"), "swipePools/v1/chunks/0000")));
-    await assertSucceeds(getDoc(doc(member("s1"), "swipeScores/u1")));
+    // 順位表は swipeRanking で読む。直接読めるのは自分の記録だけ
+    await assertSucceeds(getDoc(doc(member("u1"), "swipeScores/u1")));
+    await assertFails(getDoc(doc(member("s1"), "swipeScores/u1")));
     await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "swipeScores/u1")));
     await assertFails(setDoc(doc(member("u1"), "swipeScores/u1"), { key: "999", score: "9" }));
     await assertFails(setDoc(doc(member("u1"), "swipePools/meta"), { current: "x" }));

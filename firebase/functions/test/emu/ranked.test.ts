@@ -108,6 +108,33 @@ describe("ランク戦のサーバー", () => {
     expect(Math.abs(res.ratingAfter - 1000)).toBeLessThanOrEqual(13);   // 24 の半分(丸め)
   }, 120_000);
 
+  it("結果は最初の1回だけ。相手がいなくなったら rankedClaimWin でその場で決着する。始まった対戦には入り直せない", async () => {
+    await rtdb.ref("rq").remove();
+    const emailA = `ca${Date.now()}@test.dev`, emailB = `cb${Date.now()}@test.dev`;
+    await signOut(auth);
+    const ua = (await createUserWithEmailAndPassword(auth, emailA, "password123")).user.uid;
+    await call("rankedJoinQueue");
+    await signOut(auth);
+    await createUserWithEmailAndPassword(auth, emailB, "password123");
+    const id = (await call("rankedJoinQueue")).matchId as string;
+    // 始まる時刻を過去にする(相手 A は一度もつながらない)
+    await db.doc(`rankedMatches/${id}`).update({ startAt: Date.now() - 60_000 });
+    await rtdb.ref(`rq/${ua}/s`).set(Date.now() - 60_000);
+    const first = right(300), second = still(600);
+    expect((await call("rankedSubmitRun", { matchId: id, replay: first.replay })).pending).toBe(true);
+    await new Promise((r) => setTimeout(r, 3100));
+    const again = await call("rankedSubmitRun", { matchId: id, replay: second.replay });
+    const seed = (await db.doc(`rankedMatches/${id}`).get()).get("seed") as number;
+    expect(again.me).toEqual(rankedScore(seed, first.moves, first.steps));   // 上書きされない
+    const res = await call("rankedClaimWin", { matchId: id });
+    expect(res.pending).toBe(false);
+    expect(res.result).toBe("win");
+    // A が入り直しても、始まった対戦には戻らない
+    await signInAs(emailA);
+    const rejoin = await call("rankedJoinQueue");
+    expect(rejoin.matchId).not.toBe(id);
+  }, 60_000);
+
   it("自分の出ていない対戦には出せない・壊れた記録は受け付けない", async () => {
     await signUp("よそもの");
     expect(await callErr("rankedSubmitRun", { matchId: "nonexistent000", replay: still(10).replay })).toMatch(/^match/);

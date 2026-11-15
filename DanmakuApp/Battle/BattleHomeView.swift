@@ -218,6 +218,19 @@ struct BattleHomeView: View {
                 ProgressView().tint(GameStyle.yellow)
                 Text(model.opponentAlive ? "battle.waiting" : "battle.judging").font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                     .multilineTextAlignment(.center)
+                if model.opponentStillPlaying {
+                    Text("battle.wait.still").font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                }
+                if model.canStopWaiting {
+                    // 相手がアプリを閉じたときなど。サーバーが、相手の通信が途絶えていれば その場で決着する
+                    Button { gameTap(); Task { await model.stopWaiting() } } label: {
+                        Text("battle.wait.stop").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            .padding(.vertical, 9).padding(.horizontal, 16)
+                            .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 10))
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("battle.wait.stop")
+                }
             }
             .padding(20).gamePanel(radius: 18)
         case .result(let r):

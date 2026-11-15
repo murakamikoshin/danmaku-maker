@@ -1,5 +1,5 @@
 import { validatePath } from "./custompath.js";
-import { containsNgWord } from "./ngwords/index.js";
+import { containsNgWord, stripInvisible } from "./ngwords/index.js";
 
 /** ボスの動きの種類の数。0=止まる 1=横にゆっくり 2=横にはやい 3=上下 4=円 5=8の字 6=ワープ 7=円(逆) 8=8の字(逆) 9=横ゆっくり(逆) 10=横はやい(逆)(Swift の Simulation.bossMoveCount と同じ) */
 export const BOSS_MOVE_COUNT = 11;
@@ -250,10 +250,14 @@ function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: Pha
     const p: PhaseInfo = {};
     if (item.n !== undefined && item.n !== null) {
       if (typeof item.n !== "string") return { ok: false, error: "phase-info" };
-      const name = item.n.trim();
-      if (len(name) < 1 || len(name) > MAX_PHASE_NAME || /[\r\n]/.test(name)) return { ok: false, error: "phase-info" };
-      if (containsNgWord(name)) return { ok: false, error: "phase-ng-word" };
-      p.n = name;
+      // 見えない文字(ゼロ幅スペースなど)を除いてから、前後の空白を取る。アプリの trim では消えない文字(U+2028 など)だけの名前は、
+      // サーバーでは空になる。そのときは「名前なし」として扱う(拒否しない)
+      const name = stripInvisible(item.n).trim();
+      if (name !== "") {
+        if (len(name) > MAX_PHASE_NAME || /[\r\n\u2028\u2029]/.test(name)) return { ok: false, error: "phase-info" };
+        if (containsNgWord(name)) return { ok: false, error: "phase-ng-word" };
+        p.n = name;
+      }
     }
     if (item.sp !== undefined && item.sp !== null && item.sp !== false) {
       if (item.sp !== true) return { ok: false, error: "phase-info" };
@@ -309,7 +313,8 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (!isObj(item) || !(PATTERNS as readonly unknown[]).includes(item.t)) return { ok: false, error: "emitter-pattern" };
     const x = num(item.x, 0, 1), y = num(item.y, 0, 0.6), s = num(item.s, 0, 180), e = num(item.e, 0, 180);
     const i = num(item.i, 0.05, 15), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
-    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 1234);
+    // 撃つ段階の値の上限は 2345(段階 5 のボスで、全部ではない並びのいちばん大きいもの)。正しい並びかは isPhaseCode で見る
+    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 2345);
     if (ph !== null && !isPhaseCode(ph, opts.phases ?? 3)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
@@ -652,6 +657,14 @@ export function normalizeMultiline(raw: unknown, maxLines: number): string | nul
 }
 
 const LINK_RE = /https?:|www\.|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
+/**
+ * URL が書かれているか。全角の点(．)・小さな点(․)・全角の英字・見えない文字を挟んだ書き方も、そろえてから調べる。
+ * 改行をまたいで書いたもの(example\n.com)も見る
+ */
+export function hasLink(text: string): boolean {
+  const t = stripInvisible(text.normalize("NFKC"));
+  return LINK_RE.test(t) || LINK_RE.test(t.replace(/\n/g, ""));
+}
 /** NGワード(改行をまたいで書いたものも見る) */
 const hasNg = (text: string) => containsNgWord(text) || containsNgWord(text.replace(/\n/g, ""));
 
@@ -660,7 +673,7 @@ export function validateComment(raw: unknown): CommentCheck {
   const text = normalizeMultiline(raw, MAX_COMMENT_LINES);
   if (text === null) return { ok: false, error: "comment-length" };
   if (len(text) < 1 || len(text) > MAX_COMMENT) return { ok: false, error: "comment-length" };
-  if (LINK_RE.test(text) || LINK_RE.test(text.replace(/\n/g, ""))) return { ok: false, error: "comment-link" };
+  if (hasLink(text)) return { ok: false, error: "comment-link" };
   if (hasNg(text)) return { ok: false, error: "comment-ng-word" };
   return { ok: true, text };
 }
@@ -675,7 +688,7 @@ export function validateDesc(raw: unknown): { ok: true; desc: string | undefined
   const text = normalizeMultiline(raw, MAX_DESC_LINES);
   if (text === null || len(text) > MAX_DESC) return { ok: false, error: "desc-length" };
   if (text === "") return { ok: true, desc: undefined };
-  if (LINK_RE.test(text) || LINK_RE.test(text.replace(/\n/g, ""))) return { ok: false, error: "desc-link" };
+  if (hasLink(text)) return { ok: false, error: "desc-link" };
   if (hasNg(text)) return { ok: false, error: "desc-ng-word" };
   return { ok: true, desc: text };
 }

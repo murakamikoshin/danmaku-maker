@@ -1019,6 +1019,22 @@ export function playedMonth(stage: SimStage, raw: unknown, now: number, allowBac
   return raw;
 }
 
+/** 月が変わった直後に、先月の並びを受け付ける時間(6 時間。月をまたいで遊んでいた人のため) */
+export const MONTH_GRACE_MS = 6 * 3600_000;
+
+/**
+ * playedMonth の厳しい版。今月か、月が変わってから graceMs のあいだだけ先月を受け付ける。
+ * 先月を 1 か月じゅう受け付けると、端末の時計を戻して、やさしいほうの並びを選べてしまうため
+ */
+export function recentMonth(stage: SimStage, raw: unknown, now: number, graceMs = MONTH_GRACE_MS): number | null {
+  if (!usesMonth(stage)) return 0;
+  const cur = monthOf(now);
+  if (typeof raw !== "number" || !Number.isInteger(raw)) return null;
+  if (raw === cur) return raw;
+  if (raw === cur - 1 && monthOf(now - graceMs) === cur - 1) return raw;
+  return null;
+}
+
 /** アプリが送ってくる操作記録(Base64 → [先頭1バイト: 0=そのまま/1=圧縮] → (回数, dx, dy) の繰り返し)を、1ステップずつの [dx, dy, ...] に戻す */
 export function decodeReplay(encoded: string, maxSteps: number): { moves: Int8Array; steps: number } | null {
   let data: Buffer;

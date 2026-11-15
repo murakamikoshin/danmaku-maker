@@ -3,7 +3,7 @@ import { grantMonthlyParticipation } from "../../src/titlesfns.js";
 import { getFirestore as adminDb } from "firebase-admin/firestore";
 import { initializeApp as adminInit } from "firebase-admin/app";
 import { describe, expect, it } from "vitest";
-import { BOSS_TICKET_AT, FOUNDER_SHIP, SHIP_REWARDS, INVITEE_DRINKS, INVITEE_SHIP, INVITER_SHIPS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
+import { BOSS_TICKET_AT, FOUNDER_SHIP, SHIP_REWARDS, INVITEE_DRINKS, INVITEE_SHIP, INVITER_SHIPS, MAX_ACCOUNT_AGE_MS, MAX_REWARDED, PLAYS_NEEDED, BadDeviceTokenError, claimFounder, countInvitePlays, getInviteInfo, registerInvite, type DeviceGate } from "../../src/invite.js";
 
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
 const db = adminDb(adminInit({ projectId: "demo-danmaku" }, "invite-admin"));
@@ -91,6 +91,14 @@ describe("3回遊んだときの付与", () => {
     expect(marked).toEqual(["new-device"]);
     const broken: DeviceGate = { used: async () => { throw new Error("apple down"); }, mark: async () => { throw new Error("apple down"); } };
     expect(await registerInvite(db, b, { code, deviceToken: "x" }, Date.now(), { ...fresh, device: broken })).toEqual({ status: "registered", noReward: false });
+  });
+  it("端末の判定が必須のとき、トークンが無い・作り物のトークンなら、登録は通るが報酬は出ない", async () => {
+    const [inviter, a, b] = [uid("t"), uid("u"), uid("v")];
+    const { code } = await getInviteInfo(db, inviter);
+    const ok: DeviceGate = { used: async () => false, mark: async () => {} };
+    expect(await registerInvite(db, a, { code }, Date.now(), { ...fresh, device: ok, requireToken: true })).toEqual({ status: "registered", noReward: true });
+    const fake: DeviceGate = { used: async () => { throw new BadDeviceTokenError("bad"); }, mark: async () => {} };
+    expect(await registerInvite(db, b, { code, deviceToken: "forged" }, Date.now(), { ...fresh, device: fake, requireToken: true })).toEqual({ status: "registered", noReward: true });
   });
   it("人数の称号は1・3・5・10人目で付き、自機は1人ごとに1機。上限を超えたぶんは、数えるが付けない", async () => {
     const inviter = uid("n");

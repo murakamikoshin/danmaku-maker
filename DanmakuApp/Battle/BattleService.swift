@@ -142,6 +142,12 @@ enum BattleService {
         return result(from: d)
     }
 
+    /// 相手を待つのをやめる(相手の通信が途絶えている・締め切りを過ぎたなら、その場で決着)。まだ相手が遊んでいそうなら nil
+    static func claimWin(match: String) async throws -> Result? {
+        let d = try await call("rankedClaimWin", ["matchId": match])
+        return result(from: d)
+    }
+
     static func result(from d: [String: Any]) -> Result? {
         guard (d["pending"] as? Bool) == false, let o = Result.Outcome(rawValue: d["result"] as? String ?? "") else { return nil }
         return Result(outcome: o, me: score(d["me"]), opp: score(d["opp"]), ratingBefore: int(d["ratingBefore"]),

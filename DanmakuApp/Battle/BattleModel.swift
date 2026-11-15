@@ -25,6 +25,10 @@ final class BattleModel: ObservableObject {
     @Published private(set) var phase: Phase = .title
     @Published private(set) var status: BattleService.Status?
     @Published private(set) var match: BattleService.Match?
+    /// 相手を待っている間、「待つのをやめる」を出すか(人同士で、30秒待ったら)と、押したけれど相手がまだ遊んでいたか
+    @Published private(set) var canStopWaiting = false
+    @Published private(set) var opponentStillPlaying = false
+    private var waitTask: Task<Void, Never>?
     /// 対戦中の表示: 自分の秒、相手が生きているか・落ちた秒
     @Published private(set) var myTime = 0.0
     @Published private(set) var opponentAlive = true
@@ -192,6 +196,14 @@ final class BattleModel: ObservableObject {
                 resultListener = BattleService.listenResult(match: m.id, uid: uid) { [weak self] r in
                     Task { @MainActor in self?.show(r) }
                 }
+                // 相手がアプリを閉じたときなど、待たされ続けないように、30秒たったら「待つのをやめる」を出す
+                canStopWaiting = false; opponentStillPlaying = false
+                waitTask?.cancel()
+                waitTask = Task { [weak self] in
+                    try? await Task.sleep(nanoseconds: 30_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run { if self?.phase == .waiting { self?.canStopWaiting = true } }
+                }
             }
         } catch { phase = .failed }
     }
@@ -209,6 +221,15 @@ final class BattleModel: ObservableObject {
         Task { await loadStatus() }
     }
 
+    /// 待つのをやめる: 相手の通信が途絶えている・締め切りを過ぎたなら、サーバーがその場で決着する
+    func stopWaiting() async {
+        guard let m = match, phase == .waiting else { return }
+        canStopWaiting = false
+        do {
+            if let r = try await BattleService.claimWin(match: m.id) { show(r) } else { opponentStillPlaying = true; canStopWaiting = true }
+        } catch { canStopWaiting = true }
+    }
+
     /// 対戦中にやめる(降参)。その時点で落ちた扱い
     func forfeit() {
         guard phase == .playing else { return }
@@ -222,6 +243,7 @@ final class BattleModel: ObservableObject {
     }
 
     func cleanup() {
+        waitTask?.cancel(); waitTask = nil; canStopWaiting = false; opponentStillPlaying = false
         searchTask?.cancel(); searchTask = nil
         startTask?.cancel(); startTask = nil
         stopQueue()

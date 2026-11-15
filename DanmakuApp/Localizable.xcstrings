@@ -71375,6 +71375,266 @@
           }
         }
       }
+    },
+    "battle.wait.stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待つのをやめる"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop waiting"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再等待"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再等待"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그만 기다리기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar de esperar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêter d’attendre"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht mehr warten"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar de esperar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не ждать"
+          }
+        }
+      }
+    },
+    "battle.wait.still": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相手はまだ遊んでいます。もう少し待ってください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your opponent is still playing. Please wait a little longer."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对手还在游戏中,请再稍等一下。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "對手還在遊戲中,請再稍等一下。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상대가 아직 플레이 중이에요. 조금만 더 기다려 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rival sigue jugando. Espera un poco más."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre adversaire joue encore. Patientez un peu."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Gegner spielt noch. Bitte warte noch etwas."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu oponente ainda está jogando. Aguarde mais um pouco."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Соперник ещё играет. Подождите немного."
+          }
+        }
+      }
+    },
+    "error.publish.replay-month": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリアの確認から時間がたっているため、ランダムの並びが変わりました。もう一度テストプレイしてクリアしてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The random pattern has changed since you cleared it. Test-play and clear it again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "距离通关确认已过一段时间,随机的排列已改变。请再次试玩并通关。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "距離通關確認已過一段時間,隨機的排列已改變。請再次試玩並通關。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "클리어 확인 후 시간이 지나 랜덤 배치가 바뀌었어요. 다시 테스트 플레이로 클리어해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El patrón aleatorio cambió desde que lo superaste. Pruébalo y supéralo de nuevo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le motif aléatoire a changé depuis votre réussite. Testez et réussissez-le à nouveau."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Zufallsmuster hat sich seit deinem Abschluss geändert. Teste und schaffe es erneut."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O padrão aleatório mudou desde que você concluiu. Teste e conclua de novo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Случайный узор изменился с момента прохождения. Пройдите тест ещё раз."
+          }
+        }
+      }
+    },
+    "error.publish.duplicate": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じ内容のステージを、すでに投稿しています。弾幕を少し変えてから投稿してください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've already published a stage with the same content. Change the bullets a little before publishing."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你已经发布过内容相同的关卡。请稍微修改弹幕后再发布。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你已經發佈過內容相同的關卡。請稍微修改彈幕後再發佈。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 내용의 스테이지를 이미 투고했어요. 탄막을 조금 바꾼 뒤 투고해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya publicaste un nivel con el mismo contenido. Cambia un poco las balas antes de publicar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous avez déjà publié un niveau identique. Modifiez un peu les tirs avant de publier."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast bereits ein Level mit gleichem Inhalt veröffentlicht. Ändere die Kugeln etwas."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você já publicou uma fase com o mesmo conteúdo. Mude um pouco os tiros antes de publicar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы уже публиковали уровень с таким же содержимым. Немного измените пули."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

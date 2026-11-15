@@ -16,7 +16,16 @@ connectFunctionsEmulator(fns, "127.0.0.1", 5001);
 const admin = adminInit({ projectId: "demo-danmaku" }, "test");
 const db = adminDb(admin);
 
-const call = (name: string, data: unknown) => httpsCallable(fns, name)(data).then((r) => r.data as Record<string, unknown>);
+// 同じ作者が遊ぶ中身の同じステージを出し直すと duplicate で断られるので、テストの投稿は 1 本ごとに最初の発射台の開始秒を少しずらす
+// (callRaw はずらさない。出し直しを断るテストで使う)
+let variant = 0;
+const vary = (name: string, data: unknown): unknown => {
+  const d = data as { emitters?: Record<string, unknown>[] } | null;
+  if (name !== "publishStage" || !d || !Array.isArray(d.emitters) || d.emitters.length === 0) return data;
+  return { ...d, emitters: d.emitters.map((e, i) => (i === 0 ? { ...e, s: (variant++ % 900) / 100 } : e)) };
+};
+const callRaw = (name: string, data: unknown) => httpsCallable(fns, name)(data).then((r) => r.data as Record<string, unknown>);
+const call = (name: string, data: unknown) => callRaw(name, vary(name, data));
 const callErr = async (name: string, data: unknown) => { try { await call(name, data); return null; } catch (e) { return (e as { message: string }).message; } };
 let n = 0;
 const signUp = async () => { await signOut(auth); await createUserWithEmailAndPassword(auth, `u${Date.now()}${n++}@test.dev`, "password123"); };
@@ -114,13 +123,27 @@ describe("publishStage", () => {
 });
 
 describe("submitResults / toggleLike / reportStage", () => {
-  it("挑戦・クリア数をまとめて加算し、高難度用の値を更新する", async () => {
+  it("挑戦・クリア数を加算する。1 回の送信で 1 ステージ 3 回まで数える", async () => {
     const { id } = (await publish()) as { id: string };
     await signOut(auth); await signInAnonymously(auth);
-    await call("submitResults", { results: [{ stageId: id, plays: 10, clears: 3 }] });
+    await call("submitResults", { results: [{ stageId: id, plays: 10, clears: 2 }] });
     const s = (await db.doc(`stages/${id}`).get()).data()!;
-    expect(s).toMatchObject({ plays: 10, clears: 3, hardRate: 0.3 });
+    expect(s).toMatchObject({ plays: 3, clears: 2 });
     expect(s.trending).toBeGreaterThan(0);
+  });
+  it("作者が自分のステージを遊んだ分は数えない・続けての送信は too-fast・1 日 10 回まで", async () => {
+    const { id } = (await publish()) as { id: string };
+    await call("submitResults", { results: [{ stageId: id, plays: 3, clears: 3 }] });
+    expect((await db.doc(`stages/${id}`).get()).get("plays")).toBe(0);
+    await signOut(auth); await signInAnonymously(auth);
+    const uid = auth.currentUser!.uid;
+    await call("submitResults", { results: [{ stageId: id, plays: 3, clears: 0 }] });
+    expect(await callErr("submitResults", { results: [{ stageId: id, plays: 3, clears: 0 }] })).toMatch(/too-fast/);
+    for (let i = 0; i < 4; i++) {
+      await db.doc(`resultMeta/${uid}`).update({ lastAt: 0 });
+      await call("submitResults", { results: [{ stageId: id, plays: 3, clears: 0 }] });
+    }
+    expect((await db.doc(`stages/${id}`).get()).get("plays")).toBe(10);
   });
   it("不正な件数は拒否", async () => {
     await signInAnonymously(auth);
@@ -132,9 +155,18 @@ describe("submitResults / toggleLike / reportStage", () => {
     expect(await call("toggleLike", { stageId: id })).toEqual({ liked: true, likes: 1 });
     expect(await call("toggleLike", { stageId: id })).toEqual({ liked: false, likes: 0 });
   });
-  it("通報は1人1回で、5件たまると自動で非公開になりアラートが残る", async () => {
+  it("始めたばかりの作者のステージは、2件の通報で自動で非公開になる", async () => {
     const { id } = (await publish()) as { id: string };
-    for (let i = 0; i < 5; i++) { await signUp(); await call("reportStage", { stageId: id, reason: "impossible" }); }
+    await signUp(); await call("reportStage", { stageId: id, reason: "impossible" });
+    expect((await db.doc(`stages/${id}`).get()).get("status")).toBe("published");
+    await signUp(); expect(await call("reportStage", { stageId: id, reason: "impossible" })).toMatchObject({ hidden: true });
+  });
+  it("通報は1人1回で、(7日より前からいる作者は)5件たまると自動で非公開になりアラートが残る", async () => {
+    const { id } = (await publish()) as { id: string };
+    await db.doc(`users/${auth.currentUser!.uid}`).update({ createdAt: new Date(Date.now() - 30 * 86_400_000) });
+    for (let i = 0; i < 4; i++) { await signUp(); await call("reportStage", { stageId: id, reason: "impossible" }); }
+    expect((await db.doc(`stages/${id}`).get()).get("status")).toBe("published");
+    await signUp(); await call("reportStage", { stageId: id, reason: "impossible" });
     expect((await db.doc(`stages/${id}`).get()).get("status")).toBe("hidden");
     const alerts = await db.collection("admin_alerts").where("stageId", "==", id).get();
     expect(alerts.size).toBe(1);
@@ -594,5 +626,41 @@ describe("myStages(自分の投稿と実績)", () => {
   it("匿名ユーザーは使えない", async () => {
     await signOut(auth); await signInAnonymously(auth);
     expect(await callErr("myStages", {})).toMatch(/sign-in-required/);
+  });
+  it("通報で非表示になった自分のステージの ID を hiddenIds で返す", async () => {
+    const { id } = (await publish()) as { id: string };
+    await db.doc(`stages/${id}`).update({ status: "hidden" });
+    const r = (await call("myStages", {})) as { stages: unknown[]; hiddenIds: string[] };
+    expect(r.hiddenIds).toEqual([id]);
+    expect(r.stages).toEqual([]);
+  });
+});
+
+describe("不正対策(出し直し・限定公開の本数・利用停止・急上昇の初めの点数)", () => {
+  it("遊ぶ中身が同じステージの出し直しは duplicate(非表示になったものも)。名前だけ変えても同じ", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    const first = (await callRaw("publishStage", { ...stage, name: "もと" })) as { id: string };
+    expect((await db.doc(`stages/${first.id}`).get()).get("trending")).toBeGreaterThan(0);
+    await db.doc(`stages/${first.id}`).update({ status: "hidden" });
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    expect(await callErr("publishStage", { ...stage, name: "もと" })).toBeNull();   // ずらした中身なら出せる
+    await db.doc(`users/${uid}`).update({ lastPostAt: new Date(0) });
+    try { await callRaw("publishStage", { ...stage, name: "べつの名前" }); expect.unreachable(); } catch (e) { expect((e as Error).message).toMatch(/duplicate/); }
+  });
+  it("「URLを知っている人だけ」も 1 日 20 本まで", async () => {
+    await signUp();
+    const uid = auth.currentUser!.uid;
+    await db.doc(`users/${uid}`).set({ unlistedDay: jstDay(Date.now()), unlistedToday: 20, displayName: "", blockedUids: [], postCount: 0 }, { merge: true });
+    expect(await callErr("publishStage", { ...stage, unlisted: true, clearReplay: undefined })).toMatch(/daily-limit/);
+  });
+  it("利用停止の人は、いいね・通報・コメント・弾幕バトルができない", async () => {
+    const { id } = (await publish()) as { id: string };
+    await signUp();
+    await db.doc(`users/${auth.currentUser!.uid}`).set({ banned: true }, { merge: true });
+    expect(await callErr("toggleLike", { stageId: id })).toMatch(/banned/);
+    expect(await callErr("reportStage", { stageId: id, reason: "other" })).toMatch(/banned/);
+    expect(await callErr("postComment", { stageId: id, text: "すごい", handle: { a: 0, n: 0 } })).toMatch(/banned/);
+    expect(await callErr("rankedJoinQueue", {})).toMatch(/banned/);
   });
 });

@@ -56,11 +56,14 @@ const newCode = (): string => Array.from({ length: CODE_LENGTH }, () => CODE_ALP
 
 /** 端末の判定(DeviceCheck)。テストでは偽物に差し替える */
 export interface DeviceGate {
-  /** この端末が、もう招待された側として使われたか(判定できなければ false) */
+  /** この端末が、もう招待された側として使われたか。Apple が「正しくないトークン」と答えたら BadDeviceTokenError を投げる */
   used(token: string): Promise<boolean>;
   /** この端末を、招待された側として使ったと記録する */
   mark(token: string): Promise<void>;
 }
+
+/** Apple が、トークンを正しくないと答えた(作り物のトークン) */
+export class BadDeviceTokenError extends Error {}
 
 /** 自分の招待コード(なければ作る)と、状況 */
 export async function getInviteInfo(db: Firestore, uid: string): Promise<{ code: string; count: number; rewarded: number; joinedBy: boolean; ships: string[] }> {
@@ -89,7 +92,7 @@ export async function getInviteInfo(db: Firestore, uid: string): Promise<{ code:
  */
 export async function registerInvite(
   db: Firestore, uid: string, data: unknown, now: number,
-  opts: { accountCreatedAt: number | null; device: DeviceGate | null },
+  opts: { accountCreatedAt: number | null; device: DeviceGate | null; requireToken?: boolean },
 ): Promise<{ status: "registered" | "already"; noReward: boolean }> {
   const d = (data ?? {}) as { code?: unknown; deviceToken?: unknown };
   const code = normalizeCode(d.code);
@@ -104,8 +107,12 @@ export async function registerInvite(
   if (!inviter) throw new HttpsError("not-found", "code");
   if (inviter === uid) throw new HttpsError("invalid-argument", "self");
 
-  let used = false;
-  if (opts.device && token) { try { used = await opts.device.used(token); } catch { used = false; } }
+  // 端末の判定。トークンが無い(端末の判定が必須のとき)・作り物のトークンなら、登録は受け付けるが報酬は出さない。
+  // Apple の側の一時的な失敗のときは、ふつうの人が損をしないように、報酬ありのままにする
+  let used = opts.requireToken === true && !token;
+  if (opts.device && token) {
+    try { used = await opts.device.used(token); } catch (e) { used = e instanceof BadDeviceTokenError; }
+  }
 
   return db.runTransaction(async (tx) => {
     if ((await tx.get(inviteRef)).exists) return { status: "already" as const, noReward: false };
@@ -123,7 +130,7 @@ export async function registerInvite(
  * 招待されていない人・もう付与済みの人は、何もしない。
  */
 export async function countInvitePlays(db: Firestore, uid: string, add: number): Promise<{ granted: boolean; inviter?: string }> {
-  if (add <= 0) return { granted: false };
+  if (!Number.isInteger(add) || add <= 0) return { granted: false };
   const ref = db.doc(`invites/${uid}`);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -217,6 +224,8 @@ export function deviceGateFromEnv(env: NodeJS.ProcessEnv, fetcher: typeof fetch 
   return {
     used: async (token) => {
       const r = await call("query_two_bits", token, {});
+      // 400 は「トークンが正しくない」(作り物・壊れたもの)
+      if (r.status === 400) throw new BadDeviceTokenError(r.text);
       if (r.status !== 200) throw new Error(`devicecheck ${r.status}`);
       try { return (JSON.parse(r.text) as { bit0?: boolean }).bit0 === true; } catch { return false; }   // 「Bit State Not Found」= まだ記録なし
     },

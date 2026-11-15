@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor } from "../src/titles.js";
-import { beamHits, blastHits, monthOf, playedMonth, usesMonth } from "../src/fullsim.js";
+import { beamHits, blastHits, monthOf, MONTH_GRACE_MS, playedMonth, recentMonth, usesMonth } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KINDS } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
-import { firesInPhase, validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
+import { firesInPhase, hasLink, validateComment, validateDisplayName, validatePublish } from "../src/validate.js";
+import { applyDailyCap, contentHash, parseResults, readDaily, reportThreshold, RESULT_PLAYS_PER_CALL, RESULT_PLAYS_PER_DAY, RESULT_STAGES_PER_DAY, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "../src/abuse.js";
 import { afterGrant, afterPost, checkPost, FREE_DAILY_POSTS, HARD_DAILY_POSTS, jstDay, MAX_EXTRA_TICKETS, readQuota } from "../src/quota.js";
 import { pathPosition, validatePath } from "../src/custompath.js";
 import { matchesQuery, nameKeys, normalizeName, queryGram, searchKeys } from "../src/search.js";
@@ -933,6 +934,10 @@ describe("友達招待の部品", () => {
     expect(calls[2]!.url).toBe("https://api.devicecheck.apple.com/v1/update_two_bits");
     expect(calls[2]!.body).toMatchObject({ device_token: "tok", bit0: true, bit1: false });
     await expect(deviceGateFromEnv(env, reply(401, "bad"))!.used("tok")).rejects.toThrow();
+    // 400 = 作り物・壊れたトークン。招待の登録で「報酬なし」にするため、専用のエラーにする
+    const { BadDeviceTokenError } = await import("../src/invite.js");
+    await expect(deviceGateFromEnv(env, reply(400, "Missing or incorrectly formatted device token payload"))!.used("tok")).rejects.toBeInstanceOf(BadDeviceTokenError);
+    await expect(deviceGateFromEnv(env, reply(500, "down"))!.used("tok")).rejects.not.toBeInstanceOf(BadDeviceTokenError);
   });
 });
 
@@ -1060,5 +1065,127 @@ describe("段階 4・5、段階の名前と必殺技、1UP(1.3.0)", () => {
     expect(two.ok && two.stage.needs).toBe(3);
     const names = validatePublish(boss({ phaseInfo: [{ n: "開幕" }, {}, {}] }));
     expect(names.ok && names.stage.needs).toBe(undefined);
+  });
+});
+
+describe("すり抜け対策(見えない文字・記号・全角の点)", () => {
+  it.each(["し​ね", "し⁠ね", "し♪ね", "し/ね", "し★ね", "死‍ね", "ｓｈ​ｉｔ", "し♡ね"])("%s を NG ワードとして見つける", (w) => {
+    expect(containsNgWord(w)).toBe(true);
+  });
+  it.each(["今日もよろしく♪", "ボス/第2形態", "★★★ 難しい！", "Classic Pass", "ありがとう！また遊ぶよ", "はじめての渦", "1/2 の確率"])("%s は通す", (w) => {
+    expect(containsNgWord(w)).toBe(false);
+    expect(hasLink(w)).toBe(false);
+  });
+  it.each(["example．com", "example․com", "exa​mple.com", "ｅｘａｍｐｌｅ．ｃｏｍ", "ｈｔｔｐｓ：／／a", "example\n．com"])("%s を URL として見つける", (w) => {
+    expect(hasLink(w)).toBe(true);
+    expect(validateComment(w).ok).toBe(false);
+  });
+  it("投稿者名も、見えない文字を挟んだ NG ワードを断る", () => {
+    expect(validateDisplayName("し​ね").ok).toBe(false);
+  });
+});
+
+describe("撃つ段階の値の上限(段階 5 の 1235・2345)", () => {
+  const boss = (o: object = {}) => good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, emitters: [em()], ...o });
+  it.each([1235, 1245, 1345, 2345])("%i は段階 5 なら通り、段階 4 なら断る", (ph) => {
+    expect(validatePublish(boss({ phases: 5, emitters: [em({ ph })] })).ok).toBe(true);
+    expect(validatePublish(boss({ phases: 4, emitters: [em({ ph })] })).ok).toBe(false);
+  });
+  it("全部の段階(12345)と、範囲外は断る", () => {
+    expect(validatePublish(boss({ phases: 5, emitters: [em({ ph: 12345 })] })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 5, emitters: [em({ ph: 2346 })] })).ok).toBe(false);
+  });
+});
+
+describe("段階の名前の空白・見えない文字", () => {
+  const boss = (o: object = {}) => good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, emitters: [em()], ...o });
+  it("U+2028・U+FEFF などだけの名前は「名前なし」にする(拒否しない)", () => {
+    const r = validatePublish(boss({ phaseInfo: [{ n: "  " }, { n: "﻿" }, { n: "\u000b\u000c", sp: true }] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.stage.phaseInfo).toEqual([{}, {}, { sp: true }]);
+  });
+  it("見えない文字は除いてから、長さと NG ワードを見る", () => {
+    const r = validatePublish(boss({ phaseInfo: [{ n: "開​幕" }, {}, {}] }));
+    expect(r.ok && r.stage.phaseInfo).toEqual([{ n: "開幕" }, {}, {}]);
+    expect(validatePublish(boss({ phaseInfo: [{ n: "a​".repeat(16) }, {}, {}] })).ok).toBe(true);
+    expect(validatePublish(boss({ phaseInfo: [{ n: "し​ね" }, {}, {}] }))).toEqual({ ok: false, error: "phase-ng-word" });
+  });
+});
+
+describe("遊んだ月(先月は、月が変わってから 6 時間だけ)", () => {
+  const r = validatePublish(good({ emitters: [em({ t: "aim", aim: 2 })] }));
+  const f = validatePublish(good({ emitters: [em({ t: "aim", aim: 1 })] }));
+  if (!r.ok || !f.ok) throw new Error("validate");
+  const dec = 2026 * 12 + 11, nov = 2026 * 12 + 10;
+  it("今月は受け付ける。先月は 6 時間以内だけ", () => {
+    expect(recentMonth(r.stage, dec, Date.UTC(2026, 11, 1, 5, 59))).toBe(dec);
+    expect(recentMonth(r.stage, nov, Date.UTC(2026, 11, 1, 5, 59))).toBe(nov);
+    expect(recentMonth(r.stage, nov, Date.UTC(2026, 11, 1, 6, 1))).toBeNull();
+    expect(recentMonth(r.stage, nov, Date.UTC(2026, 11, 20))).toBeNull();
+    expect(recentMonth(r.stage, nov - 1, Date.UTC(2026, 11, 1, 1))).toBeNull();
+    expect(recentMonth(r.stage, dec + 1, Date.UTC(2026, 11, 1, 1))).toBeNull();
+    expect(recentMonth(r.stage, "x", Date.UTC(2026, 11, 1, 1))).toBeNull();
+    expect(MONTH_GRACE_MS).toBe(6 * 3600_000);
+  });
+  it("ランダムの狙い方がないステージは、月を見ない(0)", () => {
+    expect(recentMonth(f.stage, undefined, Date.UTC(2026, 11, 20))).toBe(0);
+  });
+});
+
+describe("遊んだ回数の水増し対策(submitResults)", () => {
+  const A = "AAAAA", B = "BBBBB";
+  it("形はこれまでどおり受け付け、1 回の送信で 1 ステージ 3 回までに抑える", () => {
+    const p = parseResults([{ stageId: A, plays: 100, clears: 100 }, { stageId: B, plays: 2, clears: 1 }, { stageId: A, plays: 1, clears: 0 }]);
+    expect(p.ok).toBe(true);
+    if (p.ok) { expect(p.merged.get(A)).toEqual({ plays: RESULT_PLAYS_PER_CALL, clears: RESULT_PLAYS_PER_CALL }); expect(p.merged.get(B)).toEqual({ plays: 2, clears: 1 }); }
+    expect(parseResults([]).ok).toBe(false);
+    expect(parseResults([{ stageId: A, plays: 101, clears: 0 }])).toEqual({ ok: false, error: "result-range" });
+    expect(parseResults([{ stageId: A, plays: 1, clears: 2 }])).toEqual({ ok: false, error: "result-range" });
+    expect(parseResults([{ stageId: "x", plays: 1, clears: 0 }])).toEqual({ ok: false, error: "result-entry" });
+  });
+  it("1 日に 1 ステージ 10 回まで。日付が変わると 0 から", () => {
+    const now = Date.UTC(2026, 10, 15, 3);
+    let daily = readDaily(undefined, now);
+    let total = 0;
+    for (let i = 0; i < 5; i++) {
+      const r = applyDailyCap(new Map([[A, { plays: 3, clears: 3 }]]), daily);
+      total += r.allowed.get(A)?.plays ?? 0;
+      daily = r.daily;
+    }
+    expect(total).toBe(RESULT_PLAYS_PER_DAY);
+    expect(readDaily(daily, now + 86_400_000).counts).toEqual({});
+    expect(readDaily(daily, now).counts[A]).toBe(RESULT_PLAYS_PER_DAY);
+  });
+  it("1 日に数えるステージの数にも上限がある", () => {
+    const counts: Record<string, number> = {};
+    for (let i = 0; i < RESULT_STAGES_PER_DAY; i++) counts[`S${i}`] = 1;
+    const r = applyDailyCap(new Map([[A, { plays: 1, clears: 0 }], ["S1", { plays: 1, clears: 1 }]]), { day: 1, counts });
+    expect(r.allowed.has(A)).toBe(false);
+    expect(r.allowed.get("S1")).toEqual({ plays: 1, clears: 1 });
+  });
+});
+
+describe("公開の水増し・出し直し対策", () => {
+  it("「URLを知っている人だけ」の今日の本数", () => {
+    const now = Date.UTC(2026, 10, 15, 3);
+    const u = (o: Record<string, unknown>) => ({ get: (f: string) => o[f] });
+    expect(unlistedUsedToday(u({ unlistedDay: jstDay(now), unlistedToday: 7 }), now)).toBe(7);
+    expect(unlistedUsedToday(u({ unlistedDay: jstDay(now) - 1, unlistedToday: 7 }), now)).toBe(0);
+    expect(UNLISTED_DAILY_POSTS).toBe(20);
+  });
+  it("名前・説明・見た目だけを変えたステージは、同じ目印になる。遊ぶ中身が違えば別の目印", () => {
+    const a = validatePublish(good({ name: "A", desc: "説明", themeBullets: "neon" }));
+    const b = validatePublish(good({ name: "B", authorName: "別名", bgm: 2 }));
+    const c = validatePublish(good({ emitters: [em({ c: 17 })] }));
+    if (!a.ok || !b.ok || !c.ok) throw new Error("validate");
+    expect(contentHash(a.stage)).toBe(contentHash(b.stage));
+    expect(contentHash(a.stage)).not.toBe(contentHash(c.stage));
+    expect(contentHash({ ...a.stage, durationSec: 30 })).not.toBe(contentHash(a.stage));
+  });
+  it("始めたばかり(7 日以内)の作者は 2 人、ほかは 5 人の通報で非表示", () => {
+    const now = Date.UTC(2026, 10, 15);
+    expect(reportThreshold(now - 86_400_000, now)).toBe(2);
+    expect(reportThreshold(now - 8 * 86_400_000, now)).toBe(5);
+    expect(reportThreshold(null, now)).toBe(5);
   });
 });

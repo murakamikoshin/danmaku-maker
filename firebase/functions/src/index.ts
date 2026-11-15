@@ -13,12 +13,13 @@ import { notifyReward } from "./notify.js";
 import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, getInviteInfo as getInviteInfoFn, registerInvite as registerInviteFn } from "./invite.js";
 import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
-import { decodeReplay, isShotType, playedMonth, simulate } from "./fullsim.js";
-import { prepareWeek, rankedBot, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
+import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
+import { prepareWeek, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
-import { afterGrant, afterPost, checkPost, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
+import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
+import { applyDailyCap, contentHash, NEW_STAGE_TREND, parseResults, readDaily, reportThreshold, RESULT_INTERVAL_MS, UNLISTED_DAILY_POSTS, unlistedUsedToday } from "./abuse.js";
 import { crossedMilestone, notifyAuthor, notifyMonthlyEvent } from "./notify.js";
 import { backfillAuthorKeys, backfillNameKeys, matchesQuery, queryGram, searchKeys } from "./search.js";
 import { decay, refreshTrending } from "./trending.js";
@@ -30,7 +31,6 @@ const db = getFirestore();
 
 const APP_STORE_URL = process.env.APP_STORE_URL ?? "https://apps.apple.com/app/id6824245206";
 const APP_STORE_ID = "6824245206";
-const HIDE_REPORT_THRESHOLD = 5;
 const POST_INTERVAL_MS = 10_000;
 
 /** 遊べるステージか(公開中、または「URLを知っている人だけ」)。非表示にされたものは遊べない */
@@ -46,6 +46,11 @@ function requireMember(req: CallableRequest): string {
 function requireAny(req: CallableRequest): string {
   if (!req.auth) throw new HttpsError("unauthenticated", "auth-required");
   return req.auth.uid;
+}
+
+/** 利用停止(users/{uid}.banned)にした人は、投稿・コメント・いいね・通報・名前つきの記録・画像の送信・弾幕バトルができない */
+async function assertNotBanned(uid: string): Promise<void> {
+  if ((await db.doc(`users/${uid}`).get()).get("banned") === true) throw new HttpsError("permission-denied", "banned");
 }
 
 function stageIdFrom(data: unknown): string {
@@ -82,9 +87,10 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
     const played = v.clearReplay ? decodeReplay(v.clearReplay, maxSteps) : null;
     if (!played) throw new HttpsError("invalid-argument", "replay");
-    // ランダムの狙い方があるステージは、作者がクリアした月の並びで再生する(クリア確認から投稿まで間が空いてもよいように、12か月前まで)
-    const clearMonth = playedMonth(v.stage, (req.data as { clearMonth?: unknown }).clearMonth, Date.now(), 12);
-    if (clearMonth === null) throw new HttpsError("invalid-argument", "replay-not-cleared");
+    // ランダムの狙い方があるステージは、作者がクリアした月の並びで再生する。受け付けるのは今月と、月が変わった直後(6 時間)の先月だけ
+    // (時計を戻して、やさしいほうの並びでクリアしたことにするのを防ぐ)。外れたら replay-month(アプリは「もう一度クリアしてから」と案内する)
+    const clearMonth = recentMonth(v.stage, (req.data as { clearMonth?: unknown }).clearMonth, Date.now());
+    if (clearMonth === null) throw new HttpsError("invalid-argument", "replay-month");
     if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard", undefined, clearMonth).outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
   }
   const langRaw = (req.data as { lang?: unknown }).lang;
@@ -99,6 +105,13 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const premium = (req.data as { premium?: unknown }).premium === true;
   const quota = readQuota(user, Date.now());
   if (!unlisted && checkPost(quota, premium) !== "ok") throw new HttpsError("resource-exhausted", "daily-limit");
+  // 「URLを知っている人だけ」の投稿も、1日 UNLISTED_DAILY_POSTS 本まで(1本ごとに共有用の画像を作るため)
+  const unlistedToday = unlistedUsedToday(user, Date.now());
+  if (unlisted && unlistedToday >= UNLISTED_DAILY_POSTS) throw new HttpsError("resource-exhausted", "daily-limit");
+  // 同じ作者が、遊ぶ中身の同じステージを出し直すのは断る(通報で非表示になったものの出し直しも)。目印のない古いステージとは比べない
+  const hash = contentHash(v.stage);
+  const dup = await db.collection("stages").where("authorUid", "==", uid).where("contentHash", "==", hash).limit(1).get();
+  if (!dup.empty) throw new HttpsError("already-exists", "duplicate");
 
   const now = Date.now();
   let id = "";
@@ -107,7 +120,8 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     try {
       await db.doc(`stages/${candidate}`).create({
         authorUid: uid, ...v.stage, nameKeys: searchKeys(v.stage.name, v.stage.authorName), ogImagePath: "", status: unlisted ? "unlisted" : "published",
-        plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: 0, trendUpdatedAt: now,
+        // 新しいステージは、急上昇に少しだけ点数を持って入る(出たばかりで埋もれないように。2日で半分になる)
+        plays: 0, clears: 0, likes: 0, comments: 0, reports: 0, clearRate: 0, trending: unlisted ? 0 : NEW_STAGE_TREND, trendUpdatedAt: now, contentHash: hash,
         createdAt: FieldValue.serverTimestamp(), lang,
       });
       id = candidate;
@@ -123,6 +137,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   await userRef.set({
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
     ...quotaFields(unlisted ? quota : afterPost(quota, premium)),
+    ...(unlisted ? { unlistedDay: jstDay(now), unlistedToday: unlistedToday + 1 } : {}),
     // 初めて公開したとき(「URLを知っている人だけ」は数えない): ボスの無料チケットを1枚渡す
     ...(!unlisted && user.get("ticketGranted") !== true ? { ticketGranted: true, bossTickets: FieldValue.increment(1) } : {}),
     createdAt: user.get("createdAt") ?? FieldValue.serverTimestamp(),
@@ -189,25 +204,36 @@ export const grantExtraPost = onCall(async (req) => {
   });
 });
 
+/**
+ * 遊んだ回数・クリアした回数(アプリが端末でためて、まとめて送ってくる)。
+ * 水増しを防ぐため: 1 ステージにつき 1 回の送信で 3 回まで・1 日 10 回まで数える。作者が自分のステージを遊んだ分は数えない。
+ * 送信の間隔が短すぎるときは too-fast で断る(アプリは送れなかった分を残して、次の機会に送り直す)
+ */
 export const submitResults = onCall(async (req) => {
-  requireAny(req);
-  const results = (req.data as { results?: unknown })?.results;
-  if (!Array.isArray(results) || results.length < 1 || results.length > 30) throw new HttpsError("invalid-argument", "results");
-  const merged = new Map<string, { plays: number; clears: number }>();
-  for (const r of results) {
-    const id = normalizeShortId(String((r as { stageId?: unknown })?.stageId ?? ""));
-    const plays = (r as { plays?: unknown })?.plays, clears = (r as { clears?: unknown })?.clears;
-    if (!isValidShortId(id) || !Number.isInteger(plays) || !Number.isInteger(clears)) throw new HttpsError("invalid-argument", "result-entry");
-    const p = plays as number, c = clears as number;
-    if (p < 0 || p > 100 || c < 0 || c > p) throw new HttpsError("invalid-argument", "result-range");
-    const cur = merged.get(id) ?? { plays: 0, clears: 0 };
-    merged.set(id, { plays: cur.plays + p, clears: cur.clears + c });
-  }
-  for (const [id, add] of merged) {
-    const milestone = await db.runTransaction(async (tx) => {
+  const uid = requireAny(req);
+  const parsed = parseResults((req.data as { results?: unknown })?.results);
+  if (!parsed.ok) throw new HttpsError("invalid-argument", parsed.error);
+
+  const metaRef = db.doc(`resultMeta/${uid}`);
+  const allowed = await db.runTransaction(async (tx) => {
+    const meta = await tx.get(metaRef);
+    const now = Date.now();
+    const last = (meta.get("lastAt") as number | undefined) ?? 0;
+    if (now - last < RESULT_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
+    const capped = applyDailyCap(parsed.merged, readDaily(meta.data() as never, now));
+    tx.set(metaRef, { lastAt: now, day: capped.daily.day, counts: capped.daily.counts });
+    return capped.allowed;
+  });
+
+  // 招待された人の「遊んだ回数」は、公開中のほかの人のステージを、1 回の送信につき 1 ステージ 1 回だけ数える
+  let invitePlays = 0;
+  for (const [id, add] of allowed) {
+    const r = await db.runTransaction(async (tx) => {
       const ref = db.doc(`stages/${id}`);
       const snap = await tx.get(ref);
       if (!snap.exists || !isOpen(snap.get("status"))) return undefined;
+      // 作者が自分のステージを遊んだ分は数えない
+      if (snap.get("authorUid") === uid) return undefined;
       const now = Date.now();
       const before = snap.get("plays") as number;
       const plays = before + add.plays;
@@ -216,20 +242,24 @@ export const submitResults = onCall(async (req) => {
       const trending = decay(snap.get("trending") ?? 0, snap.get("trendUpdatedAt") ?? now, now) + add.plays + add.clears * 2;
       tx.update(ref, { plays, clears, clearRate: rate, hardRate: plays >= 10 ? rate : FieldValue.delete(), trending, trendUpdatedAt: now });
       const m = crossedMilestone(before, plays);
-      return m === undefined ? undefined : { m, to: snap.get("authorUid") as string, name: (snap.get("name") as string | undefined) ?? "" };
+      return {
+        invite: snap.get("status") === "published" && add.plays > 0,
+        milestone: m === undefined ? undefined : { m, to: snap.get("authorUid") as string, name: (snap.get("name") as string | undefined) ?? "" },
+      };
     });
-    // 遊ばれた回数が節目を越えたら、作者に知らせる
-    if (milestone) await notifyAuthor(db, { to: milestone.to, kind: "plays", stageId: id, stageName: milestone.name, extra: String(milestone.m) });
+    if (r?.invite) invitePlays++;
+    // 遊ばれた回数が節目を越えたら、作者に知らせる(節目は回数が増えたときに 1 回だけ越えるので、同じ節目は 2 度届かない)
+    if (r?.milestone) await notifyAuthor(db, { to: r.milestone.to, kind: "plays", stageId: id, stageName: r.milestone.name, extra: String(r.milestone.m) });
   }
   // 招待された人なら、遊んだ回数を数える(失敗しても、結果の送信は成功のまま)
-  const totalPlays = [...merged.values()].reduce((a, b) => a + b.plays, 0);
-  await rewardInviter(await countInvitePlays(db, req.auth!.uid, totalPlays).catch((e) => { logger.warn("countInvitePlays", e); return undefined; }));
+  await rewardInviter(await countInvitePlays(db, uid, invitePlays).catch((e) => { logger.warn("countInvitePlays", e); return undefined; }));
   return { ok: true };
 });
 
 export const toggleLike = onCall(async (req) => {
   const uid = requireMember(req);
   const id = stageIdFrom(req.data);
+  await assertNotBanned(uid);
   const result = await db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), likeRef = db.doc(`stages/${id}/likes/${uid}`);
     const [stage, like] = await Promise.all([tx.get(ref), tx.get(likeRef)]);
@@ -254,13 +284,17 @@ export const reportStage = onCall(async (req) => {
   const id = stageIdFrom(req.data);
   const reason = (req.data as { reason?: unknown }).reason;
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
+  await assertNotBanned(uid);
   return db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), repRef = db.doc(`reports/${id}_${uid}`);
     const [stage, rep] = await Promise.all([tx.get(ref), tx.get(repRef)]);
     if (!stage.exists) throw new HttpsError("not-found", "stage");
     if (rep.exists) return { already: true, hidden: stage.get("status") === "hidden" };
+    // 始めたばかり(ユーザー情報を作ってから 7 日以内)の作者のステージは、2 人の通報で非表示にする。ほかは 5 人
+    const author = await tx.get(db.doc(`users/${stage.get("authorUid") as string}`));
+    const since = (author.get("createdAt")?.toMillis?.() as number | undefined) ?? null;
     const reports = (stage.get("reports") as number) + 1;
-    const hide = reports >= HIDE_REPORT_THRESHOLD && isOpen(stage.get("status"));
+    const hide = reports >= reportThreshold(since, Date.now()) && isOpen(stage.get("status"));
     tx.set(repRef, { stageId: id, reporterUid: uid, reason, createdAt: FieldValue.serverTimestamp() });
     tx.update(ref, { reports, ...(hide ? { status: "hidden" } : {}) });
     if (hide) {
@@ -298,6 +332,8 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
   // 投稿者名で出す設定のときだけ届く。なければ匿名(a, n の言葉)で出す
   const dn = validateDisplayName(d.name);
   if (!dn.ok) throw new HttpsError("invalid-argument", "display-name");
+  // 利用停止の人は、名前を出す記録は送れない(匿名の記録は、これまでどおり)
+  if (dn.name) await assertNotBanned(uid);
   if (typeof d.replay !== "string" || d.replay.length < 8 || d.replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(d.replay)) {
     throw new HttpsError("invalid-argument", "replay");
   }
@@ -318,8 +354,8 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
 
   const played = decodeReplay(d.replay, (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144);
   if (!played) throw new HttpsError("invalid-argument", "replay");
-  // ランダムの狙い方があるステージは、遊んだ月の並びで再生する(今月と、月をまたいだ直後のための先月だけ受け付ける)
-  const month = playedMonth(stage, (d as { month?: unknown }).month, Date.now(), 1);
+  // ランダムの狙い方があるステージは、遊んだ月の並びで再生する(今月と、月が変わってから 6 時間のあいだの先月だけ受け付ける)
+  const month = recentMonth(stage, (d as { month?: unknown }).month, Date.now());
   if (month === null) return { accepted: false, reason: "month" };
   const result = simulate(stage, played.moves, played.steps, isShotType(stage.shot) ? stage.shot : "standard", undefined, month);
   if (result.outcome !== "cleared") return { accepted: false, reason: "not-cleared" };
@@ -339,7 +375,8 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
       return { improved: false, best: old };
     }
     tx.set(scoreRef, { uid, a, n, num: handleNumber(uid), ...(dn.name ? { name: dn.name } : {}), value, mode: stage.mode, createdAt: FieldValue.serverTimestamp() });
-    tx.set(db.doc(`scoreReplays/${id}_${uid}`), { stageId: id, uid, value, replay: d.replay, createdAt: FieldValue.serverTimestamp() });
+    // month: 再生に使った月(あとで記録を確かめ直せるように残す。ランダムの狙い方がなければ 0)
+    tx.set(db.doc(`scoreReplays/${id}_${uid}`), { stageId: id, uid, value, replay: d.replay, month, createdAt: FieldValue.serverTimestamp() });
     return { improved: true, best: value };
   });
   const ahead = await db.collection(`stages/${id}/scores`).where("value", boss ? "<" : ">", best).count().get();
@@ -368,6 +405,7 @@ export const postComment = onCall(async (req) => {
   if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
     throw new HttpsError("invalid-argument", "handle");
   }
+  await assertNotBanned(uid);
   const stageRef = db.doc(`stages/${id}`);
   const stage = await stageRef.get();
   if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
@@ -420,6 +458,7 @@ export const reportComment = onCall(async (req) => {
   const reason = (req.data as { reason?: unknown }).reason;
   if (typeof cid !== "string" || !/^[A-Za-z0-9]{10,40}$/.test(cid)) throw new HttpsError("invalid-argument", "comment-id");
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
+  await assertNotBanned(uid);
   return db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}/comments/${cid}`), repRef = db.doc(`commentReports/${id}_${cid}_${uid}`), stageRef = db.doc(`stages/${id}`);
     const [comment, rep, st] = await Promise.all([tx.get(ref), tx.get(repRef), tx.get(stageRef)]);
@@ -493,6 +532,7 @@ export const savePreviewImage = onCall({ memory: "256MiB" }, async (req) => {
   const ref = db.doc(`stages/${id}`);
   const snap = await ref.get();
   if (!snap.exists || snap.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
+  await assertNotBanned(uid);
   await getStorage().bucket().file(`pv/${id}.png`).save(png, { contentType: "image/png", metadata: { cacheControl: "public, max-age=3600" } });
   // pvv: 静止画の作り方の版。2 = 弾が出そろうところまで進めて撮ったもの(1.2.1〜)。それより前の画像は、弾がほとんど写っていない
   const v = Number((req.data as { v?: unknown })?.v);
@@ -602,6 +642,11 @@ export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, a
   await db.doc(`invites/${uid}`).delete();
   await db.doc(`titleState/${uid}`).delete();
   await db.doc(`publicProfiles/${uid}`).delete();
+  // 送信間隔などの記録と、弾幕バトルの人の記録(ボットの動きに使う。名前が入っている)
+  await db.doc(`resultMeta/${uid}`).delete();
+  await db.doc(`rankedMeta/${uid}`).delete();
+  const myRuns = await db.collection("rankedRuns").where("uid", "==", uid).limit(500).get();
+  for (const r of myRuns.docs) await r.ref.delete();
 
   await db.recursiveDelete(db.doc(`users/${uid}`));
   await getAuth().deleteUser(uid);
@@ -641,7 +686,9 @@ export const myStages = onCall(async (req) => {
     for (const k of SEARCH_FIELDS) { const v = doc.get(k); if (v !== undefined) o[k] = v; }
     return o;
   });
-  return { totals, stages };
+  // 通報で非表示になった自分のステージの ID(アプリが「消えた」と「非表示になった」を見分けられるように)
+  const hiddenIds = snap.docs.filter((doc) => doc.get("status") === "hidden").map((doc) => doc.id).slice(0, 50);
+  return { totals, stages, hiddenIds };
 });
 
 export const searchStages = onCall(async (req) => {
@@ -670,10 +717,16 @@ export const searchStages = onCall(async (req) => {
 
 // ---------- ランク戦(リアルタイム対戦。仕様書「ランク戦 仕様書(リアルタイム対戦)」) ----------
 export const rankedGetStatus = onCall(async (req) => rankedStatus(requireAny(req)));
-export const rankedJoinQueue = onCall(async (req) => rankedJoin(requireAny(req)));
+export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedJoin(uid); });
 export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
-export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => rankedBot(requireAny(req), req.data?.lang));
-export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => rankedSubmit(requireAny(req), req.data));
+export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedBot(uid, req.data?.lang); });
+export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedSubmit(uid, req.data); });
+/**
+ * 人同士の対戦で、自分の記録を出したあと相手を待っているときに呼ぶ(「待つのをやめる」ボタンなど)。
+ * 入力 { matchId }。相手がいなくなっている(位置の更新が止まった・一度もつながらない・締め切りを過ぎた)なら、その場で決着して結果を返す。
+ * まだ相手が遊んでいそうなら { pending: true, me } を返す。返す形は rankedSubmitRun と同じ
+ */
+export const rankedClaimWin = onCall(async (req) => rankedClaim(requireAny(req), req.data));
 /** 毎月1日 12:00(日本時間)に、お知らせをオンにしている人へ「今月のスワイプ弾幕ランキング戦が始まりました」を送る */
 export const notifyMonthlyRanking = onSchedule({ schedule: "0 12 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 300, memory: "256MiB" }, async () => {
   await notifyMonthlyEvent(db);
@@ -703,7 +756,9 @@ export const getInviteInfo = onCall(async (req) => getInviteInfoFn(db, requireAn
 export const registerInvite = onCall(async (req) => {
   const uid = requireAny(req);
   const created = await getAuth().getUser(uid).then((u) => Date.parse(u.metadata.creationTime)).catch(() => null);
-  return registerInviteFn(db, uid, req.data, Date.now(), { accountCreatedAt: Number.isFinite(created) ? created : null, device: deviceGateFromEnv(process.env) });
+  const device = deviceGateFromEnv(process.env);
+  // DeviceCheck の設定があるときは、端末のトークンが必須(無ければ登録は受け付けるが、報酬は出さない)
+  return registerInviteFn(db, uid, req.data, Date.now(), { accountCreatedAt: Number.isFinite(created) ? created : null, device, requireToken: device !== null });
 });
 /** 招待機能が出る前から遊んでいる人に「初期プレイヤー」称号を付ける(締め切りの時刻 FOUNDER_CUTOFF_MS を設定するまでは、配らない) */
 export const claimFounder = onCall(async (req) => {

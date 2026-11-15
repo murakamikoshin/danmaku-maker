@@ -8,15 +8,22 @@ function toHiragana(s: string): string {
   return s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 }
 
-/** 全角・半角、大小文字、カタカナ、長音などを揃える */
+/**
+ * 見えない文字(ゼロ幅スペース・方向の制御・異体字セレクタ・ハングルの埋め草など)。
+ * 「し\u200bね」のように間に挟んで、NGワードやURLの検査をすり抜けるのを防ぐため、比べる前に取り除く
+ */
+const INVISIBLE_RE = /[\p{Cf}\u115F\u1160\u3164\uFFA0]|\u034F|\p{Variation_Selector}/gu;
+export const stripInvisible = (text: string): string => text.replace(INVISIBLE_RE, "");
+
+/** 全角・半角、大小文字、カタカナ、長音などを揃える(見えない文字も取り除く) */
 export function normalize(text: string): string {
-  return toHiragana(text.normalize("NFKC").toLowerCase()).replace(/ー/g, "ー");
+  return toHiragana(stripInvisible(text.normalize("NFKC")).toLowerCase()).replace(/ー/g, "ー");
 }
 
 export function containsNgWord(text: string): boolean {
   const base = normalize(text);
-  // 日本語: 空白や記号を抜いた形でも調べる（「し ね」「し.ね」対策）
-  const squeezed = base.replace(/[\s._\-*・、。,!！?？~〜]+/g, "");
+  // 日本語: 空白や記号を抜いた形(文字と数字だけ)でも調べる(「し ね」「し.ね」「し♪ね」「し/ね」対策)
+  const squeezed = base.replace(/[^\p{L}\p{N}]+/gu, "");
   if (NG_JA.some((w) => squeezed.includes(w) || base.includes(w))) return true;
 
   // 英語: leet 変換 → 単語境界つき

@@ -33,7 +33,8 @@ service cloud.firestore {
       }
     }
 
-    // ユーザー: 自分の表示名とブロックリストだけ自分で更新できる
+    // ユーザー: 本人だけ読める。表示名(弾幕バトルで相手に見える)は、NGワードを確かめたうえで Cloud Functions(公開のとき)だけが書く。
+    // アプリは users/{uid} を直接書かない(ブロックは端末に保存)ので、ブロックリストだけ本人が更新できる。表示名は作るときに空だけ
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if isMember() && request.auth.uid == uid
@@ -41,20 +42,21 @@ service cloud.firestore {
         && request.resource.data.postCount == 0
         && request.resource.data.createdAt == request.time
         && request.resource.data.blockedUids is list && request.resource.data.blockedUids.size() <= 500
-        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 12;
+        && request.resource.data.displayName == '';
       allow update: if isMember() && request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'blockedUids'])
-        && request.resource.data.blockedUids is list && request.resource.data.blockedUids.size() <= 500
-        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 12;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['blockedUids'])
+        && request.resource.data.blockedUids is list && request.resource.data.blockedUids.size() <= 500;
       allow delete: if false;
     }
 
-    // マイステージのバックアップ(アプリを入れ直したときに戻す)。本人(匿名も可)だけが読み書きできる
+    // マイステージのバックアップ(アプリを入れ直したときに戻す)。本人(匿名も可。アプリは匿名の人の分もバックアップする)だけが読み書きできる。
+    // ID はアプリのステージの UUID だけ。中身はアプリの上限(900,000 バイト未満)に合わせる。件数はルールでは数えられない
     match /users/{uid}/savedStages/{stageId} {
       allow read, delete: if signedIn() && request.auth.uid == uid;
       allow create, update: if signedIn() && request.auth.uid == uid
+        && stageId.matches('^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$')
         && request.resource.data.keys().hasOnly(['data', 'updatedAt'])
-        && request.resource.data.data is string && request.resource.data.data.size() < 1000000
+        && request.resource.data.data is string && request.resource.data.data.size() < 900000
         && request.resource.data.updatedAt is timestamp;
     }
 
@@ -84,7 +86,8 @@ service cloud.firestore {
 
     // スワイプ弾幕: 候補の一覧とランキングは、ログイン済み(匿名も可)なら読める。書き込みは Cloud Functions だけ
     match /swipePools/{doc=**} { allow read: if signedIn(); allow write: if false; }
-    match /swipeScores/{uid} { allow read: if signedIn(); allow write: if false; }
+    // スワイプ弾幕の順位表は swipeRanking(Cloud Functions)で読む。直接読めるのは自分の記録だけ(ほかの人の uid が分からないように)
+    match /swipeScores/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /swipeRuns/{id} { allow read, write: if false; }
     match /swipeEvents/{id} { allow read, write: if false; }
     match /swipeMismatches/{id} { allow read, write: if false; }
@@ -103,6 +106,9 @@ service cloud.firestore {
     match /rankedMatches/{id} { allow read: if signedIn() && request.auth.uid in resource.data.players; allow write: if false; }
     match /rankedRuns/{id} { allow read, write: if false; }
     match /rankedBots/{id} { allow read, write: if false; }
+    match /rankedMeta/{id} { allow read, write: if false; }
+    match /rankedPairs/{id} { allow read, write: if false; }
+    match /resultMeta/{id} { allow read, write: if false; }
 
     // 要望(アプリの「要望を送る」)は、クライアントから一切触れない。書き込みは Cloud Functions だけ
     match /feedback/{id} { allow read, write: if false; }
