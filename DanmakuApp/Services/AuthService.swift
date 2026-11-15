@@ -40,7 +40,7 @@ final class AuthService: ObservableObject {
         errorMessage = nil
         switch result {
         case .failure(let error):
-            if (error as? ASAuthorizationError)?.code != .canceled { errorMessage = L("error.signin.failed") }
+            if (error as? ASAuthorizationError)?.code != .canceled { errorMessage = Self.failureMessage(error) }
         case .success(let auth):
             guard let apple = auth.credential as? ASAuthorizationAppleIDCredential,
                   let tokenData = apple.identityToken, let token = String(data: tokenData, encoding: .utf8),
@@ -52,20 +52,59 @@ final class AuthService: ObservableObject {
                 if let user = Auth.auth().currentUser, user.isAnonymous {
                     do {
                         _ = try await user.link(with: credential)
-                        try? await user.getIDTokenResult(forcingRefresh: true)
                     } catch let e as NSError where e.code == AuthErrorCode.credentialAlreadyInUse.rawValue {
                         // 既に Apple で登録済みのアカウントがあれば、そちらに切り替える
-                        guard let existing = e.userInfo[AuthErrorUserInfoUpdatedCredentialKey] as? AuthCredential else { throw e }
-                        _ = try await Auth.auth().signIn(with: existing)
+                        if let existing = e.userInfo[AuthErrorUserInfoUpdatedCredentialKey] as? AuthCredential {
+                            _ = try await Auth.auth().signIn(with: existing)
+                        } else {
+                            _ = try await Auth.auth().signIn(with: credential)
+                        }
+                    } catch let e as NSError where Self.anonymousUnusable.contains(e.code) {
+                        // 匿名のアカウントが使えなくなっている(期限切れ・消えた・トークンが壊れた)ときだけ、
+                        // 匿名の分はあきらめて、Apple で直接サインインする(ずっと登録できないままにならないように)。
+                        // 一時的な失敗では切り替えない(匿名で遊んだ分が、黙って引き継がれなくなるため)
+                        _ = try await Auth.auth().signIn(with: credential)
                     }
                 } else {
                     _ = try await Auth.auth().signIn(with: credential)
                 }
+                // サーバーが「サインイン済み」と分かるように、トークンを作り直す(失敗したら少し待って、もう一度)
+                await refreshToken()
                 isMember = Auth.auth().currentUser.map { !$0.isAnonymous } ?? false
             } catch {
-                errorMessage = L("error.signin.failed")
+                errorMessage = Self.failureMessage(error)
             }
         }
+    }
+
+    /// 匿名のアカウントがもう使えないことを表す失敗(期限切れ・見つからない・トークンが壊れた・もう一度ログインが要る)
+    private static let anonymousUnusable: Set<Int> = [
+        AuthErrorCode.userTokenExpired.rawValue, AuthErrorCode.userNotFound.rawValue,
+        AuthErrorCode.invalidUserToken.rawValue, AuthErrorCode.requiresRecentLogin.rawValue,
+    ]
+
+    /// サインインのあと、トークンを作り直す(つなぐ前の「匿名」のトークンのままだと、投稿などがサインインを求められて失敗する)。
+    /// 失敗しても、サーバーはアカウントの実際の状態も見るので、投稿はできる
+    private func refreshToken() async {
+        for attempt in 0..<3 {
+            if (try? await Auth.auth().currentUser?.getIDTokenResult(forcingRefresh: true)) != nil { return }
+            try? await Task.sleep(nanoseconds: UInt64(attempt + 1) * 700_000_000)
+        }
+    }
+
+    /// サインインに失敗したときの文。よくある原因(iPhone の Apple ID の設定・スクリーンタイムの制限・通信)は、それに合わせて案内する。
+    /// それ以外は、原因を調べられるように失敗の種類(コード)を添える(要望フォームで教えてもらう)
+    static func failureMessage(_ error: Error) -> String {
+        let e = error as NSError
+        if e.domain == ASAuthorizationError.errorDomain {
+            // 1000(unknown)は、Apple ID にサインインしていない・2ファクタ認証がない・スクリーンタイムの制限などで起きる
+            if e.code == ASAuthorizationError.unknown.rawValue || e.code == ASAuthorizationError.notHandled.rawValue {
+                return L("error.signin.apple.setup")
+            }
+        } else if e.domain == AuthErrorDomain, e.code == AuthErrorCode.networkError.rawValue {
+            return L("error.signin.network")
+        }
+        return String(format: L("error.signin.failed.code"), "\(e.domain.split(separator: ".").last.map(String.init) ?? e.domain) \(e.code)")
     }
 
     /// アカウント削除。Apple のトークンを失効させてから、サーバーで投稿・データ・認証ユーザーを削除する

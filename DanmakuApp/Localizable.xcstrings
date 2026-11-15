@@ -68255,6 +68255,201 @@
           }
         }
       }
+    },
+    "error.signin.apple.setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple でサインインできませんでした。iPhone の「設定」の一番上で Apple ID にサインインしているか、「スクリーンタイム」で「Apple でサインイン」が制限されていないか確かめてから、もう一度お試しください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't sign in with Apple. Make sure you're signed in to your Apple ID at the top of Settings, and that Screen Time doesn't restrict \"Sign in with Apple\", then try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法通过 Apple 登录。请确认已在「设置」顶部登录 Apple ID,并且「屏幕使用时间」没有限制「通过 Apple 登录」,然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法透過 Apple 登入。請確認已在「設定」頂部登入 Apple ID,且「螢幕使用時間」沒有限制「使用 Apple 登入」,然後再試一次。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple로 로그인할 수 없었어요. 「설정」 맨 위에서 Apple ID에 로그인되어 있는지, 「스크린 타임」에서 「Apple로 로그인」이 제한되어 있지 않은지 확인한 뒤 다시 시도해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo iniciar sesión con Apple. Comprueba que has iniciado sesión con tu ID de Apple arriba en Ajustes y que Tiempo de uso no restringe «Iniciar sesión con Apple», y vuelve a intentarlo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion avec Apple impossible. Vérifiez que vous êtes connecté à votre identifiant Apple en haut des Réglages et que Temps d'écran ne limite pas « Se connecter avec Apple », puis réessayez."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldung mit Apple fehlgeschlagen. Prüfe, ob du oben in den Einstellungen mit deiner Apple-ID angemeldet bist und Bildschirmzeit „Mit Apple anmelden“ nicht einschränkt, und versuche es erneut."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível entrar com a Apple. Verifique se você está conectado ao seu ID Apple no topo dos Ajustes e se o Tempo de Uso não restringe \"Iniciar sessão com a Apple\", e tente de novo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось войти через Apple. Убедитесь, что вы вошли в Apple ID вверху «Настроек» и что «Экранное время» не ограничивает «Вход с Apple», затем повторите попытку."
+          }
+        }
+      }
+    },
+    "error.signin.network": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通信できなかったため、サインインできませんでした。電波の良い場所でもう一度お試しください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't sign in because of a connection problem. Please try again somewhere with a better signal."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由于网络问题,登录失败。请在信号良好的地方重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由於網路問題,登入失敗。請在訊號良好的地方再試一次。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통신할 수 없어 로그인하지 못했어요. 전파가 좋은 곳에서 다시 시도해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo iniciar sesión por un problema de conexión. Vuelve a intentarlo con mejor señal."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion impossible à cause du réseau. Réessayez avec un meilleur signal."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldung wegen Verbindungsproblemen fehlgeschlagen. Bitte mit besserem Empfang erneut versuchen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível entrar por problema de conexão. Tente de novo em um lugar com sinal melhor."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось войти из‑за проблем со связью. Повторите попытку при хорошем сигнале."
+          }
+        }
+      }
+    },
+    "error.signin.failed.code": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サインインできませんでした(%@)。何度試してもできないときは、設定の「要望・ご意見を送る」から、このコードを添えて教えてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't sign in (%@). If it keeps failing, please send us this code from \"Send a request or feedback\" in Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录失败(%@)。如果多次尝试仍不行,请在设置的「发送建议或反馈」中附上此代码告诉我们。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登入失敗(%@)。如果多次嘗試仍不行,請在設定的「傳送建議或意見」中附上此代碼告訴我們。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인할 수 없었어요(%@). 계속 안 되면 설정의 「요청·의견 보내기」에서 이 코드를 함께 알려 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo iniciar sesión (%@). Si sigue fallando, envíanos este código desde «Enviar sugerencia o comentario» en Ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion impossible (%@). Si cela persiste, envoyez-nous ce code via « Envoyer une demande ou un avis » dans les Réglages."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldung fehlgeschlagen (%@). Wenn es weiter fehlschlägt, sende uns diesen Code über „Wunsch / Feedback senden“ in den Einstellungen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível entrar (%@). Se continuar falhando, envie este código em \"Enviar pedido ou comentário\" nos Ajustes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось войти (%@). Если ошибка повторяется, отправьте этот код через «Отправить пожелание или отзыв» в настройках."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
