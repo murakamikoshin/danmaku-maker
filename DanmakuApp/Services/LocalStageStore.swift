@@ -130,7 +130,7 @@ final class LocalStageStore: ObservableObject {
 extension Stage {
     /// 遊びの中身が同じか。飾り(見た目・音・演出)は、遊びの結果に関わらないので比べない。
     /// 変えても、テストプレイ(クリア確認)のやり直しは要らない。サーバーも、投稿されたステージでリプレイを計算し直すので問題ない。
-    /// 比べないもの: 名前・一覧のプレビュー・BGM・見た目(弾・背景・自機・ドット絵の自機)・ごほうびの演出・ボスの警告・倒したときの演出・雑魚の見た目
+    /// 比べないもの: 名前・一覧のプレビュー・BGM・見た目(弾・背景・自機・ドット絵の自機)・ごほうびの演出・ボスの警告・倒したときの演出・雑魚の見た目・段階の名前と必殺技
     func samePlay(as other: Stage) -> Bool { withoutDecor() == other.withoutDecor() }
 
     private func withoutDecor() -> Stage {
@@ -142,7 +142,8 @@ extension Stage {
         a.rewardFx = nil
         a.bossWarning = nil; a.bossDefeat = nil
         a.mookLook = nil
-        a.waves = waves?.map { var w = $0; w.warning = nil; w.defeat = nil; w.mookLook = nil; return w }
+        a.phaseInfo = nil
+        a.waves = waves?.map { var w = $0; w.warning = nil; w.defeat = nil; w.mookLook = nil; w.phaseInfo = nil; return w }
         return a
     }
 }

@@ -37,6 +37,9 @@ export interface Emitter {
   aim?: 1 | 2;
 }
 
+/** ボスの段階の名前と必殺技(見た目だけ。アプリの PhaseInfo と同じ) */
+export interface PhaseInfo { n?: string; sp?: true }
+
 export interface Wave {
   kind: WaveKind;
   durationSec: number;
@@ -60,8 +63,14 @@ export interface Wave {
   /** ボスの見た目(1〜5。標準=0は入れない。5 は堕天使で、位置と当たる範囲が変わる)・雑魚の見た目(1〜4)。図形のボスと雑魚は見た目だけ */
   bossLook?: number;
   mookLook?: number;
-  /** 覚醒する段階(2 か 3)。ボスの場面だけ */
+  /** 覚醒する段階(2〜段階の数)。ボスの場面だけ */
   awaken?: number;
+  /** ボスの段階の数(4 か 5。3 は入れない)。ボスの場面だけ。1.3.0 から(needs: 3) */
+  phases?: number;
+  /** 段階ごとの名前(16文字まで)と必殺技。見た目だけ。ボスの場面だけ。1.3.0 から */
+  phaseInfo?: PhaseInfo[];
+  /** このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 自動)。最後の場面には付けない。1.3.0 から(needs: 3) */
+  oneUp?: 1 | 2;
   /** ボスの位置(動きの中心。x は 0.2〜0.8、y は 0.1〜0.3、0.05 刻み。標準=x 0.5, y 0.2 は入れない) */
   bossX?: number;
   bossY?: number;
@@ -112,8 +121,11 @@ export interface Stage {
   desc?: string;
   bossLook?: number;
   mookLook?: number;
-  /** 覚醒する段階(2 か 3)。ボス戦・ダメージ勝負だけ */
+  /** 覚醒する段階(2〜段階の数)。ボス戦・ダメージ勝負だけ */
   awaken?: number;
+  /** ボスの段階の数(4 か 5)・段階ごとの名前と必殺技(Wave と同じ。ボス戦・ダメージ勝負だけ)。1.3.0 から */
+  phases?: number;
+  phaseInfo?: PhaseInfo[];
   /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
   shot?: "spread" | "heavy";
   /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
@@ -210,11 +222,47 @@ function mooksClearVal(v: unknown, allowed: boolean, ems: readonly Emitter[]): {
   if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner"].includes(m.t))) return { ok: false };
   return { ok: true, v: true };
 }
-/** 撃つ段階の値: 0 = 全部、1〜3 = その段階だけ、12・13・23 = 2つの段階(1.3.0 から。アプリの Emitter.phaseCodes と同じ) */
-export const PHASE_CODES: readonly number[] = [0, 1, 2, 3, 12, 13, 23];
+/** ボスの段階の数の範囲(3 が標準。1.3.0 から 4・5) */
+export const PHASE_COUNT_MIN = 3, PHASE_COUNT_MAX = 5;
+/** 撃つ段階の値を、段階の番号の一覧にする(アプリの Emitter.phases(of:) と同じ)。0 や形の正しくない値は [] */
+export function phasesOf(code: number): number[] {
+  if (!Number.isInteger(code) || code <= 0) return [];
+  const digits = String(code).split("").map(Number);
+  if (!digits.every((d) => d >= 1 && d <= PHASE_COUNT_MAX)) return [];
+  for (let i = 1; i < digits.length; i++) if (digits[i]! <= digits[i - 1]!) return [];
+  return digits;
+}
+/** 撃つ段階の値が、段階の数 n のボスで正しいか: 0(全部)か、n 以下の段階を小さい順に並べた数で、全部ではないもの */
+export const isPhaseCode = (ph: number, n: number): boolean => {
+  if (ph === 0) return true;
+  const d = phasesOf(ph);
+  return d.length > 0 && d.length < n && d.every((x) => x <= n);
+};
 /** この段階で撃つか(アプリの Emitter.fires(inPhase:) と同じ) */
-export const firesInPhase = (ph: number, phase: number): boolean =>
-  ph === 0 || ph === phase || (ph >= 10 && (Math.floor(ph / 10) === phase || ph % 10 === phase));
+export const firesInPhase = (ph: number, phase: number): boolean => ph === 0 || phasesOf(ph).includes(phase);
+/** 段階ごとの名前と必殺技を検証する。段階の数と同じ長さの配列。名前は1〜16文字・改行なし・NGワードなし。何も付いていなければ undefined */
+function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: PhaseInfo[] } | { ok: false; error: string } {
+  if (v === undefined || v === null) return { ok: true };
+  if (!boss || !Array.isArray(v) || v.length !== n) return { ok: false, error: "phase-info" };
+  const out: PhaseInfo[] = [];
+  for (const item of v) {
+    if (!isObj(item)) return { ok: false, error: "phase-info" };
+    const p: PhaseInfo = {};
+    if (item.n !== undefined && item.n !== null) {
+      if (typeof item.n !== "string") return { ok: false, error: "phase-info" };
+      const name = item.n.trim();
+      if (len(name) < 1 || len(name) > MAX_PHASE_NAME || /[\r\n]/.test(name)) return { ok: false, error: "phase-info" };
+      if (containsNgWord(name)) return { ok: false, error: "phase-ng-word" };
+      p.n = name;
+    }
+    if (item.sp !== undefined && item.sp !== null && item.sp !== false) {
+      if (item.sp !== true) return { ok: false, error: "phase-info" };
+      p.sp = true;
+    }
+    out.push(p);
+  }
+  return { ok: true, v: out.some((p) => p.n !== undefined || p.sp) ? out : undefined };
+}
 type LevelPart = { bossLook?: number; bossSize?: number; bossMove?: number | null; bossX?: number; bossY?: number; mooksBreakable?: true };
 /** 1 つの場面(または 1 面のステージ)が、1.2.0 以降の内容を使うか */
 const needsNew = (p: LevelPart): boolean =>
@@ -237,6 +285,8 @@ export const BGM_COUNT = 5;
 export const MAX_NAME = 20;
 export const MAX_AUTHOR = 12;
 export const MAX_EMITTERS = 8;
+/** 段階の名前の長さの上限(アプリの PhaseInfo.maxName と同じ) */
+export const MAX_PHASE_NAME = 16;
 export const MAX_REPLAY_CHARS = 120_000;
 
 export type Validated = { ok: true; stage: Stage; clearReplay: string | null } | { ok: false; error: string };
@@ -252,15 +302,15 @@ const int = (v: unknown, lo: number, hi: number): number | null => {
 const len = (s: string) => [...s].length;
 
 /** 発射台の一覧を検証して、丸めて返す。timing: 生き残りの場面は、開始と終わりの時間の整合も見る。fireFromPoint: ボスの場面だけ、好きな場所から出せる */
-function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number; boss: boolean }): { ok: true; list: Emitter[] } | { ok: false; error: string } {
+function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number; boss: boolean; phases?: number }): { ok: true; list: Emitter[] } | { ok: false; error: string } {
   if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_EMITTERS) return { ok: false, error: "emitter-count" };
   const list: Emitter[] = [];
   for (const item of raw) {
     if (!isObj(item) || !(PATTERNS as readonly unknown[]).includes(item.t)) return { ok: false, error: "emitter-pattern" };
     const x = num(item.x, 0, 1), y = num(item.y, 0, 0.6), s = num(item.s, 0, 180), e = num(item.e, 0, 180);
     const i = num(item.i, 0.05, 15), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
-    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 23);
-    if (ph !== null && !PHASE_CODES.includes(ph)) return { ok: false, error: "emitter-range" };
+    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 1234);
+    if (ph !== null && !isPhaseCode(ph, opts.phases ?? 3)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
     const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
@@ -302,8 +352,15 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     } else if ((w.bossHp ?? null) !== null || (w.bossMove ?? null) !== null) {
       return { ok: false, error: "wave-boss-hp" };
     }
-    const em = validateEmitters(w.emitters, { survive: kind === "survive", limit: d, boss: kind === "boss" });
+    const wPhases = optInt(w.phases, PHASE_COUNT_MIN, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
+    if (!wPhases.ok || (wPhases.v !== undefined && kind !== "boss")) return { ok: false, error: "wave-look" };
+    const wN = wPhases.v ?? PHASE_COUNT_MIN;
+    const em = validateEmitters(w.emitters, { survive: kind === "survive", limit: d, boss: kind === "boss", phases: wN });
     if (!em.ok) return em;
+    const wInfo = phaseInfoVal(w.phaseInfo, wN, kind === "boss");
+    if (!wInfo.ok) return wInfo;
+    const wOneUp = optInt(w.oneUp, 1, 2, null);
+    if (!wOneUp.ok || (wOneUp.v !== undefined && kind !== "boss")) return { ok: false, error: "wave-look" };
     let warning: true | undefined;
     if (w.warning !== undefined && w.warning !== null && w.warning !== false) {
       if (w.warning !== true || kind !== "boss") return { ok: false, error: "wave-warning" };
@@ -319,7 +376,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
     const wSize = sizeValFor(wBossLook.ok ? wBossLook.v : undefined, w.bossSize);
     const wMookLook = optInt(w.mookLook, 0, 4, 0);
-    const wAwaken = optInt(w.awaken, 2, 3, null);
+    const wAwaken = optInt(w.awaken, 2, wN, null);
     const wHx = homeVal(w.bossX, 0.2, 0.8, 0.5), wHy = homeVal(w.bossY, 0.1, 0.3, 0.2);
     if (!wHx.ok || !wHy.ok || ((wHx.v !== undefined || wHy.v !== undefined) && kind !== "boss")) return { ok: false, error: "wave-look" };
     if (!wSize.ok || !wMooks.ok || !wBossLook.ok || !wMookLook.ok || !wAwaken.ok) return { ok: false, error: "wave-look" };
@@ -346,8 +403,12 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       ...(wBossLook.v !== undefined ? { bossLook: wBossLook.v } : {}), ...(wMookLook.v !== undefined ? { mookLook: wMookLook.v } : {}),
       ...(wAwaken.v !== undefined ? { awaken: wAwaken.v } : {}),
       ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}),
-      ...(wBody === true ? { bodyHit: true as const } : {}) });
+      ...(wBody === true ? { bodyHit: true as const } : {}),
+      ...(wPhases.v !== undefined ? { phases: wPhases.v } : {}), ...(wInfo.v ? { phaseInfo: wInfo.v } : {}),
+      ...(wOneUp.v !== undefined ? { oneUp: wOneUp.v as 1 | 2 } : {}) });
   }
+  // 1UP は、次の場面があるボスだけ(最後のボスを倒したらクリア)
+  if (list[list.length - 1]?.oneUp !== undefined) return { ok: false, error: "wave-look" };
   return { ok: true, list, total: total + INTERMISSION_BUDGET * (list.length - 1) };
 }
 
@@ -406,11 +467,18 @@ export function validatePublish(input: unknown): Validated {
     return { ok: false, error: "life-count" };
   }
 
+  // ボスの段階の数(ボス戦・ダメージ勝負だけ。3 は標準なので入れない)
+  const bPhases = optInt(input.phases, PHASE_COUNT_MIN, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
+  if (!bPhases.ok || (bPhases.v !== undefined && mode !== "boss" && mode !== "damage")) return { ok: false, error: "look" };
+  const bN = bPhases.v ?? PHASE_COUNT_MIN;
+  const bInfo = phaseInfoVal(input.phaseInfo, bN, mode === "boss" || mode === "damage");
+  if (!bInfo.ok) return bInfo;
+
   let emitters: Emitter[] = [];
   if (mode === "sequence") {
     if (Array.isArray(input.emitters) && input.emitters.length > 0) return { ok: false, error: "emitter-count" };
   } else {
-    const em = validateEmitters(input.emitters, { survive: mode === "survive", limit: durationSec!, boss: mode !== "survive" });
+    const em = validateEmitters(input.emitters, { survive: mode === "survive", limit: durationSec!, boss: mode !== "survive", phases: bN });
     if (!em.ok) return em;
     emitters = em.list;
   }
@@ -456,7 +524,7 @@ export function validatePublish(input: unknown): Validated {
   const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
   const bSize = sizeValFor(bBossLook.ok ? bBossLook.v : undefined, input.bossSize);
   const bMookLook = optInt(input.mookLook, 0, 4, 0);
-  const bAwaken = optInt(input.awaken, 2, 3, null);
+  const bAwaken = optInt(input.awaken, 2, bN, null);
   const bHx = homeVal(input.bossX, 0.2, 0.8, 0.5), bHy = homeVal(input.bossY, 0.1, 0.3, 0.2);
   if (!bHx.ok || !bHy.ok || ((bHx.v !== undefined || bHy.v !== undefined) && mode !== "boss" && mode !== "damage")) return { ok: false, error: "look" };
   if (!bSize.ok || !bMooks.ok || !bBossLook.ok || !bMookLook.ok || !bAwaken.ok) return { ok: false, error: "look" };
@@ -477,10 +545,14 @@ export function validatePublish(input: unknown): Validated {
   const bBody = (input as { bodyHit?: unknown }).bodyHit;
   if (bBody !== undefined && bBody !== null && bBody !== true && bBody !== false) return { ok: false, error: "look" };
   if (bBody === true && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
-  // 遊べるアプリの版: 体当たり(1.3.0〜)は 3、新しいボスなど(1.2.0〜)は 2
-  // 2つの段階で撃つ発射台(1.3.0〜)も 3
-  const multiPhase = [...emitters, ...(waves ?? []).flatMap((w) => w.emitters)].some((m) => m.ph > 3);
-  const needs = bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 遊べるアプリの版: 体当たり(1.2.1〜)は 3、新しいボスなど(1.2.0〜)は 2
+  // 2つの段階で撃つ発射台(1.2.1〜)も 3
+  // 狙い方・4〜5段階・1UP(1.3.0〜)は 4(1.2.1 は 3 まで遊べるので、それより上にする)
+  const allEms = [...emitters, ...(waves ?? []).flatMap((w) => w.emitters)];
+  const multiPhase = allEms.some((m) => m.ph > 3 && m.ph < 100 && phasesOf(m.ph).every((x) => x <= 3));
+  const uses130 = allEms.some((m) => m.aim !== undefined || phasesOf(m.ph).some((x) => x > 3)) || bPhases.v !== undefined
+    || (waves ?? []).some((w) => w.phases !== undefined || w.oneUp !== undefined);
+  const needs = uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;
@@ -536,7 +608,8 @@ export function validatePublish(input: unknown): Validated {
       ...(bHx.v !== undefined ? { bossX: bHx.v } : {}), ...(bHy.v !== undefined ? { bossY: bHy.v } : {}),
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
       ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}),
-      ...(bBody === true ? { bodyHit: true as const } : {}), ...(desc ? { desc } : {}) },
+      ...(bBody === true ? { bodyHit: true as const } : {}), ...(desc ? { desc } : {}),
+      ...(bPhases.v !== undefined ? { phases: bPhases.v } : {}), ...(bInfo.v ? { phaseInfo: bInfo.v } : {}) },
   };
 }
 

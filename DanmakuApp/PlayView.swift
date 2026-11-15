@@ -252,6 +252,8 @@ struct PlayView: View {
     @ViewBuilder private func lifeView(_ stage: Stage) -> some View {
         let max = stage.effectiveLifeCount
         if stage.effectiveLifeMode == .lives {
+            // 1UP で最初より増えたときは、増えた分のハートも出す
+            let max = Swift.max(max, model.lifeLeft)
             HStack(spacing: 4) {
                 ForEach(0..<max, id: \.self) { i in
                     Image(systemName: i < model.lifeLeft ? "heart.fill" : "heart")

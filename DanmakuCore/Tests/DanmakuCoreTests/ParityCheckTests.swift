@@ -45,4 +45,50 @@ final class ParityCheckTests: XCTestCase {
         }
         try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: "/tmp/parity_swift.json"))
     }
+
+    /// 段階 4・5 と 1UP の一致を調べる(環境変数 PARITY_PHASES があるときだけ。/tmp/parity_swift.json に書く)
+    func testWritePhasesAndOneUp() throws {
+        guard ProcessInfo.processInfo.environment["PARITY_PHASES"] != nil else { throw XCTSkip("") }
+        var out: [[String: Any]] = []
+        func add(_ name: String, _ st: Stage, follow: Bool = false) throws {
+            // 1UP を追いかける操作(拾う形の確認)。追わないときは操作なし
+            var sim = Simulation(stage: st)
+            var moves: [Move] = []
+            let limit = (st.timeLimitSec + 3) * 120 + 144
+            while sim.outcome == .playing && sim.tick < limit {
+                var mv = Move.zero
+                if follow, let item = sim.oneUpItem { mv.dx = item.x > sim.player.x + 1 ? 4 : item.x < sim.player.x - 1 ? -4 : 0 }
+                // 追わないときは、1UP から離れる(取り逃して、画面の下で消える道筋も確かめる)
+                else if !follow, let item = sim.oneUpItem { mv.dx = item.x < 100 ? 4 : -4 }
+                moves.append(mv); sim.step(mv)
+            }
+            let r = sim.result
+            out.append(["t": name, "aw": 0, "mir": 0, "stage": try JSONSerialization.jsonObject(with: JSONEncoder().encode(st)), "replay": Replay(moves: moves).encoded(),
+                        "outcome": "\(r.outcome)", "steps": r.steps, "n": r.bulletCount, "coarse": r.bulletHashCoarse, "life": sim.lifeLeft, "taken": sim.oneUpsTaken])
+        }
+        for n in [4, 5] {
+            for ph in [0, 1, n, 13, n == 5 ? 135 : 24, n == 5 ? 45 : 34] {
+                var s = Stage(name: "p", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1, emitters: [Emitter(t: .ring, i: 0.4, c: 10, ph: ph), Emitter(t: .aim, i: 0.7, c: 3, ph: 0)], lifeMode: .hp, lifeCount: 20)
+                s.phases = n
+                try add("boss\(n)/ph\(ph)", s.sanitized())
+                var d = Stage(name: "d", mode: .damage, durationSec: 30, emitters: [Emitter(t: .ring, i: 0.4, c: 10, ph: ph)], lifeMode: .hp, lifeCount: 20)
+                d.phases = n
+                try add("damage\(n)/ph\(ph)", d.sanitized())
+            }
+        }
+        for oneUp in [1, 2] {
+            for mode in [LifeMode.lives, .hp] {
+                for follow in [false, true] {
+                    var w1 = Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 2, emitters: [Emitter(t: .ring, i: 2.5, c: 3, v: 1)])
+                    w1.oneUp = oneUp; w1.phases = 4
+                    let w2 = Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .aim, x: 0.5, y: 0.1, i: 1.5, c: 1)])
+                    var w3 = Wave(kind: .boss, durationSec: 30, bossHp: 200, bossMove: 0, emitters: [Emitter(t: .ring, i: 0.5, c: 8)])
+                    w3.phases = 5
+                    let st = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: mode, lifeCount: mode == .lives ? 3 : 12, waves: [w1, w2, w3]).sanitized()
+                    try add("seq/oneUp\(oneUp)/\(mode)/follow\(follow)", st, follow: follow)
+                }
+            }
+        }
+        try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: "/tmp/parity_swift.json"))
+    }
 }

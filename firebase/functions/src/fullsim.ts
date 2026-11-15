@@ -145,10 +145,12 @@ export interface SimStage {
   mookHits?: number | null;
   mooksClear?: boolean | null;
   bodyHit?: boolean | null;
+  /** ボスの段階の数(3〜5。無ければ3)。1.3.0 から */
+  phases?: number | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean; bodyHit: boolean }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean; bodyHit: boolean; phases: number; oneUp: number }
 /** 倒せる雑魚の体力・当たる半径(アプリの DanmakuConfig.mookHp / Simulation.mookRadius と同じ) */
 const MOOK_HP = 20;
 /** 雑魚を倒すのに当てる回数(1〜50、無ければ 20)。アプリの Wave.sanitizedMookHits と同じ */
@@ -157,12 +159,14 @@ const MOOK_RADII = [9, 13, 18];
 /** 雑魚が出る発射台か(アプリの Simulation.hasMook と同じ) */
 const hasMook = (m: Emitter, boss: boolean): boolean => !["rain", "sideL", "sideR", "corner"].includes(m.t) && (!boss || m.p === 1);
 const INTERMISSION = 1.5;
+/** 1UP(アプリの Simulation.oneUpHeal / oneUpFallSpeed / oneUpPickRadius と同じ) */
+const ONE_UP_HEAL = 3, ONE_UP_FALL = 90, ONE_UP_RADIUS = 18;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true, bodyHit: w.kind === "boss" && w.bodyHit === true }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true, bodyHit: w.kind === "boss" && w.bodyHit === true, phases: w.kind === "boss" ? (w.phases ?? 3) : 3, oneUp: w.kind === "boss" ? (w.oneUp ?? 0) : 0 }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true, bodyHit: st.mode !== "survive" && st.bodyHit === true }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true, bodyHit: st.mode !== "survive" && st.bodyHit === true, phases: st.mode !== "survive" ? (st.phases ?? 3) : 3, oneUp: 0 }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -475,11 +479,25 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   let invincible = false, countsGrazes = true, grazeCount = 0;
   let grazedThisStep: Bullet[] = [];
 
+  /** いまの段階。HP(ダメージ勝負は時間)を段階の数で等分する(アプリの phaseOf と同じ。3段階はこれまでと同じ) */
   const phaseOf = (waveT: number) => {
     const sp = spec();
-    if (sp.damage) { const f = Math.max(0, waveT) / sp.limit; return f < 1 / 3 ? 1 : f < 2 / 3 ? 2 : 3; }
+    const n = sp.phases;
+    if (sp.damage) {
+      const f = Math.max(0, waveT) / sp.limit;
+      for (let j = 1; j < n; j++) if (f < j / n) return j;
+      return n;
+    }
     const r = hp / Math.max(1, sp.hp);
-    return r > 2 / 3 ? 1 : r > 1 / 3 ? 2 : 3;
+    for (let j = 1; j < n; j++) if (r > (n - j) / n) return j;
+    return n;
+  };
+
+  /** 落ちてくる1UP(拾うか、画面の下へ出るまで残る) */
+  let oneUpItem: { x: number; y: number } | null = null;
+  /** 1UP を取った: ライフ制は+1(最大5)、HP 制は3回復(最大まで)。アプリの gainLife と同じ */
+  const gainLife = () => {
+    lifeLeft = lifeMode === "lives" ? Math.min(lifeLeft + 1, LIVES_RANGE[1]) : Math.min(lifeLeft + ONE_UP_HEAL, lifeMax);
   };
 
   /** 自機の弾が、倒せる雑魚に当たったか。当たったら体力を減らして true(アプリの hitMook と同じ) */
@@ -537,6 +555,13 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     t += dt;
     px = clamp(px + dx0 * MOVE_UNIT, 6, W - 6);
     py = clamp(py + dy0 * MOVE_UNIT, 6, H - 6);
+    // 落ちてくる1UP: 自機が触れたら取る。画面の下へ出たら消える(アプリと同じ)
+    if (oneUpItem) {
+      const item = { x: oneUpItem.x, y: oneUpItem.y + ONE_UP_FALL * dt };
+      const ix = item.x - px, iy = item.y - py;
+      if (ix * ix + iy * iy < ONE_UP_RADIUS * ONE_UP_RADIUS) { oneUpItem = null; gainLife(); }
+      else oneUpItem = item.y > H + 20 ? null : item;
+    }
 
     const sp = spec();
     const waveT = t - waveStart;
@@ -589,6 +614,10 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       if (flash > 0) flash -= dt;
       if (!sp.damage && hp <= 0) {
         defeats += 1;
+        // 次の場面がある場合だけ、1UP(自動はその場で、拾う形はボスの位置から落とす)
+        if (wi + 1 < specs.length) {
+          if (sp.oneUp === 2) gainLife(); else if (sp.oneUp === 1) oneUpItem = { x: bx, y: by };
+        }
         if (wi + 1 < specs.length) advanceWave(dt); else outcome = "cleared";
         return;
       }

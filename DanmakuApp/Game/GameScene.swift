@@ -74,6 +74,10 @@ final class GameScene: SKScene {
     private var starNodes: [(node: SKSpriteNode, y: Double, v: Double)] = []
     private let barFill = SKSpriteNode(color: Palette.gold, size: CGSize(width: 1, height: 5))
     private let centerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+    /// 必殺技の段階で、名前の上に出す小さな「必殺技」の文字
+    private let specialLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+    /// 落ちてくる1UP(連戦で、1UP を付けたボスを倒したとき)
+    private let oneUpNode = SKNode()
     private var barSeparators: [SKSpriteNode] = []
     /// 演出(警告・撃破)を出すか。遊ぶ人の設定でオフにできる
     private let effectsOn: Bool
@@ -299,12 +303,7 @@ final class GameScene: SKScene {
         addChild(back)
         barFill.anchorPoint = CGPoint(x: 0, y: 1); barFill.position = CGPoint(x: 0, y: H); barFill.zPosition = 6
         addChild(barFill)
-        for f in [CGFloat(1) / 3, CGFloat(2) / 3] {
-            let sep = SKSpriteNode(color: skin.background, size: CGSize(width: 2, height: 5))
-            sep.anchorPoint = CGPoint(x: 0.5, y: 1); sep.position = CGPoint(x: W * f, y: H); sep.zPosition = 7
-            addChild(sep)
-            barSeparators.append(sep)
-        }
+        rebuildSeparators()
         waveLabel.fontSize = 14
         waveLabel.fontColor = Palette.text
         waveLabel.horizontalAlignmentMode = .right
@@ -328,6 +327,62 @@ final class GameScene: SKScene {
         centerLabel.position = CGPoint(x: W / 2, y: H / 2)
         centerLabel.zPosition = 8
         addChild(centerLabel)
+        specialLabel.fontSize = 15
+        specialLabel.fontColor = UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1)
+        specialLabel.verticalAlignmentMode = .center
+        specialLabel.position = CGPoint(x: W / 2, y: H / 2 + 30)
+        specialLabel.zPosition = 8
+        specialLabel.isHidden = true
+        addChild(specialLabel)
+        // 1UP: 緑の丸に「1UP」
+        let orb = SKShapeNode(circleOfRadius: CGFloat(Simulation.oneUpPickRadius) * 0.8)
+        orb.fillColor = UIColor(red: 0.2, green: 0.85, blue: 0.45, alpha: 0.9)
+        orb.strokeColor = .white
+        orb.lineWidth = 1.5
+        oneUpNode.addChild(orb)
+        let oneUpText = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        oneUpText.text = "1UP"
+        oneUpText.fontSize = 10
+        oneUpText.fontColor = .white
+        oneUpText.verticalAlignmentMode = .center
+        oneUpNode.addChild(oneUpText)
+        oneUpNode.zPosition = 6
+        oneUpNode.isHidden = true
+        addChild(oneUpNode)
+    }
+
+    /// HP バーの区切り(段階の数で等分した位置)。場面ごとに段階の数が違うので、場面が変わるたびに作り直す
+    private func rebuildSeparators() {
+        for sep in barSeparators { sep.removeFromParent() }
+        barSeparators.removeAll()
+        let W = GameScene.W, H = GameScene.H
+        let n = sim.phaseCount
+        for j in 1..<n {
+            let sep = SKSpriteNode(color: skin.background, size: CGSize(width: 2, height: 5))
+            sep.anchorPoint = CGPoint(x: 0.5, y: 1); sep.position = CGPoint(x: W * CGFloat(j) / CGFloat(n), y: H); sep.zPosition = 7
+            addChild(sep)
+            barSeparators.append(sep)
+        }
+    }
+
+    /// 段階 phase の見出し(作者が付けた名前、なければ「第N段階」)と、必殺技か
+    private func phaseTitle(_ phase: Int) -> (text: String, special: Bool, custom: Bool) {
+        let info = sim.stage.phaseInfo(forWave: sim.waveIndex)
+        let item = info.flatMap { phase - 1 < $0.count ? $0[phase - 1] : nil }
+        let name = item?.n ?? String(format: L("play.phase"), phase)
+        return (name, item?.sp == true, item?.n != nil || item?.sp == true)
+    }
+
+    /// 真ん中の大きな文字。長い名前は、画面の幅に収まるまで小さくする
+    private func showCenter(_ text: String, color: UIColor, special: Bool = false) {
+        centerLabel.text = text
+        centerLabel.fontColor = color
+        centerLabel.fontSize = 28
+        let room = GameScene.W - 24
+        if centerLabel.frame.width > room { centerLabel.fontSize = max(12, 28 * room / centerLabel.frame.width) }
+        centerLabel.isHidden = false
+        specialLabel.text = L("play.special")
+        specialLabel.isHidden = !special
     }
 
     /// 場面ごとに決まっている、ボスの見た目と大きさ(当たる範囲と同じ比率)、発射点の雑魚の姿
@@ -437,6 +492,7 @@ final class GameScene: SKScene {
         shownWave = index
         awakenStartT = nil; awakenShown = false; awakenRingShown = false
         awakenOverlay.alpha = 0
+        rebuildSeparators()
         for m in markers { m.removeFromParent() }
         markers.removeAll()
         if !sim.isBoss && sim.stage.showsMarkers {
@@ -693,6 +749,16 @@ final class GameScene: SKScene {
             barFill.size.width = max(0.001, W * CGFloat(p))
         }
 
+        // 落ちてくる1UP
+        if let item = sim.oneUpItem {
+            oneUpNode.isHidden = false
+            oneUpNode.position = pos(item.x, item.y)
+            oneUpNode.setScale(1 + 0.08 * CGFloat(sin(now * 8)))
+        } else if !oneUpNode.isHidden {
+            oneUpNode.isHidden = true
+        }
+
+        specialLabel.isHidden = true
         if warningLeft > 0 {
             // 警告の表示中は、上で文字を出している
         } else if sim.t < 0 {
@@ -707,9 +773,13 @@ final class GameScene: SKScene {
                 centerLabel.fontColor = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
                 centerLabel.isHidden = e < GameScene.awakenSwap
             } else {
-                centerLabel.text = String(format: L("play.phase"), sim.phase)
-                centerLabel.fontColor = Palette.gold; centerLabel.isHidden = false
+                let title = phaseTitle(sim.phase)
+                showCenter(title.text, color: title.special ? UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1) : Palette.gold, special: title.special)
             }
+        } else if sim.isBoss && sim.phase == 1 && sim.waveT >= 0 && sim.waveT < 1.2 && phaseTitle(1).custom {
+            // 第1段階に名前・必殺技を付けたときは、ボスが撃ち始めるところで名前を出す(見た目だけ。撃つのは止めない)
+            let title = phaseTitle(1)
+            showCenter(title.text, color: title.special ? UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1) : Palette.gold, special: title.special)
         } else {
             centerLabel.isHidden = true
             centerLabel.fontColor = Palette.text
@@ -720,6 +790,10 @@ final class GameScene: SKScene {
             if lastStatus.0 > status.0 && lastStatus.0 >= 0 {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                 if status.0 > 0 { AudioManager.shared.se(.lifeLost) }
+            } else if status.0 > lastStatus.0 && lastStatus.0 > 0 {
+                // 1UP を取った
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                AudioManager.shared.se(.get)
             }
             lastStatus = status
             onStatus?(status.0, status.1, status.2)

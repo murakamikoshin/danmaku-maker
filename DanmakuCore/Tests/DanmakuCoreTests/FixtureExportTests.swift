@@ -370,6 +370,37 @@ final class FixtureExportTests: XCTestCase {
         stages.append(("multiphase-seq", Stage(name: "mp", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .lives, lifeCount: 3, waves: [
             Wave(kind: .boss, durationSec: 40, bossHp: 120, bossMove: 0, emitters: mp)]).sanitized()))
 
+        // 狙い方(1.3.0〜): 固定・ランダム(月 0 の並び)。自機狙いのパターン・雨・格子レーザー
+        func aimed(_ t: DanmakuCore.Pattern, _ aim: Int, k: Int, x: Double = 0.5) -> Emitter {
+            Emitter(t: t, x: x, y: 0.2, s: 0, e: 60, i: 0.7, c: 4, v: 2, r: 20, k: k, aim: aim)
+        }
+        stages.append(("aim-survive", Stage(name: "am", mode: .survive, durationSec: 20, emitters: [aimed(.aim, 1, k: 0), aimed(.rain, 2, k: 1), aimed(.beam, 2, k: 2, x: 0.3)], lifeMode: .hp, lifeCount: 8).sanitized()))
+        var aimBoss = Stage(name: "am", mode: .boss, durationSec: 60, bossHp: 250, bossMove: 1, emitters: [aimed(.gridLaser, 1, k: 0), aimed(.aim, 2, k: 1), aimed(.accel, 2, k: 2)], lifeMode: .lives, lifeCount: 3)
+        aimBoss.emitters[0].mir = 1
+        stages.append(("aim-boss", aimBoss.sanitized()))
+        // 段階 4・5(1.3.0〜)。撃つ段階を 4・5 段階の値で選ぶ
+        var ph5 = Stage(name: "p5", mode: .boss, durationSec: 60, bossHp: 200, bossMove: 2, emitters: [
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.8, c: 10, v: 1.6, r: 6, k: 0, ph: 135),
+            Emitter(t: .aim, x: 0.5, y: 0.2, s: 0, e: 60, i: 0.9, c: 3, v: 2.2, r: 30, k: 1, ph: 24),
+            Emitter(t: .flower, x: 0.3, y: 0.3, s: 0, e: 60, i: 1.1, c: 12, v: 1.5, r: 6, k: 2, ph: 5, p: 1)], lifeMode: .lives, lifeCount: 3)
+        ph5.phases = 5
+        stages.append(("phases5-boss", ph5.sanitized()))
+        var ph4d = Stage(name: "p4", mode: .damage, durationSec: 30, bossMove: 1, emitters: [
+            Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 0.8, c: 10, v: 1.6, r: 6, k: 0, ph: 4),
+            Emitter(t: .aim, x: 0.5, y: 0.2, s: 0, e: 30, i: 0.9, c: 3, v: 2.2, r: 30, k: 1, ph: 12)], lifeMode: .hp, lifeCount: 12)
+        ph4d.phases = 4
+        stages.append(("phases4-damage", ph4d.sanitized()))
+        // 1UP(1.3.0〜): 拾う形と自動。弾を少なくして、次の場面まで進むようにする
+        for oneUp in [1, 2] {
+            var w1 = Wave(kind: .boss, durationSec: 40, bossHp: 100, bossMove: 2, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 40, i: 2.5, c: 3, v: 1.2, r: 0, k: 0)])
+            w1.oneUp = oneUp; w1.phases = 4
+            let w2 = Wave(kind: .survive, durationSec: 10, emitters: easyEms)
+            let w3 = Wave(kind: .boss, durationSec: 30, bossHp: 150, bossMove: 0, emitters: [Emitter(t: .ring, x: 0.5, y: 0.2, s: 0, e: 30, i: 2.5, c: 4, v: 1.2, r: 0, k: 1)])
+            for mode in [LifeMode.lives, .hp] {
+                stages.append(("oneup\(oneUp)-\(mode)", Stage(name: "1u", mode: .sequence, durationSec: 0, emitters: [], lifeMode: mode, lifeCount: mode == .lives ? 3 : 10, waves: [w1, w2, w3]).sanitized()))
+            }
+        }
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

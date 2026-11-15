@@ -110,8 +110,13 @@ struct DraftWave: Codable, Equatable, Identifiable {
     /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
     var bossX: Double?
     var bossY: Double?
-    /// 覚醒する段階(2 か 3)。nil は覚醒しない
+    /// 覚醒する段階(2〜段階の数)。nil は覚醒しない
     var awaken: Int?
+    /// ボスの段階の数(4・5。nil は3段階)と、段階ごとの名前・必殺技(見た目だけ)
+    var phases: Int?
+    var phaseInfo: [PhaseInfo]?
+    /// このボスを倒したときの1UP(1 = 拾う、2 = 自動。nil は出さない。最後の場面では使わない)
+    var oneUp: Int?
     var emitters: [Emitter]
 
     init(kind: WaveKind) {
@@ -130,6 +135,9 @@ struct DraftWave: Codable, Equatable, Identifiable {
         w.mookHits = mooksBreakable == true ? mookHits : nil
         w.mooksClear = (kind == .survive && mooksBreakable == true && mooksClear == true) ? true : nil
         w.bodyHit = (kind == .boss && bodyHit == true) ? true : nil
+        w.phases = kind == .boss ? phases : nil
+        w.phaseInfo = kind == .boss ? phaseInfo : nil
+        w.oneUp = kind == .boss ? oneUp : nil
         return w
     }
 
@@ -204,14 +212,17 @@ struct Draft: Codable, Equatable {
     /// ボスの位置(動きの中心。画面に対する割合。nil は標準)
     var bossX: Double?
     var bossY: Double?
-    /// 覚醒する段階(2 か 3)。nil は覚醒しない
+    /// 覚醒する段階(2〜段階の数)。nil は覚醒しない
     var awaken: Int?
+    /// ボスの段階の数(4・5。nil は3段階)と、段階ごとの名前・必殺技(ボス戦・ダメージ勝負。見た目だけ)
+    var phases: Int?
+    var phaseInfo: [PhaseInfo]?
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -249,6 +260,8 @@ struct Draft: Codable, Equatable {
         bossX = try c.decodeIfPresent(Double.self, forKey: .bossX)
         bossY = try c.decodeIfPresent(Double.self, forKey: .bossY)
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
+        phases = try? c.decodeIfPresent(Int.self, forKey: .phases)
+        phaseInfo = try? c.decodeIfPresent([PhaseInfo].self, forKey: .phaseInfo)
     }
 
     /// 遊べる・投稿できるステージのデータ(丸めた内容)。じぶんの画像の設定は、含まれない
@@ -273,6 +286,8 @@ struct Draft: Codable, Equatable {
         st.mooksClear = (mode == .survive && mooksBreakable && mooksClear) ? true : nil
         st.bodyHit = ((mode == .boss || mode == .damage) && bodyHit) ? true : nil
         st.shipSkin = shipSkin
+        st.phases = (mode == .boss || mode == .damage) ? phases : nil
+        st.phaseInfo = (mode == .boss || mode == .damage) ? phaseInfo : nil
         return st.sanitized()
     }
 

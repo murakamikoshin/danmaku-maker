@@ -1007,3 +1007,58 @@ describe("狙い方(1.3.0)", () => {
     expect(playedMonth(r.stage, "x", now, 1)).toBeNull();
   });
 });
+
+describe("段階 4・5、段階の名前と必殺技、1UP(1.3.0)", () => {
+  const boss = (o: object = {}) => good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, emitters: [em()], ...o });
+  const seqWave = (o: object = {}) => ({ kind: "boss", durationSec: 60, bossHp: 300, bossMove: 0, emitters: [em()], ...o });
+  const seq = (waves: unknown[]) => validatePublish(good({ mode: "sequence", durationSec: 60 * waves.length + 2 * (waves.length - 1), emitters: [], waves }));
+  it("段階の数は 3〜5(3 は入れない)。4・5 を使うと needs 4", () => {
+    const r = validatePublish(boss({ phases: 5 }));
+    expect(r.ok).toBe(true);
+    if (r.ok) { expect(r.stage.phases).toBe(5); expect(r.stage.needs).toBe(4); }
+    const three = validatePublish(boss({ phases: 3 }));
+    if (three.ok) expect(three.stage.phases).toBeUndefined();
+    expect(validatePublish(boss({ phases: 6 })).ok).toBe(false);
+    expect(validatePublish(good({ phases: 4 })).ok).toBe(false);
+  });
+  it("撃つ段階の値は、段階の数に合わせて確かめる", () => {
+    expect(validatePublish(boss({ phases: 5, emitters: [em({ ph: 135 })] })).ok).toBe(true);
+    expect(validatePublish(boss({ emitters: [em({ ph: 135 })] })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 4, emitters: [em({ ph: 1234 })] })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 4, emitters: [em({ ph: 31 })] })).ok).toBe(false);
+    expect(firesInPhase(135, 5)).toBe(true);
+    expect(firesInPhase(135, 4)).toBe(false);
+    expect(firesInPhase(23, 3)).toBe(true);
+  });
+  it("覚醒は 2〜段階の数", () => {
+    expect(validatePublish(boss({ awaken: 5 })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 5, awaken: 5 })).ok).toBe(true);
+  });
+  it("段階の名前は段階の数と同じ長さ・16文字まで・NGワードなし。何も付いていなければ入れない", () => {
+    const r = validatePublish(boss({ phases: 4, phaseInfo: [{ n: "開幕" }, {}, { n: "最終奥義", sp: true }, {}] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.stage.phaseInfo).toEqual([{ n: "開幕" }, {}, { n: "最終奥義", sp: true }, {}]);
+    expect(validatePublish(boss({ phaseInfo: [{ n: "a" }] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ n: "a".repeat(17) }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ n: "a\nb" }, {}, {}] })).ok).toBe(false);
+    const empty = validatePublish(boss({ phaseInfo: [{}, {}, { sp: false }] }));
+    if (empty.ok) expect(empty.stage.phaseInfo).toBeUndefined();
+    expect(validatePublish(good({ phaseInfo: [{}, {}, {}] })).ok).toBe(false);
+  });
+  it("1UP は、最後ではないボスの場面だけ。使うと needs 4", () => {
+    const r = seq([seqWave({ oneUp: 1 }), seqWave()]);
+    expect(r.ok).toBe(true);
+    if (r.ok) { expect(r.stage.waves?.[0]?.oneUp).toBe(1); expect(r.stage.needs).toBe(4); }
+    expect(seq([seqWave(), seqWave({ oneUp: 2 })]).ok).toBe(false);
+    expect(seq([seqWave({ oneUp: 3 }), seqWave()]).ok).toBe(false);
+    expect(seq([{ kind: "survive", durationSec: 20, bossHp: null, bossMove: null, emitters: [em()], oneUp: 1 }, seqWave()]).ok).toBe(false);
+  });
+  it("1.3.0 の内容(狙い方・4〜5段階・1UP)は needs 4(1.2.1 は 3 まで遊べる)", () => {
+    const r = validatePublish(good({ emitters: [em({ t: "aim", aim: 1 })] }));
+    expect(r.ok && r.stage.needs).toBe(4);
+    const two = validatePublish(boss({ emitters: [em({ ph: 23 })] }));
+    expect(two.ok && two.stage.needs).toBe(3);
+    const names = validatePublish(boss({ phaseInfo: [{ n: "開幕" }, {}, {}] }));
+    expect(names.ok && names.stage.needs).toBe(undefined);
+  });
+});

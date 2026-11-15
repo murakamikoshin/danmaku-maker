@@ -19,7 +19,7 @@ final class MultiPhaseTests: XCTestCase {
     }
 
     func testSanitize() {
-        XCTAssertEqual([0, 1, 2, 3, 12, 13, 23, 123, 4, 11, -1, 99].map(Emitter.sanitizedPhase), [0, 1, 2, 3, 12, 13, 23, 0, 3, 3, 0, 3])
+        XCTAssertEqual([0, 1, 2, 3, 12, 13, 23, 123, 4, 11, -1, 99].map { Emitter.sanitizedPhase($0) }, [0, 1, 2, 3, 12, 13, 23, 0, 3, 3, 0, 3])
         let boss = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 0, emitters: [Emitter(t: .ring, ph: 23)]).sanitized()
         XCTAssertEqual(boss.emitters[0].ph, 23)
         let seq = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [

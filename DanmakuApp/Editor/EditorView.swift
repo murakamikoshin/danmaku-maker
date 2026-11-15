@@ -71,8 +71,15 @@ struct EditorView: View {
                                               mookHits: $model.draft.mookHits,
                                               mooksClear: model.draft.mode == .survive ? $model.draft.mooksClear : nil,
                                               bodyHit: model.draft.mode != .survive ? $model.draft.bodyHit : nil,
+                                              phaseCount: model.draft.phases ?? 3,
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
+                            }
+                            // ボスの段階の数と、段階の名前・必殺技(1.3.0)
+                            if model.draft.mode != .survive {
+                                GamePanel(title: "editor.section.phases", tint: GameStyle.pinkColor) {
+                                    BossPhaseControls(phases: $model.draft.phases, info: $model.draft.phaseInfo, byTime: model.draft.mode == .damage)
+                                }
                             }
                         }
                         if advanced { EffectsPanel(model: model) }
@@ -99,6 +106,7 @@ struct EditorView: View {
                             // プレビューは、カードの設定を動かしている間も画面の上に残す(下の項目を設定しながら見える)
                             Section {
                                 EmitterCard(index: i, emitter: $model.draft.emitters[i], isBoss: model.draft.mode != .survive,
+                                            phaseCount: model.draft.phases ?? 3,
                                             look: PreviewLook(draft: model.draft), advanced: advanced,
                                             duration: model.draft.duration == 0 ? 180 : model.draft.duration, canDelete: model.draft.emitters.count > 1,
                                             onDelete: { model.removeEmitter(at: i); collapsedCards = [] },
@@ -335,6 +343,8 @@ private struct EnemyControls: View {
     var mooksClear: Binding<Bool>? = nil
     /// ボスの体に触れるとダメージ(ボスを出すときだけ。nil は出さない)
     var bodyHit: Binding<Bool>? = nil
+    /// ボスの段階の数(覚醒の段階は、2〜この数から選ぶ)
+    var phaseCount = 3
     /// 連戦の場面か(説明の文を「次の場面へ」にする)
     var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
@@ -429,7 +439,7 @@ private struct EnemyControls: View {
                 }
                 if isCharacter {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("editor.enemy.none"))] + BossCharacter.awakenPhases.map { ($0, String(format: L("play.phase"), $0)) },
+                    ChipGrid(items: [(0, L("editor.enemy.none"))] + (2...max(2, phaseCount)).map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
                     Text("editor.awaken.note").font(.caption2).foregroundStyle(.secondary)
                 }
@@ -1105,7 +1115,7 @@ private struct WaveCard: View {
             if wave.kind == .boss { bossControls } else { mookControls }
             ForEach(Array(wave.emitters.indices), id: \.self) { e in
                 EmitterCard(index: e, emitter: Binding(get: { model.draft.waves[i].emitters[e] }, set: { model.draft.waves[i].emitters[e] = $0 }),
-                            isBoss: wave.kind == .boss, look: look, advanced: advanced, duration: wave.duration,
+                            isBoss: wave.kind == .boss, phaseCount: wave.phases ?? 3, look: look, advanced: advanced, duration: wave.duration,
                             canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
             }
             AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
@@ -1138,6 +1148,13 @@ private struct WaveCard: View {
                 }
                 SliderRow(label: "editor.boss.hp", value: Binding(get: { Double(wave.bossHp) }, set: { model.draft.waves[i].bossHp = Int($0) }),
                           range: 100...1000, step: 50) { String(Int($0)) }
+                // ボスの段階の数と名前・必殺技、倒したときの1UP(1.3.0)。見つけやすいように「かんたん」でも出す
+                BossPhaseControls(phases: Binding(get: { wave.phases }, set: { model.draft.waves[i].phases = $0 }),
+                                  info: Binding(get: { wave.phaseInfo }, set: { model.draft.waves[i].phaseInfo = $0 }),
+                                  idPrefix: "editor.wave.phases.\(i)")
+                if i < model.draft.waves.count - 1 {
+                    OneUpPicker(oneUp: Binding(get: { wave.oneUp }, set: { model.draft.waves[i].oneUp = $0 }), idPrefix: "editor.wave.oneup.\(i)")
+                }
                 if advanced {
                     EnemyControls(showBoss: true,
                                   bossSize: Binding(get: { wave.bossSize ?? 1 }, set: { model.draft.waves[i].bossSize = $0 }),
@@ -1148,6 +1165,7 @@ private struct WaveCard: View {
                                   mooksBreakable: Binding(get: { wave.mooksBreakable == true }, set: { model.draft.waves[i].mooksBreakable = $0 }),
                                   mookHits: Binding(get: { wave.mookHits ?? DanmakuConfig.mookHp }, set: { model.draft.waves[i].mookHits = $0 }),
                                   bodyHit: Binding(get: { wave.bodyHit == true }, set: { model.draft.waves[i].bodyHit = $0 ? true : nil }),
+                                  phaseCount: wave.phases ?? 3,
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {

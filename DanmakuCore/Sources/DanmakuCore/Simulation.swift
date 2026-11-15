@@ -646,6 +646,10 @@ public struct Simulation {
     /// ボスを倒した回数と、直近の撃破の場所・演出(画面の演出に使う。計算には関わらない)
     public private(set) var defeats = 0
     public private(set) var lastDefeatPosition = Point(x: 0, y: 0)
+    /// 落ちてくる1UP(連戦で、1UP を付けたボスを倒したとき)。拾うか画面の下へ消えるまで残る(場面をまたいでも残る)
+    public private(set) var oneUpItem: Point?
+    /// 取った1UP の数(画面で、取った音を鳴らすため)
+    public private(set) var oneUpsTaken = 0
     public private(set) var lastDefeatEffect = DefeatEffect.standard
     /// スワイプ弾幕: かすった弾の数(合計)と、直前の 1 ステップでかすった弾。ビーム・爆風はかすりの対象にしない
     public private(set) var grazeCount = 0
@@ -952,14 +956,36 @@ public struct Simulation {
     }
 
     private func phaseOf() -> Int {
+        let n = spec.phases
         if isDamageRace {
-            // ダメージ勝負は、HP ではなく時間の3分の1ずつで段階が進む
+            // ダメージ勝負は、HP ではなく時間を段階の数で等分して進む(3段階なら3分の1ずつ)
             let f = max(0, waveT) / spec.limit
-            return f < 1.0 / 3 ? 1 : f < 2.0 / 3 ? 2 : 3
+            for j in 1..<n where f < Double(j) / Double(n) { return j }
+            return n
         }
+        // HP を段階の数で等分する(3段階なら、残り 2/3 より多い間が第1段階、1/3 より多い間が第2段階)
         let r = Double(hp) / Double(max(1, spec.hp))
-        return r > 2.0 / 3 ? 1 : r > 1.0 / 3 ? 2 : 3
+        for j in 1..<n where r > Double(n - j) / Double(n) { return j }
+        return n
     }
+
+    /// いまの場面のボスの段階の数(3〜5)。画面の HP バーの区切りに使う
+    public var phaseCount: Int { spec.phases }
+
+    /// 1UP を取った: ライフ制はライフ+1(最大 Stage.livesRange の上限まで)、HP 制は HP を3回復(最大まで)
+    private mutating func gainLife() {
+        if lifeMode == .lives {
+            lifeLeft = min(lifeLeft + 1, Stage.livesRange.upperBound)
+        } else {
+            lifeLeft = min(lifeLeft + Simulation.oneUpHeal, lifeMax)
+        }
+        oneUpsTaken += 1
+    }
+    /// HP 制で、1UP が回復する量
+    public static let oneUpHeal = 3
+    /// 1UP が落ちる速さ(px/秒)と、拾える距離(px)
+    public static let oneUpFallSpeed = 90.0
+    public static let oneUpPickRadius = 18.0
 
     private static func clamp(_ v: Double, _ lo: Double, _ hi: Double) -> Double { min(hi, max(lo, v)) }
 
@@ -974,6 +1000,17 @@ public struct Simulation {
         if hitFlash > 0 { hitFlash = max(0, hitFlash - dt) }
         player.x = Simulation.clamp(player.x + Double(move.dx) * Move.unit, 6, W - 6)
         player.y = Simulation.clamp(player.y + Double(move.dy) * Move.unit, 6, H - 6)
+        // 落ちてくる1UP: 自機が触れたら取る。画面の下へ出たら消える
+        if var item = oneUpItem {
+            item.y += Simulation.oneUpFallSpeed * dt
+            let dx = item.x - player.x, dy = item.y - player.y
+            if dx * dx + dy * dy < Simulation.oneUpPickRadius * Simulation.oneUpPickRadius {
+                oneUpItem = nil
+                gainLife()
+            } else {
+                oneUpItem = item.y > H + 20 ? nil : item
+            }
+        }
 
         let bp = isBoss ? bossPosition : Point(x: 0, y: 0)
         if isBoss {
@@ -1010,6 +1047,10 @@ public struct Simulation {
             if !isDamageRace && hp <= 0 {
                 defeats += 1
                 lastDefeatPosition = bp
+                // 次の場面がある場合だけ、1UP(自動はその場で、拾う形はボスの位置から落とす)
+                if waveIndex + 1 < specs.count {
+                    if spec.oneUp == 2 { gainLife() } else if spec.oneUp == 1 { oneUpItem = bp }
+                }
                 lastDefeatEffect = spec.defeat
                 if waveIndex + 1 < specs.count { advanceWave() } else { outcome = .cleared }
                 return

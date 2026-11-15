@@ -3,8 +3,9 @@ import Foundation
 /// 論理画面・固定ステップなどの定数
 public enum DanmakuConfig {
     public static let formatVersion = 1
-    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 3
+    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP)。
+    /// サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
+    public static let contentLevel = 4
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -330,6 +331,15 @@ public struct Wave: Codable, Equatable, Sendable {
     public var bossY: Double?
     /// ボスの体に自機が触れると、弾に当たったのと同じくダメージを受ける(ライフ・HP が1減り、少しの間無敵)。nil は当たらない(これまで通り)。ボスの場面だけ。1.3.0 から
     public var bodyHit: Bool?
+    /// ボスの段階の数(4 か 5)。nil は3段階(これまでと同じ)。ボスの場面だけ。1.3.0 から
+    public var phases: Int?
+    /// 段階ごとの名前と「必殺技」(見た目だけ。段階の始めに、名前を大きく出す)。nil は付けない。ボスの場面だけ。1.3.0 から
+    public var phaseInfo: [PhaseInfo]?
+    /// このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 倒したら自動で)。nil は出さない。最後の場面には付けない。1.3.0 から
+    public var oneUp: Int?
+
+    /// ボスの段階の数(3〜5)
+    public var phaseCount: Int { phases ?? 3 }
 
     public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil,
                 bossSize: Int? = nil, mooks: Int? = nil, bossLook: Int? = nil, mookLook: Int? = nil, awaken: Int? = nil, bossX: Double? = nil, bossY: Double? = nil) {
@@ -382,10 +392,20 @@ public struct Wave: Codable, Equatable, Sendable {
         return abs(r - standard) < 0.001 ? nil : r
     }
 
-    static func sanitizedAwaken(_ v: Int?) -> Int? {
-        guard let v, BossCharacter.awakenPhases.contains(v) else { return nil }
+    /// 覚醒する段階(2〜段階の数)。それ以外は覚醒しない
+    static func sanitizedAwaken(_ v: Int?, phases: Int = 3) -> Int? {
+        guard let v, (2...phases).contains(v) else { return nil }
         return v
     }
+
+    /// 段階の数(3〜5)。3(標準)と範囲外は保存しない(nil)
+    static func sanitizedPhaseCount(_ v: Int?) -> Int? {
+        guard let v, Emitter.phaseCountRange.contains(v), v != 3 else { return nil }
+        return v
+    }
+
+    /// 前のボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 倒したら自動で)。それ以外は出さない
+    static func sanitizedOneUp(_ v: Int?) -> Int? { v == 1 || v == 2 ? v : nil }
 
     /// 中(標準)は保存しない。範囲外は標準に戻す
     static func sanitizedSize(_ v: Int?) -> Int? {
@@ -444,13 +464,14 @@ public struct Wave: Codable, Equatable, Sendable {
         let hp = isBoss ? Int((clamp(Double(bossHp ?? 400), 100, 1000) / 50).rounded()) * 50 : nil
         let look = isBoss ? Wave.sanitizedBossLook(bossLook) : nil
         let mv = isBoss ? Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded()) : nil
+        let nPh = isBoss ? (Wave.sanitizedPhaseCount(phases) ?? 3) : 3
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Emitter.sanitizedPhase(m.ph) : 0,
+                    k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Emitter.sanitizedPhase(m.ph, count: nPh) : 0,
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
@@ -460,14 +481,49 @@ public struct Wave: Codable, Equatable, Sendable {
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
                     bossSize: isBoss ? (Wave.isCharacter(look) ? Wave.sanitizedCharacterSize(bossSize) : Wave.sanitizedSize(bossSize)) : nil, mooks: Wave.sanitizedMooks(mooks),
                     bossLook: look, mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
-                    awaken: isBoss ? Wave.sanitizedAwaken(awaken) : nil,
+                    awaken: isBoss ? Wave.sanitizedAwaken(awaken, phases: nPh) : nil,
                     bossX: isBoss ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
                     bossY: isBoss ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
         out.mooksBreakable = (out.mooks != nil && mooksBreakable == true) ? true : nil
         out.mookHits = out.mooksBreakable == true ? Wave.sanitizedMookHits(mookHits) : nil
         out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: kind == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
         out.bodyHit = (isBoss && bodyHit == true) ? true : nil
+        out.phases = isBoss ? Wave.sanitizedPhaseCount(phases) : nil
+        out.phaseInfo = isBoss ? PhaseInfo.sanitized(phaseInfo, count: nPh) : nil
+        out.oneUp = isBoss ? Wave.sanitizedOneUp(oneUp) : nil
         return out
+    }
+}
+
+/// ボスの段階ごとの名前と「必殺技」。見た目だけで、計算には関わらない(段階の始めに名前を大きく出す)
+public struct PhaseInfo: Codable, Equatable, Sendable {
+    /// 段階の名前(16文字まで)。nil は「第N段階」
+    public var n: String?
+    /// 必殺技か(名前を、必殺技の演出で出す)
+    public var sp: Bool?
+    public init(n: String? = nil, sp: Bool? = nil) { self.n = n; self.sp = sp }
+
+    public static let maxName = 16
+
+    /// 名前を整える: 改行は空白に、前後の空白を除き、16文字まで。空なら nil
+    public static func sanitizedName(_ v: String?) -> String? {
+        guard let v else { return nil }
+        let one = v.replacingOccurrences(of: "\r", with: " ").replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespaces)
+        // 長さはサーバーと同じく、文字の部品(Unicode のコードポイント)で数える
+        var scalars = String.UnicodeScalarView()
+        scalars.append(contentsOf: one.unicodeScalars.prefix(maxName))
+        let cut = String(scalars).trimmingCharacters(in: .whitespaces)
+        return cut.isEmpty ? nil : cut
+    }
+
+    /// 段階の数にそろえる(足りない分は空、多い分は捨てる)。何も付いていなければ nil
+    public static func sanitized(_ list: [PhaseInfo]?, count: Int) -> [PhaseInfo]? {
+        guard let list else { return nil }
+        let out = (0..<count).map { i -> PhaseInfo in
+            let raw = i < list.count ? list[i] : PhaseInfo()
+            return PhaseInfo(n: sanitizedName(raw.n), sp: raw.sp == true ? true : nil)
+        }
+        return out.contains { $0.n != nil || $0.sp != nil } ? out : nil
     }
 }
 
@@ -524,32 +580,40 @@ public struct Emitter: Codable, Equatable, Sendable {
     public static let minInterval = 0.05
     public static let maxInterval = 15.0
 
-    /// 撃つ段階(ボスだけ)の値: 0 = 全部、1〜3 = その段階だけ、12・13・23 = 2つの段階(1.3.0 から。例: 23 は第2と第3)
+    /// ボスの段階の数(3〜5)。nil・3 は、これまでと同じ3段階(1.3.0 から 4・5 も選べる)
+    public static let phaseCountRange = 3...5
+    /// 撃つ段階(ボスだけ)の値: 0 = 全部、1〜5 = その段階だけ、2つ以上は段階の番号を小さい順に並べた数(例: 23 は第2と第3、135 は第1・3・5)
+    /// (3段階のときに作れる値は、これまでと同じ [0, 1, 2, 3, 12, 13, 23])
     public static let phaseCodes = [0, 1, 2, 3, 12, 13, 23]
-    /// 値を、撃つ段階の集まりにする(0 は空 = 全部)
+    /// 値を、撃つ段階の集まりにする(0 や、形の正しくない値は空)
     public static func phases(of code: Int) -> Set<Int> {
-        switch code {
-        case 1, 2, 3: return [code]
-        case 12: return [1, 2]
-        case 13: return [1, 3]
-        case 23: return [2, 3]
-        default: return []
-        }
+        guard code > 0 else { return [] }
+        var digits: [Int] = []
+        var c = code
+        while c > 0 { digits.insert(c % 10, at: 0); c /= 10 }
+        guard digits.allSatisfy({ phaseCountRange.upperBound >= $0 && $0 >= 1 }),
+              zip(digits, digits.dropFirst()).allSatisfy({ $0 < $1 }) else { return [] }
+        return Set(digits)
     }
-    /// 撃つ段階の集まりを、値にする(空・3つ全部は 0)
-    public static func phaseCode(_ set: Set<Int>) -> Int {
-        let s = set.filter { (1...3).contains($0) }
-        if s.isEmpty || s.count == 3 { return 0 }
+    /// 撃つ段階の集まりを、値にする(空・全部は 0)。count は、ボスの段階の数
+    public static func phaseCode(_ set: Set<Int>, count: Int = 3) -> Int {
+        let s = set.filter { (1...count).contains($0) }
+        if s.isEmpty || s.count == count { return 0 }
         return s.sorted().reduce(0) { $0 * 10 + $1 }
     }
-    /// 範囲外の値を直す(これまでどおり 0〜3 に収め、2つの段階の値はそのまま。123 は全部)
-    public static func sanitizedPhase(_ v: Int) -> Int {
-        if phaseCodes.contains(v) { return v }
-        if v == 123 { return 0 }
-        return min(3, max(0, v))
+    /// 範囲外の値を直す。段階の数より後の段階は外し、残らなければ最後の段階にする。全部そろえば 0。
+    /// 形の正しくない値は、これまでどおり 0〜段階の数 に収める(3段階のときの結果は、これまでと同じ)
+    public static func sanitizedPhase(_ v: Int, count: Int = 3) -> Int {
+        if v <= 0 { return 0 }
+        let set = phases(of: v)
+        if set.isEmpty { return min(count, v) }
+        let kept = set.filter { $0 <= count }
+        if kept.isEmpty { return count }
+        if kept.count == count { return 0 }
+        return kept.sorted().reduce(0) { $0 * 10 + $1 }
     }
     /// この段階で撃つか
-    public func fires(inPhase phase: Int) -> Bool { ph == 0 || ph == phase || Emitter.phases(of: ph).contains(phase) }
+    public func fires(inPhase phase: Int) -> Bool { ph == 0 || Emitter.phases(of: ph).contains(phase) }
 
     /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
     public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner].contains(t) }
@@ -624,6 +688,10 @@ struct WaveSpec {
     var homeDY = 0.0
     /// ボスの体に触れるとダメージ
     var bodyHit = false
+    /// ボスの段階の数(3〜5)
+    var phases = 3
+    /// 倒したときの1UP(0 = なし、1 = 落ちてくるのを拾う、2 = 自動)
+    var oneUp = 0
     /// 専用の絵・動き・当たり判定を持つボス(nil は図形のボス)
     var character: BossCharacter? { BossCharacter.of(look: look) }
     /// キャラクターのボスの大きさの倍率(当たり判定の半径 ÷ 40)。指定がなければ 1。図形のボスは 1
@@ -690,6 +758,9 @@ public struct Stage: Codable, Equatable, Sendable {
     public var shipSkin: String?
     /// ボスの体に自機が触れると、ダメージを受ける(Wave.bodyHit と同じ。ボス戦・ダメージ勝負だけ。連戦は場面ごと)。nil は当たらない。1.3.0 から
     public var bodyHit: Bool?
+    /// ボスの段階の数・段階ごとの名前と必殺技(Wave.phases / phaseInfo と同じ。ボス戦・ダメージ勝負だけ。連戦は場面ごと)。1.3.0 から
+    public var phases: Int?
+    public var phaseInfo: [PhaseInfo]?
 
     public var lookBullets: Theme { themeBullets ?? .classic }
     public var lookBackground: Theme { themeBackground ?? .classic }
@@ -753,7 +824,7 @@ public struct Stage: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
         case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
-        case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit
+        case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo
     }
 
     static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
@@ -762,10 +833,18 @@ public struct Stage: Codable, Equatable, Sendable {
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height), bodyHit: w.kind == .boss && w.bodyHit == true)
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height), bodyHit: w.kind == .boss && w.bodyHit == true,
+                         phases: w.kind == .boss ? w.phaseCount : 3, oneUp: w.kind == .boss ? (w.oneUp ?? 0) : 0)
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), bodyHit: mode != .survive && bodyHit == true)]
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), bodyHit: mode != .survive && bodyHit == true,
+                         phases: mode != .survive ? (phases ?? 3) : 3)]
+    }
+
+    /// 場面 i のボスの、段階ごとの名前と必殺技(見た目だけ)。なければ nil
+    public func phaseInfo(forWave i: Int) -> [PhaseInfo]? {
+        if mode == .sequence { return waves.flatMap { i < $0.count ? $0[i].phaseInfo : nil } }
+        return phaseInfo
     }
 
     /// 連戦のとき、最後まで通しての所要時間の上限(秒)。場面の合計と、切り替えの時間
@@ -831,6 +910,8 @@ public struct Stage: Codable, Equatable, Sendable {
         mooksClear = try d.decodeIfPresent(Bool.self, forKey: .mooksClear)
         shipSkin = try? d.decodeIfPresent(String.self, forKey: .shipSkin)
         bodyHit = try? d.decodeIfPresent(Bool.self, forKey: .bodyHit)
+        phases = (try? d.decodeIfPresent(Int.self, forKey: .phases)) ?? nil
+        phaseInfo = (try? d.decodeIfPresent([PhaseInfo].self, forKey: .phaseInfo)) ?? nil
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -847,6 +928,8 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(mooksClear, forKey: .mooksClear)
         try c.encodeIfPresent(shipSkin, forKey: .shipSkin)
         try c.encodeIfPresent(bodyHit, forKey: .bodyHit)
+        try c.encodeIfPresent(phases, forKey: .phases)
+        try c.encodeIfPresent(phaseInfo, forKey: .phaseInfo)
         try c.encode(emitters, forKey: .emitters)
         try c.encode(formatVersion, forKey: .formatVersion)
         try c.encodeIfPresent(lifeMode, forKey: .lifeMode)
@@ -896,7 +979,9 @@ public struct Stage: Codable, Equatable, Sendable {
         func r2(_ v: Double) -> Double { (v * 100).rounded() / 100 }
 
         if mode == .sequence {
-            let ws = (waves ?? []).prefix(Wave.maxWaves).map { $0.sanitized() }
+            var ws = (waves ?? []).prefix(Wave.maxWaves).map { $0.sanitized() }
+            // 1UP は、次の場面があるボスだけ(最後のボスを倒したらクリアなので、付けない)
+            if !ws.isEmpty { ws[ws.count - 1].oneUp = nil }
             let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
             let lm = effectiveLifeMode, lc = effectiveLifeCount
             let isDefaultLife = lm == .lives && lc == 1
@@ -923,13 +1008,14 @@ public struct Stage: Codable, Equatable, Sendable {
         let mv = isBossMode ? Int(clamp(Double(bossMove ?? 0), 0, Double(Simulation.bossMoveCount - 1)).rounded()) : nil
         let trimmed = name.isEmpty ? "名無しステージ" : String(name.prefix(20))
         let pStart = Stage.sanitizedPreviewStart(previewStart, durationSec: d)
+        let nPh = isBossMode ? (Wave.sanitizedPhaseCount(phases) ?? 3) : 3
         let ems = emitters.prefix(DanmakuConfig.maxEmitters).map { m in
             Emitter(t: Wave.allowedPattern(m.t, look: look),
                     x: r2(clamp(m.x, 0, 1)), y: r2(clamp(m.y, 0, 0.6)),
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: Emitter.sanitizedPhase(m.ph),
+                    k: Int(clamp(Double(m.k), 0, 4)), ph: Emitter.sanitizedPhase(m.ph, count: nPh),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
@@ -957,7 +1043,7 @@ public struct Stage: Codable, Equatable, Sendable {
                      mookLook: mooks == nil ? nil : Wave.sanitizedLook(mookLook),
                      shot: shot == .standard ? nil : shot,
                      rewardFx: Reward.sanitizedFx(rewardFx),
-                     awaken: isBossMode ? Wave.sanitizedAwaken(awaken) : nil,
+                     awaken: isBossMode ? Wave.sanitizedAwaken(awaken, phases: nPh) : nil,
                      previewStart: pStart, noPreview: noPreview == true ? true : nil,
                      bossX: isBossMode ? Wave.sanitizedHome(bossX, 0.2, 0.8, 0.5) : nil,
                      bossY: isBossMode ? Wave.sanitizedHome(bossY, 0.1, 0.3, 0.2) : nil)
@@ -966,6 +1052,8 @@ public struct Stage: Codable, Equatable, Sendable {
         out.mooksClear = (mooksClear == true && Wave.canClearByMooks(survive: mode == .survive, breakable: out.mooksBreakable == true, emitters: out.emitters)) ? true : nil
         out.shipSkin = Stage.sanitizedSkin(shipSkin)
         out.bodyHit = (isBossMode && bodyHit == true) ? true : nil
+        out.phases = isBossMode ? Wave.sanitizedPhaseCount(phases) : nil
+        out.phaseInfo = isBossMode ? PhaseInfo.sanitized(phaseInfo, count: nPh) : nil
         return out
     }
 }

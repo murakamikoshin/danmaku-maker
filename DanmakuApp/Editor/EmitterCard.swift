@@ -32,16 +32,18 @@ enum IntervalScale {
 private struct PhaseChips: View {
     @Binding var code: Int
     let index: Int
+    /// ボスの段階の数(3〜5)
+    var count = 3
 
     var body: some View {
         let set = Emitter.phases(of: code)
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: 8, alignment: .leading)], alignment: .leading, spacing: 8) {
             chip(L("phase.all"), selected: code == 0, id: "0") { code = 0 }
-            ForEach(1...3, id: \.self) { n in
-                chip(L("phase.\(n)"), selected: set.contains(n), id: "\(n)") {
+            ForEach(1...count, id: \.self) { n in
+                chip(String(format: L("play.phase"), n), selected: set.contains(n), id: "\(n)") {
                     var next = set
                     if next.contains(n) { next.remove(n) } else { next.insert(n) }
-                    code = Emitter.phaseCode(next)
+                    code = Emitter.phaseCode(next, count: count)
                 }
             }
         }
@@ -61,6 +63,8 @@ struct EmitterCard: View {
     let index: Int
     @Binding var emitter: Emitter
     let isBoss: Bool
+    /// ボスの段階の数(3〜5)。撃つ段階の選び方に使う
+    var phaseCount = 3
     let look: PreviewLook
     /// 「くわしく」のとき、発射位置・時間・段階・間隔・角度など、細かい設定も出す
     var advanced = true
@@ -198,7 +202,7 @@ struct EmitterCard: View {
                     }
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.phase").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                        PhaseChips(code: $emitter.ph, index: index)
+                        PhaseChips(code: $emitter.ph, index: index, count: phaseCount)
                         Text("editor.phase.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 } else {
