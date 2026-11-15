@@ -125,6 +125,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         let updated = await Self.finishWithin(seconds: 8) { done in
             UMPConsentInformation.sharedInstance.requestConsentInfoUpdate(with: params) { error in done(error == nil) }
         }
+        if updated { await waitUntilNotBattling() }
         if updated, let vc = Self.topViewController() {
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
                 UMPConsentForm.loadAndPresentIfRequired(from: vc) { _ in c.resume() }
@@ -159,6 +160,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }
         // アプリが前面に出ていないと許可ダイアログが出ないので、少し待つ
         await waitUntilActive()
+        await waitUntilNotBattling()
         if !Self.skipTrackingPrimer {
             // 説明画面。「続ける」を押すまで待つ
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
@@ -170,6 +172,13 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
             await waitUntilActive()
         }
         _ = await ATTrackingManager.requestTrackingAuthorization()
+    }
+
+    /// 弾幕バトルの対戦中(3・2・1 と対戦)は、同意や許可の画面を出さずに、終わるまで待つ。
+    /// 相手探しの最中なら探すのをやめる(画面の裏で対戦が始まって、見えないまま負けないように)
+    private func waitUntilNotBattling() async {
+        NotificationCenter.default.post(name: .cancelBattleSearch, object: nil)
+        while playingTabs.contains("battle") { try? await Task.sleep(nanoseconds: 1_000_000_000) }
     }
 
     /// 説明画面の「続ける」
