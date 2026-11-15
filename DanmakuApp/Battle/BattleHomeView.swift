@@ -39,7 +39,15 @@ struct BattleHomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("battle.eyebrow").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
-                    Text("battle.title").font(.display(30)).foregroundStyle(GameStyle.yellow)
+                    HStack(alignment: .center, spacing: 8) {
+                        Text("battle.title").font(.display(30)).foregroundStyle(GameStyle.yellow)
+                        // β版の印(1.3.0)。ルールや報酬は、遊んだ人の声を聞いて変えることがある
+                        Text("battle.beta").font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.ink)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
+                            .background(GameStyle.cyanColor, in: RoundedRectangle(cornerRadius: 5))
+                            .accessibilityIdentifier("battle.beta")
+                    }
+                    Text("battle.beta.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
                 rankCard
                 VStack(alignment: .leading, spacing: 8) {

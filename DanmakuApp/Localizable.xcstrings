@@ -70335,6 +70335,136 @@
           }
         }
       }
+    },
+    "battle.beta": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "β版"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BETA"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "β版"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "β版"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "베타"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BETA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BÊTA"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BETA"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BETA"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "БЕТА"
+          }
+        }
+      }
+    },
+    "battle.beta.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弾幕バトルはβ版です。ルールや報酬は、遊んだみなさんの声を聞いて変えることがあります。気づいたことは、設定の「要望・ご意見を送る」から教えてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danmaku Battle is in beta. Rules and rewards may change based on your feedback. Let us know what you think via \"Send a request or feedback\" in Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弹幕对战目前是β版。规则和奖励可能会根据大家的意见进行调整。如有想法,请通过设置中的「发送建议或反馈」告诉我们。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "彈幕對戰目前是β版。規則和獎勵可能會依大家的意見調整。如有想法,請透過設定中的「傳送建議或意見」告訴我們。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탄막 배틀은 베타 버전이에요. 규칙과 보상은 여러분의 의견을 듣고 바뀔 수 있어요. 느낀 점은 설정의 「요청·의견 보내기」로 알려 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batalla Danmaku está en beta. Las reglas y recompensas pueden cambiar según vuestros comentarios. Cuéntanos qué te parece en «Enviar sugerencia o comentario» de Ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duel Danmaku est en bêta. Les règles et récompenses peuvent évoluer selon vos retours. Dites-nous ce que vous en pensez via « Envoyer une demande ou un avis » dans les Réglages."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danmaku-Duell ist in der Beta. Regeln und Belohnungen können sich nach eurem Feedback ändern. Sag uns deine Meinung über „Wunsch / Feedback senden“ in den Einstellungen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Batalha Danmaku está em beta. Regras e recompensas podem mudar conforme o retorno de vocês. Conte o que achou em \"Enviar pedido ou comentário\" nos Ajustes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Даммаку-битва — в бета-версии. Правила и награды могут меняться по вашим отзывам. Поделитесь мнением через «Отправить пожелание или отзыв» в настройках."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

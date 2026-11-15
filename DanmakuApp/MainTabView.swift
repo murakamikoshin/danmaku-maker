@@ -130,6 +130,14 @@ private struct TabBar: View {
                                         .offset(x: 2, y: 2)
                                 }
                             }
+                            // 弾幕バトルはβ版(1.3.0)。タブにも小さく「β」を付ける
+                            .overlay(alignment: .topLeading) {
+                                if tab == .battle {
+                                    Text(verbatim: "β").font(.system(size: 10, weight: .black)).foregroundStyle(GameStyle.ink)
+                                        .padding(.horizontal, 3).background(GameStyle.cyanColor, in: RoundedRectangle(cornerRadius: 3))
+                                        .offset(x: -4, y: -2)
+                                }
+                            }
                         Text(LocalizedStringKey(tab.titleKey))
                             .font(.system(size: 11, weight: .black))
                             .lineLimit(1).minimumScaleFactor(0.7)
