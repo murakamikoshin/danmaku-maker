@@ -50,7 +50,8 @@ final class NotificationService: NSObject, ObservableObject {
     private var pendingDaily = false
     /// 毎日のごほうび・スタミナ満タンのお知らせ(端末の中で予約するもの)を受け取るか。
     /// 自分のステージへの反応の通知(全体のスイッチ)とは別。遊ぶだけの人にも届くように
-    @Published private(set) var remindersOn: Bool = UserDefaults.standard.object(forKey: "notify.reminders") as? Bool ?? true
+    /// まだ選んでいない人は、反応の通知(全体のスイッチ)と同じにする(前に通知をオフにした人に、勝手に届かないように)
+    @Published private(set) var remindersOn: Bool = UserDefaults.standard.object(forKey: "notify.reminders") as? Bool ?? UserDefaults.standard.bool(forKey: "notify.enabled")
     private static let reminderAskedKey = "notify.reminders.asked"
 
     private var uid: String?

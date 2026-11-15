@@ -86,7 +86,11 @@ struct MainTabView: View {
             if UIThemeStore.shared.consumeReturnToSettings() { tab = .settings; opened.insert(.settings) }
             // お知らせ(ランキング戦の開始)の通知を開いたら、スワイプ弾幕へ(出していないときは、あそぶのまま)
             NotificationService.shared.onOpenSwipe = { if swipeConfig.enabled { tab = .swipe; opened.insert(.swipe) } }
-            NotificationService.shared.onOpenDaily = { tab = .shop; opened.insert(.shop) }
+            NotificationService.shared.onOpenDaily = {
+                tab = .shop; opened.insert(.shop)
+                // ショップの中で別の種類を開いていても、ごほうびのカードまで移る(画面ができてから)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { NotificationCenter.default.post(name: .openDailyReward, object: nil) }
+            }
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }

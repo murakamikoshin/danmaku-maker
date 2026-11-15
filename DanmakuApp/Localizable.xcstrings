@@ -71530,7 +71530,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "你已經發佈過內容相同的關卡。請稍微修改彈幕後再發佈。"
+            "value": "你已經發布過內容相同的關卡。請稍微修改彈幕後再發布。"
           }
         },
         "ko": {
@@ -71784,13 +71784,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "要认输吗?会算作失败,评分会下降。"
+            "value": "要认输吗?会算作失败,积分会下降。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "要認輸嗎?會算作失敗,評分會下降。"
+            "value": "要認輸嗎?會算作失敗,積分會下降。"
           }
         },
         "ko": {

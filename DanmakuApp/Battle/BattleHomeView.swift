@@ -25,6 +25,8 @@ struct BattleHomeView: View {
             }
         }
         .task { await model.loadStatus() }
+        // 確認を出している間に当たって終わったら、確認は閉じる
+        .onChange(of: model.phase) { p in if p != .playing { confirmForfeit = false } }
         .gameDialog("battle.forfeit", isPresented: $confirmForfeit, message: "battle.forfeit.confirm") {
             [GameDialogAction(title: "battle.forfeit", role: .destructive) { model.forfeit() }, .cancel()]
         }
@@ -32,19 +34,23 @@ struct BattleHomeView: View {
         // 対戦中にアプリを裏へ回すと、ゲームの時間が止まって休めてしまう(耐久の勝負が崩れる)。裏へ回したら降参にする
         .onChange(of: scenePhase) { p in
             model.appActive = p == .active
+            if p != .active { model.inactiveSeq += 1 }
             if p == .background, model.phase == .playing { model.forfeit() }
-            // コントロールセンターなどで3秒以上離れたときも降参にする(ゲームの時間が止まって休めてしまうため)
+            // コントロールセンターなどで3秒以上離れたときも降参にする(ゲームの時間が止まって休めてしまうため)。
+            // 離れるたびに番号を進め、3秒後に同じ番号のまま離れているときだけ降参にする(一度戻ってまた離れたときに、早まらないように)
             if p == .inactive, model.phase == .playing {
+                let seq = model.inactiveSeq
                 Task {
                     try? await Task.sleep(nanoseconds: 3_000_000_000)
-                    if !model.appActive, model.phase == .playing { model.forfeit() }
+                    if seq == model.inactiveSeq, !model.appActive, model.phase == .playing { model.forfeit() }
                 }
             }
         }
         // 3・2・1 から自分が落ちたあとの待ちまでは、バナーを消す(入口と結果の画面では出す)
         .onChange(of: model.phase) { p in
             switch p {
-            case .found, .playing, .waiting: ads.setPlaying(tab: "battle", true)
+            // 相手を待つ間(.waiting)はタブを出す(早く落ちても、ほかの画面へ行けるように。対戦そのものは終わっている)
+            case .found, .playing: ads.setPlaying(tab: "battle", true)
             default: ads.setPlaying(tab: "battle", false)
             }
         }

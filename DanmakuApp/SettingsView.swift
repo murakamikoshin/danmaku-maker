@@ -234,18 +234,18 @@ struct SettingsView: View {
                     toggleRow(kind.titleKey, kind.symbol, Binding(get: { notify.isOn(kind) }, set: { notify.setKind(kind, $0) }))
                         .padding(.leading, 12)
                 }
-                if notify.authorization == .denied {
-                    // 端末の設定で通知が切られていると、ここでオンにしても届かない
-                    Button { gameTap(); openSystemSettings() } label: {
-                        Label("settings.notify.denied", systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption.weight(.bold)).foregroundStyle(GameStyle.yellow)
-                    }
-                }
             }
             // 毎日のごほうび・スタミナ満タンのお知らせ(端末で予約する。上の反応の通知とは別に選べる)
             toggleRow("settings.notify.reminders", "alarm.fill", Binding(
                 get: { notify.remindersOn },
                 set: { on in Task { if !(await notify.setReminders(on)) { notifyDenied = true } } }))
+            if (notify.enabled || notify.remindersOn) && notify.authorization == .denied {
+                // 端末の設定で通知が切られていると、ここでオンにしても届かない(反応の通知・毎日のお知らせのどちらも)
+                Button { gameTap(); openSystemSettings() } label: {
+                    Label("settings.notify.denied", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption.weight(.bold)).foregroundStyle(GameStyle.yellow)
+                }
+            }
             Text("settings.notify.note").font(.caption).foregroundStyle(.secondary)
         }
         .gameDialog("settings.notify.denied.title", isPresented: $notifyDenied, message: "settings.notify.denied") {

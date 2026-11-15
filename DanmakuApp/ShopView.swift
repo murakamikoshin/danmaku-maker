@@ -63,6 +63,11 @@ struct ShopView: View {
                         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 110)
                     }
                     .id(tab)
+                    // 毎日のごほうびのお知らせから開いたときは、ごほうびのカードまで動かす
+                    .onReceive(NotificationCenter.default.publisher(for: .openDailyReward)) { _ in
+                        tab = .deals
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { withAnimation { proxy.scrollTo("daily", anchor: .top) } }
+                    }
                     .onAppear {
                         // 該当の商品のカードまで、自動で移動する(一覧は映るぶんだけ作るので、少し待ってから)
                         if let focus, ShopTab.containing(focus) == tab {
@@ -1060,4 +1065,9 @@ private struct BossShopCard: View {
 private struct TrialPlay: Identifiable {
     let id = UUID()
     let stage: Stage
+}
+
+extension Notification.Name {
+    /// 毎日のごほうびのお知らせを開いた(ショップのごほうびのカードへ)
+    static let openDailyReward = Notification.Name("openDailyReward")
 }
