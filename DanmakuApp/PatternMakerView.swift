@@ -161,11 +161,26 @@ struct PatternMakerView: View {
             if let message { Text(message).font(.caption.bold()).foregroundStyle(GameStyle.yellow) }
             HStack(spacing: 10) {
                 Button { gameTap(); clear() } label: { Chip(title: L("maker.clear"), selected: false) }.buttonStyle(BounceButtonStyle())
+                // 描いた軌道を左右反転する(要望。左右対称の弾幕を、描き直さずに作れる)
+                Button { gameTap(); flip() } label: { Chip(title: L("maker.flip"), selected: false) }
+                    .buttonStyle(BounceButtonStyle())
+                    .disabled(path.isEmpty).opacity(path.isEmpty ? 0.5 : 1)
+                    .accessibilityIdentifier("maker.flip")
                 GameActionButton(title: "maker.save", systemImage: "square.and.arrow.down.fill", fill: GameStyle.accent) { save() }
                     .disabled(path.isEmpty).opacity(path.isEmpty ? 0.5 : 1)
                     .accessibilityIdentifier("maker.save")
             }
         }
+    }
+
+    /// 描いた軌道を左右反転する(横の動きの向きを逆にし、発射位置も画面の左右で入れ替える)
+    private func flip() {
+        guard !path.isEmpty else { return }
+        let mirrored = path.enumerated().map { i, v in i % 2 == 0 && v != 0 ? -v : v }
+        path = PathData.sanitized(mirrored) ?? path
+        origin.x = CGFloat(DanmakuConfig.width) - origin.x
+        engine.source = Point(x: Double(origin.x), y: Double(origin.y))
+        message = "maker.flipped"
     }
 
     private func clear() {
