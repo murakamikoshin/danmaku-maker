@@ -128,7 +128,12 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     db.doc(`stageTombs/${uid}`).get(),
   ]);
   const tombstoned = ((tomb.get("hashes") as unknown[] | undefined) ?? []).includes(hash);
-  if (isDuplicatePost(dup.docs.map((d) => d.get("status")), tombstoned, unlisted)) throw new HttpsError("already-exists", "duplicate");
+  if (isDuplicatePost(dup.docs.map((d) => d.get("status")), tombstoned, unlisted)) {
+    // 同じ中身のステージ(残っていれば、その ID)を返す。公開はできていたのに通信が切れて送り直した場合、
+    // アプリ(1.3.0〜)はその ID で「公開済み」にできる
+    const same = dup.docs.find((d) => isOpen(d.get("status")));
+    throw new HttpsError("already-exists", "duplicate", same ? { id: same.id } : undefined);
+  }
 
   const now = Date.now();
   let id = "";
@@ -245,6 +250,7 @@ export const submitResults = onCall(async (req) => {
   // 招待された人の「遊んだ回数」は、公開中のほかの人のステージを、1 回の送信につき 1 ステージ 1 回だけ数える
   let invitePlays = 0;
   for (const [id, add] of allowed) {
+    // 1 つのステージで失敗しても、ほかは数え続ける(全体を失敗にすると、アプリが全部を送り直して、数え済みの分がもう一度数えられる)
     const r = await db.runTransaction(async (tx) => {
       const ref = db.doc(`stages/${id}`);
       const snap = await tx.get(ref);
@@ -263,7 +269,7 @@ export const submitResults = onCall(async (req) => {
         invite: snap.get("status") === "published" && add.plays > 0,
         milestone: m === undefined ? undefined : { m, to: snap.get("authorUid") as string, name: (snap.get("name") as string | undefined) ?? "" },
       };
-    });
+    }).catch((e) => { logger.warn("result-stage-failed", { id, error: String(e) }); return undefined; });
     if (r?.invite) invitePlays++;
     // 遊ばれた回数が節目を越えたら、作者に知らせる(節目は回数が増えたときに 1 回だけ越えるので、同じ節目は 2 度届かない)
     if (r?.milestone) await notifyAuthor(db, { to: r.milestone.to, kind: "plays", stageId: id, stageName: r.milestone.name, extra: String(r.milestone.m) });

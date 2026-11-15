@@ -224,8 +224,10 @@ export function deviceGateFromEnv(env: NodeJS.ProcessEnv, fetcher: typeof fetch 
   return {
     used: async (token) => {
       const r = await call("query_two_bits", token, {});
-      // 400 は「トークンが正しくない」(作り物・壊れたもの)
-      if (r.status === 400) throw new BadDeviceTokenError(r.text);
+      // 400 で、本文がトークンの形の誤りを言っているときだけ「作り物・壊れたトークン」とみなす。
+      // それ以外の 400(こちらの設定の誤りなど)で、全員の招待が黙って報酬なしにならないように、一時的な失敗として扱う
+      if (r.status === 400 && /device[_ ]?token/i.test(r.text)) throw new BadDeviceTokenError(r.text);
+      if (r.status === 400) throw new Error(`devicecheck 400 ${r.text.slice(0, 80)}`);
       if (r.status !== 200) throw new Error(`devicecheck ${r.status}`);
       try { return (JSON.parse(r.text) as { bit0?: boolean }).bit0 === true; } catch { return false; }   // 「Bit State Not Found」= まだ記録なし
     },

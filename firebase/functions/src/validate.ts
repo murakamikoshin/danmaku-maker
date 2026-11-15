@@ -660,13 +660,15 @@ export function normalizeMultiline(raw: unknown, maxLines: number): string | nul
   return kept.length > maxLines ? null : kept.join("\n");
 }
 
-const LINK_RE = /https?:|www\.|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
+// www. は、後ろに英数字が続くときだけ(「草www…」「ｗｗｗ．．．」のような笑いの表現を、URL と間違えないように)
+const LINK_RE = /https?:|www\.[a-z0-9]|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
 /**
  * URL が書かれているか。全角の点(．)・小さな点(․)・全角の英字・見えない文字を挟んだ書き方も、そろえてから調べる。
  * 改行をまたいで書いたもの(example\n.com)も見る
  */
 export function hasLink(text: string): boolean {
-  const t = stripInvisible(text.normalize("NFKC"));
+  // 「…」「‥」は NFKC で「...」「..」になり、点に見えてしまうので、先に別の記号にしておく
+  const t = stripInvisible(text.replace(/[\u2026\u2025]/g, "・").normalize("NFKC"));
   return LINK_RE.test(t) || LINK_RE.test(t.replace(/\n/g, ""));
 }
 /** NGワード(改行をまたいで書いたものも見る) */

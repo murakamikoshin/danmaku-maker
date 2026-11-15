@@ -949,6 +949,8 @@ describe("友達招待の部品", () => {
     const { BadDeviceTokenError } = await import("../src/invite.js");
     await expect(deviceGateFromEnv(env, reply(400, "Missing or incorrectly formatted device token payload"))!.used("tok")).rejects.toBeInstanceOf(BadDeviceTokenError);
     await expect(deviceGateFromEnv(env, reply(500, "down"))!.used("tok")).rejects.not.toBeInstanceOf(BadDeviceTokenError);
+    // トークンの形の誤りを言っていない 400(こちらの設定の誤りなど)は、作り物とはみなさない
+    await expect(deviceGateFromEnv(env, reply(400, "Bad request"))!.used("tok")).rejects.not.toBeInstanceOf(BadDeviceTokenError);
   });
 });
 
@@ -1248,5 +1250,14 @@ describe("公開の水増し・出し直し対策", () => {
     expect(reportThreshold(now - 86_400_000, now)).toBe(2);
     expect(reportThreshold(now - 8 * 86_400_000, now)).toBe(5);
     expect(reportThreshold(null, now)).toBe(5);
+  });
+});
+
+describe("URL の検査で、笑いの表現を URL と間違えない(3回目の検証)", () => {
+  it("www… や ｗｗｗ．．． は URL ではない", () => {
+    for (const t of ["むずいwww…", "神ステージwww…!", "草ｗｗｗ．．．", "www", "笑www.", "ｗｗｗ‥"]) expect(hasLink(t), t).toBe(false);
+  });
+  it("本物の URL は、これまでどおり見つける", () => {
+    for (const t of ["www.example.com", "ｗｗｗ．ｅｘａｍｐｌｅ．ｃｏｍ", "https://x", "discord․gg", "example．com"]) expect(hasLink(t), t).toBe(true);
   });
 });
