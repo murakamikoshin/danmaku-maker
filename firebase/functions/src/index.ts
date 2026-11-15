@@ -434,7 +434,7 @@ export const reportComment = onCall(async (req) => {
 
 /** /s/{id} … OGP つきの共有ページ */
 /** アプリ専用の URL(danmakumaker://)を受け取れる版(1.2.1)が配信されたら true にしてデプロイする */
-const APP_SCHEME_RELEASED = false;
+const APP_SCHEME_RELEASED = true;
 
 export const sharePage = onRequest(async (req, res) => {
   const lang = pickLang(req.get("accept-language"), typeof req.query.lang === "string" ? req.query.lang : undefined);
