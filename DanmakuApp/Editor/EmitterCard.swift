@@ -86,6 +86,25 @@ struct EmitterCard: View {
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
     private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
 
+    /// 狙い方(1.3.0): 自機狙い・固定(真下)・ランダム(月ごとに変わる)。自機を見ないパターン(雨など)は「毎回同じ / ランダム」
+    private var aimPicker: some View {
+        let full = emitter.aimSupport == .full
+        let items: [(Int, String)] = full
+            ? [(0, L("editor.aim.player")), (1, L("editor.aim.fixed")), (2, L("editor.aim.random"))]
+            : [(0, L("editor.aim.same")), (2, L("editor.aim.random"))]
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("editor.aim.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+            ChipGrid(items: items, selection: Binding(get: { emitter.aim ?? 0 }, set: { emitter.aim = $0 == 0 ? nil : $0 }),
+                     idPrefix: "emitter.aim.\(index)", minimum: 80)
+            if emitter.aim == 1 {
+                Text(emitter.canRotate ? "editor.aim.help.fixed.rotate" : "editor.aim.help.fixed")
+                    .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            } else if emitter.aim == 2 {
+                Text("editor.aim.help.random").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -145,6 +164,8 @@ struct EmitterCard: View {
                 Text("editor.color.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 ColorSwatches(selection: $emitter.k, index: index, theme: look.bullets)
             }
+
+            if emitter.aimSupport != .none { aimPicker }
 
             if advanced {
                 // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸。見た目だけ(当たる範囲は同じ)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor } from "../src/titles.js";
-import { beamHits, blastHits } from "../src/fullsim.js";
+import { beamHits, blastHits, monthOf, playedMonth, usesMonth } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KINDS } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
 import { ID_ALPHABET, isValidShortId, newShortId, normalizeShortId } from "../src/shortId.js";
@@ -978,5 +978,32 @@ describe("共有 URL のステージID", () => {
     expect(shareIdFromPath("HJWYBXYZ")).toBe("HJWYB");
     expect(shareIdFromPath("%E3%80%8CHJWYB")).toBe("");
     expect(shareIdFromPath("%E0%A4%A")).toBe("");
+  });
+});
+
+describe("狙い方(1.3.0)", () => {
+  const aimEm = (aim?: number) => em({ t: "aim", ...(aim ? { aim } : {}) });
+  const st = (aim?: number) => validatePublish(good({ emitters: [aimEm(aim)] }));
+  it("1 と 2 だけ残す", () => {
+    const ok = st(2); expect(ok.ok).toBe(true);
+    if (ok.ok) expect(ok.stage.emitters[0]!.aim).toBe(2);
+    const bad = st(7);
+    expect(bad.ok).toBe(true);
+    if (bad.ok) expect(bad.stage.emitters[0]!.aim).toBeUndefined();
+  });
+  it("月は UTC の 西暦×12 + 月-1(アプリと同じ)", () => {
+    expect(monthOf(Date.UTC(2026, 10, 30, 23))).toBe(2026 * 12 + 10);
+  });
+  it("ランダムがあるステージだけ、届いた月を確かめる", () => {
+    const now = Date.UTC(2026, 11, 1, 0, 5);
+    const r = st(2), f = st(1);
+    if (!r.ok || !f.ok) throw new Error("validate");
+    expect(usesMonth(r.stage)).toBe(true);
+    expect(playedMonth(f.stage, undefined, now, 1)).toBe(0);
+    expect(playedMonth(r.stage, 2026 * 12 + 11, now, 1)).toBe(2026 * 12 + 11);
+    expect(playedMonth(r.stage, 2026 * 12 + 10, now, 1)).toBe(2026 * 12 + 10);
+    expect(playedMonth(r.stage, 2026 * 12 + 9, now, 1)).toBeNull();
+    expect(playedMonth(r.stage, 2026 * 12 + 12, now, 1)).toBeNull();
+    expect(playedMonth(r.stage, "x", now, 1)).toBeNull();
   });
 });

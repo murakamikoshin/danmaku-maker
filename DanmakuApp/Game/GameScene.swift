@@ -94,7 +94,8 @@ final class GameScene: SKScene {
     init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none) {
         effectsOn = effects
         fx = rewardFX
-        sim = Simulation(stage: stage, shotType: loadout.shot)
+        // ランダムの狙い方は、遊んだ月(UTC)の並びで撃つ(同じ月のあいだは毎回同じ)
+        sim = Simulation(stage: stage, shotType: loadout.shot, month: Simulation.month(of: Date()))
         // 弾・背景・自機は別々のテーマを選べる
         var skin = Skin.of(loadout.bullets)
         let bg = Skin.of(loadout.background)

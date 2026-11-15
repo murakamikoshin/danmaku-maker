@@ -116,11 +116,12 @@ enum RankingService {
     }
 
     /// 操作記録(リプレイ)を送る。サーバーが再生して、本当にクリアできているか確かめてから載せる
-    static func submit(stageID: String, moves: [Move], handle: PlayerHandle, name: String? = nil, shot: ShotType = .standard) async throws -> SubmitOutcome {
+    /// month は遊んだ月(ランダムの狙い方の並び。サーバーは同じ月で再生する)
+    static func submit(stageID: String, moves: [Move], month: Int = 0, handle: PlayerHandle, name: String? = nil, shot: ShotType = .standard) async throws -> SubmitOutcome {
         guard Backend.isAvailable else { throw RankingError.unavailable }
         var payload: [String: Any] = [
             "stageId": stageID, "replay": Replay(moves: moves).encoded(), "shot": shot.rawValue,
-            "handle": ["a": handle.a, "n": handle.n],
+            "handle": ["a": handle.a, "n": handle.n], "month": month,
         ]
         if let name { payload["name"] = name }
         do {

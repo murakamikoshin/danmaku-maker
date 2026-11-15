@@ -418,7 +418,11 @@ const LIVES_RANGE = [1, 5] as const, HP_RANGE = [3, 20] as const;
 /** 1ステップごとの弾の様子(分析用。ランキングの確認では使わない) */
 export type StepObserver = (tick: number, bullets: readonly { x: number; y: number; vx: number; vy: number; script: number; radius?: number }[], player: { x: number; y: number }) => void;
 
-export interface SwipeOptions { swipe?: boolean }
+export interface SwipeOptions {
+  swipe?: boolean;
+  /** ランダムの狙い方(aim === 2)の並びを決める月(UTC の 西暦×12 + 月-1。アプリの Simulation.month と同じ) */
+  month?: number;
+}
 
 /** かする距離の2乗(アプリの Bullet.grazeDistanceSquared と同じ)。ふつうの弾は 18px、巨大弾や広さのある弾は当たる広さ + 12.5px */
 const GRAZE_MARGIN = 12.5;
@@ -449,11 +453,19 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   const shotDef = SHOTS[shotType];
   const salt = stageSeed(stage);
   const rng = mulberry(salt);
+  const month = opts.month ?? 0;
+  /** ランダムの狙い方の、発射台ごとの乱数(場面の始めに作り直す。アプリの resetAimRng と同じ) */
+  const aimRngOf = (): Rng[] => spec().emitters.map((_, idx) => {
+    const h = new Fnv();
+    h.addInt32(salt); h.addInt32(month); h.addInt32(wi); h.addInt32(idx);
+    return mulberry(h.value);
+  });
   let next = specs[0]!.emitters.map((m) => m.s);
   let shotCount = specs[0]!.emitters.map(() => 0);
   /** 倒せる雑魚の残りの体力(発射台ごと。いない・倒せないものは 0) */
   const mookHPOf = (sp: Spec): number[] => sp.emitters.map((m) => (sp.breakable && hasMook(m, sp.boss) ? sp.mookHits : 0));
   let mookHP = mookHPOf(specs[0]!);
+  let aimRng: Rng[] = aimRngOf();
   let bullets: Bullet[] = [];
   let shots: Shot[] = [];
   let tick = 0, t = -READY, waveStart = 0;
@@ -497,9 +509,23 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     next = spec().emitters.map((m) => m.s);
     shotCount = spec().emitters.map(() => 0);
     mookHP = mookHPOf(spec());
+    aimRng = aimRngOf();
     hp = spec().hp;
     phase = 1; banner = 0; flash = 0; cooldown = 0;
     shieldUntil = Math.max(shieldUntil, tick + Math.round(INTERMISSION / dt));
+  };
+
+  /** 発射台 idx を、狙い方に合わせて撃つ(アプリの Simulation.fire と同じ)。自機狙いは自機を、固定は真下を、ランダムはばらばらの場所を狙う */
+  const fire = (m: Emitter, idx: number, cx: number, cy: number, awakened: boolean, s: number) => {
+    if (m.aim === 1) {
+      emit(m, shotCount[idx]!, cx, cy, cx, Math.max(H * 0.85, cy + 40), rng, bullets, awakened, s);
+    } else if (m.aim === 2) {
+      const r = aimRng[idx]!;
+      const tx = W * (0.1 + 0.8 * r()), ty = H * (0.5 + 0.45 * r());
+      emit(m, shotCount[idx]!, cx, cy, tx, ty, r, bullets, awakened, s);
+    } else {
+      emit(m, shotCount[idx]!, cx, cy, px, py, rng, bullets, awakened, s);
+    }
   };
 
   /** 1 ステップ(1/120 秒)進める。dx0, dy0 は 0.25 論理px 単位。終了後は何もしない */
@@ -610,7 +636,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         if (sp.boss) {
           if (!firesInPhase(m.ph, phase) || banner > 0) { next[idx] = waveT; return; }
           while (waveT >= next[idx]!) {
-            emit(m, shotCount[idx]!, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by, px, py, rng, bullets,
+            fire(m, idx, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by,
               sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);
             shotCount[idx]!++;
             next[idx]! += Math.max(0.05, m.i);
@@ -618,7 +644,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         } else {
           const end = Math.min(m.e, sp.limit);
           while (waveT >= next[idx]! && next[idx]! < end) {
-            emit(m, shotCount[idx]!, m.x * W, m.y * H, px, py, rng, bullets);
+            fire(m, idx, m.x * W, m.y * H, false, 0);   // 耐えきる場面は、これまでどおり salt を使わない
             shotCount[idx]!++;
             next[idx]! += Math.max(0.05, m.i);
           }
@@ -932,14 +958,36 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   };
 }
 
-export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard", observe?: StepObserver): SimResult {
-  const sim = createSim(stage, shotType, observe);
+export function simulate(stage: SimStage, moves: ArrayLike<number>, moveCount: number, shotType: ShotType = "standard", observe?: StepObserver, month = 0): SimResult {
+  const sim = createSim(stage, shotType, observe, { month });
   const limit = sim.waveLimitTicks;
   while (sim.outcome === "playing" && sim.tick < limit) {
     const k = sim.tick;
     sim.step(k < moveCount ? moves[k * 2]! : 0, k < moveCount ? moves[k * 2 + 1]! : 0);
   }
   return sim.result();
+}
+
+/** 月の番号(UTC の 西暦×12 + 月-1)。アプリの Simulation.month(of:) と同じ */
+export function monthOf(ms: number): number {
+  const d = new Date(ms);
+  return d.getUTCFullYear() * 12 + d.getUTCMonth();
+}
+
+/** ランダムの狙い方(aim === 2)の発射台があるか(あれば、記録の再生に遊んだ月が要る) */
+export function usesMonth(stage: SimStage): boolean {
+  return specsOf(stage).some((sp) => sp.emitters.some((m) => m.aim === 2));
+}
+
+/**
+ * アプリから届いた「遊んだ月」を確かめる。ランダムの発射台がないステージは 0(月は関係しない)。
+ * 届いた月が now から数えて allowBack か月前〜今月の範囲になければ null(並びの選り好みを防ぐ)
+ */
+export function playedMonth(stage: SimStage, raw: unknown, now: number, allowBack: number): number | null {
+  if (!usesMonth(stage)) return 0;
+  const cur = monthOf(now);
+  if (typeof raw !== "number" || !Number.isInteger(raw) || raw > cur || raw < cur - allowBack) return null;
+  return raw;
 }
 
 /** アプリが送ってくる操作記録(Base64 → [先頭1バイト: 0=そのまま/1=圧縮] → (回数, dx, dy) の繰り返し)を、1ステップずつの [dx, dy, ...] に戻す */

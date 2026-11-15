@@ -17,6 +17,8 @@ struct PlayResult {
     var revived = false
     /// 「雑魚を全部倒したら次へ」の場面で終わったか(クリア・時間切れの文を変える)
     var byMooks = false
+    /// 遊んだ月(ランダムの狙い方の並びを決める。記録を送るとき、サーバーが同じ月で再生して確かめる)
+    var month = 0
 }
 
 /// ランキングに記録するために必要な情報(世界のステージを遊んでいるとき)
@@ -72,7 +74,7 @@ final class PlayModel: ObservableObject {
             guard let self else { return }
             let r = PlayResult(outcome: sim.outcome, time: max(0, sim.t), ticks: sim.tick, hp: sim.hp,
                                duration: sim.stage.durationSec, isBoss: sim.stage.hasRanking, isDamage: sim.stage.mode == .damage,
-                               damage: sim.damageDealt, shot: sim.shotType, revived: self.revivedThisRun, byMooks: sim.clearsByMooks)
+                               damage: sim.damageDealt, shot: sim.shotType, revived: self.revivedThisRun, byMooks: sim.clearsByMooks, month: sim.month)
             if sim.outcome == .hit { AudioManager.shared.se(.hit) }
             if sim.outcome == .hit, self.canRevive() {
                 self.pending = r; self.pendingMoves = moves

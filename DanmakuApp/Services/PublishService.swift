@@ -8,12 +8,12 @@ enum PublishService {
     static let descMaxLength = 200
     static let descMaxLines = 10
 
-    static func publish(stage: Stage, authorName: String, replay: Replay?, premium: Bool = false, desc: String = "") async throws -> String {
+    static func publish(stage: Stage, authorName: String, replay: Replay?, replayMonth: Int = 0, premium: Bool = false, desc: String = "") async throws -> String {
         guard Backend.isAvailable else { throw PublishError(message: L("error.offline")) }
         var payload = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(stage))) as? [String: Any] ?? [:]
         payload["authorName"] = authorName.trimmingCharacters(in: .whitespaces)
         // クリア記録がなければ「URLを知っている人だけ」の投稿(一覧には載らない)
-        if let replay { payload["clearReplay"] = replay.encoded() } else { payload["unlisted"] = true }
+        if let replay { payload["clearReplay"] = replay.encoded(); payload["clearMonth"] = replayMonth } else { payload["unlisted"] = true }
         let d = desc.trimmingCharacters(in: .whitespacesAndNewlines)
         if !d.isEmpty { payload["desc"] = d }   // ステージの説明(なくてもよい)
         payload["termsAccepted"] = true

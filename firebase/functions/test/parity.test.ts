@@ -7,7 +7,7 @@ it("parity", () => {
   const rows = JSON.parse(readFileSync("/tmp/parity_swift.json", "utf8"));
   const bad: string[] = [];
   for (const r of rows) {
-    const x = simulate(r.stage, new Int8Array(0), 0, "standard");
+    const x = simulate(r.stage, new Int8Array(0), 0, "standard", undefined, r.month ?? 0);
     const ok = x.outcome === r.outcome && x.tick === r.steps && x.bulletCount === r.n && (r.outcome === "hit" || x.bulletHashCoarse === r.coarse);
     if (!ok) bad.push(`${r.t} aw=${r.aw} mir=${r.mir}: swift ${r.outcome}/${r.steps}/${r.n}/${r.coarse} ts ${x.outcome}/${x.tick}/${x.bulletCount}/${x.bulletHashCoarse}`);
   }

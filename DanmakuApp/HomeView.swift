@@ -75,13 +75,14 @@ struct HomeView: View {
                          guard e.stage == entry.stage else { return }
                          e.verifiedStage = entry.stage
                          e.verifiedReplay = Replay(moves: moves).encoded()
+                         e.verifiedMonth = result.month
                          saved.update(e)
                      },
                      onExit: { playingMine = nil })
         }
         .sheet(item: $publishingEntry) { entry in
             PublishFlowView(stage: entry.stage, authorName: AuthorName.current.isEmpty ? entry.draft.authorName : AuthorName.current,
-                            replay: entry.isVerified ? entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) : nil) { id in
+                            replay: entry.isVerified ? entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) : nil, replayMonth: entry.verifiedMonth ?? 0) { id in
                 var e = saved.stage(id: entry.id) ?? entry
                 e.publishedStage = e.stage; e.publishedID = id
                 saved.update(e)

@@ -13,7 +13,7 @@ import { notifyReward } from "./notify.js";
 import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, getInviteInfo as getInviteInfoFn, registerInvite as registerInviteFn } from "./invite.js";
 import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
-import { decodeReplay, isShotType, simulate } from "./fullsim.js";
+import { decodeReplay, isShotType, playedMonth, simulate } from "./fullsim.js";
 import { prepareWeek, rankedBot, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
@@ -82,7 +82,10 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
     const maxSteps = (timeLimitSec(v.stage.mode, v.stage.durationSec) + 3) * 120 + 144;
     const played = v.clearReplay ? decodeReplay(v.clearReplay, maxSteps) : null;
     if (!played) throw new HttpsError("invalid-argument", "replay");
-    if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard").outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
+    // ランダムの狙い方があるステージは、作者がクリアした月の並びで再生する(クリア確認から投稿まで間が空いてもよいように、12か月前まで)
+    const clearMonth = playedMonth(v.stage, (req.data as { clearMonth?: unknown }).clearMonth, Date.now(), 12);
+    if (clearMonth === null) throw new HttpsError("invalid-argument", "replay-not-cleared");
+    if (simulate(v.stage, played.moves, played.steps, v.stage.shot ?? "standard", undefined, clearMonth).outcome !== "cleared") throw new HttpsError("invalid-argument", "replay-not-cleared");
   }
   const langRaw = (req.data as { lang?: unknown }).lang;
   const lang = typeof langRaw === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(langRaw) ? langRaw : "und";
@@ -315,7 +318,10 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
 
   const played = decodeReplay(d.replay, (timeLimitSec(stage.mode, stage.durationSec) + 3) * 120 + 144);
   if (!played) throw new HttpsError("invalid-argument", "replay");
-  const result = simulate(stage, played.moves, played.steps, isShotType(stage.shot) ? stage.shot : "standard");
+  // ランダムの狙い方があるステージは、遊んだ月の並びで再生する(今月と、月をまたいだ直後のための先月だけ受け付ける)
+  const month = playedMonth(stage, (d as { month?: unknown }).month, Date.now(), 1);
+  if (month === null) return { accepted: false, reason: "month" };
+  const result = simulate(stage, played.moves, played.steps, isShotType(stage.shot) ? stage.shot : "standard", undefined, month);
   if (result.outcome !== "cleared") return { accepted: false, reason: "not-cleared" };
 
   // ボス戦と連戦は「クリアまでの時間」(短いほど上)、ダメージ勝負は「与えたダメージ」(多いほど上)

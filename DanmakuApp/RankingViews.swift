@@ -63,7 +63,7 @@ struct RankingSubmitPanel: View {
     private func send() async {
         state = .sending
         do {
-            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, handle: handles.handle, name: names.publicName, shot: context.stage.shotType)
+            let o = try await RankingService.submit(stageID: context.stageID, moves: moves, month: result.month, handle: handles.handle, name: names.publicName, shot: context.stage.shotType)
             state = .done(SubmitSummary(rank: o.rank, value: o.value, improved: o.improved))
         } catch RankingError.tooFast { state = .failed("ranking.error.tooFast") }
         catch RankingError.notCleared { state = .failed("ranking.error.notCleared") }

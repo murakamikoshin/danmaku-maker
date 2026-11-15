@@ -156,7 +156,7 @@ struct EditorView: View {
                         + (run.fromWave > 0 ? " " + String(format: L("editor.wave.testfrom.title"), run.fromWave + 1) : ""),
                      isTest: true, customs: run.customs,
                      onResult: { result, moves in
-                         if run.fromWave == 0 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves)) }
+                         if run.fromWave == 0 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves), month: result.month) }
                      },
                      onExit: { testRun = nil })
         }
@@ -166,7 +166,7 @@ struct EditorView: View {
             NamePromptSheet(draft: $model.draft, canPublish: model.canPublish) { proceedToPublish = true; naming = false }
         }
         .sheet(isPresented: $publishing) {
-            PublishFlowView(stage: model.stage, authorName: model.draft.authorName, replay: model.isVerified ? model.clearReplay : nil) { id in model.published(id: id) }
+            PublishFlowView(stage: model.stage, authorName: model.draft.authorName, replay: model.isVerified ? model.clearReplay : nil, replayMonth: model.clearMonth) { id in model.published(id: id) }
         }
     }
 }

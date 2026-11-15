@@ -33,6 +33,8 @@ export interface Emitter {
   sh?: 1 | 2;
   /** 左右反転(線対称)。1 のときだけ入れる */
   mir?: 1;
+  /** 狙い方(1.3.0 から): 1 = 固定(真下)、2 = ランダム(月ごとに変わる)。未指定 = 自機狙い */
+  aim?: 1 | 2;
 }
 
 export interface Wave {
@@ -263,6 +265,8 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     const ang = int(item.a ?? 0, -180, 180);
     const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
     const mir = int(item.mir ?? 0, 0, 1);
+    // 狙い方: 1 か 2 だけ残す(アプリの Emitter.sanitizedAim と同じ。ほかの値は自機狙い)
+    const aim = item.aim === 1 || item.aim === 2 ? item.aim : 0;
     if ([x, y, s, e, i, c, v, r, k, ph, fp, ang, sh, mir].some((n) => n === null)) return { ok: false, error: "emitter-range" };
     // 回せないパターン(雨・横切り・隅・掃射)に角度は付けられない
     if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
@@ -273,7 +277,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}), ...(aim ? { aim: aim as 1 | 2 } : {}) });
   }
   return { ok: true, list };
 }

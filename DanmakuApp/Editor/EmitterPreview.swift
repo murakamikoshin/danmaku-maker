@@ -339,7 +339,8 @@ final class MiniStageEngine {
     /// 最初から、作者が決めた開始秒まで進めた状態。READY の間は飛ばす。
     /// 開始秒より前に、ボスの段階変化・覚醒・次の場面が来るときは、その直前で止める(サプライズを守る)
     private static func cued(_ stage: Stage) -> Simulation {
-        var s = Simulation(stage: stage)
+        // 実際のゲームと同じく、ランダムの狙い方は今月の並びで見せる
+        var s = Simulation(stage: stage, month: Simulation.month(of: Date()))
         s.invincible = true
         while s.t < 0 && s.outcome == .playing { s.step(.zero) }
         let target = Double(stage.effectivePreviewStart)

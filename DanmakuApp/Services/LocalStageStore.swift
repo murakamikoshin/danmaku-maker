@@ -24,6 +24,8 @@ struct SavedStage: Identifiable, Codable, Equatable {
     /// テストプレイでクリアしたときのステージ(確認済みの内容)とリプレイ。内容を変えると、確認は自動で外れる
     var verifiedStage: Stage?
     var verifiedReplay: String?
+    /// クリア確認をした月(ランダムの狙い方の並び。投稿のとき、サーバーは同じ月で再生して確かめる)
+    var verifiedMonth: Int?
     /// 投稿した内容と、発行された ID(同じ内容を、二重に投稿しないため)
     var publishedStage: Stage?
     var publishedID: String?

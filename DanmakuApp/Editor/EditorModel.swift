@@ -76,6 +76,12 @@ extension Emitter {
         t = p; i = d.i; c = d.c; v = d.v; r = d.r
         if p != .custom { path = nil }
         if !canRotate { a = 0 }
+        // 狙い方が効かないパターンでは外す(雨のように、ランダムだけ効くものは固定を外す)
+        switch aimSupport {
+        case .none: aim = nil
+        case .randomOnly: if aim == 1 { aim = nil }
+        case .full: break
+        }
     }
 }
 
@@ -314,6 +320,7 @@ final class EditorModel: ObservableObject {
     /// テストプレイでクリアした内容と、いまの内容が同じか(変えると、自動で外れる)
     var isVerified: Bool { entry.verifiedStage.map { $0.samePlay(as: stage) } ?? false }
     var clearReplay: Replay? { entry.verifiedReplay.flatMap { Replay(encoded: $0) } }
+    var clearMonth: Int { entry.verifiedMonth ?? 0 }
     /// いまの内容を、すでに投稿したか
     var isPublished: Bool { entry.publishedStage != nil && entry.publishedStage == stage && entry.publishedID != nil }
     var publishedID: String? { isPublished ? entry.publishedID : nil }
@@ -417,9 +424,10 @@ final class EditorModel: ObservableObject {
         store.update(entry)
     }
 
-    func markVerified(stage: Stage, replay: Replay) {
+    func markVerified(stage: Stage, replay: Replay, month: Int) {
         entry.verifiedStage = stage
         entry.verifiedReplay = replay.encoded()
+        entry.verifiedMonth = month
         entry.draft = draft
         baseline = draft
         store.update(entry)

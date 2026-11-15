@@ -23,4 +23,26 @@ final class ParityCheckTests: XCTestCase {
         }
         try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: "/tmp/parity_swift.json"))
     }
+
+    /// 狙い方(固定・ランダム)の一致を調べる(環境変数 PARITY_AIM があるときだけ。tools/parity.sh と同じ /tmp/parity_swift.json に書く)
+    func testWriteAim() throws {
+        guard ProcessInfo.processInfo.environment["PARITY_AIM"] != nil else { throw XCTSkip("") }
+        var out: [[String: Any]] = []
+        let pats = DanmakuCore.Pattern.allCases.filter { Emitter(t: $0).aimSupport != .none && $0 != .custom }
+        for t in pats {
+            for aim in [1, 2] {
+                for mode in [Mode.boss, .survive] {
+                    for mir in [nil, 1] as [Int?] {
+                        let e = Emitter(t: t, x: 0.4, y: 0.25, s: 0, e: 12, i: 0.4, c: 5, v: 2, r: 15, k: 1, p: 1, mir: mir, aim: aim)
+                        var st = Stage(name: "p", mode: mode, durationSec: 12, bossHp: mode == .boss ? 99999 : nil, emitters: [e], lifeMode: .hp, lifeCount: 400)
+                        st = st.sanitized()
+                        guard st.emitters.first?.t == t else { continue }
+                        let r = Simulation.run(stage: st, moves: [], month: 24310 + aim)
+                        out.append(["t": "\(t)/aim\(aim)/\(mode)", "aw": 0, "mir": mir ?? 0, "month": 24310 + aim, "stage": try JSONSerialization.jsonObject(with: JSONEncoder().encode(st)), "outcome": "\(r.outcome)", "steps": r.steps, "n": r.bulletCount, "coarse": r.bulletHashCoarse])
+                    }
+                }
+            }
+        }
+        try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: "/tmp/parity_swift.json"))
+    }
 }

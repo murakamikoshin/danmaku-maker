@@ -7,6 +7,8 @@ struct PublishFlowView: View {
     let authorName: String
     /// nil のときは「URLを知っている人だけ」の投稿(まだクリアしていないステージ)
     let replay: Replay?
+    /// クリア記録を遊んだ月(ランダムの狙い方の並び)
+    var replayMonth: Int = 0
     let onPublished: (String) -> Void
 
     @EnvironmentObject private var auth: AuthService
@@ -219,7 +221,7 @@ struct PublishFlowView: View {
             async let adShown: Bool = purchases.isPremium ? false : ads.showInterstitialNow()
             let id: String
             do {
-                id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, premium: purchases.isPremium, desc: desc)
+                id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, replayMonth: replayMonth, premium: purchases.isPremium, desc: desc)
             } catch {
                 _ = await adShown
                 throw error

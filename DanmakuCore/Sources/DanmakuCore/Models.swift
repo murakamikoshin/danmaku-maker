@@ -454,7 +454,7 @@ public struct Wave: Codable, Equatable, Sendable {
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil)
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim))
         }
         var out = Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
@@ -503,15 +503,22 @@ public struct Emitter: Codable, Equatable, Sendable {
     public var sh: Int?
     /// 左右反転(線対称): 1 で、発射位置・弾の向き・回る向きを、画面の左右で反転して撃つ。nil は反転しない
     public var mir: Int?
+    /// 狙い方(1.3.0 から): nil = 自機狙い(これまでと同じ)、1 = 固定(自機を見ずに、真下へ向けて撃つ。向きは a で回す)、
+    /// 2 = ランダム(撃つたびに、ばらばらの場所を狙う。雨などの散らばりも変わる)。ランダムの並びは、同じ月のあいだは毎回同じで、月ごとに変わる
+    public var aim: Int?
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil, mir: Int? = nil) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil, mir: Int? = nil, aim: Int? = nil) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
         self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
         self.path = path
         self.sh = sh
         self.mir = mir
+        self.aim = aim
     }
+
+    /// 狙い方の値を整える(1 か 2 だけ残す。ほかは自機狙い = nil)
+    public static func sanitizedAim(_ v: Int?) -> Int? { v == 1 || v == 2 ? v : nil }
 
     /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
     public static let minInterval = 0.05
@@ -550,7 +557,7 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh, mir }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh, mir, aim }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -564,6 +571,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         if let path { try c.encode(path, forKey: .path) }
         if let sh, sh == 1 || sh == 2 { try c.encode(sh, forKey: .sh) }
         if mir == 1 { try c.encode(1, forKey: .mir) }
+        if let aim = Emitter.sanitizedAim(aim) { try c.encode(aim, forKey: .aim) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -584,6 +592,7 @@ public struct Emitter: Codable, Equatable, Sendable {
         path = (try? d.decodeIfPresent([Double].self, forKey: .path)) ?? nil
         sh = (try? d.decodeIfPresent(Int.self, forKey: .sh)).flatMap { $0 == 1 || $0 == 2 ? $0 : nil }
         mir = (try? d.decodeIfPresent(Int.self, forKey: .mir)).flatMap { $0 == 1 ? 1 : nil }
+        aim = Emitter.sanitizedAim((try? d.decodeIfPresent(Int.self, forKey: .aim)) ?? nil)
     }
 }
 
@@ -924,7 +933,7 @@ public struct Stage: Codable, Equatable, Sendable {
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil)
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim))
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount

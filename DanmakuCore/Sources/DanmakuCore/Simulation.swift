@@ -655,6 +655,10 @@ public struct Simulation {
 
     /// 自機がショットを撃つか(スワイプ弾幕では撃たない)
     private let firesShots: Bool
+    /// ランダムの狙い方(Emitter.aim == 2)の並びを決める月(Simulation.month(of:))。同じ月のあいだは毎回同じ
+    public let month: Int
+    /// ランダムの狙い方の発射台ごとの乱数(場面の始めに作り直す。ほかの発射台の弾の並びは変えない)
+    private var aimRng: [Mulberry32] = []
     private var cooldown = 0.0
     /// 失楽園の抜け道など、ステージごとに決まる数(ステージのシード)
     private let salt: UInt32
@@ -714,8 +718,9 @@ public struct Simulation {
     }
 
     /// shotType を省くと、ステージで決まっている撃ち方を使う(ふつうは、これ)
-    public init(stage: Stage, shotType: ShotType? = nil) {
-        self.init(stage: stage, seed: stage.seed, shotType: shotType ?? stage.shotType)
+    /// month は、ランダムの狙い方の並びを決める月(Simulation.month(of:))。ランダムの発射台がないステージでは使わない
+    public init(stage: Stage, shotType: ShotType? = nil, month: Int = 0) {
+        self.init(stage: stage, seed: stage.seed, shotType: shotType ?? stage.shotType, month: month)
     }
 
     /// スワイプ弾幕用の作り方(仕様書 3.4 章)。ライフ 1、自機はショットを撃たない、ボスの場面は「ダメージ勝負」と同じ扱い
@@ -724,9 +729,10 @@ public struct Simulation {
         self.init(stage: stage, seed: stage.seed, shotType: .standard, swipe: true)
     }
 
-    init(stage: Stage, seed: UInt32, shotType: ShotType = .standard, swipe: Bool = false) {
+    init(stage: Stage, seed: UInt32, shotType: ShotType = .standard, swipe: Bool = false, month: Int = 0) {
         self.stage = stage
         self.shotType = shotType
+        self.month = month
         firesShots = !swipe
         lifeMode = swipe ? .lives : stage.effectiveLifeMode
         lifeMax = swipe ? 1 : stage.effectiveLifeCount
@@ -740,6 +746,48 @@ public struct Simulation {
         next = specs[0].emitters.map(\.s)
         shotCount = Array(repeating: 0, count: specs[0].emitters.count)
         resetMooks()
+        resetAimRng()
+    }
+
+    /// 月の番号(UTC の 西暦×12 + 月-1)。ランダムの狙い方の並びは、この値ごとに変わる
+    public static func month(of date: Date) -> Int {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let c = cal.dateComponents([.year, .month], from: date)
+        return (c.year ?? 2026) * 12 + (c.month ?? 1) - 1
+    }
+
+    /// ステージに、ランダムの狙い方の発射台があるか(あれば、記録の確かめに月が要る)
+    public static func usesMonth(_ stage: Stage) -> Bool {
+        stage.waveSpecs.contains { $0.emitters.contains { $0.aim == 2 } }
+    }
+
+    /// 場面の始めに、ランダムの狙い方の乱数を作る(ステージのシード・月・場面・発射台の番号から)
+    private mutating func resetAimRng() {
+        aimRng = spec.emitters.indices.map { idx in
+            var h = FNV1a()
+            h.add(Int32(bitPattern: salt)); h.add(Int32(month)); h.add(Int32(waveIndex)); h.add(Int32(idx))
+            return Mulberry32(seed: h.value)
+        }
+    }
+
+    /// 発射台 idx を、狙い方に合わせて撃つ。自機狙いは自機を、固定は真下を、ランダムはばらばらの場所を狙う
+    private mutating func fire(_ m: Emitter, idx: Int, cx: Double, cy: Double, awakened: Bool, salt: UInt32) {
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
+        switch m.aim {
+        case 1:
+            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: cx, py: max(H * 0.85, cy + 40),
+                      rng: &rng, into: &bullets, awakened: awakened, salt: salt)
+        case 2:
+            var r = aimRng[idx]
+            let tx = W * (0.1 + 0.8 * r.next()), ty = H * (0.5 + 0.45 * r.next())
+            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: tx, py: ty,
+                      rng: &r, into: &bullets, awakened: awakened, salt: salt)
+            aimRng[idx] = r
+        default:
+            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: player.x, py: player.y,
+                      rng: &rng, into: &bullets, awakened: awakened, salt: salt)
+        }
     }
 
     /// 雑魚が出る発射台か(画面の端から撃つ種類と、ボス戦でボスから撃つ発射台には、雑魚は出ない)。ゲームの絵も、この判定を使う
@@ -834,6 +882,7 @@ public struct Simulation {
         next = spec.emitters.map(\.s)
         shotCount = Array(repeating: 0, count: spec.emitters.count)
         resetMooks()
+        resetAimRng()
         hp = spec.hp
         phase = 1
         banner = 0
@@ -1018,8 +1067,7 @@ public struct Simulation {
                         let fx = m.firesFromPoint ? m.x * W : bp.x
                         let fy = m.firesFromPoint ? m.y * H : bp.y
                         let before = bullets.count
-                        Emit.emit(m, shot: shotCount[idx], cx: m.t == .rain ? 0 : fx, cy: fy,
-                                  px: player.x, py: player.y, rng: &rng, into: &bullets, awakened: isAwakened, salt: salt)
+                        fire(m, idx: idx, cx: m.t == .rain ? 0 : fx, cy: fy, awakened: isAwakened, salt: salt)
                         if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
@@ -1029,8 +1077,7 @@ public struct Simulation {
                     let end = min(m.e, spec.limit)
                     while waveT >= next[idx] && next[idx] < end {
                         let before = bullets.count
-                        Emit.emit(m, shot: shotCount[idx], cx: m.x * W, cy: m.y * H,
-                                  px: player.x, py: player.y, rng: &rng, into: &bullets)
+                        fire(m, idx: idx, cx: m.x * W, cy: m.y * H, awakened: false, salt: 0)   // 耐えきる場面は、これまでどおり salt を使わない
                         if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
                         shotCount[idx] += 1
                         next[idx] += max(0.05, m.i)
@@ -1122,8 +1169,8 @@ extension Simulation {
     }
 
     /// 入力列を再生して結果を返す。入力が尽きたら動かさずに続ける
-    public static func run(stage: Stage, moves: [Move]) -> Result {
-        var sim = Simulation(stage: stage)
+    public static func run(stage: Stage, moves: [Move], month: Int = 0) -> Result {
+        var sim = Simulation(stage: stage, month: month)
         let limit = (stage.timeLimitSec + 3) * 120 + 144
         while sim.outcome == .playing && sim.tick < limit {
             sim.step(sim.tick < moves.count ? moves[sim.tick] : .zero)
