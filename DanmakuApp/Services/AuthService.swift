@@ -40,7 +40,7 @@ final class AuthService: ObservableObject {
         errorMessage = nil
         switch result {
         case .failure(let error):
-            if (error as? ASAuthorizationError)?.code != .canceled { errorMessage = L("error.signin.failed") }
+            if (error as? ASAuthorizationError)?.code != .canceled { errorMessage = Self.failureMessage(error) }
         case .success(let auth):
             guard let apple = auth.credential as? ASAuthorizationAppleIDCredential,
                   let tokenData = apple.identityToken, let token = String(data: tokenData, encoding: .utf8),
@@ -63,9 +63,24 @@ final class AuthService: ObservableObject {
                 }
                 isMember = Auth.auth().currentUser.map { !$0.isAnonymous } ?? false
             } catch {
-                errorMessage = L("error.signin.failed")
+                errorMessage = Self.failureMessage(error)
             }
         }
+    }
+
+    /// サインインに失敗したときの文。よくある原因(iPhone の Apple ID の設定・スクリーンタイムの制限・通信)は、それに合わせて案内する。
+    /// それ以外は、原因を調べられるように失敗の種類(コード)を添える(要望フォームで教えてもらう)
+    static func failureMessage(_ error: Error) -> String {
+        let e = error as NSError
+        if e.domain == ASAuthorizationError.errorDomain {
+            // 1000(unknown)は、Apple ID にサインインしていない・2ファクタ認証がない・スクリーンタイムの制限などで起きる
+            if e.code == ASAuthorizationError.unknown.rawValue || e.code == ASAuthorizationError.notHandled.rawValue {
+                return L("error.signin.apple.setup")
+            }
+        } else if e.domain == AuthErrorDomain, e.code == AuthErrorCode.networkError.rawValue {
+            return L("error.signin.network")
+        }
+        return String(format: L("error.signin.failed.code"), "\(e.domain.split(separator: ".").last.map(String.init) ?? e.domain) \(e.code)")
     }
 
     /// アカウント削除。Apple のトークンを失効させてから、サーバーで投稿・データ・認証ユーザーを削除する
