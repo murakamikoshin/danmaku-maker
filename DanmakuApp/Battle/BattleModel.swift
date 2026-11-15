@@ -33,10 +33,13 @@ final class BattleModel: ObservableObject {
     var appActive = true
     /// 下のタブでバトルの画面が見えているか。見えていない間は、対戦の画面の描画を止める
     func setVisible(_ visible: Bool) {
-        scene?.isPaused = !visible
+        // 止めるのは、相手を待つ間と結果のときだけ(3・2・1 と対戦の間はタブを移れないので触らない。カウントダウンの止め方を崩さないように)
+        if !visible, phase == .waiting || isResult { scene?.isPaused = true; pausedByTab = true }
+        if visible, pausedByTab { scene?.isPaused = false; pausedByTab = false }
         // 相手を探している間にほかのタブへ移ったら、探すのをやめる(見えないまま対戦が始まって負けないように)
         if !visible, case .searching = phase { cancel() }
     }
+    private var pausedByTab = false
 
     /// 前面から離れた回数(3秒の降参の判定で、どの「離れた」かを見分けるため)
     var inactiveSeq = 0
@@ -72,8 +75,11 @@ final class BattleModel: ObservableObject {
         searchTask = Task { [weak self] in
             guard let self else { return }
             do {
-                if let id = try await BattleService.join() { await self.goLive(id: id, uid: uid); return }
-            } catch { self.phase = .failed; return }
+                let id = try await BattleService.join()
+                // 待ち列に入る通信の間に、やめていたら(タブを移ったなど)、入った分を抜けてから終わる(待ち列に残らないように)
+                guard !Task.isCancelled, case .searching = self.phase else { await BattleService.leave(); return }
+                if let id { await self.goLive(id: id, uid: uid); return }
+            } catch { if case .searching = self.phase { self.phase = .failed }; return }
             self.queueHandle = BattleService.observeQueue(uid: uid) { [weak self] id in
                 Task { @MainActor in await self?.goLive(id: id, uid: uid) }
             }

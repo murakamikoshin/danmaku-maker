@@ -112,8 +112,12 @@ struct HomeView: View {
         .onChange(of: world.sort) { _ in Task { await world.reload() } }
         .onChange(of: world.mode) { _ in Task { await world.reload() } }
         .onChange(of: world.difficulty) { _ in Task { await world.reload() } }
+        // 弾幕バトルの対戦中に通知・リンクから開いたステージは、対戦が終わってから開く(対戦の上に重なって、見えないまま負けないように)
+        .onChange(of: ads.playingTabs) { tabs in
+            if !tabs.contains("battle"), let id = deepLink.stageID { deepLink.stageID = nil; Task { await open(id: id) } }
+        }
         .onChange(of: deepLink.stageID) { id in
-            guard let id else { return }
+            guard let id, !ads.playingTabs.contains("battle") else { return }
             deepLink.stageID = nil
             Task { await open(id: id) }
         }

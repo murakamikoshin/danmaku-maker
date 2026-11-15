@@ -185,6 +185,8 @@ final class NotificationService: NSObject, ObservableObject {
         }
         remindersOn = on
         defaults.set(on, forKey: "notify.reminders")
+        // 本人が設定で選んだら、もう自動では変えない
+        defaults.set(true, forKey: Self.reminderAskedKey)
         return true
     }
 
@@ -195,7 +197,9 @@ final class NotificationService: NSObject, ObservableObject {
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         authorization = status
         if status == .authorized || status == .provisional {
-            // もう通知を許可している人(反応の通知などで)は、聞かずにオンにする(設定でいつでも切れる)
+            // 反応の通知をオンにしている人だけ、聞かずにオンにする(設定でいつでも切れる)。
+            // 反応の通知をオフにしている人・設定で毎日のお知らせを選んだ人は、そのままにする
+            guard enabled else { return }
             remindersOn = true
             defaults.set(true, forKey: "notify.reminders")
             return

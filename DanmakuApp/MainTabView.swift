@@ -23,6 +23,8 @@ struct MainTabView: View {
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
+    /// 対戦中に開こうとしたタブ(通知を開いたときなど)。対戦が終わったら開く
+    @State private var pendingTab: Tab?
 
     /// メニューの画面(あそぶ・ショップ・せってい)の横幅の上限。iPad で横に引き伸ばされて読みにくくならないよう、
     /// 真ん中にまとめる(iPhone はどの機種もこれより狭いので変わらない)。スワイプ弾幕は全画面のゲームなので対象外
@@ -70,10 +72,13 @@ struct MainTabView: View {
         }
         .onChange(of: tab) {
             // 対戦中(3・2・1 と対戦)は、通知を開いたときなどでもタブを移さない(移ると、見えないまま止まって抜け出せなくなる)
-            if ads.playingTabs.contains("battle"), $0 != .battle { tab = .battle; return }
+            if ads.playingTabs.contains("battle"), $0 != .battle { pendingTab = $0; tab = .battle; return }
             opened.insert($0); if $0 == .battle { battleSeen = true }
             // バトルの画面は消さずに残すので、ほかのタブを見ている間は、対戦の画面の描画を止める(相手を待つ間など)
             NotificationCenter.default.post(name: .battleTabVisible, object: $0 == .battle)
+        }
+        .onChange(of: ads.playingTabs) { tabs in
+            if !tabs.contains("battle"), let next = pendingTab { pendingTab = nil; tab = next }
         }
         .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty }, set: { if !$0 { notice.pending = [] } })) {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
