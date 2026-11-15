@@ -29,6 +29,8 @@ final class BattleModel: ObservableObject {
     @Published private(set) var canStopWaiting = false
     @Published private(set) var opponentStillPlaying = false
     private var waitTask: Task<Void, Never>?
+    /// アプリが前面にあるか(画面の scenePhase を写す。少し離れただけかを、あとで確かめるため)
+    var appActive = true
     /// 対戦中の表示: 自分の秒、相手が生きているか・落ちた秒
     @Published private(set) var myTime = 0.0
     @Published private(set) var opponentAlive = true

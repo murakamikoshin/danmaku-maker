@@ -11,6 +11,8 @@ struct BattleHomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     /// 結果から進む途中(広告の表示待ち)。二度押しで2回進まないように
     @State private var leaving = false
+    /// 降参の確認
+    @State private var confirmForfeit = false
 
     var body: some View {
         ZStack {
@@ -23,9 +25,22 @@ struct BattleHomeView: View {
             }
         }
         .task { await model.loadStatus() }
+        .gameDialog("battle.forfeit", isPresented: $confirmForfeit, message: "battle.forfeit.confirm") {
+            [GameDialogAction(title: "battle.forfeit", role: .destructive) { model.forfeit() }, .cancel()]
+        }
         .onDisappear { if case .searching = model.phase { model.cancel() } }
         // 対戦中にアプリを裏へ回すと、ゲームの時間が止まって休めてしまう(耐久の勝負が崩れる)。裏へ回したら降参にする
-        .onChange(of: scenePhase) { p in if p == .background, model.phase == .playing { model.forfeit() } }
+        .onChange(of: scenePhase) { p in
+            model.appActive = p == .active
+            if p == .background, model.phase == .playing { model.forfeit() }
+            // コントロールセンターなどで3秒以上離れたときも降参にする(ゲームの時間が止まって休めてしまうため)
+            if p == .inactive, model.phase == .playing {
+                Task {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    if !model.appActive, model.phase == .playing { model.forfeit() }
+                }
+            }
+        }
         // 3・2・1 から自分が落ちたあとの待ちまでは、バナーを消す(入口と結果の画面では出す)
         .onChange(of: model.phase) { p in
             switch p {
@@ -157,9 +172,11 @@ struct BattleHomeView: View {
             }
             Spacer()
             if model.phase == .playing {
-                Button { gameTap(); model.forfeit() } label: {
+                // 押し間違えで負けないように、確かめてから降参する。押せる範囲は 44pt
+                Button { gameTap(); confirmForfeit = true } label: {
                     Text("battle.forfeit").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
                         .padding(.vertical, 6).padding(.horizontal, 10)
+                        .frame(minHeight: 44).contentShape(Rectangle())
                         .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)

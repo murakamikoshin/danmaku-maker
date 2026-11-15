@@ -81,7 +81,7 @@ struct SubmitOutcome {
     var reason: String?
 }
 
-enum RankingError: Error { case notCleared, tooFast, badName, unavailable, other }
+enum RankingError: Error { case notCleared, tooFast, badName, unavailable, month, other }
 
 /// 世界ランキング。ボス戦は「クリアまでの時間(短いほど上)」、ダメージ勝負は「与えたダメージ(多いほど上)」
 enum RankingService {
@@ -127,7 +127,11 @@ enum RankingService {
         do {
             let r = try await Backend.functions.httpsCallable("submitScore").call(payload)
             let d = r.data as? [String: Any] ?? [:]
-            if d["accepted"] as? Bool != true { throw RankingError.notCleared }
+            if d["accepted"] as? Bool != true {
+                // ランダムの狙い方の「遊んだ月」が合わない(端末の日付がずれているなど)
+                if d["reason"] as? String == "month" { throw RankingError.month }
+                throw RankingError.notCleared
+            }
             return SubmitOutcome(accepted: true, improved: d["improved"] as? Bool ?? false,
                                  value: (d["value"] as? NSNumber)?.intValue ?? 0, rank: (d["rank"] as? NSNumber)?.intValue ?? 0)
         } catch let e as RankingError {

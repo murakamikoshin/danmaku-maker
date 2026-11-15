@@ -242,6 +242,10 @@ struct SettingsView: View {
                     }
                 }
             }
+            // 毎日のごほうび・スタミナ満タンのお知らせ(端末で予約する。上の反応の通知とは別に選べる)
+            toggleRow("settings.notify.reminders", "alarm.fill", Binding(
+                get: { notify.remindersOn },
+                set: { on in Task { if !(await notify.setReminders(on)) { notifyDenied = true } } }))
             Text("settings.notify.note").font(.caption).foregroundStyle(.secondary)
         }
         .gameDialog("settings.notify.denied.title", isPresented: $notifyDenied, message: "settings.notify.denied") {

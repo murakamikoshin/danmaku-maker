@@ -10,7 +10,7 @@ import UserMessagingPlatform
 /// - ATT の前に、自前の説明画面を1枚出す(許可する人が増えると広告の単価が上がる)。ボタンは「続ける」1つだけで、
 ///   押すと必ず OS の許可ダイアログに進む(Apple の決まり: 説明画面で許可を誘導・強制しない、ダイアログを真似しない)。
 ///  1. リワード広告: 被弾したときの「広告を見て復活」(見るかどうかは、プレイヤーが選ぶ)
-///  2. 全画面広告: 結果画面から次へ進むときに、2回遊ぶごと・前の広告から60秒以上あいているときだけ。
+///  2. 全画面広告: 結果画面から次へ進むときに、2回遊ぶごと・前の広告(リワード含む)から75秒以上あいているときだけ。始めたばかりの人(入れて24時間かつ10回まで)には出さない。
 ///     広告削除の購入者・テストプレイ・ステージ開始時・プレイ中には、出さない。
 @MainActor
 final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
@@ -263,7 +263,13 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     var inNewPlayerGrace: Bool {
         let d = UserDefaults.standard
         let first: Date
-        if let v = d.object(forKey: Self.firstSeenKey) as? Date { first = v } else { first = Date(); d.set(first, forKey: Self.firstSeenKey) }
+        if let v = d.object(forKey: Self.firstSeenKey) as? Date { first = v } else {
+            // 初めて調べるときは、アプリを入れた日(書類フォルダを作った日)にする。1.3.0 に上げただけの人に、猶予が始まらないように
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            let created = docs.flatMap { try? FileManager.default.attributesOfItem(atPath: $0.path)[.creationDate] as? Date }
+            first = min(created ?? Date(), Date())
+            d.set(first, forKey: Self.firstSeenKey)
+        }
         return Date().timeIntervalSince(first) < Self.graceSeconds && d.integer(forKey: Self.lifetimePlaysKey) < Self.gracePlays
     }
 

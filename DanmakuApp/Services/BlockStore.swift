@@ -20,14 +20,16 @@ final class BlockStore: ObservableObject {
 
     /// 自分が通報したステージ(その場で、自分の一覧からは消す。ほかの人には、通報が集まるまで出る)
     private let reportedKey = "reported.stages.v1"
-    @Published private(set) var reportedStages: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "reported.stages.v1") ?? [])
+    /// 通報した順に並べる(古いものから捨てて、500件まで覚える)
+    @Published private(set) var reportedStages: [String] = UserDefaults.standard.stringArray(forKey: "reported.stages.v1") ?? []
 
     func isHiddenStage(_ id: String) -> Bool { reportedStages.contains(id) }
 
     func hideReported(stageID: String) {
-        reportedStages.insert(stageID)
-        // 古いものから捨てて、500件まで覚える
-        UserDefaults.standard.set(Array(reportedStages.suffix(500)), forKey: reportedKey)
+        guard !reportedStages.contains(stageID) else { return }
+        reportedStages.append(stageID)
+        if reportedStages.count > 500 { reportedStages.removeFirst(reportedStages.count - 500) }
+        UserDefaults.standard.set(reportedStages, forKey: reportedKey)
     }
 
     func unblock(uid: String) {

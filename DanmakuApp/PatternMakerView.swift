@@ -19,6 +19,8 @@ struct PatternMakerView: View {
     @State private var message: LocalizedStringKey?
     /// 描いた軌道を左右反転しているか(反転ボタンを、選んだ状態の見た目にする)
     @State private var flipped = false
+    /// 消す確認をしている、保存した弾幕
+    @State private var deleting: CustomPattern?
     @State private var engine = PatternDemoEngine(source: Point(x: 180, y: 60), player: Point(x: 180, y: 290), sweepPlayer: false)
 
     private let fieldW = PatternDemoEngine.fieldWidth, fieldH = PatternDemoEngine.fieldHeight
@@ -28,7 +30,13 @@ struct PatternMakerView: View {
         return Emitter(t: .custom, x: 0.5, y: 0.2, s: 0, e: 60, i: 1.2, c: copies, v: speed, r: 0, k: 0, path: path)
     }
 
-    var body: some View { screenContent.hidesBannerWhileShown() }
+    var body: some View {
+        screenContent.hidesBannerWhileShown()
+            .gameDialog("maker.delete.confirm", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
+                guard let item = deleting else { return [.cancel()] }
+                return [GameDialogAction(title: "editor.delete", role: .destructive) { library.delete(id: item.id) }, .cancel()]
+            }
+    }
 
     private var screenContent: some View {
         VStack(spacing: 0) {
@@ -139,6 +147,7 @@ struct PatternMakerView: View {
                     Image(systemName: item.1).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
                         .frame(width: 38, height: 38).background(KeyCap(fill: GameStyle.accent, radius: 10, depth: 3)).padding(.bottom, 3)
                         .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 1))
+                        .padding(3).contentShape(Rectangle()).padding(-3)   // 押せる範囲は 44pt
                 }
                 .buttonStyle(BounceButtonStyle()).opacity(enabled ? 1 : 0.35).disabled(!enabled)
             }
@@ -212,7 +221,12 @@ struct PatternMakerView: View {
                     }
                     Spacer()
                     Button { gameTap(); load(item) } label: { Chip(title: L("maker.edit"), selected: false) }.buttonStyle(BounceButtonStyle())
-                    Button { gameTap(); library.delete(id: item.id) } label: { Image(systemName: "trash").foregroundStyle(GameStyle.pinkColor) }.buttonStyle(.plain)
+                    // 消す前に確かめる。押せる範囲は 44pt、読み上げの名前つき
+                    Button { gameTap(); deleting = item } label: {
+                        Image(systemName: "trash").foregroundStyle(GameStyle.pinkColor).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("editor.delete"))
                 }
                 .padding(10).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
             }

@@ -67,6 +67,7 @@ struct RankingSubmitPanel: View {
             state = .done(SubmitSummary(rank: o.rank, value: o.value, improved: o.improved))
         } catch RankingError.tooFast { state = .failed("ranking.error.tooFast") }
         catch RankingError.notCleared { state = .failed("ranking.error.notCleared") }
+        catch RankingError.month { state = .failed("ranking.error.month") }
         catch RankingError.badName { state = .failed("name.error.invalid") }
         catch { state = .failed("error.network") }
     }

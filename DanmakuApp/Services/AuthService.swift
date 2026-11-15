@@ -52,19 +52,36 @@ final class AuthService: ObservableObject {
                 if let user = Auth.auth().currentUser, user.isAnonymous {
                     do {
                         _ = try await user.link(with: credential)
-                        try? await user.getIDTokenResult(forcingRefresh: true)
                     } catch let e as NSError where e.code == AuthErrorCode.credentialAlreadyInUse.rawValue {
                         // 既に Apple で登録済みのアカウントがあれば、そちらに切り替える
-                        guard let existing = e.userInfo[AuthErrorUserInfoUpdatedCredentialKey] as? AuthCredential else { throw e }
-                        _ = try await Auth.auth().signIn(with: existing)
+                        if let existing = e.userInfo[AuthErrorUserInfoUpdatedCredentialKey] as? AuthCredential {
+                            _ = try await Auth.auth().signIn(with: existing)
+                        } else {
+                            _ = try await Auth.auth().signIn(with: credential)
+                        }
+                    } catch let e as NSError where e.code != AuthErrorCode.networkError.rawValue {
+                        // 匿名のアカウントが使えなくなっている(期限切れ・消えた)などで、つなげなかったときは、
+                        // 匿名の分はあきらめて、Apple で直接サインインする(ずっと登録できないままにならないように)
+                        _ = try await Auth.auth().signIn(with: credential)
                     }
                 } else {
                     _ = try await Auth.auth().signIn(with: credential)
                 }
+                // サーバーが「サインイン済み」と分かるように、トークンを作り直す(失敗したら少し待って、もう一度)
+                await refreshToken()
                 isMember = Auth.auth().currentUser.map { !$0.isAnonymous } ?? false
             } catch {
                 errorMessage = Self.failureMessage(error)
             }
+        }
+    }
+
+    /// サインインのあと、トークンを作り直す(つなぐ前の「匿名」のトークンのままだと、投稿などがサインインを求められて失敗する)。
+    /// 失敗しても、サーバーはアカウントの実際の状態も見るので、投稿はできる
+    private func refreshToken() async {
+        for attempt in 0..<3 {
+            if (try? await Auth.auth().currentUser?.getIDTokenResult(forcingRefresh: true)) != nil { return }
+            try? await Task.sleep(nanoseconds: UInt64(attempt + 1) * 700_000_000)
         }
     }
 

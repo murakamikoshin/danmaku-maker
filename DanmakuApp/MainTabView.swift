@@ -61,8 +61,11 @@ struct MainTabView: View {
                     Rectangle().fill(GameStyle.nightDeep).frame(height: 10)
                         .overlay(alignment: .bottom) { Rectangle().fill(GameStyle.edge).frame(height: 1) }
                 }
-                TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
-                       shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
+                // 弾幕バトルの対戦中は、タブを出さない(指が触れて別のタブへ移ると、見えないまま対戦が続いてしまう)
+                if !ads.playingTabs.contains("battle") {
+                    TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
+                           shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
+                }
             }
         }
         .onChange(of: tab) { opened.insert($0); if $0 == .battle { battleSeen = true } }
@@ -83,6 +86,7 @@ struct MainTabView: View {
             if UIThemeStore.shared.consumeReturnToSettings() { tab = .settings; opened.insert(.settings) }
             // お知らせ(ランキング戦の開始)の通知を開いたら、スワイプ弾幕へ(出していないときは、あそぶのまま)
             NotificationService.shared.onOpenSwipe = { if swipeConfig.enabled { tab = .swipe; opened.insert(.swipe) } }
+            NotificationService.shared.onOpenDaily = { tab = .shop; opened.insert(.shop) }
             #if DEBUG
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-open-swipe") { tab = .swipe; opened.insert(.swipe) }

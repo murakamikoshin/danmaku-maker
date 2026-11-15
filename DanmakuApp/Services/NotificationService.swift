@@ -43,6 +43,15 @@ final class NotificationService: NSObject, ObservableObject {
         didSet { if pendingSwipe, let f = onOpenSwipe { pendingSwipe = false; f() } }
     }
     private var pendingSwipe = false
+    /// 毎日のごほうびのお知らせを開いたときに、ショップのごほうびを開く
+    var onOpenDaily: (() -> Void)? {
+        didSet { if pendingDaily, let f = onOpenDaily { pendingDaily = false; f() } }
+    }
+    private var pendingDaily = false
+    /// 毎日のごほうび・スタミナ満タンのお知らせ(端末の中で予約するもの)を受け取るか。
+    /// 自分のステージへの反応の通知(全体のスイッチ)とは別。遊ぶだけの人にも届くように
+    @Published private(set) var remindersOn: Bool = UserDefaults.standard.object(forKey: "notify.reminders") as? Bool ?? true
+    private static let reminderAskedKey = "notify.reminders.asked"
 
     private var uid: String?
     private var token: String?
@@ -143,7 +152,7 @@ final class NotificationService: NSObject, ObservableObject {
     func scheduleLocalReminders(rewardClaimedToday: Bool, rewardsLeft: Bool) {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [Self.dailyReminderID, Self.staminaReminderID])
-        guard enabled, isOn(.rewards), authorization == .authorized || authorization == .provisional else { return }
+        guard remindersOn, authorization == .authorized || authorization == .provisional else { return }
         let cal = Calendar.current
         let now = Date()
         var at = cal.date(bySettingHour: 19, minute: 0, second: 0, of: now) ?? now
@@ -153,6 +162,31 @@ final class NotificationService: NSObject, ObservableObject {
         if fullAt > now.timeIntervalSince1970 + 60 {
             add(id: Self.staminaReminderID, title: L("notify.local.stamina.title"), body: L("notify.local.stamina.body"), at: Date(timeIntervalSince1970: fullAt))
         }
+    }
+
+    func setReminders(_ on: Bool) async -> Bool {
+        if on {
+            let center = UNUserNotificationCenter.current()
+            var status = await center.notificationSettings().authorizationStatus
+            if status == .notDetermined {
+                _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+                status = await center.notificationSettings().authorizationStatus
+            }
+            authorization = status
+            guard status == .authorized || status == .provisional else { return false }
+        }
+        remindersOn = on
+        defaults.set(on, forKey: "notify.reminders")
+        return true
+    }
+
+    /// 初めて毎日のごほうびを受け取ったあとに1回だけ、お知らせの許可を求める(まだ聞いていないときだけ)
+    func askReminderPermissionOnce() async {
+        guard !defaults.bool(forKey: Self.reminderAskedKey) else { return }
+        defaults.set(true, forKey: Self.reminderAskedKey)
+        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        guard status == .notDetermined else { return }
+        _ = await setReminders(true)
     }
 
     /// アプリを開いたら、予約していたお知らせは消す(開いている人には要らない)
@@ -171,6 +205,10 @@ final class NotificationService: NSObject, ObservableObject {
     }
 
     fileprivate func open(userInfo: [AnyHashable: Any]) {
+        if (userInfo["kind"] as? String) == Self.dailyReminderID {
+            if let f = onOpenDaily { f() } else { pendingDaily = true }
+            return
+        }
         if (userInfo["kind"] as? String) == Self.staminaReminderID {
             if let f = onOpenSwipe { f() } else { pendingSwipe = true }
             return

@@ -107,8 +107,10 @@ struct CommentsSection: View {
                 if let d = c.createdAt { Text(d, style: .relative).font(.system(size: 10)).foregroundStyle(.secondary) }
                 Button { gameTap(); menuFor = c } label: {
                     Image(systemName: "ellipsis").font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary).frame(width: 28, height: 22)
+                        .padding(.horizontal, 8).padding(.vertical, 11).contentShape(Rectangle()).padding(.horizontal, -8).padding(.vertical, -11)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text("comment.menu.label"))
                 .accessibilityIdentifier("comment.menu")
             }
             Text(c.text).font(.system(size: 14, weight: .medium)).foregroundStyle(GameStyle.text)

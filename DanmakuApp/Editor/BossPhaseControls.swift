@@ -26,6 +26,10 @@ struct BossPhaseControls: View {
             Text(byTime ? "editor.phases.note.time" : "editor.phases.note.hp")
                 .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
 
+            if !showNames, info != nil {
+                // 「くわしく」で付けた名前・必殺技は、「かんたん」でもゲームに出る。付いていることだけは知らせる
+                Label("editor.phases.names.hidden", systemImage: "text.badge.star").font(.caption).foregroundStyle(.secondary)
+            }
             if showNames {
                 Text("editor.phases.names").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
                 ForEach(0..<count, id: \.self) { i in row(i) }

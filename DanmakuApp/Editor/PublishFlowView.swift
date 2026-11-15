@@ -19,6 +19,8 @@ struct PublishFlowView: View {
     @ObservedObject private var notifications = NotificationService.shared
     /// 投稿後の「通知を受け取る?」に答えたか(この端末で1回だけ聞く)
     @AppStorage("publish.notifyAsked") private var notifyAsked = false
+    /// 通知の許可を前に断っていた(設定アプリでしか変えられない)
+    @State private var notifyDenied = false
     /// ショップで移動する先(このステージのボスの商品)
     @State private var shopFocus: String? = nil
     @State private var claimingTicket = false
@@ -59,6 +61,11 @@ struct PublishFlowView: View {
         .background(GameStyle.night.ignoresSafeArea())
         .interactiveDismissDisabled(phase == .publishing)
         .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: shopFocus) }
+        .gameDialog("settings.notify.denied.title", isPresented: $notifyDenied, message: "settings.notify.denied") {
+            [GameDialogAction(title: "settings.notify.open") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }, .cancel()]
+        }
         .task(id: auth.isMember) { await refreshQuota() }
         .preferredColorScheme(.dark)
     }
@@ -206,7 +213,7 @@ struct PublishFlowView: View {
                     Label("publish.notify.title", systemImage: "bell.badge.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                     Text("publish.notify.body").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 10) {
-                        Button { gameTap(); notifyAsked = true; Task { await notifications.setEnabled(true) } } label: {
+                        Button { gameTap(); notifyAsked = true; Task { if !(await notifications.setEnabled(true)) { notifyDenied = true } } } label: {
                             Text("publish.notify.on").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
                                 .frame(maxWidth: .infinity).padding(.vertical, 10)
                                 .background(KeyCap(fill: GameStyle.accent, radius: 12, depth: 3)).padding(.bottom, 3)

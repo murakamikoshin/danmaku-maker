@@ -127,6 +127,7 @@ struct DailyRewardCard: View {
                                         .background(Color.white.opacity(rewards.selected(kind) == nil ? 0.25 : 0.1), in: PixelRect(cornerRadius: 11))
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel(Text("daily.unequip"))
                                 ForEach(owned.reversed(), id: \.self) { r in
                                     Button { rewards.select(r, kind: kind) } label: {
                                         RewardSwatch(reward: r, size: 48)

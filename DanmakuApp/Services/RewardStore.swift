@@ -74,6 +74,8 @@ final class RewardStore: ObservableObject {
         refreshDay()
         let extra = !canClaim
         if claim(extra: extra) != nil {
+            // 初めて受け取ったあとに1回だけ、毎日のお知らせを受け取るか聞く(明日も来てもらうため)
+            Task { await NotificationService.shared.askReminderPermissionOnce() }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             AudioManager.shared.se(.get)
         }

@@ -175,7 +175,7 @@ struct PlayView: View {
                         ResultView(result: r, isTest: isTest, trial: trial, mrecUnitID: mrecAllowed ? ads.mrecUnitID : nil, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
                                    back: { Task { await adBreak(); onExit() } },
-                                   trialNeedsAd: model.trialFreeRetries == 0)
+                                   trialNeedsAd: model.trialFreeRetries == 0, trialFreeLeft: model.trialFreeRetries)
                     }
                 }
                 .frame(maxHeight: .infinity)
@@ -213,6 +213,7 @@ struct PlayView: View {
                 Image(systemName: "xmark").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                     .frame(width: 36, height: 36)
                     .gamePanel(radius: 10, fill: GameStyle.panelHi)
+                    .padding(4).contentShape(Rectangle()).padding(-4)   // 押せる範囲は 44pt
             }
             .buttonStyle(BounceButtonStyle())
             .accessibilityLabel(Text("play.quit"))
@@ -346,6 +347,8 @@ struct ResultView: View {
     @State private var claiming = false
     /// ボスのお試しで、次の「もう一度」に広告が要るか(広告1回で3回遊べる)
     var trialNeedsAd = true
+    /// ボスのお試しで、広告なしで遊べる残りの「もう一度」の回数
+    var trialFreeLeft = 0
     /// レクタングル広告: 結果の画面の高さと、パネルの高さ(空きがあるときだけ出す。一度出したら、パネルが伸びても消さない)
     @State private var areaHeight: CGFloat = 0
     @State private var panelHeight: CGFloat = 0
@@ -453,6 +456,10 @@ struct ResultView: View {
                         if trial && !purchases.isPremium && trialNeedsAd {
                             // お試しのもう一度は、広告1回で3回分
                             GameActionButton(title: "result.trial.retry", systemImage: "play.rectangle.fill", fill: GameStyle.reward, enabled: ads.isReady, action: retry)
+                                .accessibilityIdentifier("result.retry")
+                        } else if trial && !purchases.isPremium {
+                            // お試しの残り回数を出す(3回目のあと、急に広告のボタンに変わって驚かないように)
+                            GameActionButton(title: "result.trial.free \(trialFreeLeft)", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)
                                 .accessibilityIdentifier("result.retry")
                         } else {
                             GameActionButton(title: "result.retry", systemImage: "arrow.counterclockwise", fill: GameStyle.accent, action: retry)

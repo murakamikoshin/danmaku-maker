@@ -290,7 +290,7 @@ struct HomeView: View {
     }
 
     private func loadMoreWorld() async {
-        await world.loadMore { !blocks.isBlocked($0.authorUid) }
+        await world.loadMore { !blocks.isBlocked($0.authorUid) && !blocks.isHiddenStage($0.id) }
     }
 
     private static let modeOptions: [(Mode?, String)] = [
