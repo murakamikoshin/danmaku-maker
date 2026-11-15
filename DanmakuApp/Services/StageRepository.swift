@@ -118,6 +118,8 @@ struct StageRepository {
     func deleteStage(id: String) async -> Bool {
         do {
             _ = try await Backend.functions.httpsCallable("deleteStage").call(["stageId": id])
+            // マイステージに同じステージがあれば、「投稿済み」の印を外す(どの画面から消しても、もう一度投稿できるように)
+            await LocalStageStore.shared.forgetPublished(ids: [id])
             return true
         } catch { return false }
     }

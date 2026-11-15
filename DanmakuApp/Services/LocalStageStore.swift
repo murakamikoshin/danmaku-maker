@@ -86,6 +86,26 @@ final class LocalStageStore: ObservableObject {
         persist()
     }
 
+    /// 世界から消えたステージの「投稿済み」の印を外す(端末のステージは残す。もう一度投稿できるようにする)
+    func forgetPublished(ids: Set<String>) {
+        var changed = false
+        for i in stages.indices {
+            if let id = stages[i].publishedID, ids.contains(id) {
+                stages[i].publishedStage = nil
+                stages[i].publishedID = nil
+                changed = true
+            }
+        }
+        if changed { persist() }
+    }
+
+    /// 自分が公開中のステージの ID(サーバーの一覧。全部そろっているときだけ渡す)にないものは、世界から消えているので、投稿済みの印を外す。
+    /// (詳しい画面から消したとき・別の端末で消したとき・前の版で消して印が残ったときなど)
+    func reconcilePublished(openIDs: Set<String>) {
+        let gone = Set(stages.compactMap(\.publishedID)).subtracting(openIDs)
+        if !gone.isEmpty { forgetPublished(ids: gone) }
+    }
+
     /// バックアップから戻す。端末にない ID のものだけ足す(端末にあるものは、端末の内容を優先する)。足した数を返す
     @discardableResult
     func restore(_ list: [SavedStage]) -> Int {

@@ -156,7 +156,11 @@ struct HomeView: View {
 
     private func loadPosted() async {
         guard auth.isMember, Backend.isAvailable else { posted = MyStageSummary(); postedLoaded = false; return }
-        if let s = try? await StageRepository().mine() { posted = s; postedLoaded = true }
+        if let s = try? await StageRepository().mine() {
+            posted = s; postedLoaded = true
+            // サーバーの一覧が全部そろっているとき(50件まで)だけ、世界から消えたステージの「投稿済み」の印を外す
+            if s.list.count >= s.stages { saved.reconcilePublished(openIDs: Set(s.list.map(\.id))) }
+        }
     }
 
     /// 自分が世界に投稿したステージ: もらったハート・遊ばれた数などの合計と、すぐ開ける一覧
