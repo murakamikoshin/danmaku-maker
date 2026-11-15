@@ -37,6 +37,9 @@ struct BattleHomeView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .cancelBattleSearch)) { _ in
+            if case .searching = model.phase { model.cancel() }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .battleTabVisible)) { note in
             model.setVisible((note.object as? Bool) ?? true)
         }

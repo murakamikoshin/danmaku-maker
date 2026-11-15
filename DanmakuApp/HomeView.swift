@@ -118,6 +118,8 @@ struct HomeView: View {
         }
         .onChange(of: deepLink.stageID) { id in
             guard let id, !ads.playingTabs.contains("battle") else { return }
+            // 弾幕バトルで相手を探している最中なら、探すのをやめる(ステージの画面の裏で対戦が始まって負けないように)
+            NotificationCenter.default.post(name: .cancelBattleSearch, object: nil)
             deepLink.stageID = nil
             Task { await open(id: id) }
         }

@@ -40,6 +40,8 @@ final class BattleModel: ObservableObject {
         if !visible, case .searching = phase { cancel() }
     }
     private var pausedByTab = false
+    /// 相手探しを始めた回数(取り消した古い探索が、新しい探索の待ち列の行を消さないように見分ける)
+    private var searchGen = 0
 
     /// 前面から離れた回数(3秒の降参の判定で、どの「離れた」かを見分けるため)
     var inactiveSeq = 0
@@ -72,12 +74,15 @@ final class BattleModel: ObservableObject {
         guard let uid, phase == .title || isResult else { return }
         cleanup()
         phase = .searching(left: Self.searchSeconds)
+        searchGen += 1
+        let gen = searchGen
         searchTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let id = try await BattleService.join()
                 // 待ち列に入る通信の間に、やめていたら(タブを移ったなど)、入った分を抜けてから終わる(待ち列に残らないように)
-                guard !Task.isCancelled, case .searching = self.phase else { await BattleService.leave(); return }
+                // ただし、すぐに探し直していたら(新しい探索が始まっていたら)、新しい待ち列の行を消さないように抜けない
+                guard !Task.isCancelled, case .searching = self.phase else { if self.searchGen == gen { await BattleService.leave() }; return }
                 if let id { await self.goLive(id: id, uid: uid); return }
             } catch { if case .searching = self.phase { self.phase = .failed }; return }
             self.queueHandle = BattleService.observeQueue(uid: uid) { [weak self] id in
@@ -276,4 +281,6 @@ final class BattleModel: ObservableObject {
 extension Notification.Name {
     /// 下のタブが変わった(object は、バトルのタブが見えているか)
     static let battleTabVisible = Notification.Name("battleTabVisible")
+    /// ほかの画面を開くので、相手探しをやめてほしい(通知やリンクからステージを開いたときなど)
+    static let cancelBattleSearch = Notification.Name("cancelBattleSearch")
 }
