@@ -671,12 +671,15 @@ struct HomePromoCards: View {
         .sheet(isPresented: $showInvite) { InviteView().environmentObject(auth).environmentObject(CosmeticsStore.shared) }
     }
 
-    /// 毎日のごほうび: 受け取れる日は押すと受け取る(広告削除の購入者は広告なし)。受け取ったあとは「受け取り済み」で押せない
+    /// 毎日のごほうび: 受け取れる日は押すと受け取る(広告削除の購入者は広告なし)。受け取ったあとは「もう1つ」(1日3つまで)。
+    /// 全部受け取ったら「受け取り済み」で押せない
     private func dailyTile(_ next: Reward) -> some View {
-        let ready = rewards.canClaim && (purchases.isPremium || ads.isReady) && !busy
-        let sub: Text = !rewards.canClaim ? Text("home.daily.done") : Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+        let available = rewards.canClaim || rewards.canClaimExtra
+        let ready = available && (purchases.isPremium || ads.isReady) && !busy
+        let sub: Text = rewards.canClaim ? Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+            : rewards.canClaimExtra ? Text("home.daily.extra \(rewards.extraLeft)") : Text("home.daily.done")
         return tile(id: "daily", color: GameStyle.yellow, title: "daily.title", sub: sub,
-                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !rewards.canClaim) {
+                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !available) {
             Task { await claim() }
         }
         .disabled(!ready)
@@ -686,15 +689,7 @@ struct HomePromoCards: View {
     private func claim() async {
         busy = true
         defer { busy = false }
-        if purchases.isPremium {
-            rewards.claim()
-        } else if await ads.showRewarded() {
-            rewards.claim()
-        }
-        if rewards.justClaimed != nil {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            AudioManager.shared.se(.get)
-        }
+        await rewards.claimFromButton(ads: ads, purchases: purchases)
     }
 
     private func symbol(_ name: String, _ color: Color) -> some View {

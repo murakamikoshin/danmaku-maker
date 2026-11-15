@@ -38,6 +38,52 @@ final class DailyRewardsTests: XCTestCase {
         XCTAssertEqual(s.claimed, 2)
     }
 
+    func testExtraClaimsUpToPerDayAfterTodays() {
+        var s = DailyRewardState()
+        // 今日の分をもらう前は、「もう1つ」はない
+        XCTAssertFalse(s.canClaimExtra(today: 20000))
+        XCTAssertNil(s.claimExtra(today: 20000))
+        XCTAssertEqual(s.claim(today: 20000)?.index, 0)
+        XCTAssertEqual(s.extraLeft(today: 20000), DailyRewards.perDay - 1)
+        // 「もう1つ」は次の番号から順に、1日 perDay 個目まで
+        XCTAssertEqual(s.claimExtra(today: 20000)?.index, 1)
+        XCTAssertEqual(s.claimExtra(today: 20000)?.index, 2)
+        XCTAssertEqual(s.extraLeft(today: 20000), 0)
+        XCTAssertNil(s.claimExtra(today: 20000))
+        XCTAssertFalse(s.canClaim(today: 20000))
+        // 次の日は、今日の分からやり直し(前の日の「もう1つ」は持ち越さない)
+        XCTAssertFalse(s.canClaimExtra(today: 20001))
+        XCTAssertEqual(s.claim(today: 20001)?.index, 3)
+        XCTAssertEqual(s.extraLeft(today: 20001), DailyRewards.perDay - 1)
+        // 端末の日付を戻しても、「もう1つ」は増えない
+        XCTAssertFalse(s.canClaimExtra(today: 20000))
+    }
+
+    func testExtraStopsAtLastReward() {
+        var s = DailyRewardState(claimed: DailyRewards.total - 2, lastDay: 19999)
+        XCTAssertEqual(s.claim(today: 20000)?.index, DailyRewards.total - 2)
+        XCTAssertEqual(s.extraLeft(today: 20000), 1)
+        XCTAssertEqual(s.claimExtra(today: 20000)?.index, DailyRewards.total - 1)
+        XCTAssertFalse(s.canClaimExtra(today: 20000))
+        XCTAssertNil(s.claimExtra(today: 20000))
+    }
+
+    func testOldSavedStateDecodesAsOneClaimThatDay() throws {
+        // 1.2.1 までの保存データ(claimsOnLastDay がない)
+        let old = Data(#"{"claimed":5,"lastDay":20000}"#.utf8)
+        var s = try JSONDecoder().decode(DailyRewardState.self, from: old)
+        XCTAssertEqual(s.claimed, 5)
+        XCTAssertEqual(s.extraLeft(today: 20000), DailyRewards.perDay - 1)
+        XCTAssertEqual(s.claimExtra(today: 20000)?.index, 5)
+        // 保存し直しても、同じ状態に戻る
+        let again = try JSONDecoder().decode(DailyRewardState.self, from: try JSONEncoder().encode(s))
+        XCTAssertEqual(again, s)
+        // まだ1つももらっていない記録
+        let fresh = try JSONDecoder().decode(DailyRewardState.self, from: Data(#"{"claimed":0}"#.utf8))
+        XCTAssertTrue(fresh.canClaim(today: 20000))
+        XCTAssertFalse(fresh.canClaimExtra(today: 20000))
+    }
+
     func testClockRollbackCannotClaimAgain() {
         var s = DailyRewardState()
         _ = s.claim(today: 20010)

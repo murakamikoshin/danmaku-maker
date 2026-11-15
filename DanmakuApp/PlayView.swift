@@ -409,17 +409,19 @@ struct ResultView: View {
                         }
                         InviteShareHint()
                     }
-                    if win, !isTest, rewardStore.canClaim, let next = rewardStore.upcoming.first {
-                        // クリアしたごほうびに、今日の報酬を広告つきでその場で受け取れる
+                    if win, !isTest, rewardStore.canClaim || (rewardStore.justClaimed != nil && rewardStore.canClaimExtra), let next = rewardStore.upcoming.first {
+                        // クリアしたごほうびに、今日の報酬を広告つきでその場で受け取れる。受け取ったあとは「もう1つ」(1日3つまで)
                         let ready = purchases.isPremium || ads.isReady
+                        let title: LocalizedStringKey = rewardStore.canClaim ? (purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+                            : purchases.isPremium ? "daily.extra.free \(rewardStore.extraLeft)" : "daily.extra.ad \(rewardStore.extraLeft)"
                         HStack(spacing: 12) {
                             RewardSwatch(reward: next, size: 44)
-                            GameActionButton(title: purchases.isPremium ? "daily.claim.free" : "daily.claim.ad",
+                            GameActionButton(title: title,
                                              systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill", fill: GameStyle.reward) {
                                 Task { await claimReward() }
                             }
                             .disabled(!ready || claiming).opacity(ready && !claiming ? 1 : 0.5)
-                            .accessibilityIdentifier("result.claim")
+                            .accessibilityIdentifier(rewardStore.canClaim ? "result.claim" : "result.extra")
                         }
                     } else if win, !isTest, rewardStore.justClaimed != nil {
                         Label("daily.claimed", systemImage: "checkmark.circle.fill")
@@ -481,15 +483,7 @@ struct ResultView: View {
     private func claimReward() async {
         claiming = true
         defer { claiming = false }
-        if purchases.isPremium {
-            rewardStore.claim()
-        } else if await ads.showRewarded() {
-            rewardStore.claim()
-        }
-        if rewardStore.justClaimed != nil {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            AudioManager.shared.se(.get)
-        }
+        await rewardStore.claimFromButton(ads: ads, purchases: purchases)
     }
 
     private func smallButton(_ title: LocalizedStringKey, _ image: String) -> some View {

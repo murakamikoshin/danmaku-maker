@@ -237,6 +237,16 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         return false
     }
 
+    /// 弾幕バトルの試合数。3試合ごとに true(結果から次へ進むときに、全画面広告を出す)。
+    /// バトルの結果やレートには、広告は一切関係させない(リワードも付けない)
+    static let battlesBetweenInterstitials = 3
+    private var battles = 0
+    func countBattleIsDue() -> Bool {
+        battles += 1
+        if battles >= Self.battlesBetweenInterstitials { battles = 0; return true }
+        return false
+    }
+
     /// 結果画面が出たとき(テストプレイ以外)に数える
     func countPlay() { playsSinceAd += 1 }
 

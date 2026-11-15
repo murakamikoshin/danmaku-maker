@@ -7,6 +7,9 @@ import SwiftUI
 struct BattleHomeView: View {
     @StateObject private var model = BattleModel()
     @EnvironmentObject private var ads: AdsService
+    @EnvironmentObject private var purchases: PurchaseService
+    /// 結果から進む途中(広告の表示待ち)。二度押しで2回進まないように
+    @State private var leaving = false
 
     var body: some View {
         ZStack {
@@ -172,6 +175,18 @@ struct BattleHomeView: View {
         .background(GameStyle.nightDeep)
     }
 
+    /// 結果から次へ進む(もう一戦・やめる)。3試合ごとに全画面広告を出してから(閉じるまで待つ)。広告削除の購入者には出さない
+    private func leave(then next: @escaping () -> Void) {
+        guard !leaving else { return }
+        leaving = true
+        Task {
+            if !purchases.isPremium, ads.countBattleIsDue() { await ads.showInterstitialNow() }
+            model.backToTitle()
+            next()
+            leaving = false
+        }
+    }
+
     @ViewBuilder private var overlay: some View {
         switch model.phase {
         case .found(let n):
@@ -195,7 +210,7 @@ struct BattleHomeView: View {
             .padding(20).gamePanel(radius: 18)
         case .result(let r):
             BattleResultCard(result: r, opponent: model.match?.opponent.name ?? "",
-                             again: { model.backToTitle(); model.start() }, quit: { model.backToTitle() })
+                             again: { leave { model.start() } }, quit: { leave {} })
                 .padding(.horizontal, 20)
         default:
             EmptyView()

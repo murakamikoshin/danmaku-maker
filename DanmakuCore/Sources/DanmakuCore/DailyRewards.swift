@@ -1,6 +1,6 @@
 import Foundation
 
-/// 広告を見て、1日1つもらえる報酬(365個)。演出と称号で、遊びやランキングには影響しない。演出は、自分の画面に出すほか、ステージ作成で選ぶと(Stage.rewardFx)そのステージを遊ぶ全員に出せる
+/// 広告を見て、1日1つ(「もう1つ」を足して最大 DailyRewards.perDay 個)もらえる報酬(365個)。演出と称号で、遊びやランキングには影響しない。演出は、自分の画面に出すほか、ステージ作成で選ぶと(Stage.rewardFx)そのステージを遊ぶ全員に出せる
 public enum RewardKind: Int, CaseIterable, Codable, Sendable {
     /// 自機の軌跡
     case trail
@@ -62,34 +62,68 @@ public enum DailyRewards {
     /// 報酬の数(5種類 × 73通り)
     public static let total = 365
     public static let colorCount = 24
+    /// 1日にもらえる数(今日の分1つ + 広告を見て「もう1つ」)
+    public static let perDay = 3
 
     public static var all: [Reward] { (0..<total).compactMap(Reward.init(index:)) }
 }
 
-/// 受け取りの記録。端末の日付(1970年1月1日からの日数)で、1日1回に制限する
+/// 受け取りの記録。端末の日付(1970年1月1日からの日数)で数える。
+/// 1日の最初の1つ(今日の分)のあと、同じ日のうちに「もう1つ」を DailyRewards.perDay 個目までもらえる(1.3.0 から)
 public struct DailyRewardState: Equatable, Codable, Sendable {
     /// これまでに受け取った数(= 次にもらう報酬の番号)
     public private(set) var claimed: Int
     /// 最後に受け取った日(日数)。まだ受け取っていなければ nil
     public private(set) var lastDay: Int?
+    /// 最後に受け取った日に、受け取った数(今日の分 + もう1つ)
+    public private(set) var claimsOnLastDay: Int
 
-    public init(claimed: Int = 0, lastDay: Int? = nil) {
+    public init(claimed: Int = 0, lastDay: Int? = nil, claimsOnLastDay: Int? = nil) {
         self.claimed = max(0, min(claimed, DailyRewards.total))
         self.lastDay = lastDay
+        self.claimsOnLastDay = lastDay == nil ? 0 : max(1, min(claimsOnLastDay ?? 1, DailyRewards.perDay))
     }
 
-    /// 今日、受け取れるか。端末の日付を戻しても、受け取り済みの日より前なら受け取れない
+    private enum CodingKeys: String, CodingKey { case claimed, lastDay, claimsOnLastDay }
+
+    /// 1.2.1 までの記録(claimsOnLastDay がない)は、その日に1つもらった扱いにする
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(claimed: try c.decode(Int.self, forKey: .claimed),
+                  lastDay: try c.decodeIfPresent(Int.self, forKey: .lastDay),
+                  claimsOnLastDay: try c.decodeIfPresent(Int.self, forKey: .claimsOnLastDay))
+    }
+
+    /// 今日の分(1日の最初の1つ)を、受け取れるか。端末の日付を戻しても、受け取り済みの日より前なら受け取れない
     public func canClaim(today: Int) -> Bool {
         guard claimed < DailyRewards.total else { return false }
         guard let last = lastDay else { return true }
         return today > last
     }
 
-    /// 受け取る。受け取れないときは nil
+    /// 今日の分をもらったあと、今日あと何回「もう1つ」をもらえるか
+    public func extraLeft(today: Int) -> Int {
+        guard lastDay == today else { return 0 }
+        return max(0, min(DailyRewards.perDay - claimsOnLastDay, DailyRewards.total - claimed))
+    }
+
+    /// 今日の分をもらったあとの「もう1つ」を、受け取れるか
+    public func canClaimExtra(today: Int) -> Bool { extraLeft(today: today) > 0 }
+
+    /// 今日の分を受け取る。受け取れないときは nil
     public mutating func claim(today: Int) -> Reward? {
         guard canClaim(today: today), let reward = Reward(index: claimed) else { return nil }
         claimed += 1
         lastDay = today
+        claimsOnLastDay = 1
+        return reward
+    }
+
+    /// 「もう1つ」を受け取る(次の番号の報酬)。受け取れないときは nil
+    public mutating func claimExtra(today: Int) -> Reward? {
+        guard canClaimExtra(today: today), let reward = Reward(index: claimed) else { return nil }
+        claimed += 1
+        claimsOnLastDay += 1
         return reward
     }
 

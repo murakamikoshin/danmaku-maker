@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import DanmakuCore
 
-/// 広告を見て1日1つもらえる報酬の、受け取り記録と、いま選んでいるもの。端末に保存する
+/// 広告を見て1日1つ(「もう1つ」を足して最大3つ)もらえる報酬の、受け取り記録と、いま選んでいるもの。端末に保存する
 @MainActor
 final class RewardStore: ObservableObject {
     static let shared = RewardStore()
@@ -34,7 +34,11 @@ final class RewardStore: ObservableObject {
         #endif
     }
 
+    /// 今日の分(1日の最初の1つ)を受け取れるか
     var canClaim: Bool { state.canClaim(today: today) }
+    /// 今日の分のあと、今日あと何回「もう1つ」をもらえるか
+    var extraLeft: Int { state.extraLeft(today: today) }
+    var canClaimExtra: Bool { extraLeft > 0 }
 
     /// 今日もらえる報酬と、その先の報酬(最大 count 個)。先の報酬も見せて、楽しみにしてもらう
     var upcoming: [Reward] {
@@ -43,18 +47,32 @@ final class RewardStore: ObservableObject {
 
     func refreshDay() { today = DailyRewardState.day(of: Date()) }
 
-    /// 受け取る(広告を見終えたあと、または広告削除の購入者がそのまま呼ぶ)。受け取れたら、すぐ使える状態にする
+    /// 受け取る(広告を見終えたあと、または広告削除の購入者がそのまま呼ぶ)。extra なら「もう1つ」。受け取れたら、すぐ使える状態にする
     @discardableResult
-    func claim() -> Reward? {
+    func claim(extra: Bool = false) -> Reward? {
         refreshDay()
         var next = state
-        guard let reward = next.claim(today: today) else { return nil }
+        guard let reward = extra ? next.claimExtra(today: today) : next.claim(today: today) else { return nil }
         state = next
         if let d = try? JSONEncoder().encode(next) { defaults.set(d, forKey: Self.stateKey) }
         // 種類ごとに最初の1つは、そのまま使う(あとから変えられる)
         if loadout.selected[reward.kind.rawValue] == nil { loadout.select(reward, kind: reward.kind) }
         justClaimed = reward
         return reward
+    }
+
+    /// 画面のボタンから受け取る: 広告を見終えたら(広告削除の購入者は広告なしで)受け取り、鳴らす。
+    /// 今日の分が受け取れる日は今日の分、受け取り済みなら「もう1つ」
+    func claimFromButton(ads: AdsService, purchases: PurchaseService) async {
+        let extra = !canClaim
+        guard extra ? canClaimExtra : true else { return }
+        if !purchases.isPremium {
+            guard await ads.showRewarded() else { return }
+        }
+        if claim(extra: extra) != nil {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            AudioManager.shared.se(.get)
+        }
     }
 
     func select(_ reward: Reward?, kind: RewardKind) {

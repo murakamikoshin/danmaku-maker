@@ -30474,61 +30474,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "今日の分はもらいました。また明日!"
+            "value": "今日の分はすべてもらいました。また明日!"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Claimed today. Come back tomorrow!"
+            "value": "All claimed for today. Come back tomorrow!"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "今天已领取,明天再来!"
+            "value": "今天的已全部领取。明天再来!"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "今天已領取,明天再來!"
+            "value": "今天的已全部領取。明天再來!"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "오늘 보상은 받았어요. 내일 또 만나요!"
+            "value": "오늘 몫을 모두 받았어요. 내일 또 만나요!"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ya la reclamaste hoy. ¡Vuelve mañana!"
+            "value": "Ya recogiste todo lo de hoy. ¡Vuelve mañana!"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Récupérée aujourd'hui. À demain !"
+            "value": "Tout est récupéré pour aujourd'hui. Revenez demain !"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Heute abgeholt. Bis morgen!"
+            "value": "Für heute alles abgeholt. Bis morgen!"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Já resgatou hoje. Volte amanhã!"
+            "value": "Tudo resgatado hoje. Volte amanhã!"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Награда получена. Приходите завтра!"
+            "value": "На сегодня всё получено. Приходите завтра!"
           }
         }
       }
@@ -30794,61 +30794,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと%d日"
+            "value": "%d個先"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "In %d d"
+            "value": "+%d"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%d天后"
+            "value": "后第%d个"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "%d天後"
+            "value": "後第%d個"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%d일 후"
+            "value": "%d개 뒤"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En %d d"
+            "value": "+%d"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dans %d j"
+            "value": "+%d"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "In %d T."
+            "value": "+%d"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Em %d d"
+            "value": "+%d"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Через %d д."
+            "value": "+%d"
           }
         }
       }
@@ -30922,61 +30922,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "1日1回、広告を見ると報酬が1つもらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
+            "value": "広告を見ると報酬が1つもらえます。そのあと「もう1つ」で、1日3つまでもらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Watch one ad a day to get one reward. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
+            "value": "Watch an ad to get a reward, then tap \"one more\" for up to 3 a day. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天看一次广告可领取一个奖励。特效会显示在你自己的画面中,也可以在制作关卡时加上,让所有游玩该关卡的人都能看到。不会影响排行榜和游戏性。"
+            "value": "观看广告即可领取一个奖励,之后点「再领一个」,每天最多3个。特效显示在你自己的画面上;在制作关卡时加上,玩这个关卡的所有人都能看到。不影响排行榜和游戏。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天看一次廣告可領取一個獎勵。特效會顯示在你自己的畫面中,也可以在製作關卡時加上,讓所有遊玩該關卡的人都能看到。不會影響排行榜和遊戲性。"
+            "value": "觀看廣告即可領取一個獎勵,之後點「再領一個」,每天最多3個。特效顯示在你自己的畫面上;在製作關卡時加上,玩這個關卡的所有人都能看到。不影響排行榜和遊戲。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "하루에 한 번 광고를 보면 보상을 하나 받아요. 연출은 내 화면에 나타나며, 스테이지를 만들 때 붙이면 그 스테이지를 플레이하는 모두에게 보여 줄 수 있어요. 랭킹과 게임 플레이에는 영향이 없어요."
+            "value": "광고를 보면 보상을 하나 받을 수 있고, 그다음 「하나 더」로 하루 최대 3개까지 받을 수 있어요. 연출은 내 화면에 나오며, 스테이지 만들기에서 붙이면 그 스테이지를 하는 모두에게 보여 줄 수 있어요. 랭킹이나 플레이에는 영향이 없어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mira un anuncio al día para conseguir una recompensa. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que lo vean todos los que lo jueguen. No afectan a las clasificaciones ni a la jugabilidad."
+            "value": "Mira un anuncio para obtener una recompensa y luego toca «uno más» para conseguir hasta 3 al día. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que todos los que lo jueguen los vean. No afectan a las clasificaciones ni al juego."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Regardez une pub par jour pour obtenir une récompense. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Aucun effet sur les classements ni sur le jeu."
+            "value": "Regardez une pub pour obtenir une récompense, puis touchez « un de plus » pour en avoir jusqu'à 3 par jour. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Ils n'affectent ni les classements ni le jeu."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sieh dir täglich eine Werbung an, um eine Belohnung zu bekommen. Die Effekte erscheinen auf deinem Bildschirm und können einem selbst erstellten Level hinzugefügt werden, sodass alle, die es spielen, sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
+            "value": "Sieh dir eine Werbung an, um eine Belohnung zu bekommen, und tippe dann auf „noch eins“ – bis zu 3 pro Tag. Effekte erscheinen auf deinem Bildschirm, und du kannst sie an ein selbst erstelltes Level hängen, damit alle Spieler sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Assista a um anúncio por dia para ganhar uma recompensa. Os efeitos aparecem na sua tela e você pode adicioná-los a uma fase que criar para que todos que jogarem a vejam. Eles não afetam rankings nem a jogabilidade."
+            "value": "Veja um anúncio para ganhar uma recompensa e depois toque em \"mais um\" para ganhar até 3 por dia. Os efeitos aparecem na sua tela, e você pode colocá-los em uma fase que criar para que todos que jogarem vejam. Eles não afetam rankings nem a jogabilidade."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Смотрите по одной рекламе в день, чтобы получать награду. Эффекты видны на вашем экране, а ещё их можно добавить в созданный уровень, чтобы их видели все игроки. Они не влияют на рейтинги и игру."
+            "value": "Посмотрите рекламу, чтобы получить награду, а затем нажмите «ещё одна» — до 3 в день. Эффекты видны на вашем экране, а если добавить их в созданный уровень, их увидят все игроки. На рейтинги и игру они не влияют."
           }
         }
       }
@@ -30986,61 +30986,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "広告削除を購入した方は、広告なしで毎日もらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
+            "value": "広告削除を購入した方は、広告なしで1日3つまでもらえます。演出は自分の画面に出ます。ステージ作成で付けると、そのステージを遊ぶ人みんなに見せられます。ランキングや遊びには影響しません。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "With Remove Ads, you can claim every day without watching an ad. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
+            "value": "With Remove Ads, you can claim up to 3 a day without watching ads. Effects show on your own screen, and you can attach them to a stage you create so everyone who plays it sees them. They never affect rankings or gameplay."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "购买去广告后,每天无需观看广告即可领取。特效会显示在你自己的画面中,也可以在制作关卡时加上,让所有游玩该关卡的人都能看到。不会影响排行榜和游戏性。"
+            "value": "购买了去除广告后,无需观看广告,每天最多可领取3个。特效显示在你自己的画面上;在制作关卡时加上,玩这个关卡的所有人都能看到。不影响排行榜和游戏。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "購買移除廣告後,每天無需觀看廣告即可領取。特效會顯示在你自己的畫面中,也可以在製作關卡時加上,讓所有遊玩該關卡的人都能看到。不會影響排行榜和遊戲性。"
+            "value": "購買了移除廣告後,無需觀看廣告,每天最多可領取3個。特效顯示在你自己的畫面上;在製作關卡時加上,玩這個關卡的所有人都能看到。不影響排行榜和遊戲。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "광고 제거를 구매하면 광고 없이 매일 받을 수 있어요. 연출은 내 화면에 나타나며, 스테이지를 만들 때 붙이면 그 스테이지를 플레이하는 모두에게 보여 줄 수 있어요. 랭킹과 게임 플레이에는 영향이 없어요."
+            "value": "광고 제거를 구매하면 광고 없이 하루 최대 3개까지 받을 수 있어요. 연출은 내 화면에 나오며, 스테이지 만들기에서 붙이면 그 스테이지를 하는 모두에게 보여 줄 수 있어요. 랭킹이나 플레이에는 영향이 없어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Con Quitar anuncios puedes reclamar cada día sin ver anuncios. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que lo vean todos los que lo jueguen. No afectan a las clasificaciones ni a la jugabilidad."
+            "value": "Con Quitar anuncios, puedes conseguir hasta 3 al día sin ver anuncios. Los efectos se ven en tu pantalla y puedes añadirlos a un nivel que crees para que todos los que lo jueguen los vean. No afectan a las clasificaciones ni al juego."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avec Supprimer les pubs, vous pouvez récupérer chaque jour sans regarder de pub. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Aucun effet sur les classements ni sur le jeu."
+            "value": "Avec Supprimer les pubs, vous pouvez en récupérer jusqu'à 3 par jour sans pub. Les effets s'affichent sur votre écran, et vous pouvez les ajouter à un niveau que vous créez pour que tous les joueurs les voient. Ils n'affectent ni les classements ni le jeu."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mit „Werbung entfernen“ kannst du täglich ohne Werbung abholen. Die Effekte erscheinen auf deinem Bildschirm und können einem selbst erstellten Level hinzugefügt werden, sodass alle, die es spielen, sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
+            "value": "Mit „Werbung entfernen“ kannst du bis zu 3 pro Tag ohne Werbung abholen. Effekte erscheinen auf deinem Bildschirm, und du kannst sie an ein selbst erstelltes Level hängen, damit alle Spieler sie sehen. Sie beeinflussen weder Ranglisten noch das Spiel."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Com Remover anúncios, você resgata todo dia sem assistir a anúncios. Os efeitos aparecem na sua tela e você pode adicioná-los a uma fase que criar para que todos que jogarem a vejam. Eles não afetam rankings nem a jogabilidade."
+            "value": "Com Remover anúncios, você pode resgatar até 3 por dia sem ver anúncios. Os efeitos aparecem na sua tela, e você pode colocá-los em uma fase que criar para que todos que jogarem vejam. Eles não afetam rankings nem a jogabilidade."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "С опцией «Убрать рекламу» можно получать награды каждый день без просмотра рекламы. Эффекты видны на вашем экране, а ещё их можно добавить в созданный уровень, чтобы их видели все игроки. Они не влияют на рейтинги и игру."
+            "value": "С «Убрать рекламу» можно получать до 3 в день без рекламы. Эффекты видны на вашем экране, а если добавить их в созданный уровень, их увидят все игроки. На рейтинги и игру они не влияют."
           }
         }
       }
@@ -68252,6 +68252,201 @@
           "stringUnit": {
             "state": "translated",
             "value": "Получено"
+          }
+        }
+      }
+    },
+    "daily.extra.ad %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を見てもう1つ(あと%lld回)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch an ad for one more (%lld left)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "观看广告再领一个(剩余%lld次)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "觀看廣告再領一個(剩餘%lld次)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "광고 보고 하나 더 (남은 %lld회)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver anuncio y uno más (quedan %lld)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une pub pour un de plus (%lld restant(s))"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werbung für noch eins (%lld übrig)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver anúncio e mais um (restam %lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Реклама — ещё одна (осталось %lld)"
+          }
+        }
+      }
+    },
+    "daily.extra.free %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "もう1つもらう(あと%lld回)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim one more (%lld left)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再领一个(剩余%lld次)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再領一個(剩餘%lld次)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하나 더 받기 (남은 %lld회)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reclamar uno más (quedan %lld)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En récupérer un de plus (%lld restant(s))"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch eins abholen (%lld übrig)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resgatar mais um (restam %lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Забрать ещё (осталось %lld)"
+          }
+        }
+      }
+    },
+    "home.daily.extra %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "もう1つもらえる(あと%lld)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One more (%lld left)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还能再领(剩%lld)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還能再領(剩%lld)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하나 더 (남은 %lld)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uno más (quedan %lld)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encore un (%lld restant(s))"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch eins (%lld übrig)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais um (restam %lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё одна (ост. %lld)"
           }
         }
       }

@@ -1,7 +1,7 @@
 import SwiftUI
 import DanmakuCore
 
-/// ショップの「毎日のごほうび」。広告を見ると、1日1つ報酬がもらえる(広告削除の購入者は、広告なしで)
+/// ショップの「毎日のごほうび」。広告を見ると、1日1つ報酬がもらえる。そのあと「もう1つ」で1日3つまで(広告削除の購入者は、広告なしで)
 struct DailyRewardCard: View {
     @EnvironmentObject private var rewards: RewardStore
     @EnvironmentObject private var ads: AdsService
@@ -54,7 +54,7 @@ struct DailyRewardCard: View {
     }
 
     @ViewBuilder private var claimButton: some View {
-        if !rewards.canClaim {
+        if !rewards.canClaim && !rewards.canClaimExtra {
             Label("daily.claimed", systemImage: "checkmark.circle.fill")
                 .font(.footnote.bold()).foregroundStyle(GameStyle.green)
         } else {
@@ -62,15 +62,25 @@ struct DailyRewardCard: View {
             Button {
                 Task { await claim() }
             } label: {
-                Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
-                    .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
-                    .padding(.vertical, 8).padding(.horizontal, 14)
-                    .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
+                Group {
+                    // 今日の分のあとは「もう1つ」(1日3つまで)
+                    if rewards.canClaim {
+                        Label(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad", systemImage: purchases.isPremium ? "gift.fill" : "play.rectangle.fill")
+                    } else if purchases.isPremium {
+                        Label("daily.extra.free \(rewards.extraLeft)", systemImage: "gift.fill")
+                    } else {
+                        Label("daily.extra.ad \(rewards.extraLeft)", systemImage: "play.rectangle.fill")
+                    }
+                }
+                .font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                .lineLimit(2).minimumScaleFactor(0.8)
+                .padding(.vertical, 8).padding(.horizontal, 14)
+                .background(KeyCap(fill: GameStyle.reward, radius: 10, depth: 3)).padding(.bottom, 3)
             }
             .buttonStyle(.plain)
             .disabled(!ready || busy)
             .opacity(ready && !busy ? 1 : 0.5)
-            .accessibilityIdentifier("daily.claim")
+            .accessibilityIdentifier(rewards.canClaim ? "daily.claim" : "daily.extra")
             if !ready { Text("daily.loading").font(.caption2).foregroundStyle(.secondary) }
         }
     }
@@ -78,15 +88,7 @@ struct DailyRewardCard: View {
     private func claim() async {
         busy = true
         defer { busy = false }
-        if purchases.isPremium {
-            rewards.claim()
-        } else if await ads.showRewarded() {
-            rewards.claim()
-        }
-        if rewards.justClaimed != nil {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            AudioManager.shared.se(.get)
-        }
+        await rewards.claimFromButton(ads: ads, purchases: purchases)
     }
 
     // MARK: 先の報酬(7個先まで見える)
@@ -191,14 +193,6 @@ struct DailyRewardBanner: View {
     private func claim() async {
         busy = true
         defer { busy = false }
-        if purchases.isPremium {
-            rewards.claim()
-        } else if await ads.showRewarded() {
-            rewards.claim()
-        }
-        if rewards.justClaimed != nil {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            AudioManager.shared.se(.get)
-        }
+        await rewards.claimFromButton(ads: ads, purchases: purchases)
     }
 }
