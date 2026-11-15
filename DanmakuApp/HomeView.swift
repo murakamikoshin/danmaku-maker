@@ -84,7 +84,7 @@ struct HomeView: View {
             PublishFlowView(stage: entry.stage, authorName: AuthorName.current.isEmpty ? entry.draft.authorName : AuthorName.current,
                             replay: entry.isVerified ? entry.verifiedReplay.flatMap({ Replay(encoded: $0) }) : nil, replayMonth: entry.verifiedMonth ?? 0) { id in
                 var e = saved.stage(id: entry.id) ?? entry
-                e.publishedStage = e.stage; e.publishedID = id
+                e.publishedStage = e.stage; e.publishedID = id; e.publishedUid = auth.uid; e.publishedAt = Date()
                 saved.update(e)
                 Task { await CosmeticsStore.shared.refreshPosts(uid: auth.uid); await CosmeticsStore.shared.refreshBossTickets(uid: auth.uid) }
             }
@@ -156,10 +156,13 @@ struct HomeView: View {
 
     private func loadPosted() async {
         guard auth.isMember, Backend.isAvailable else { posted = MyStageSummary(); postedLoaded = false; return }
+        let since = Date()
         if let s = try? await StageRepository().mine() {
             posted = s; postedLoaded = true
             // サーバーの一覧が全部そろっているとき(50件まで)だけ、世界から消えたステージの「投稿済み」の印を外す
-            if s.list.count >= s.stages { saved.reconcilePublished(openIDs: Set(s.list.map(\.id))) }
+            if s.complete { saved.reconcilePublished(openIDs: s.openIDs, keep: s.hiddenIDs, uid: auth.uid, since: since) }
+            // 自分のステージが10回以上遊ばれていたら、評価をお願いする
+            if s.list.contains(where: { $0.plays >= 10 }) { ReviewPrompt.maybeAsk(.ownStagePlayed10) }
         }
     }
 
@@ -248,7 +251,7 @@ struct HomeView: View {
             if !Backend.isAvailable {
                 Text("world.unavailable").font(.footnote).foregroundStyle(.secondary)
             }
-            let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) }
+            let visible = world.stages.filter { !blocks.isBlocked($0.authorUid) && !blocks.isHiddenStage($0.id) }
             let showAds = !purchases.isPremium && ads.canShowBanner
             ForEach(Array(visible.enumerated()), id: \.element.id) { i, s in
                 Button { gameTap(); detail = s } label: { RemoteRow(stage: s) }
@@ -709,11 +712,11 @@ struct HomePromoCards: View {
             VStack(alignment: .leading, spacing: 6) {
                 icon
                 VStack(alignment: .leading, spacing: 1) {
-                    // 題は1行に収める(2行にすると「戦」のように最後の1文字だけ折り返すため、はみ出す分は縮める)
+                    // 長い言語(ドイツ語・ロシア語など)で、縮めすぎて読めなくならないように、題は2行まで折り返す。縮めるのは少しだけ
                     Text(title).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
-                        .lineLimit(1).minimumScaleFactor(0.6)
-                    sub.font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
-                        .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(2).minimumScaleFactor(0.85).fixedSize(horizontal: false, vertical: true)
+                    sub.font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                        .lineLimit(3).minimumScaleFactor(0.9).fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

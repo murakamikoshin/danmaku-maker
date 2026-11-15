@@ -50,7 +50,13 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     private var playsSinceAd = 0
     private var lastAdAt = Date()
     static let playsBetweenInterstitials = 2
-    static let minSecondsBetweenAds: TimeInterval = 60
+    /// 全画面広告どうしの間(秒)。どの場面の全画面広告も、この間をあける(リワード広告を見たあとも数える)
+    static let minSecondsBetweenAds: TimeInterval = 75
+    /// 始めたばかりの人には、全画面広告を出さない(入れてから24時間、または10回遊ぶまで)
+    static let graceSeconds: TimeInterval = 24 * 60 * 60
+    static let gracePlays = 10
+    private static let firstSeenKey = "ads.firstSeen"
+    private static let lifetimePlaysKey = "ads.lifetimePlays"
     /// 広告 SDK を開始できたか。開始できるまでは、アプリが前面に戻るたびにやり直す
     private var sdkStarted = false
     private var starting = false
@@ -248,19 +254,34 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     }
 
     /// 結果画面が出たとき(テストプレイ以外)に数える
-    func countPlay() { playsSinceAd += 1 }
+    func countPlay() {
+        playsSinceAd += 1
+        UserDefaults.standard.set(UserDefaults.standard.integer(forKey: Self.lifetimePlaysKey) + 1, forKey: Self.lifetimePlaysKey)
+    }
+
+    /// 始めたばかり(入れてから24時間たたず、まだ10回遊んでいない)か。この間は全画面広告を出さない
+    var inNewPlayerGrace: Bool {
+        let d = UserDefaults.standard
+        let first: Date
+        if let v = d.object(forKey: Self.firstSeenKey) as? Date { first = v } else { first = Date(); d.set(first, forKey: Self.firstSeenKey) }
+        return Date().timeIntervalSince(first) < Self.graceSeconds && d.integer(forKey: Self.lifetimePlaysKey) < Self.gracePlays
+    }
+
+    /// 全画面広告を出してよい間があいているか(前の全画面広告・リワード広告から minSecondsBetweenAds 秒)と、始めたばかりでないか
+    private var interstitialAllowed: Bool {
+        Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds && !inNewPlayerGrace
+    }
 
     /// 次に結果画面から進むとき、全画面広告が出る見込みか(結果画面のレクタングルは、出ないときだけ出す)
     var interstitialIsDue: Bool {
-        playsSinceAd >= Self.playsBetweenInterstitials && Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds && interstitial != nil
+        playsSinceAd >= Self.playsBetweenInterstitials && interstitialAllowed && interstitial != nil
     }
 
     /// 次へ進むときに、出す条件がそろっていれば全画面広告を出す(閉じるまで待つ)。出さなかったら false
     @discardableResult
     func showInterstitialIfDue() async -> Bool {
         await refreshExpiredInterstitial()
-        guard playsSinceAd >= Self.playsBetweenInterstitials,
-              Date().timeIntervalSince(lastAdAt) >= Self.minSecondsBetweenAds,
+        guard playsSinceAd >= Self.playsBetweenInterstitials, interstitialAllowed,
               let ad = interstitial, let vc = Self.topViewController() else { return false }
         playsSinceAd = 0
         lastAdAt = Date()
@@ -271,12 +292,12 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         return true
     }
 
-    /// 回数や間隔に関係なく、読み込めていれば全画面広告を出す(閉じるまで待つ)。
-    /// コース投稿の「アップロード待ち」のように、もともと待ち時間がある場面で使う。出さなかったら false
+    /// 遊んだ回数に関係なく、読み込めていれば全画面広告を出す(閉じるまで待つ)。「もう一度」の3回ごと・投稿の待ち時間など。
+    /// ただし、どの場面でも、前の広告からの間(minSecondsBetweenAds)と、始めたばかりの人を守る決まりは通す。出さなかったら false
     @discardableResult
     func showInterstitialNow() async -> Bool {
         await refreshExpiredInterstitial()
-        guard let ad = interstitial, let vc = Self.topViewController() else { return false }
+        guard interstitialAllowed, let ad = interstitial, let vc = Self.topViewController() else { return false }
         playsSinceAd = 0
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
@@ -318,6 +339,8 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         }
         rewarded = nil
         isReady = false
+        // リワード広告のすぐあとに全画面広告が続かないように、これも「前の広告」として数える
+        lastAdAt = Date()
         let handler = onDismiss
         onDismiss = nil
         handler?(earned)

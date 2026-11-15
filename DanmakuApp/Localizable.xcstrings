@@ -8262,61 +8262,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stage name"
+            "value": "Basics"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ステージの名前"
+            "value": "基本"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "关卡名"
+            "value": "基本"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "關卡名"
+            "value": "基本"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "스테이지 이름"
+            "value": "기본"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nombre del nivel"
+            "value": "Básico"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nom du niveau"
+            "value": "Bases"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levelname"
+            "value": "Grundlagen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nome da fase"
+            "value": "Básico"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Название уровня"
+            "value": "Основное"
           }
         }
       }
@@ -66784,61 +66784,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "イベント・ランキング戦のお知らせ"
+            "value": "イベント・月間ランキングのお知らせ"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Events & ranking news"
+            "value": "Events & monthly ranking news"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "活动与排名赛通知"
+            "value": "活动与月度排行榜通知"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "活動與排名賽通知"
+            "value": "活動與月度排行榜通知"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이벤트·랭킹전 소식"
+            "value": "이벤트·월간 랭킹 소식"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avisos de eventos y rankings"
+            "value": "Avisos de eventos y ranking mensual"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Annonces d’événements et classements"
+            "value": "Annonces d’événements et du classement mensuel"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Event- & Ranking-News"
+            "value": "Event- & Monatsranglisten-News"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avisos de eventos e rankings"
+            "value": "Avisos de eventos e ranking mensal"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Новости событий и рейтингов"
+            "value": "Новости событий и рейтинга месяца"
           }
         }
       }
@@ -66848,61 +66848,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "広告を見て戦ってみる"
+            "value": "広告を見て3回戦ってみる"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Watch an ad to try this boss"
+            "value": "Watch an ad to try this boss 3 times"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "看广告试玩这个首领"
+            "value": "看广告试玩这个首领3次"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "看廣告試玩這個首領"
+            "value": "看廣告試玩這個首領3次"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "광고 보고 이 보스와 싸워 보기"
+            "value": "광고 보고 이 보스와 3번 싸워 보기"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ver un anuncio y probar este jefe"
+            "value": "Ver un anuncio y probar este jefe 3 veces"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Regarder une pub et essayer ce boss"
+            "value": "Regarder une pub et essayer ce boss 3 fois"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Werbung ansehen und Boss testen"
+            "value": "Werbung ansehen und Boss 3-mal testen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ver um anúncio e testar este chefe"
+            "value": "Ver um anúncio e testar este chefe 3 vezes"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Посмотреть рекламу и сразиться"
+            "value": "Посмотреть рекламу и сразиться 3 раза"
           }
         }
       }
@@ -67168,61 +67168,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "広告を見てもう一度"
+            "value": "広告を見て、あと3回"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Watch ad & retry"
+            "value": "Watch ad: 3 more tries"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "看广告再来一次"
+            "value": "看广告再玩3次"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "看廣告再來一次"
+            "value": "看廣告再玩3次"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "광고 보고 다시"
+            "value": "광고 보고 3번 더"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ver anuncio y reintentar"
+            "value": "Anuncio: 3 intentos más"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pub et réessayer"
+            "value": "Pub : 3 essais de plus"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Werbung & nochmal"
+            "value": "Werbung: 3 weitere Versuche"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ver anúncio e repetir"
+            "value": "Anúncio: mais 3 tentativas"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Реклама и ещё раз"
+            "value": "Реклама: ещё 3 попытки"
           }
         }
       }
@@ -67937,61 +67937,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ランキング戦"
+            "value": "月間ランキング"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rankings"
+            "value": "Monthly Ranking"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜赛"
+            "value": "月度排行榜"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "排行榜賽"
+            "value": "月度排行榜"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "랭킹전"
+            "value": "월간 랭킹"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking"
+            "value": "Ranking mensual"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Classement"
+            "value": "Classement mensuel"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rangliste"
+            "value": "Monatsrangliste"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking"
+            "value": "Ranking mensal"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рейтинг"
+            "value": "Рейтинг месяца"
           }
         }
       }
@@ -69367,61 +69367,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "必殺技"
+            "value": "必殺技の演出"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Special"
+            "value": "Special style"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "必杀技"
+            "value": "必杀技演出"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "必殺技"
+            "value": "必殺技演出"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "필살기"
+            "value": "필살기 연출"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Especial"
+            "value": "Estilo especial"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spécial"
+            "value": "Style spécial"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spezial"
+            "value": "Spezial-Stil"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Especial"
+            "value": "Estilo especial"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Спецприём"
+            "value": "Стиль спецприёма"
           }
         }
       }
@@ -70407,61 +70407,971 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "弾幕バトルはβ版です。ルールや報酬は、遊んだみなさんの声を聞いて変えることがあります。気づいたことは、設定の「要望・ご意見を送る」から教えてください。"
+            "value": "弾幕バトルはβ版です。ルールや報酬は、遊んだみなさんの声を聞いて変えることがあります。気づいたことは、設定の「要望・ご意見を送る」から教えてください。相手がすぐ見つからないときは、ほかのプレイヤーの記録などと対戦します。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Danmaku Battle is in beta. Rules and rewards may change based on your feedback. Let us know what you think via \"Send a request or feedback\" in Settings."
+            "value": "Danmaku Battle is in beta. Rules and rewards may change based on your feedback. Let us know what you think via \"Send a request or feedback\" in Settings. If no opponent is found quickly, you may face recorded runs from other players."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "弹幕对战目前是β版。规则和奖励可能会根据大家的意见进行调整。如有想法,请通过设置中的「发送建议或反馈」告诉我们。"
+            "value": "弹幕对战目前是β版。规则和奖励可能会根据大家的意见进行调整。如有想法,请通过设置中的「发送建议或反馈」告诉我们。如果没能很快找到对手,会与其他玩家的记录等进行对战。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "彈幕對戰目前是β版。規則和獎勵可能會依大家的意見調整。如有想法,請透過設定中的「傳送建議或意見」告訴我們。"
+            "value": "彈幕對戰目前是β版。規則和獎勵可能會依大家的意見調整。如有想法,請透過設定中的「傳送建議或意見」告訴我們。如果沒能很快找到對手,會與其他玩家的紀錄等進行對戰。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "탄막 배틀은 베타 버전이에요. 규칙과 보상은 여러분의 의견을 듣고 바뀔 수 있어요. 느낀 점은 설정의 「요청·의견 보내기」로 알려 주세요."
+            "value": "탄막 배틀은 베타 버전이에요. 규칙과 보상은 여러분의 의견을 듣고 바뀔 수 있어요. 느낀 점은 설정의 「요청·의견 보내기」로 알려 주세요. 상대를 바로 찾지 못하면 다른 플레이어의 기록 등과 대전해요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Batalla Danmaku está en beta. Las reglas y recompensas pueden cambiar según vuestros comentarios. Cuéntanos qué te parece en «Enviar sugerencia o comentario» de Ajustes."
+            "value": "Batalla Danmaku está en beta. Las reglas y recompensas pueden cambiar según vuestros comentarios. Cuéntanos qué te parece en «Enviar sugerencia o comentario» de Ajustes. Si no se encuentra rival pronto, puedes enfrentarte a partidas grabadas de otros jugadores."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Duel Danmaku est en bêta. Les règles et récompenses peuvent évoluer selon vos retours. Dites-nous ce que vous en pensez via « Envoyer une demande ou un avis » dans les Réglages."
+            "value": "Duel Danmaku est en bêta. Les règles et récompenses peuvent évoluer selon vos retours. Dites-nous ce que vous en pensez via « Envoyer une demande ou un avis » dans les Réglages. Si aucun adversaire n’est trouvé rapidement, vous pouvez affronter des parties enregistrées d’autres joueurs."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Danmaku-Duell ist in der Beta. Regeln und Belohnungen können sich nach eurem Feedback ändern. Sag uns deine Meinung über „Wunsch / Feedback senden“ in den Einstellungen."
+            "value": "Danmaku-Duell ist in der Beta. Regeln und Belohnungen können sich nach eurem Feedback ändern. Sag uns deine Meinung über „Wunsch / Feedback senden“ in den Einstellungen. Wird nicht schnell ein Gegner gefunden, trittst du ggf. gegen aufgezeichnete Läufe anderer Spieler an."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "A Batalha Danmaku está em beta. Regras e recompensas podem mudar conforme o retorno de vocês. Conte o que achou em \"Enviar pedido ou comentário\" nos Ajustes."
+            "value": "A Batalha Danmaku está em beta. Regras e recompensas podem mudar conforme o retorno de vocês. Conte o que achou em \"Enviar pedido ou comentário\" nos Ajustes. Se nenhum oponente for encontrado logo, você pode enfrentar partidas gravadas de outros jogadores."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Даммаку-битва — в бета-версии. Правила и награды могут меняться по вашим отзывам. Поделитесь мнением через «Отправить пожелание или отзыв» в настройках."
+            "value": "Даммаку-битва — в бета-версии. Правила и награды могут меняться по вашим отзывам. Поделитесь мнением через «Отправить пожелание или отзыв» в настройках. Если соперник быстро не найдётся, вы можете сразиться с записанными забегами других игроков."
+          }
+        }
+      }
+    },
+    "editor.aim.label.scatter": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "散らばり方"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scatter"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "散布方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "散布方式"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "흩어지는 방식"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispersión"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispersion"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streuung"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispersão"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разброс"
+          }
+        }
+      }
+    },
+    "editor.oneup.last": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最後のボスを倒したらクリアなので、1UPは付けられません。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Defeating the last boss clears the stage, so it can't drop a 1UP."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "击败最后的Boss即通关,因此不能设置1UP。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擊敗最後的Boss即過關,因此不能設定1UP。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 보스를 쓰러뜨리면 클리어이므로 1UP을 붙일 수 없어요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Derrotar al último jefe completa el nivel, así que no puede soltar un 1UP."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaincre le dernier boss termine le niveau, il ne peut donc pas donner de 1UP."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit dem letzten Boss ist das Level geschafft, daher kann er kein 1UP geben."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Derrotar o último chefe conclui a fase, então ele não pode soltar 1UP."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Победа над последним боссом завершает уровень, поэтому 1UP добавить нельзя."
+          }
+        }
+      }
+    },
+    "a11y.expand": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開く"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expand"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展開"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펼치기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expandir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Développer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufklappen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expandir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Развернуть"
+          }
+        }
+      }
+    },
+    "a11y.collapse": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉じる"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collapse"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收起"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收合"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "접기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réduire"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zuklappen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recolher"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свернуть"
+          }
+        }
+      }
+    },
+    "notify.local.daily.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日のごほうびが届いています"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your daily reward is ready"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日奖励已送达"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日獎勵已送達"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 보상이 도착했어요"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu recompensa diaria está lista"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre récompense quotidienne est prête"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine tägliche Belohnung ist da"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua recompensa diária chegou"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ежедневная награда ждёт"
+          }
+        }
+      }
+    },
+    "notify.local.daily.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今日のごほうびを受け取って、新しい演出を集めよう!"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim today's reward and collect a new effect!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "领取今天的奖励,收集新的特效吧!"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "領取今天的獎勵,收集新的特效吧!"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘의 보상을 받고 새 연출을 모아 보세요!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Reclama la de hoy y consigue un nuevo efecto!"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récupérez celle d'aujourd'hui et collectionnez un nouvel effet !"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hol dir die heutige und sammle einen neuen Effekt!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resgate a de hoje e colecione um novo efeito!"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заберите сегодняшнюю и соберите новый эффект!"
+          }
+        }
+      }
+    },
+    "notify.local.stamina.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スタミナが満タンです"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stamina is full"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体力已满"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "體力已滿"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스태미나가 가득 찼어요"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu energía está al máximo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre endurance est au maximum"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausdauer ist voll"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua energia está cheia"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выносливость восстановлена"
+          }
+        }
+      }
+    },
+    "notify.local.stamina.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スワイプ弾幕で、今月のランキングに挑戦しよう!"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take on this month's ranking in Swipe Danmaku!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "来滑动弹幕挑战本月排行榜吧!"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "來滑動彈幕挑戰本月排行榜吧!"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스와이프 탄막으로 이번 달 랭킹에 도전해 보세요!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Desafía el ranking del mes en Danmaku deslizante!"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relevez le classement du mois dans Danmaku glissé !"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fordere die Monatsrangliste im Wisch-Danmaku heraus!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desafie o ranking do mês no Danmaku deslizante!"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Покорите рейтинг месяца в свайп-даммаку!"
+          }
+        }
+      }
+    },
+    "publish.notify.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "反応が付いたら知らせる?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get notified about reactions?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收到反应时通知你?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收到反應時通知你?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "반응이 오면 알려 드릴까요?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Avisarte cuando haya reacciones?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Être averti des réactions ?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei Reaktionen benachrichtigen?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisar quando houver reações?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщать о реакциях?"
+          }
+        }
+      }
+    },
+    "publish.notify.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "いいね・コメントが付いたときや、たくさん遊ばれたときに、通知でお知らせします。あとから設定で変えられます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll let you know when your stage gets likes or comments, or is played a lot. You can change this later in Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当关卡获得点赞、评论或被大量游玩时,会通过通知告诉你。之后可以在设置中更改。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "當關卡獲得按讚、留言或被大量遊玩時,會透過通知告訴你。之後可以在設定中更改。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋아요·댓글이 달리거나 많이 플레이되면 알림으로 알려 드려요. 나중에 설정에서 바꿀 수 있어요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te avisaremos cuando tu nivel reciba me gusta, comentarios o muchas partidas. Puedes cambiarlo en Ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous vous préviendrons des j'aime, commentaires ou quand votre niveau est beaucoup joué. Modifiable dans les Réglages."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir melden uns bei Likes, Kommentaren oder vielen Spielen deines Levels. Später in den Einstellungen änderbar."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisaremos quando sua fase receber curtidas, comentários ou for muito jogada. Dá para mudar depois nos Ajustes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщим о лайках, комментариях и о том, что ваш уровень много играют. Можно изменить в настройках."
+          }
+        }
+      }
+    },
+    "publish.notify.on": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知をオンにする"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on notifications"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启通知"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟通知"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 켜기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar avisos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktivieren"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativar avisos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить"
+          }
+        }
+      }
+    },
+    "publish.notify.later": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あとで"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以后再说"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以後再說"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나중에"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luego"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus tard"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Später"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depois"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Позже"
+          }
+        }
+      }
+    },
+    "store.benefit.daily": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日のごほうび(1日3つ)と広告パターンも、広告なしで受け取れます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim daily rewards (3 a day) and ad patterns without watching ads"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日奖励(每天3个)和广告图案也无需看广告即可领取"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日獎勵(每天3個)和廣告圖案也無需看廣告即可領取"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 보상(하루 3개)과 광고 패턴도 광고 없이 받을 수 있어요"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recompensas diarias (3 al día) y patrones sin ver anuncios"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récompenses quotidiennes (3/jour) et motifs sans pub"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tägliche Belohnungen (3/Tag) und Werbe-Muster ohne Werbung"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recompensas diárias (3 por dia) e padrões sem anúncios"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ежедневные награды (3 в день) и узоры без рекламы"
+          }
+        }
+      }
+    },
+    "store.benefit.publish": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステージの公開数が無制限になります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publish unlimited stages"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关卡发布数量不受限制"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關卡發佈數量不受限制"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스테이지를 무제한으로 공개할 수 있어요"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publica niveles sin límite"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publiez des niveaux sans limite"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbegrenzt Level veröffentlichen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publique fases sem limite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Публикуйте уровни без ограничений"
           }
         }
       }

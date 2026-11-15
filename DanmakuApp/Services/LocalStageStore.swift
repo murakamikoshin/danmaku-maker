@@ -29,6 +29,9 @@ struct SavedStage: Identifiable, Codable, Equatable {
     /// 投稿した内容と、発行された ID(同じ内容を、二重に投稿しないため)
     var publishedStage: Stage?
     var publishedID: String?
+    /// 投稿したアカウント(uid)と時刻。別のアカウントでサインインしたときや、一覧の読み込み中に投稿したときに、印を外さないため
+    var publishedUid: String?
+    var publishedAt: Date?
 
     var stage: Stage { draft.stage }
     /// クリア確認は、遊びの中身(弾・敵・時間など)が同じかで判断する。名前を付け直しただけでは外れない
@@ -93,6 +96,8 @@ final class LocalStageStore: ObservableObject {
             if let id = stages[i].publishedID, ids.contains(id) {
                 stages[i].publishedStage = nil
                 stages[i].publishedID = nil
+                stages[i].publishedUid = nil
+                stages[i].publishedAt = nil
                 changed = true
             }
         }
@@ -101,8 +106,17 @@ final class LocalStageStore: ObservableObject {
 
     /// 自分が公開中のステージの ID(サーバーの一覧。全部そろっているときだけ渡す)にないものは、世界から消えているので、投稿済みの印を外す。
     /// (詳しい画面から消したとき・別の端末で消したとき・前の版で消して印が残ったときなど)
-    func reconcilePublished(openIDs: Set<String>) {
-        let gone = Set(stages.compactMap(\.publishedID)).subtracting(openIDs)
+    /// - uid: いまサインインしているアカウント。ほかのアカウントで投稿したものは比べない(印が残っていた前の版のものは、いまのアカウントのものとみなす)
+    /// - since: 一覧を読みに行った時刻。それより後に投稿したものは、まだ一覧に入っていないので比べない
+    /// - keep: 通報で隠されているなど、消えてはいないステージの ID(印を外さない。同じ内容の出し直しを防ぐ)
+    func reconcilePublished(openIDs: Set<String>, keep: Set<String> = [], uid: String?, since: Date) {
+        var gone = Set<String>()
+        for s in stages {
+            guard let id = s.publishedID, !openIDs.contains(id), !keep.contains(id) else { continue }
+            if let owner = s.publishedUid, owner != uid { continue }
+            if let at = s.publishedAt, at >= since { continue }
+            gone.insert(id)
+        }
         if !gone.isEmpty { forgetPublished(ids: gone) }
     }
 

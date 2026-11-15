@@ -1,3 +1,4 @@
+import FirebaseAuth
 import SwiftUI
 import DanmakuCore
 
@@ -141,6 +142,13 @@ struct DraftWave: Codable, Equatable, Identifiable {
         return w
     }
 
+    /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
+    mutating func setPhaseCount(_ n: Int) {
+        phases = n == 3 ? nil : n
+        if let a = awaken, a > n { awaken = n }
+        emitters = emitters.map { var e = $0; e.ph = Emitter.sanitizedPhase(e.ph, count: n); return e }
+    }
+
     var durations: [Int] { kind == .boss ? Wave.bossDurations : Wave.surviveDurations }
 
     mutating func setKind(_ k: WaveKind) {
@@ -262,6 +270,13 @@ struct Draft: Codable, Equatable {
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
         phases = try? c.decodeIfPresent(Int.self, forKey: .phases)
         phaseInfo = try? c.decodeIfPresent([PhaseInfo].self, forKey: .phaseInfo)
+    }
+
+    /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
+    mutating func setPhaseCount(_ n: Int) {
+        phases = n == 3 ? nil : n
+        if let a = awaken, a > n { awaken = n }
+        emitters = emitters.map { var e = $0; e.ph = Emitter.sanitizedPhase(e.ph, count: n); return e }
     }
 
     /// 遊べる・投稿できるステージのデータ(丸めた内容)。じぶんの画像の設定は、含まれない
@@ -434,6 +449,8 @@ final class EditorModel: ObservableObject {
     func published(id: String) {
         entry.publishedStage = stage
         entry.publishedID = id
+        entry.publishedUid = Backend.isAvailable ? Auth.auth().currentUser?.uid : nil
+        entry.publishedAt = Date()
         entry.draft = draft
         baseline = draft
         store.update(entry)

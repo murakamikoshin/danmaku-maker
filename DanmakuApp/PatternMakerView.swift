@@ -17,6 +17,8 @@ struct PatternMakerView: View {
     @State private var name = ""
     @State private var editingID: UUID?
     @State private var message: LocalizedStringKey?
+    /// 描いた軌道を左右反転しているか(反転ボタンを、選んだ状態の見た目にする)
+    @State private var flipped = false
     @State private var engine = PatternDemoEngine(source: Point(x: 180, y: 60), player: Point(x: 180, y: 290), sweepPlayer: false)
 
     private let fieldW = PatternDemoEngine.fieldWidth, fieldH = PatternDemoEngine.fieldHeight
@@ -117,6 +119,7 @@ struct PatternMakerView: View {
             out.append(Double(a.p.y + (b.p.y - a.p.y) * u) - Double(first.p.y))
         }
         path = PathData.sanitized(out) ?? []
+        flipped = false
         origin = first.p
         engine.source = Point(x: Double(first.p.x), y: Double(first.p.y))
         raw = []
@@ -162,7 +165,7 @@ struct PatternMakerView: View {
             HStack(spacing: 10) {
                 Button { gameTap(); clear() } label: { Chip(title: L("maker.clear"), selected: false) }.buttonStyle(BounceButtonStyle())
                 // 描いた軌道を左右反転する(要望。左右対称の弾幕を、描き直さずに作れる)
-                Button { gameTap(); flip() } label: { Chip(title: L("maker.flip"), selected: false) }
+                Button { gameTap(); flip() } label: { Chip(title: L("maker.flip"), selected: flipped) }
                     .buttonStyle(BounceButtonStyle())
                     .disabled(path.isEmpty).opacity(path.isEmpty ? 0.5 : 1)
                     .accessibilityIdentifier("maker.flip")
@@ -180,11 +183,12 @@ struct PatternMakerView: View {
         path = PathData.sanitized(mirrored) ?? path
         origin.x = CGFloat(DanmakuConfig.width) - origin.x
         engine.source = Point(x: Double(origin.x), y: Double(origin.y))
-        message = "maker.flipped"
+        flipped.toggle()
+        message = nil
     }
 
     private func clear() {
-        raw = []; path = []; drawing = false; editingID = nil; name = ""; message = nil
+        raw = []; path = []; drawing = false; editingID = nil; name = ""; message = nil; flipped = false
     }
 
     private func save() {
@@ -219,7 +223,7 @@ struct PatternMakerView: View {
         path = item.path; copies = item.copies; speed = item.speed; name = item.name; editingID = item.id
         origin = CGPoint(x: 180, y: 60)
         engine.source = Point(x: 180, y: 60)
-        message = nil
+        message = nil; flipped = false
     }
 }
 

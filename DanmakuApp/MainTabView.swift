@@ -57,6 +57,9 @@ struct MainTabView: View {
                         .clipped()
                         .frame(maxWidth: .infinity)
                         .background(GameStyle.nightDeep)
+                    // タブを押すつもりで広告を押さないように、広告とタブのあいだに すき間と区切り線を入れる(AdMob の誤タップ対策)
+                    Rectangle().fill(GameStyle.nightDeep).frame(height: 10)
+                        .overlay(alignment: .bottom) { Rectangle().fill(GameStyle.edge).frame(height: 1) }
                 }
                 TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
                        shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
@@ -172,7 +175,7 @@ private struct TabIcon: View {
     var body: some View {
         icon
             .saturation(selected ? 1 : 0)
-            .opacity(selected ? 1 : 0.5)
+            .opacity(selected ? 1 : 0.7)
     }
 
     @ViewBuilder private var icon: some View {
@@ -199,10 +202,11 @@ private struct TabIcon: View {
                 Rectangle().fill(GameStyle.yellow).frame(width: 5, height: 5)
             }
         case .shop:
-            // ボス: ピンクの星(中央に穴)
-            GameBossShape()
-                .fill(GameStyle.pinkColor, style: FillStyle(eoFill: true))
-                .frame(width: 32, height: 32)
+            // 買い物袋(ショップだと一目で分かるように)。袋の上に、ボスのピンクの星を小さく
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "bag.fill").font(.system(size: 25, weight: .black)).foregroundStyle(GameStyle.pinkColor)
+                GameBossShape().fill(GameStyle.yellow, style: FillStyle(eoFill: true)).frame(width: 13, height: 13).offset(x: 4, y: -3)
+            }
         case .settings:
             // 弾の輪: 色とりどりの弾が円に並ぶ
             ZStack {
@@ -211,7 +215,8 @@ private struct TabIcon: View {
                     bulletDot(Palette.bullets[i % Palette.bullets.count], size: 8)
                         .offset(x: CGFloat(cos(a)) * 13, y: CGFloat(sin(a)) * 13)
                 }
-                bulletDot(Palette.gold, size: 10)
+                // まん中に歯車(設定だと一目で分かるように)
+                Image(systemName: "gearshape.fill").font(.system(size: 15, weight: .black)).foregroundStyle(Color(Palette.gold))
             }
         }
     }

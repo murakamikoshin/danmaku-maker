@@ -1,3 +1,4 @@
+import DanmakuCore
 import SwiftUI
 
 @main
@@ -81,6 +82,13 @@ struct DanmakuApp: App {
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { deepLink.handle($0.webpageURL); AttributionService.shared.handle(userActivity: $0) }
                 .onChange(of: scenePhase) { phase in
                     if phase == .background { Task { await ResultsQueue.shared.flush() } }
+                    // 閉じたら、毎日のごほうび・スタミナ満タンのお知らせを予約する。開いたら消す
+                    if phase == .background {
+                        let r = RewardStore.shared
+                        r.refreshDay()
+                        NotificationService.shared.scheduleLocalReminders(rewardClaimedToday: !r.canClaim, rewardsLeft: r.state.claimed < DailyRewards.total)
+                    }
+                    if phase == .active { NotificationService.shared.clearLocalReminders(); ReviewPrompt.noteLaunch() }
                     if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
                     if phase == .active { Task { await RewardNoticeService.shared.check() } }   // 招待や月間ランキングのごほうびが届いていないか
                     // 設定アプリで通知の許可を変えて戻ってきたときに、表示を合わせる

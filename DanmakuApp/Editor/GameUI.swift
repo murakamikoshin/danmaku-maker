@@ -810,6 +810,8 @@ struct RoundIconButton: View {
             Image(systemName: systemImage).font(.system(size: 15, weight: .black)).foregroundStyle(tint)
                 .frame(width: 38, height: 38)
                 .gamePanel(radius: 10, fill: GameStyle.panelHi)
+                // 見た目はそのまま、押せる範囲だけ 44pt に広げる
+                .padding(3).contentShape(Rectangle()).padding(-3)
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityLabel(Text(label))
@@ -879,6 +881,8 @@ struct GameToggle: View {
                 }
                 .frame(width: 22, height: 22).padding(4)
             }
+            // 見た目はそのまま、押せる範囲だけ高さ 44pt に広げる
+            .padding(.vertical, 7).contentShape(Rectangle()).padding(.vertical, -7)
         }
         .buttonStyle(.plain)
         .compatToggleTrait()

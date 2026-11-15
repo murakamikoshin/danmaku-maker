@@ -13,6 +13,9 @@ struct StaminaInfo: Equatable {
     /// サーバーから受け取った値か(まだなら、満タンに見せない)
     var known = false
     static let max = 5
+    /// 1回復するまでの時間(サーバーの stamina.ts の REGEN_MS と同じ)
+    static let regenSeconds: TimeInterval = 2 * 60 * 60
+    static let fullAtKey = "swipe.stamina.fullAt"
 }
 
 struct SwipeRunStart {
@@ -109,6 +112,13 @@ final class SwipeService: ObservableObject {
         s.known = true
         stamina = s
         loaded = true
+        // スタミナが満タンになる時刻を覚えておく(アプリを閉じたときに「満タンになりました」の通知を予約するため)
+        if !s.unlimited, s.value < StaminaInfo.max, let next = s.nextAt {
+            let full = next.addingTimeInterval(Double(StaminaInfo.max - s.value - 1) * StaminaInfo.regenSeconds)
+            UserDefaults.standard.set(full.timeIntervalSince1970, forKey: StaminaInfo.fullAtKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: StaminaInfo.fullAtKey)
+        }
     }
 
     func refresh() async {

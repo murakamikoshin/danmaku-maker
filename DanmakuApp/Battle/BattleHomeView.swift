@@ -8,6 +8,7 @@ struct BattleHomeView: View {
     @StateObject private var model = BattleModel()
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
+    @Environment(\.scenePhase) private var scenePhase
     /// 結果から進む途中(広告の表示待ち)。二度押しで2回進まないように
     @State private var leaving = false
 
@@ -23,6 +24,8 @@ struct BattleHomeView: View {
         }
         .task { await model.loadStatus() }
         .onDisappear { if case .searching = model.phase { model.cancel() } }
+        // 対戦中にアプリを裏へ回すと、ゲームの時間が止まって休めてしまう(耐久の勝負が崩れる)。裏へ回したら降参にする
+        .onChange(of: scenePhase) { p in if p == .background, model.phase == .playing { model.forfeit() } }
         // 3・2・1 から自分が落ちたあとの待ちまでは、バナーを消す(入口と結果の画面では出す)
         .onChange(of: model.phase) { p in
             switch p {
@@ -83,8 +86,7 @@ struct BattleHomeView: View {
                 Text(String(format: L("battle.rating"), s.rating)).font(.system(size: 15, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                     .accessibilityIdentifier("battle.rating")
                 Text(String(format: L("battle.record"), s.wins, s.losses, s.draws)).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                Text(String(format: L("battle.season"), BattleHomeView.seasonDaysLeft())).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    .accessibilityIdentifier("battle.season")
+                // シーズン(月ごとの区切り・上位への報酬)は、サーバーにまだ無いので出さない(作ったら戻す)
             }
             Spacer(minLength: 0)
         }
@@ -183,12 +185,14 @@ struct BattleHomeView: View {
         .background(GameStyle.nightDeep)
     }
 
-    /// 結果から次へ進む(もう一戦・やめる)。3試合ごとに全画面広告を出してから(閉じるまで待つ)。広告削除の購入者には出さない
-    private func leave(then next: @escaping () -> Void) {
+    /// 結果から次へ進む(もう一戦・やめる)。「もう一戦」のときだけ、3試合ごとに全画面広告を出してから(閉じるまで待つ)。広告削除の購入者には出さない
+    /// 「やめる」では出さない(やめる人を待たせない)。試合の数は、どちらでも数える
+    private func leave(showAd: Bool, then next: @escaping () -> Void) {
         guard !leaving else { return }
         leaving = true
         Task {
-            if !purchases.isPremium, ads.countBattleIsDue() { await ads.showInterstitialNow() }
+            let due = ads.countBattleIsDue()
+            if showAd, due, !purchases.isPremium { await ads.showInterstitialNow() }
             model.backToTitle()
             next()
             leaving = false
@@ -218,7 +222,7 @@ struct BattleHomeView: View {
             .padding(20).gamePanel(radius: 18)
         case .result(let r):
             BattleResultCard(result: r, opponent: model.match?.opponent.name ?? "",
-                             again: { leave { model.start() } }, quit: { leave {} })
+                             again: { leave(showAd: true) { model.start() } }, quit: { leave(showAd: false) {} })
                 .padding(.horizontal, 20)
         default:
             EmptyView()

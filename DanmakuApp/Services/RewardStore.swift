@@ -64,11 +64,15 @@ final class RewardStore: ObservableObject {
     /// 画面のボタンから受け取る: 広告を見終えたら(広告削除の購入者は広告なしで)受け取り、鳴らす。
     /// 今日の分が受け取れる日は今日の分、受け取り済みなら「もう1つ」
     func claimFromButton(ads: AdsService, purchases: PurchaseService) async {
-        let extra = !canClaim
-        guard extra ? canClaimExtra : true else { return }
+        // 日付が変わっていたら、先に今日にそろえる(前の日の「もう1つ」のつもりで押しても、今日の分としてもらえるように)
+        refreshDay()
+        guard canClaim || canClaimExtra else { return }
         if !purchases.isPremium {
             guard await ads.showRewarded() else { return }
         }
+        // 広告を見ている間に日付が変わることもあるので、もらう種類は見終わってから決める
+        refreshDay()
+        let extra = !canClaim
         if claim(extra: extra) != nil {
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             AudioManager.shared.se(.get)

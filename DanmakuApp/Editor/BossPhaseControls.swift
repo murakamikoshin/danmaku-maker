@@ -10,6 +10,10 @@ struct BossPhaseControls: View {
     @Binding var info: [PhaseInfo]?
     /// ダメージ勝負か(段階は、HP ではなく時間で進む)
     var byTime = false
+    /// 段階の名前と必殺技の欄を出すか(「くわしく」のときだけ。「かんたん」は段階の数だけ)
+    var showNames = true
+    /// 段階の数を変えたとき(覚醒の段階・撃つ段階を、新しい数に収めるため)。nil なら phases だけ変える
+    var onCountChange: ((Int) -> Void)? = nil
     var idPrefix = "editor.phases"
 
     private var count: Int { phases ?? 3 }
@@ -18,13 +22,15 @@ struct BossPhaseControls: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("editor.phases.count").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: Emitter.phaseCountRange.map { ($0, String(format: L("editor.phases.count.value"), $0)) },
-                     selection: Binding(get: { count }, set: { phases = $0 == 3 ? nil : $0 }), idPrefix: idPrefix, minimum: 72)
+                     selection: Binding(get: { count }, set: { n in if let onCountChange { onCountChange(n) } else { phases = n == 3 ? nil : n } }), idPrefix: idPrefix, minimum: 72)
             Text(byTime ? "editor.phases.note.time" : "editor.phases.note.hp")
                 .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
 
-            Text("editor.phases.names").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
-            ForEach(0..<count, id: \.self) { i in row(i) }
-            Text("editor.phases.names.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            if showNames {
+                Text("editor.phases.names").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
+                ForEach(0..<count, id: \.self) { i in row(i) }
+                Text("editor.phases.names.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -73,14 +79,17 @@ struct BossPhaseControls: View {
 /// 連戦で、次の場面があるボスを倒したときの1UP(1.3.0)。出さない / 落ちてくるのを拾う / 倒したら自動
 struct OneUpPicker: View {
     @Binding var oneUp: Int?
+    /// 最後のボスか(倒したらクリアなので1UP は付けられない。欄は消さずに、押せない形で理由を出す)
+    var isLast = false
     var idPrefix = "editor.oneup"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("editor.oneup").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: [(0, L("editor.oneup.none")), (1, L("editor.oneup.pickup")), (2, L("editor.oneup.auto"))],
-                     selection: Binding(get: { oneUp ?? 0 }, set: { oneUp = $0 == 0 ? nil : $0 }), idPrefix: idPrefix, minimum: 90)
-            Text("editor.oneup.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                     selection: Binding(get: { isLast ? 0 : (oneUp ?? 0) }, set: { oneUp = $0 == 0 ? nil : $0 }), idPrefix: idPrefix, minimum: 90)
+                .disabled(isLast).opacity(isLast ? 0.4 : 1)
+            Text(isLast ? "editor.oneup.last" : "editor.oneup.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
 }

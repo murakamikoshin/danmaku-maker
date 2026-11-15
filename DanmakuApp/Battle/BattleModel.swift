@@ -199,6 +199,11 @@ final class BattleModel: ObservableObject {
     private func show(_ r: BattleService.Result) {
         guard !isResult else { return }
         phase = .result(r)
+        // 3連勝したら、評価をお願いする(連勝の数は端末に覚える)
+        let key = "battle.winStreak"
+        let streak = r.outcome == .win ? UserDefaults.standard.integer(forKey: key) + 1 : 0
+        UserDefaults.standard.set(streak, forKey: key)
+        if streak >= 3 { ReviewPrompt.maybeAsk(.battleStreak3) }
         status?.rating = r.ratingAfter
         status?.rank = r.rank
         Task { await loadStatus() }

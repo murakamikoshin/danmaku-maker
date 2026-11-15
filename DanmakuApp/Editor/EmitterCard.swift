@@ -97,7 +97,8 @@ struct EmitterCard: View {
             ? [(0, L("editor.aim.player")), (1, L("editor.aim.fixed")), (2, L("editor.aim.random"))]
             : [(0, L("editor.aim.same")), (2, L("editor.aim.random"))]
         return VStack(alignment: .leading, spacing: 6) {
-            Text("editor.aim.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+            // 自機を見ないパターン(雨など)は、狙いではなく「散らばり方」として出す(同じ欄に別の意味の言葉が出て紛らわしくないように)
+            Text(full ? "editor.aim.label" : "editor.aim.label.scatter").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: items, selection: Binding(get: { emitter.aim ?? 0 }, set: { emitter.aim = $0 == 0 ? nil : $0 }),
                      idPrefix: "emitter.aim.\(index)", minimum: 80)
             if emitter.aim == 1 {
@@ -120,8 +121,10 @@ struct EmitterCard: View {
                 Button { gameTap(); withAnimation(.easeInOut(duration: 0.2)) { collapsed.toggle() } } label: {
                     Image(systemName: collapsed ? "chevron.down.circle.fill" : "chevron.up.circle.fill")
                         .font(.system(size: 22)).foregroundStyle(GameStyle.text.opacity(0.6))
+                        .frame(width: 44, height: 44).contentShape(Rectangle())   // 押せる範囲は 44pt
                 }
                 .buttonStyle(BounceButtonStyle())
+                .accessibilityLabel(Text(collapsed ? "a11y.expand" : "a11y.collapse"))
                 .accessibilityIdentifier("emitter.collapse.\(index)")
                 if canDelete {
                     Button { gameTap(); onDelete() } label: {

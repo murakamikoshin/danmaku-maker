@@ -206,7 +206,12 @@ struct StageDetailView: View {
     }
 
     private func report(_ reason: String) async {
-        do { try await StageActions.report(id: remote.id, reason: reason); message = L("detail.report.done") }
+        do {
+            try await StageActions.report(id: remote.id, reason: reason)
+            // 通報したステージは、自分の一覧からはすぐ消す(ほかの人には、通報が集まると隠れる)
+            blocks.hideReported(stageID: remote.id)
+            message = L("detail.report.done")
+        }
         catch { message = L("error.network") }
     }
 }

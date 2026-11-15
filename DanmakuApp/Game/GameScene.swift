@@ -759,6 +759,8 @@ final class GameScene: SKScene {
         }
 
         specialLabel.isHidden = true
+        // 長い段階名で小さくしたあとも、ほかの見出し(WAVE・WARNING・覚醒など)はいつもの大きさで出す
+        if centerLabel.fontSize != 28 { centerLabel.fontSize = 28 }
         if warningLeft > 0 {
             // 警告の表示中は、上で文字を出している
         } else if sim.t < 0 {

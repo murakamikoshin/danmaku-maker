@@ -78,7 +78,8 @@ struct EditorView: View {
                             // ボスの段階の数と、段階の名前・必殺技(1.3.0)
                             if model.draft.mode != .survive {
                                 GamePanel(title: "editor.section.phases", tint: GameStyle.pinkColor) {
-                                    BossPhaseControls(phases: $model.draft.phases, info: $model.draft.phaseInfo, byTime: model.draft.mode == .damage)
+                                    BossPhaseControls(phases: $model.draft.phases, info: $model.draft.phaseInfo, byTime: model.draft.mode == .damage,
+                                                      showNames: advanced, onCountChange: { model.draft.setPhaseCount($0) })
                                 }
                             }
                         }
@@ -601,6 +602,9 @@ struct SliderRow: View {
             Image(systemName: image).font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.text)
                 .frame(width: 24, height: 26)
                 .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 7))
+                // 見た目はそのまま、押せる範囲だけ 44pt に広げる(となりのスライダーと押し間違えにくく)
+                .padding(.horizontal, 10).padding(.vertical, 9).contentShape(Rectangle())
+                .padding(.horizontal, -10).padding(.vertical, -9)
         }
         .buttonStyle(BounceButtonStyle())
         .accessibilityLabel(Text(dir < 0 ? "editor.nudge.down" : "editor.nudge.up"))
@@ -1151,10 +1155,10 @@ private struct WaveCard: View {
                 // ボスの段階の数と名前・必殺技、倒したときの1UP(1.3.0)。見つけやすいように「かんたん」でも出す
                 BossPhaseControls(phases: Binding(get: { wave.phases }, set: { model.draft.waves[i].phases = $0 }),
                                   info: Binding(get: { wave.phaseInfo }, set: { model.draft.waves[i].phaseInfo = $0 }),
+                                  showNames: advanced, onCountChange: { model.draft.waves[i].setPhaseCount($0) },
                                   idPrefix: "editor.wave.phases.\(i)")
-                if i < model.draft.waves.count - 1 {
-                    OneUpPicker(oneUp: Binding(get: { wave.oneUp }, set: { model.draft.waves[i].oneUp = $0 }), idPrefix: "editor.wave.oneup.\(i)")
-                }
+                OneUpPicker(oneUp: Binding(get: { wave.oneUp }, set: { model.draft.waves[i].oneUp = $0 }),
+                            isLast: i == model.draft.waves.count - 1, idPrefix: "editor.wave.oneup.\(i)")
                 if advanced {
                     EnemyControls(showBoss: true,
                                   bossSize: Binding(get: { wave.bossSize ?? 1 }, set: { model.draft.waves[i].bossSize = $0 }),

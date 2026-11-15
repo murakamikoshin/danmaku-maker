@@ -20,6 +20,9 @@ struct StoreView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         benefit("store.benefit.noads", "nosign")
                         benefit("store.benefit.revive", "arrow.counterclockwise")
+                        // 広告削除で、ほかに何が楽になるかも書く(価値が伝わりにくかった)
+                        benefit("store.benefit.daily", "gift.fill")
+                        benefit("store.benefit.publish", "paperplane.fill")
                         benefit("store.benefit.once", "checkmark.seal")
                     }
                     .padding(14).frame(maxWidth: .infinity, alignment: .leading)

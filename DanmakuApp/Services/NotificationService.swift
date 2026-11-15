@@ -132,7 +132,49 @@ final class NotificationService: NSObject, ObservableObject {
         Firestore.firestore().collection("users").document(uid).collection("pushDevices").document(deviceID).setData(data) { _ in }
     }
 
+    // MARK: 端末の中で予約するお知らせ(毎日のごほうび・スタミナ満タン)
+
+    private static let dailyReminderID = "local.daily"
+    private static let staminaReminderID = "local.stamina"
+
+    /// アプリを閉じたときに呼ぶ。通知を受け取る設定で、許可されているときだけ予約する(ごほうびの種類がオンのとき)。
+    /// - 毎日のごほうび: 今日の分をもらっていなければ今日の19時、もらっていれば明日の19時
+    /// - スワイプ弾幕のスタミナ: 満タンになる時刻(覚えていれば)
+    func scheduleLocalReminders(rewardClaimedToday: Bool, rewardsLeft: Bool) {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [Self.dailyReminderID, Self.staminaReminderID])
+        guard enabled, isOn(.rewards), authorization == .authorized || authorization == .provisional else { return }
+        let cal = Calendar.current
+        let now = Date()
+        var at = cal.date(bySettingHour: 19, minute: 0, second: 0, of: now) ?? now
+        if rewardClaimedToday || at <= now.addingTimeInterval(60) { at = cal.date(byAdding: .day, value: 1, to: at) ?? at }
+        if rewardsLeft { add(id: Self.dailyReminderID, title: L("notify.local.daily.title"), body: L("notify.local.daily.body"), at: at) }
+        let fullAt = defaults.double(forKey: StaminaInfo.fullAtKey)
+        if fullAt > now.timeIntervalSince1970 + 60 {
+            add(id: Self.staminaReminderID, title: L("notify.local.stamina.title"), body: L("notify.local.stamina.body"), at: Date(timeIntervalSince1970: fullAt))
+        }
+    }
+
+    /// アプリを開いたら、予約していたお知らせは消す(開いている人には要らない)
+    func clearLocalReminders() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.dailyReminderID, Self.staminaReminderID])
+    }
+
+    private func add(id: String, title: String, body: String, at: Date) {
+        let c = UNMutableNotificationContent()
+        c.title = title
+        c.body = body
+        c.sound = .default
+        c.userInfo = ["kind": id]
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: at)
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: c, trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
+    }
+
     fileprivate func open(userInfo: [AnyHashable: Any]) {
+        if (userInfo["kind"] as? String) == Self.staminaReminderID {
+            if let f = onOpenSwipe { f() } else { pendingSwipe = true }
+            return
+        }
         if (userInfo["kind"] as? String) == PushKind.events.rawValue {
             if let f = onOpenSwipe { f() } else { pendingSwipe = true }
             return

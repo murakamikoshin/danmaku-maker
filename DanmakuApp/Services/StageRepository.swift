@@ -56,6 +56,11 @@ enum StageSort: String, CaseIterable, Identifiable {
 struct MyStageSummary {
     var stages = 0, likes = 0, plays = 0, clears = 0, comments = 0
     var list: [RemoteStage] = []
+    /// サーバーが返した公開中のステージの ID(読めなかった行も含む)と、通報で隠されているステージの ID
+    var openIDs: Set<String> = []
+    var hiddenIDs: Set<String> = []
+    /// 公開中のステージを全部受け取れたか(50件を超えると一部だけ)
+    var complete: Bool { openIDs.count >= stages }
 }
 
 struct StagePage {
@@ -145,7 +150,9 @@ struct StageRepository {
         func n(_ k: String) -> Int { (t[k] as? NSNumber)?.intValue ?? 0 }
         let rows = d["stages"] as? [[String: Any]] ?? []
         return MyStageSummary(stages: n("stages"), likes: n("likes"), plays: n("plays"), clears: n("clears"), comments: n("comments"),
-                              list: rows.compactMap { Self.parse(data: $0, id: $0["id"] as? String ?? "") })
+                              list: rows.compactMap { Self.parse(data: $0, id: $0["id"] as? String ?? "") },
+                              openIDs: Set(rows.compactMap { $0["id"] as? String }),
+                              hiddenIDs: Set((d["hiddenIds"] as? [String]) ?? []))
     }
 
     static func parse(_ doc: DocumentSnapshot) -> RemoteStage? {
@@ -161,7 +168,7 @@ struct StageRepository {
         for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm",
                     "themeBullets", "themeBackground", "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat",
                     "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY",
-                    "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit"] {
+                    "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "phases", "phaseInfo"] {
             if let v = d[key], !(v is NSNull) { json[key] = v }
         }
         json["formatVersion"] = 1

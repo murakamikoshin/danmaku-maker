@@ -38,6 +38,8 @@ final class PlayModel: ObservableObject {
     @Published private(set) var result: PlayResult?
     /// 結果が出たプレイの操作記録(ランキングへ送るため)
     @Published private(set) var finalMoves: [Move] = []
+    /// ボスのお試し: 広告1回で3回遊べる(最初の1回 + もう一度2回)。残りの「もう一度」の回数
+    @Published var trialFreeRetries = 2
     @Published private(set) var lifeLeft: Int
     @Published private(set) var damage = 0
     /// 被弾したときの「復活しますか？」の表示
@@ -172,7 +174,8 @@ struct PlayView: View {
                     if let r = model.result {
                         ResultView(result: r, isTest: isTest, trial: trial, mrecUnitID: mrecAllowed ? ads.mrecUnitID : nil, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
-                                   back: { Task { await adBreak(); onExit() } })
+                                   back: { Task { await adBreak(); onExit() } },
+                                   trialNeedsAd: model.trialFreeRetries == 0)
                     }
                 }
                 .frame(maxHeight: .infinity)
@@ -195,6 +198,8 @@ struct PlayView: View {
             AudioManager.shared.stopBGM()
             AudioManager.shared.se(outcome == .cleared ? .clear : .fail)
             if !isTest { ads.countPlay() }
+            // 世界のステージをクリアした、気分の良い瞬間に、評価をお願いする(出すかどうかは ReviewPrompt の決まりと Apple が決める)
+            if outcome == .cleared, ranking != nil, !isTest, !trial { ReviewPrompt.maybeAsk(.firstWorldClear) }
             // 広告削除の購入者・テストプレイ・このあと全画面広告が出る回には、結果画面のレクタングルを出さない
             mrecAllowed = !isTest && !purchases.isPremium && ads.canShowBanner && !ads.interstitialIsDue
         }
@@ -285,8 +290,14 @@ struct PlayView: View {
     /// 「もう一度」。広告削除の購入者・テストプレイ以外は、続けて3回押すごとに全画面広告を出してから始める
     private func retryWithAdBreak() async {
         // ボスのお試し: もう一度遊ぶにも、リワード広告を見る(広告削除の購入者はそのまま)
+        // 広告1回で3回まで遊べる(すぐ負けるたびに広告になって、買う前にやめてしまわないように)
         if trial, !purchases.isPremium {
-            guard await ads.showRewarded() else { return }
+            if model.trialFreeRetries > 0 {
+                model.trialFreeRetries -= 1
+            } else {
+                guard await ads.showRewarded() else { return }
+                model.trialFreeRetries = 2
+            }
             model.restart(); onStart?()
             return
         }
@@ -333,6 +344,8 @@ struct ResultView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @State private var claiming = false
+    /// ボスのお試しで、次の「もう一度」に広告が要るか(広告1回で3回遊べる)
+    var trialNeedsAd = true
     /// レクタングル広告: 結果の画面の高さと、パネルの高さ(空きがあるときだけ出す。一度出したら、パネルが伸びても消さない)
     @State private var areaHeight: CGFloat = 0
     @State private var panelHeight: CGFloat = 0
@@ -437,8 +450,8 @@ struct ResultView: View {
                             .accessibilityIdentifier("result.useboss")
                     }
                     HStack(spacing: 10) {
-                        if trial && !purchases.isPremium {
-                            // お試しのもう一度は、広告を見てから
+                        if trial && !purchases.isPremium && trialNeedsAd {
+                            // お試しのもう一度は、広告1回で3回分
                             GameActionButton(title: "result.trial.retry", systemImage: "play.rectangle.fill", fill: GameStyle.reward, enabled: ads.isReady, action: retry)
                                 .accessibilityIdentifier("result.retry")
                         } else {

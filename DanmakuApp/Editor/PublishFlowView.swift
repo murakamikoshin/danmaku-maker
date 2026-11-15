@@ -16,6 +16,9 @@ struct PublishFlowView: View {
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
+    @ObservedObject private var notifications = NotificationService.shared
+    /// 投稿後の「通知を受け取る?」に答えたか(この端末で1回だけ聞く)
+    @AppStorage("publish.notifyAsked") private var notifyAsked = false
     /// ショップで移動する先(このステージのボスの商品)
     @State private var shopFocus: String? = nil
     @State private var claimingTicket = false
@@ -196,6 +199,26 @@ struct PublishFlowView: View {
                         .background(KeyCap(fill: GameStyle.accent, radius: 14, depth: 3)).padding(.bottom, 3)
                 }
                 .accessibilityIdentifier("publish.done.ticket")
+            }
+            if !notifications.enabled && !notifyAsked {
+                // 投稿できた直後に、反応の通知を受け取るか聞く(設定の奥にあって、ほとんどの作者が気づいていなかった)
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("publish.notify.title", systemImage: "bell.badge.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                    Text("publish.notify.body").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 10) {
+                        Button { gameTap(); notifyAsked = true; Task { await notifications.setEnabled(true) } } label: {
+                            Text("publish.notify.on").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                                .frame(maxWidth: .infinity).padding(.vertical, 10)
+                                .background(KeyCap(fill: GameStyle.accent, radius: 12, depth: 3)).padding(.bottom, 3)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("publish.notify.on")
+                        Button { gameTap(); notifyAsked = true } label: { Chip(title: L("publish.notify.later"), selected: false) }
+                            .buttonStyle(BounceButtonStyle())
+                    }
+                }
+                .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                .gamePanel(radius: 14)
             }
             Text("ID  \(id)").font(.system(size: 30, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                 .padding(.vertical, 8).padding(.horizontal, 18).background(GameStyle.panel, in: PixelRect(cornerRadius: 14))
