@@ -475,7 +475,7 @@ public struct Wave: Codable, Equatable, Sendable {
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim))
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)))
         }
         var out = Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
@@ -575,6 +575,14 @@ public struct Emitter: Codable, Equatable, Sendable {
 
     /// 狙い方の値を整える(1 か 2 だけ残す。ほかは自機狙い = nil)
     public static func sanitizedAim(_ v: Int?) -> Int? { v == 1 || v == 2 ? v : nil }
+    /// パターンに効く狙い方だけを残す(効かない狙い方が残ると、見た目は同じなのに「新しいアプリが必要」なステージになってしまう)
+    public static func sanitizedAim(_ v: Int?, pattern: Pattern) -> Int? {
+        switch Emitter.aimSupport(of: pattern) {
+        case .full: return sanitizedAim(v)
+        case .randomOnly: return v == 2 ? 2 : nil
+        case .none: return nil
+        }
+    }
 
     /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
     public static let minInterval = 0.05
@@ -1015,11 +1023,12 @@ public struct Stage: Codable, Equatable, Sendable {
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: Emitter.sanitizedPhase(m.ph, count: nPh),
+                    // 生き残りでは段階を使わない(ボス戦で段階を選んでから生き残りに変えると、サーバーに断られて投稿できなかった)
+                    k: Int(clamp(Double(m.k), 0, 4)), ph: mode == .survive ? 0 : Emitter.sanitizedPhase(m.ph, count: nPh),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim))
+                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)))
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount

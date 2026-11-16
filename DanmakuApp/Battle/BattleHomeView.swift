@@ -43,9 +43,6 @@ struct BattleHomeView: View {
         .onReceive(NotificationCenter.default.publisher(for: .battleTabVisible)) { note in
             model.setVisible((note.object as? Bool) ?? true)
         }
-        .gameDialog("battle.forfeit", isPresented: $confirmForfeit, message: "battle.forfeit.confirm") {
-            [GameDialogAction(title: "battle.forfeit", role: .destructive) { model.forfeit() }, .cancel()]
-        }
         .onDisappear { if case .searching = model.phase { model.cancel() } }
         // 対戦中にアプリを裏へ回すと、ゲームの時間が止まって休めてしまう(耐久の勝負が崩れる)。裏へ回したら降参にする
         .onChange(of: scenePhase) { p in
@@ -69,6 +66,8 @@ struct BattleHomeView: View {
             case .found, .playing: ads.setPlaying(tab: "battle", true)
             default: ads.setPlaying(tab: "battle", false)
             }
+            // 落ちた直後の待ちの間は、タブは出すがバナーは出さない(指が画面の下に残っていて、誤タップになるため)
+            ads.setQuiet(tab: "battle", p == .waiting)
         }
     }
 
@@ -80,7 +79,7 @@ struct BattleHomeView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("battle.eyebrow").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
                     HStack(alignment: .center, spacing: 8) {
-                        Text("battle.title").font(.display(30)).foregroundStyle(GameStyle.yellow)
+                        Text("battle.title").font(.display(30)).foregroundStyle(GameStyle.yellow).lineLimit(1).minimumScaleFactor(0.75)
                         // β版の印(1.3.0)。ルールや報酬は、遊んだ人の声を聞いて変えることがある
                         Text("battle.beta").font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.ink)
                             .padding(.horizontal, 7).padding(.vertical, 3)
@@ -116,7 +115,8 @@ struct BattleHomeView: View {
             RankEmblem(rank: s.provisional ? nil : s.rank).frame(width: 64, height: 64)
             VStack(alignment: .leading, spacing: 4) {
                 if s.provisional {
-                    Text(String(format: L("battle.provisional"), 10 - s.games)).font(.display(20)).foregroundStyle(GameStyle.text)
+                    Text(String(format: L("battle.provisional"), 10 - s.games)).font(.display(17)).foregroundStyle(GameStyle.text)
+                        .lineLimit(2).minimumScaleFactor(0.7).fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text(LocalizedStringKey("battle.rank.\(s.rank)")).font(.display(22)).foregroundStyle(RankEmblem.color(s.rank))
                 }
@@ -191,15 +191,24 @@ struct BattleHomeView: View {
                 Text("battle.result.you").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
                 Text(String(format: L("battle.time"), String(format: "%.1f", model.myTime)))
                     .font(.system(size: 18, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
+                    .lineLimit(1).minimumScaleFactor(0.6)
             }
             Spacer()
             if model.phase == .playing {
-                // 押し間違えで負けないように、確かめてから降参する。押せる範囲は 44pt
-                Button { gameTap(); confirmForfeit = true } label: {
-                    Text("battle.forfeit").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.text)
+                // 押し間違えで負けないように、2回押して降参する(1回目で「もう一度押すと降参」に変わり、3秒で戻る)。
+                // 確認の画面は出さない(対戦は止められないので、画面の間も弾が進み、重なった画面が押せなくなっていた)。押せる範囲は 44pt
+                Button {
+                    gameTap()
+                    if confirmForfeit { confirmForfeit = false; model.forfeit(); return }
+                    confirmForfeit = true
+                    Task { try? await Task.sleep(nanoseconds: 3_000_000_000); confirmForfeit = false }
+                } label: {
+                    Text(confirmForfeit ? "battle.forfeit.again" : "battle.forfeit").font(.system(size: 12, weight: .heavy))
+                        .lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.center).frame(maxWidth: 110)
+                        .foregroundStyle(confirmForfeit ? GameStyle.night : GameStyle.text)
                         .padding(.vertical, 6).padding(.horizontal, 10)
                         .frame(minHeight: 44).contentShape(Rectangle())
-                        .background(GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
+                        .background(confirmForfeit ? GameStyle.pinkColor : GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("battle.forfeit")
@@ -208,7 +217,10 @@ struct BattleHomeView: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Text(model.match?.opponent.name ?? "").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.pinkColor).lineLimit(1)
+                HStack(spacing: 4) {
+                    if model.match?.botMoves != nil { CPUTag() }
+                    Text(model.match?.opponent.name ?? "").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.pinkColor).lineLimit(1)
+                }
                 Group {
                     if model.opponentAlive {
                         Text(String(format: L("battle.time"), String(format: "%.1f", model.opponentTime)))
@@ -217,6 +229,7 @@ struct BattleHomeView: View {
                     }
                 }
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
+                .lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(model.opponentAlive ? GameStyle.text : GameStyle.dim)
             }
         }
@@ -245,7 +258,10 @@ struct BattleHomeView: View {
                 Text("battle.found").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
                 if let m = model.match {
                     VStack(spacing: 4) {
-                        Text(m.opponent.name).font(.system(size: 22, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
+                        HStack(spacing: 6) {
+                            if m.botMoves != nil { CPUTag() }
+                            Text(m.opponent.name).font(.system(size: 22, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
+                        }
                         Text(String(format: L("battle.rating"), m.opponent.rating)).font(.system(size: 13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
                     }
                 }
@@ -293,6 +309,7 @@ private struct BattleResultCard: View {
         VStack(spacing: 14) {
             Text(LocalizedStringKey("battle.result.\(result.outcome.rawValue)"))
                 .font(.display(34))
+                .lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(result.outcome == .win ? GameStyle.yellow : result.outcome == .lose ? GameStyle.dim : GameStyle.text)
             HStack(spacing: 18) {
                 side(Text("battle.result.you"), result.me.ticks, GameStyle.cyanColor)
@@ -361,5 +378,15 @@ struct RankEmblem: View {
                 Circle().stroke(GameStyle.night, lineWidth: 3).frame(width: 14, height: 14)
             }
         }
+    }
+}
+
+/// 相手が人ではない(記録の再生・コンピューター)ことを示す印。人の名前に見える相手を、本物の人と誤解しないように
+private struct CPUTag: View {
+    var body: some View {
+        Text(verbatim: "CPU").font(.system(size: 10, weight: .black)).foregroundStyle(GameStyle.ink)
+            .padding(.horizontal, 4).padding(.vertical, 1)
+            .background(GameStyle.cyanColor, in: RoundedRectangle(cornerRadius: 3))
+            .accessibilityLabel(Text("battle.cpu.a11y"))
     }
 }

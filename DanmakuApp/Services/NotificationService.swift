@@ -35,6 +35,9 @@ final class NotificationService: NSObject, ObservableObject {
     @Published private(set) var kinds: [PushKind: Bool]
     /// 端末の設定(設定アプリ)で、通知が許可されているか
     @Published private(set) var authorization: UNAuthorizationStatus = .notDetermined
+    /// 毎日のお知らせを受け取るか、アプリの中で先に一言聞く(いきなり OS の許可を出すと「許可しない」を選ばれやすく、
+    /// そのあと、いいね・コメントの通知も二度と頼めなくなるため)
+    @Published var showReminderPrimer = false
     /// 通知を開いたときに、そのステージを開く
     var onOpenStage: ((String) -> Void)?
     /// お知らせ(ランキング戦の開始)の通知を開いたときに、スワイプ弾幕を開く
@@ -205,6 +208,14 @@ final class NotificationService: NSObject, ObservableObject {
             return
         }
         guard status == .notDetermined else { return }
+        // ごほうびのお祝いが終わってから聞く(重ならないように)
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        showReminderPrimer = true
+    }
+
+    /// 先に聞いた画面で「受け取る」を選んだら、OS の許可を求める
+    func acceptReminderPrimer() async {
+        showReminderPrimer = false
         _ = await setReminders(true)
     }
 

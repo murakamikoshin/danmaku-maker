@@ -12,8 +12,9 @@ final class RankedStageTests: XCTestCase {
         // 区切りが進むほど、発射台が多い(難しい)
         func count(_ k: Int) -> Int { st.emitters.filter { Int($0.s) / RankedStage.segmentSeconds == k }.count }
         XCTAssertLessThanOrEqual(count(0), count(11))
-        XCTAssertEqual(RankedStage.hard(segment: 0), 60)
-        XCTAssertEqual(RankedStage.hard(segment: 11), 995)
+        XCTAssertEqual(RankedStage.hard(segment: 0), 300)
+        XCTAssertEqual(RankedStage.hard(segment: 11), 993)
+        XCTAssertTrue(st.emitters.allSatisfy { $0.aim == 1 }, "自機狙いにしない(二人が同じ弾をよける)")
         // どの発射台も、自分の区切りの中で始まって終わる
         for e in st.emitters {
             let k = Int(e.s) / RankedStage.segmentSeconds
@@ -22,6 +23,28 @@ final class RankedStageTests: XCTestCase {
         }
         XCTAssertEqual(RankedStage.stage(seed: 12345), st, "同じ種なら同じステージ")
         XCTAssertNotEqual(RankedStage.stage(seed: 12346).emitters, st.emitters)
+    }
+
+    /// 自機がどこにいても、撃たれる弾と、その動きはまったく同じ(相手の画面に見える弾と、相手がよけている弾が同じになる)。
+    /// (シミュレーションどうしで比べると、無敵でも当たった弾は消えるので、撃つところと動きを直接比べる)
+    func testBulletsDoNotDependOnPlayer() {
+        let W = DanmakuConfig.width, H = DanmakuConfig.height
+        for seed: UInt32 in [1, 42, 0xDEAD_BEEF] {
+            for m in RankedStage.stage(seed: seed).emitters {
+                func shoot(px: Double, py: Double) -> [Bullet] {
+                    var out: [Bullet] = []
+                    var rng = Mulberry32(seed: 9), aimRng = Mulberry32(seed: 3)
+                    for k in 0..<3 {
+                        Simulation.emitAimed(m, shot: k, cx: m.x * W, cy: m.y * H, px: px, py: py, aimRng: &aimRng, rng: &rng, into: &out)
+                    }
+                    for _ in 0..<240 {
+                        for i in out.indices { _ = out[i].advance(dt: DanmakuConfig.step, width: W, playerX: px, playerY: py) }
+                    }
+                    return out
+                }
+                XCTAssertEqual(shoot(px: W * 0.15, py: H * 0.9), shoot(px: W * 0.85, py: H * 0.6), "seed \(seed) \(m.t)")
+            }
+        }
     }
 
     func testSegmentSeedWraps() {

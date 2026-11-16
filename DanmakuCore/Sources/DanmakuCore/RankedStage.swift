@@ -10,8 +10,8 @@ public enum RankedStage {
     public static let segments = 12
     public static var durationSec: Int { segmentSeconds * segments }
 
-    /// 区切りごとの難しさ(0〜999)。最初は易しく、最後は一番難しい
-    public static func hard(segment k: Int) -> Int { min(SwipeGenerator.maxHard, 60 + k * 85) }
+    /// 区切りごとの難しさ(0〜999)。最初から手ごたえがあり(序盤が易しすぎて退屈だった)、最後は一番難しい
+    public static func hard(segment k: Int) -> Int { min(SwipeGenerator.maxHard, 300 + k * 63) }
 
     /// 区切りごとの種(32 ビットで回り込む。サーバーと同じ計算)
     public static func segmentSeed(_ seed: UInt32, _ k: Int) -> UInt32 { seed &+ UInt32(truncatingIfNeeded: k) &* 0x9E37_79B1 }
@@ -25,6 +25,9 @@ public enum RankedStage {
             for var e in part.emitters {
                 e.s += start
                 e.e = start + Double(segmentSeconds)
+                // 自機狙いをやめて、固定の向きに撃つ(二人とも同じ弾をよける。自機狙いだと、相手の画面の弾は相手を狙っていて、
+                // こちらに見える弾と重なっても相手は落ちなかった)
+                e.aim = 1
                 emitters.append(e)
             }
         }

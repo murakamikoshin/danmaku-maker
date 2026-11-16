@@ -700,7 +700,7 @@ describe("不正対策(出し直し・限定公開の本数・利用停止・急
   it("名前・作者名に URL は書けない", async () => {
     await signUp();
     expect(await callErr("publishStage", { ...stage, name: "example.com" })).toMatch(/name-link/);
-    expect(await callErr("publishStage", { ...stage, authorName: "www.x" })).toMatch(/author-link/);
+    expect(await callErr("publishStage", { ...stage, authorName: "www.x.com" })).toMatch(/author-link/);
   });
   it("「URLを知っている人だけ」も 1 日 20 本まで", async () => {
     await signUp();

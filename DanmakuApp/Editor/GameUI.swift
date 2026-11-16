@@ -32,7 +32,7 @@ struct GameActionButton: View {
         Button { gameTap(); action() } label: {
             HStack(spacing: 8) {
                 Image(systemName: systemImage).font(.system(size: 15, weight: .black))
-                Text(title).font(.display(15)).multilineTextAlignment(.center).minimumScaleFactor(0.7)
+                Text(title).font(.display(15)).multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.6)
             }
             .foregroundStyle(GameStyle.ink)
             .frame(maxWidth: .infinity).padding(.vertical, 13).padding(.horizontal, 10)
@@ -75,6 +75,8 @@ struct Chip: View {
     var body: some View {
         Text(title)
             .font(.system(size: 13, weight: .heavy))
+            // 長い言葉(ドイツ語・ロシア語など)が単語の途中で折れないように、1行のまま縮める
+            .lineLimit(1).minimumScaleFactor(0.6)
             .foregroundStyle(selected ? GameStyle.ink : GameStyle.text.opacity(0.85))
             .padding(.vertical, 8).padding(.horizontal, 13)
             .background(selected ? GameStyle.yellow : GameStyle.panelHi, in: PixelRect(cornerRadius: 8))

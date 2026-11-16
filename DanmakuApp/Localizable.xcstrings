@@ -5254,61 +5254,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Emitters attach to the boss. As its HP drops it moves through phases 1–3, and each switch clears the screen."
+            "value": "Emitters attach to the boss. As its HP drops it moves through the phases you set (3–5), and each switch clears the screen."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ボス戦では発射台はボスにくっつきます。HPが減るごとに「第1〜第3段階」に切り替わり、切り替わりで画面の弾が消えます。"
+            "value": "ボス戦では発射台はボスにくっつきます。HPが減るごとに、決めた段階の数(3〜5段階)だけ次の段階に切り替わり、切り替わりで画面の弾が消えます。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "发射器附着在 BOSS 身上。HP 减少时会进入第1~3阶段,每次切换都会清屏。"
+            "value": "发射器附着在 BOSS 身上。HP 减少时会依次进入你设定的阶段(3~5个),每次切换都会清屏。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "發射器附著在 BOSS 身上。HP 減少時會進入第1~3階段,每次切換都會清屏。"
+            "value": "發射器附著在 BOSS 身上。HP 減少時會依序進入你設定的階段(3~5個),每次切換都會清屏。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "발사기는 보스에 붙어요. HP가 줄어들면 1~3페이즈로 진행되며, 전환될 때마다 화면의 탄이 모두 사라져요."
+            "value": "발사기는 보스에 붙어요. HP가 줄어들면 정한 페이즈 수(3~5)만큼 차례로 진행되며, 전환될 때마다 화면의 탄이 모두 사라져요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los emisores se fijan al jefe. Al bajar su HP pasa por las fases 1–3, y cada cambio limpia la pantalla."
+            "value": "Los emisores se fijan al jefe. Al bajar su HP pasa por las fases que elijas (3–5), y cada cambio limpia la pantalla."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les émetteurs sont attachés au boss. Quand ses PV baissent, il passe par les phases 1 à 3, et chaque changement efface l'écran."
+            "value": "Les émetteurs sont attachés au boss. Quand ses PV baissent, il passe par les phases choisies (3 à 5), et chaque changement efface l'écran."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Emitter sind am Boss befestigt. Sinkt seine HP, durchläuft er die Phasen 1–3, und jeder Wechsel räumt den Bildschirm."
+            "value": "Emitter sind am Boss befestigt. Sinkt seine HP, durchläuft er die gewählten Phasen (3–5), und jeder Wechsel räumt den Bildschirm."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os emissores ficam presos ao chefe. Conforme o HP cai, ele passa pelas fases 1–3, e cada troca limpa a tela."
+            "value": "Os emissores ficam presos ao chefe. Conforme o HP cai, ele passa pelas fases que você definir (3–5), e cada troca limpa a tela."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Излучатели крепятся к боссу. По мере снижения HP он проходит фазы 1–3, и при каждой смене экран очищается."
+            "value": "Излучатели крепятся к боссу. По мере снижения HP он проходит заданные фазы (3–5), и при каждой смене экран очищается."
           }
         }
       }
@@ -9414,61 +9414,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Minions (survive)"
+            "value": "Minions"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "雑魚だけ(耐える)"
+            "value": "雑魚だけ"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "杂兵(生存)"
+            "value": "杂兵"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "雜兵(生存)"
+            "value": "雜兵"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "잡몹 (생존)"
+            "value": "잡몹"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Secuaces (sobrevivir)"
+            "value": "Secuaces"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sbires (survie)"
+            "value": "Sbires"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gegner (überleben)"
+            "value": "Gegner"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Capangas (sobreviver)"
+            "value": "Capangas"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Прихвостни (выживание)"
+            "value": "Прихвостни"
           }
         }
       }
@@ -27210,61 +27210,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enemies at fire points (looks only)"
+            "value": "Enemies at fire points"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "雑魚の姿(発射点に出る小さな敵。見た目だけ)"
+            "value": "雑魚の姿(発射点に出る小さな敵)"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "发射点的敌人(仅外观)"
+            "value": "发射点的敌人"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "發射點的敵人(僅外觀)"
+            "value": "發射點的敵人"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "발사 지점의 적 (외형만)"
+            "value": "발사 지점의 적"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enemigos en puntos de disparo (solo aspecto)"
+            "value": "Enemigos en puntos de disparo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ennemis aux points de tir (apparence seulement)"
+            "value": "Ennemis aux points de tir"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gegner an Feuerpunkten (nur Optik)"
+            "value": "Gegner an Feuerpunkten"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inimigos nos pontos de disparo (só visual)"
+            "value": "Inimigos nos pontos de disparo"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Враги в точках огня (только внешний вид)"
+            "value": "Враги в точках огня"
           }
         }
       }
@@ -42157,61 +42157,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "弾幕メーカー 新モード"
+            "value": "弾幕メーカー"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Danmaku Maker new mode"
+            "value": "Danmaku Maker"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "弹幕制作器 新模式"
+            "value": "Danmaku Maker"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "彈幕製作器 新模式"
+            "value": "Danmaku Maker"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "탄막 메이커 신규 모드"
+            "value": "Danmaku Maker"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nuevo modo de Danmaku Maker"
+            "value": "Danmaku Maker"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nouveau mode de Danmaku Maker"
+            "value": "Danmaku Maker"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Neuer Modus in Danmaku Maker"
+            "value": "Danmaku Maker"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Novo modo do Danmaku Maker"
+            "value": "Danmaku Maker"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Новый режим Danmaku Maker"
+            "value": "Danmaku Maker"
           }
         }
       }
@@ -62760,61 +62760,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "暫定(あと%lld戦)"
+            "value": "ランク決定まで あと%lld戦"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Provisional (%lld to go)"
+            "value": "%lld more matches to get your rank"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vorläufig (noch %lld)"
+            "value": "Noch %lld Matches bis zu deinem Rang"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Provisional (faltan %lld)"
+            "value": "Faltan %lld batallas para tu rango"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Provisoire (encore %lld)"
+            "value": "Encore %lld matchs pour obtenir ton rang"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "배치 중(%lld판 남음)"
+            "value": "랭크 결정까지 %lld판 남음"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Provisório (faltam %lld)"
+            "value": "Faltam %lld batalhas para seu rank"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Предварительно (ещё %lld)"
+            "value": "Ещё %lld боёв до получения ранга"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "定级中(还剩%lld场)"
+            "value": "再打%lld场即可定级"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "定級中(還剩%lld場)"
+            "value": "再打%lld場即可定級"
           }
         }
       }
@@ -67424,61 +67424,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick two phases to fire in both (e.g. Phase 2 and Phase 3)."
+            "value": "Pick as many phases as you like; it fires in each one (e.g. Phase 2 and Phase 3)."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "2つの段階を選ぶと、その両方で撃ちます(例: 第2段階と第3段階)。"
+            "value": "段階はいくつでも選べます。選んだ段階のすべてで撃ちます(例: 第2段階と第3段階)。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "选择两个阶段时，会在这两个阶段都发射（例：第2阶段和第3阶段）。"
+            "value": "可以选择任意多个阶段，会在所选的每个阶段发射（例：第2阶段和第3阶段）。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "選擇兩個階段時，會在這兩個階段都發射（例：第2階段和第3階段）。"
+            "value": "可以選擇任意多個階段，會在所選的每個階段發射（例：第2階段和第3階段）。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "두 페이즈를 고르면 둘 다에서 발사해요 (예: 페이즈 2와 페이즈 3)."
+            "value": "페이즈는 몇 개든 고를 수 있어요. 고른 페이즈마다 발사해요 (예: 페이즈 2와 페이즈 3)."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige dos fases para disparar en ambas (p. ej., fase 2 y fase 3)."
+            "value": "Elige tantas fases como quieras; dispara en cada una (p. ej., fase 2 y fase 3)."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisissez deux phases pour tirer dans les deux (ex. : phase 2 et phase 3)."
+            "value": "Choisissez autant de phases que vous voulez ; il tire dans chacune (ex. : phase 2 et phase 3)."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wähle zwei Phasen, um in beiden zu feuern (z. B. Phase 2 und Phase 3)."
+            "value": "Wähle beliebig viele Phasen; in jeder davon wird gefeuert (z. B. Phase 2 und Phase 3)."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolha duas fases para disparar em ambas (ex.: fase 2 e fase 3)."
+            "value": "Escolha quantas fases quiser; dispara em cada uma (ex.: fase 2 e fase 3)."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выберите две фазы, чтобы стрелять в обеих (например, фаза 2 и фаза 3)."
+            "value": "Выберите любое число фаз — стрельба будет в каждой (например, фаза 2 и фаза 3)."
           }
         }
       }
@@ -68522,61 +68522,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "自機狙い"
+            "value": "自機を狙う"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "At player"
+            "value": "Track player"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "瞄准自机"
+            "value": "追踪自机"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "瞄準自機"
+            "value": "追蹤自機"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "자기 조준"
+            "value": "자기를 노림"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Al jugador"
+            "value": "Seguir jugador"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sur le joueur"
+            "value": "Suivre le joueur"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Auf Spieler"
+            "value": "Spieler verfolgen"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "No jogador"
+            "value": "Seguir jogador"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В игрока"
+            "value": "Следить за игроком"
           }
         }
       }
@@ -69787,25 +69787,25 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automático"
+            "value": "Auto"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatique"
+            "value": "Auto"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatisch"
+            "value": "Auto"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automático"
+            "value": "Auto"
           }
         },
         "ru": {
@@ -72347,6 +72347,461 @@
           "stringUnit": {
             "state": "translated",
             "value": "В этом уровне есть босс, которого у вас ещё нет. Получите его в магазине, затем опубликуйте."
+          }
+        }
+      }
+    },
+    "battle.forfeit.again": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "もう一度押すと降参"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap again: give up"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再按一次认输"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再按一次認輸"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한 번 더 누르면 항복"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otra vez: rendirse"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encore : abandon"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nochmal: aufgeben"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De novo: desistir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё раз — сдаться"
+          }
+        }
+      }
+    },
+    "notify.primer.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日のごほうびをお知らせしますか?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get a reminder for Daily Rewards?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要提醒你领取每日奖励吗?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要提醒你領取每日獎勵嗎?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 보상을 알려 드릴까요?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Te avisamos de las recompensas diarias?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recevoir un rappel pour les récompenses quotidiennes ?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An tägliche Belohnungen erinnern?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quer um lembrete das recompensas diárias?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напоминать о ежедневных наградах?"
+          }
+        }
+      }
+    },
+    "notify.primer.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ごほうびが受け取れる日と、スタミナが満タンになったときに、1日1回までお知らせします。設定でいつでも止められます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll remind you at most once a day when rewards are ready or your stamina is full. You can turn it off anytime in Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在可以领取奖励、体力回满时提醒你,每天最多一次。可随时在设置中关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在可以領取獎勵、體力回滿時提醒你,每天最多一次。可隨時在設定中關閉。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보상을 받을 수 있을 때와 스태미나가 가득 찼을 때, 하루 한 번까지 알려 드려요. 설정에서 언제든 끌 수 있어요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te avisaremos como máximo una vez al día cuando haya recompensas o tu energía esté llena. Puedes desactivarlo en Ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous vous préviendrons au plus une fois par jour quand des récompenses sont prêtes ou que votre énergie est pleine. Désactivable dans les Réglages."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir erinnern dich höchstens einmal am Tag, wenn Belohnungen bereitliegen oder deine Ausdauer voll ist. In den Einstellungen jederzeit abschaltbar."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisaremos no máximo uma vez por dia quando houver recompensas ou sua energia estiver cheia. Desative quando quiser em Ajustes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напомним не чаще раза в день, когда награды готовы или энергия полна. Отключить можно в настройках."
+          }
+        }
+      }
+    },
+    "notify.primer.yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お知らせを受け取る"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接收提醒"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接收提醒"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 받기"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisarme"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me prévenir"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erinnern"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me avisar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напоминать"
+          }
+        }
+      }
+    },
+    "notify.primer.no": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今はしない"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂不"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫不"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나중에"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas maintenant"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht jetzt"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora não"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не сейчас"
+          }
+        }
+      }
+    },
+    "a11y.badge.new": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新着あり"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有新内容"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有新內容"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 소식"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novedades"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novidades"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новое"
+          }
+        }
+      }
+    },
+    "battle.cpu.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コンピューター"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "电脑"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "電腦"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컴퓨터"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordinateur"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computador"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компьютер"
           }
         }
       }

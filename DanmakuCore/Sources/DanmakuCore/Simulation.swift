@@ -777,20 +777,29 @@ public struct Simulation {
 
     /// 発射台 idx を、狙い方に合わせて撃つ。自機狙いは自機を、固定は真下を、ランダムはばらばらの場所を狙う
     private mutating func fire(_ m: Emitter, idx: Int, cx: Double, cy: Double, awakened: Bool, salt: UInt32) {
+        var r = aimRng[idx]
+        Self.emitAimed(m, shot: shotCount[idx], cx: cx, cy: cy, px: player.x, py: player.y, aimRng: &r, rng: &rng,
+                       into: &bullets, awakened: awakened, salt: salt)
+        aimRng[idx] = r
+    }
+
+    /// 狙い方に合わせて 1 回撃つ(ゲームと、エディタの発射台の見本が同じ計算を使う)。
+    /// 自機狙い = (px, py) を狙う。固定 = 真下を狙う。ランダム = aimRng から狙う場所を引き、その乱数で撃つ
+    public static func emitAimed(_ m: Emitter, shot: Int, cx: Double, cy: Double, px: Double, py: Double,
+                                 aimRng: inout Mulberry32, rng: inout Mulberry32, into out: inout [Bullet],
+                                 awakened: Bool = false, salt: UInt32 = 0) {
         let W = DanmakuConfig.width, H = DanmakuConfig.height
         switch m.aim {
         case 1:
-            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: cx, py: max(H * 0.85, cy + 40),
-                      rng: &rng, into: &bullets, awakened: awakened, salt: salt)
+            Emit.emit(m, shot: shot, cx: cx, cy: cy, px: cx, py: max(H * 0.85, cy + 40),
+                      rng: &rng, into: &out, awakened: awakened, salt: salt)
         case 2:
-            var r = aimRng[idx]
-            let tx = W * (0.1 + 0.8 * r.next()), ty = H * (0.5 + 0.45 * r.next())
-            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: tx, py: ty,
-                      rng: &r, into: &bullets, awakened: awakened, salt: salt)
-            aimRng[idx] = r
+            let tx = W * (0.1 + 0.8 * aimRng.next()), ty = H * (0.5 + 0.45 * aimRng.next())
+            Emit.emit(m, shot: shot, cx: cx, cy: cy, px: tx, py: ty,
+                      rng: &aimRng, into: &out, awakened: awakened, salt: salt)
         default:
-            Emit.emit(m, shot: shotCount[idx], cx: cx, cy: cy, px: player.x, py: player.y,
-                      rng: &rng, into: &bullets, awakened: awakened, salt: salt)
+            Emit.emit(m, shot: shot, cx: cx, cy: cy, px: px, py: py,
+                      rng: &rng, into: &out, awakened: awakened, salt: salt)
         }
     }
 

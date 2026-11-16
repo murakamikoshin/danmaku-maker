@@ -37,6 +37,14 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         if playing { playingTabs.insert(tab) } else { playingTabs.remove(tab) }
     }
 
+    /// バナーだけ出さないタブ(タブは出す)。弾幕バトルで落ちた直後の待ちの間(指が画面の下に残っていて、
+    /// そこへ広告が出ると誤タップになるため)
+    @Published private(set) var quietTabs: Set<String> = []
+    func setQuiet(tab: String, _ quiet: Bool) {
+        guard quietTabs.contains(tab) != quiet else { return }
+        if quiet { quietTabs.insert(tab) } else { quietTabs.remove(tab) }
+    }
+
     private var rewarded: RewardedAd?
     private var interstitial: InterstitialAd?
     /// 読み込んだ時刻。読み込んだ広告は1時間で期限切れになり、出せなくなる(出そうとして失敗する)ので、
@@ -234,7 +242,20 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         rewarded = ad
         rewardedLoadedAt = Date()
         isReady = ad != nil
+        // 読み込めなかったら、少しあけて読み直す(広告の在庫が少ない時期に、ごほうび・復活が「準備中」のままにならないように)。
+        // 続けて失敗したら、間隔を延ばす(30秒・60秒・…最大5分)
+        if ad == nil {
+            rewardedRetries += 1
+            let wait = UInt64(min(300, 30 * rewardedRetries)) * 1_000_000_000
+            Task { [weak self] in
+                try? await Task.sleep(nanoseconds: wait)
+                await self?.load()
+            }
+        } else {
+            rewardedRetries = 0
+        }
     }
+    private var rewardedRetries = 0
 
     func loadInterstitial() async {
         guard sdkStarted, interstitial == nil, !loadingInterstitial else { return }

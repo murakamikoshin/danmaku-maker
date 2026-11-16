@@ -37,5 +37,6 @@ describe("利用停止の目印", () => {
     expect(providerMarks({ "apple.com": ["001.abc"] })).toEqual(m);
     expect(providerMarks({ "apple.com": ["001.abd"] })).not.toEqual(m);
     expect(providerMarks(undefined)).toEqual([]);
+    expect(providerMarks({ email: ["someone@example.com"] })).toEqual([]);
   });
 });

@@ -14,7 +14,7 @@ import { claimFounder as claimFounderFn, countInvitePlays, deviceGateFromEnv, ge
 import { runMonthlyAward, setCrown as setCrownFn, setTitle as setTitleFn } from "./titlesfns.js";
 import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina, isMemberToken, refillByAd, submitSwipeRun, swipeRanking as loadSwipeRanking, useDrink, useStamina } from "./swipefns.js";
 import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
-import { prepareWeek, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
+import { prepareWeek, RANKED_STAGE_VERSION, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { bossKeysOf, fetchPurchasedIds, ownsBossByPurchase, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
@@ -66,6 +66,8 @@ function requireAny(req: CallableRequest): string {
  * サインインに使った外部アカウント(Apple など)の目印(ハッシュ)。ID トークンに無いとき(リンク直後の古いトークン)は、アカウントから読む
  */
 async function providerMarksOf(req: CallableRequest): Promise<string[]> {
+  // 匿名の人は外部アカウントを持たない(弾幕バトルなどで、毎回アカウントを読みに行かない)
+  if (req.auth?.token.firebase?.sign_in_provider === "anonymous") return [];
   const fromToken = providerMarks(req.auth?.token.firebase?.identities);
   if (fromToken.length > 0 || !req.auth) return fromToken;
   const u = await getAuth().getUser(req.auth.uid).catch(() => null);
@@ -85,7 +87,8 @@ async function assertNotBanned(uid: string, req?: CallableRequest): Promise<void
   if (marks.length === 0) return;
   const hits = await db.getAll(...marks.map((m) => db.doc(`bannedProviders/${m}`)));
   if (hits.some((h) => h.exists)) {
-    await db.doc(`users/${uid}`).set({ banned: true, bannedReason: "recreated" }, { merge: true });
+    const via = marks.find((_, i) => hits[i]!.exists);
+    await db.doc(`users/${uid}`).set({ banned: true, bannedReason: "recreated", bannedVia: via ?? null }, { merge: true });
     logger.warn("banned-account-recreated", { uid });
     throw new HttpsError("permission-denied", "banned");
   }
@@ -790,10 +793,14 @@ export const searchStages = onCall(async (req) => {
 
 // ---------- ランク戦(リアルタイム対戦。仕様書「ランク戦 仕様書(リアルタイム対戦)」) ----------
 export const rankedGetStatus = onCall(async (req) => rankedStatus(requireAny(req)));
-export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedJoin(uid); });
+/** 弾幕バトルのステージの作り方の版が、アプリとサーバーで同じか(違うと、同じ種でも別のステージになり、結果が黙って食い違う) */
+function requireRankedVersion(req: CallableRequest): void {
+  if ((req.data as { sv?: unknown } | undefined)?.sv !== RANKED_STAGE_VERSION) throw new HttpsError("failed-precondition", "update-required");
+}
+export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedJoin(uid); });
 export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
-export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedBot(uid, req.data?.lang); });
-export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedSubmit(uid, req.data); });
+export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedBot(uid, req.data?.lang); });
+export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedSubmit(uid, req.data); });
 /**
  * 人同士の対戦で、自分の記録を出したあと相手を待っているときに呼ぶ(「待つのをやめる」ボタンなど)。
  * 入力 { matchId }。相手がいなくなっている(位置の更新が止まった・一度もつながらない・締め切りを過ぎた)なら、その場で決着して結果を返す。

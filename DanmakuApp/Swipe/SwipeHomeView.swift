@@ -112,6 +112,15 @@ private struct TitleView: View {
     @State private var pulse = false
 
     var body: some View {
+        // 背の低い iPhone(SE など)では、帯広告とタブの下に開始ボタンが隠れないよう、スクロールできるようにする
+        GeometryReader { geo in
+            ScrollView(showsIndicators: false) {
+                content.frame(minHeight: geo.size.height)
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 14) {
             Spacer(minLength: 20)
             Text("swipe.title.eyebrow").font(.system(size: 12, weight: .heavy)).foregroundStyle(Color(uiColor: SwipePalette.cyan))
@@ -140,7 +149,8 @@ private struct TitleView: View {
             .onAppear { withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) { pulse = true } }
             HStack(spacing: 18) {
                 if model.bestStreak > 0 { Text(String(format: L("swipe.best.streak"), model.bestStreak)).font(.system(size: 12, weight: .bold)).foregroundStyle(Color(uiColor: SwipePalette.gold)) }
-                Button(action: ranking) { Label("swipe.ranking", systemImage: "trophy.fill").font(.system(size: 12, weight: .heavy)) }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
+                Button(action: ranking) { Label("swipe.ranking", systemImage: "trophy.fill").font(.system(size: 12, weight: .heavy))
+                        .frame(minHeight: 44).contentShape(Rectangle()) }.foregroundStyle(Color(uiColor: SwipePalette.cyan))
                     .accessibilityIdentifier("swipe.ranking")
             }
             SeasonCard(action: ranking)

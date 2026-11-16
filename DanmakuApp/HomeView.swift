@@ -249,7 +249,7 @@ struct HomeView: View {
         filters
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.sort.title", "arrow.up.arrow.down")
-            ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 84)
+            ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 96)
         }
         .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
         // 画面に映った行だけを作る(行のプレビューとタイトルを、映ったときに動かし、外れたら止めるため)
@@ -342,7 +342,7 @@ struct HomeView: View {
     private var modeFilter: some View {
         return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("world.filter.title", "flag.checkered")
-            ChipGrid(items: Self.modeOptions.map { ($0.0, L($0.1)) }, selection: $world.mode, idPrefix: "home.mode", minimum: 70)
+            ChipGrid(items: Self.modeOptions.map { ($0.0, L($0.1)) }, selection: $world.mode, idPrefix: "home.mode", minimum: 100)
         }
         .padding(.vertical, 10).padding(.horizontal, 14)
         .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
@@ -690,10 +690,13 @@ struct HomePromoCards: View {
     private func dailyTile(_ next: Reward) -> some View {
         let available = rewards.canClaim || rewards.canClaimExtra
         let ready = available && (purchases.isPremium || ads.isReady) && !busy
-        let sub: Text = rewards.canClaim ? Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
+        // 広告がまだ用意できていないときは「準備中」と出して暗くする(押せないのに押せそうに見えていた)
+        let waitingAd = available && !purchases.isPremium && !ads.isReady
+        let sub: Text = waitingAd ? Text("daily.loading")
+            : rewards.canClaim ? Text(purchases.isPremium ? "daily.claim.free" : "daily.claim.ad")
             : rewards.canClaimExtra ? Text("home.daily.extra \(rewards.extraLeft)") : Text("home.daily.done")
         return tile(id: "daily", color: GameStyle.yellow, title: "daily.title", sub: sub,
-                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !available) {
+                    icon: AnyView(RewardSwatch(reward: next, size: 30)), dim: !available || waitingAd) {
             Task { await claim() }
         }
         .disabled(!ready)

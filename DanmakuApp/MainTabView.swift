@@ -18,8 +18,11 @@ struct MainTabView: View {
     @EnvironmentObject private var battleConfig: BattleConfig
     /// バトルのタブを一度でも開いたか(開くまで、新しい印を出す)
     @AppStorage("battle.seen") private var battleSeen = false
+    /// ショップを最後に開いた日(毎日のごほうびの日付)。その日に一度開いたら、ショップの印は消す(ずっと出ていると邪魔なため)
+    @AppStorage("shop.seenDay") private var shopSeenDay = -1
     @ObservedObject private var notice = RewardNoticeService.shared
     @ObservedObject private var updates = UpdateChecker.shared
+    @ObservedObject private var notifications = NotificationService.shared
     @State private var tab: Tab = .play
     /// 一度開いた画面は残しておく(スクロール位置や入力が消えない)
     @State private var opened: Set<Tab> = [.play]
@@ -50,7 +53,7 @@ struct MainTabView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
                 // 広告削除の購入者・SDK を始められていないとき・画面確認用の起動・遊んでいる最中のタブでは、出さない
-                if !purchases.isPremium && ads.canShowBanner && !ads.playingTabs.contains(tab.id) && ads.coverCount == 0 && windowWidth > 0 {
+                if !purchases.isPremium && ads.canShowBanner && !ads.playingTabs.contains(tab.id) && !ads.quietTabs.contains(tab.id) && ads.coverCount == 0 && windowWidth > 0 {
                     let width = windowWidth
                     // 帯には透けない背景を敷く(広告の左右のすき間から、後ろの画面の文字が見えないように)。広告ははみ出させない
                     BannerAdView(unitID: ads.bannerUnitID, width: width)
@@ -64,19 +67,24 @@ struct MainTabView: View {
                         .overlay(alignment: .bottom) { Rectangle().fill(GameStyle.edge).frame(height: 1) }
                 }
                 // 弾幕バトルの対戦中は、タブを出さない(指が触れて別のタブへ移ると、見えないまま対戦が続いてしまう)
-                if !ads.playingTabs.contains("battle") {
+                // スワイプ弾幕のプレイ中も出さない(指が下のタブに触れて別のタブへ移ると、見えない裏でプレイが続いて被弾していた)
+                if !ads.playingTabs.contains("battle") && !ads.playingTabs.contains("swipe") {
                     TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
-                           shopBadge: !purchases.isPremium && (rewards.canClaim || adPatterns.canClaim))
+                           shopBadge: !purchases.isPremium && shopSeenDay != rewards.today && (rewards.canClaim || adPatterns.canClaim))
                 }
             }
         }
         .onChange(of: tab) {
             // 対戦中(3・2・1 と対戦)は、通知を開いたときなどでもタブを移さない(移ると、見えないまま止まって抜け出せなくなる)
             if ads.playingTabs.contains("battle"), $0 != .battle { pendingTab = $0; tab = .battle; return }
-            opened.insert($0); if $0 == .battle { battleSeen = true }
+            opened.insert($0); if $0 == .battle { battleSeen = true }; if $0 == .shop { shopSeenDay = rewards.today }
+            // メニューのタブへ移ったら、メニューの曲に戻す(スワイプやバトルの曲が、ほかの画面で鳴り続けないように)
+            if $0 == .play || $0 == .shop || $0 == .settings { AudioManager.shared.play(.menu) }
             // バトルの画面は消さずに残すので、ほかのタブを見ている間は、対戦の画面の描画を止める(相手を待つ間など)
             NotificationCenter.default.post(name: .battleTabVisible, object: $0 == .battle)
         }
+        // ショップを開いたまま日付が変わったら、その日も見たことにする(見ている最中に印が出ないように)
+        .onChange(of: rewards.today) { day in if tab == .shop { shopSeenDay = day } }
         .onChange(of: ads.playingTabs) { tabs in
             if !tabs.contains("battle"), let next = pendingTab { pendingTab = nil; tab = next }
         }
@@ -86,6 +94,13 @@ struct MainTabView: View {
         }
         .fullScreenCover(isPresented: Binding(get: { !notice.pending.isEmpty && !ads.playingTabs.contains("battle") }, set: { if !$0 { notice.pending = [] } })) {
             RewardNoticeView(items: notice.pending) { notice.pending = [] }
+        }
+        // 毎日のお知らせを受け取るか、OS の許可の前にアプリの中で一言聞く(対戦中は出さない)
+        .gameDialog("notify.primer.title", isPresented: Binding(get: { notifications.showReminderPrimer && !ads.playingTabs.contains("battle") },
+                                                               set: { if !$0 { notifications.showReminderPrimer = false } }),
+                    message: "notify.primer.message") {
+            [GameDialogAction(title: "notify.primer.yes") { Task { await notifications.acceptReminderPrimer() } },
+             GameDialogAction(title: "notify.primer.no", role: .cancel) { notifications.showReminderPrimer = false }]
         }
         .task { await notice.check() }
         .task { await updates.refresh() }
@@ -154,14 +169,7 @@ private struct TabBar: View {
                                     Rectangle().fill(GameStyle.pinkColor).frame(width: 9, height: 9)
                                         .overlay(Rectangle().stroke(GameStyle.night, lineWidth: 2))
                                         .offset(x: 2, y: 2)
-                                }
-                            }
-                            // 弾幕バトルはβ版(1.3.0)。タブにも小さく「β」を付ける
-                            .overlay(alignment: .topLeading) {
-                                if tab == .battle {
-                                    Text(verbatim: "β").font(.system(size: 10, weight: .black)).foregroundStyle(GameStyle.ink)
-                                        .padding(.horizontal, 3).background(GameStyle.cyanColor, in: RoundedRectangle(cornerRadius: 3))
-                                        .offset(x: -4, y: -2)
+                                        .accessibilityHidden(true)
                                 }
                             }
                         Text(LocalizedStringKey(tab.titleKey))
@@ -180,6 +188,8 @@ private struct TabBar: View {
                 .accessibilityLabel(Text(LocalizedStringKey(tab.titleKey)))
                 .accessibilityAddTraits(selected ? .isSelected : [])
                 .accessibilityIdentifier("tab.\(tab.id)")
+                // 印がついているときは、読み上げでも「新着」と伝える
+                .accessibilityValue((tab == .shop && shopBadge) || (tab == .battle && battleBadge) ? Text("a11y.badge.new") : Text(verbatim: ""))
             }
         }
         .padding(.top, 8).padding(.bottom, 2)
@@ -225,11 +235,10 @@ private struct TabIcon: View {
                 Rectangle().fill(GameStyle.yellow).frame(width: 5, height: 5)
             }
         case .shop:
-            // 買い物袋(ショップだと一目で分かるように)。袋の上に、ボスのピンクの星を小さく
-            ZStack(alignment: .topTrailing) {
-                Image(systemName: "bag.fill").font(.system(size: 25, weight: .black)).foregroundStyle(GameStyle.pinkColor)
-                GameBossShape().fill(GameStyle.yellow, style: FillStyle(eoFill: true)).frame(width: 13, height: 13).offset(x: 4, y: -3)
-            }
+            // ボス: ピンクの星(中央に穴)。ゲームの部品で作ったオリジナルのアイコン(Koshin の希望で、元の絵に戻した)
+            GameBossShape()
+                .fill(GameStyle.pinkColor, style: FillStyle(eoFill: true))
+                .frame(width: 32, height: 32)
         case .settings:
             // 弾の輪: 色とりどりの弾が円に並ぶ
             ZStack {
@@ -238,8 +247,7 @@ private struct TabIcon: View {
                     bulletDot(Palette.bullets[i % Palette.bullets.count], size: 8)
                         .offset(x: CGFloat(cos(a)) * 13, y: CGFloat(sin(a)) * 13)
                 }
-                // まん中に歯車(設定だと一目で分かるように)
-                Image(systemName: "gearshape.fill").font(.system(size: 15, weight: .black)).foregroundStyle(Color(Palette.gold))
+                bulletDot(Palette.gold, size: 10)
             }
         }
     }

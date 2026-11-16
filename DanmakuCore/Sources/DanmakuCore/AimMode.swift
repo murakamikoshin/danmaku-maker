@@ -14,6 +14,8 @@ public enum AimSupport: Sendable {
 extension Emitter {
     /// このパターンに、狙い方がどう効くか
     public var aimSupport: AimSupport { Emitter.aimSupportTable[t] ?? .none }
+    /// パターンごとの、狙い方の効き方
+    public static func aimSupport(of t: Pattern) -> AimSupport { aimSupportTable[t] ?? .none }
 
     private static let aimSupportTable: [Pattern: AimSupport] = {
         var table: [Pattern: AimSupport] = [:]

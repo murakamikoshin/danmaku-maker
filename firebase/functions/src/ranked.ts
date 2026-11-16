@@ -11,7 +11,7 @@ export const RANKED_SEGMENT_SEC = 15;
 export const RANKED_SEGMENTS = 12;
 export const RANKED_DURATION = RANKED_SEGMENT_SEC * RANKED_SEGMENTS;
 
-export const rankedHard = (k: number): number => Math.min(GEN_MAX_HARD, 60 + k * 85);
+export const rankedHard = (k: number): number => Math.min(GEN_MAX_HARD, 300 + k * 63);
 export const rankedSegmentSeed = (seed: number, k: number): number => ((seed >>> 0) + Math.imul(k, 0x9e3779b1)) >>> 0;
 
 export function rankedStage(seed: number): SimStage {
@@ -19,7 +19,8 @@ export function rankedStage(seed: number): SimStage {
   for (let k = 0; k < RANKED_SEGMENTS; k++) {
     const part = generateStage(rankedSegmentSeed(seed, k), rankedHard(k));
     const start = k * RANKED_SEGMENT_SEC;
-    for (const e of part.emitters) emitters.push({ ...e, s: e.s + start, e: start + RANKED_SEGMENT_SEC });
+    // 自機狙いをやめて、固定の向きに撃つ(二人とも同じ弾をよける。アプリの RankedStage と同じ)
+    for (const e of part.emitters) emitters.push({ ...e, s: e.s + start, e: start + RANKED_SEGMENT_SEC, aim: 1 } as Emitter);
   }
   return { mode: "survive", durationSec: RANKED_DURATION, emitters, lifeMode: "lives", lifeCount: 1 };
 }

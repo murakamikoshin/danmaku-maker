@@ -52,6 +52,9 @@ const RUN_KEEP_MS = 14 * 86_400_000;
 
 // ---- 週ごとの種 ----
 
+/** ランク戦のステージの作り方の版。2 = 自機狙いをやめて固定の向き・序盤から手ごたえ(1.3.0 のビルド87から) */
+export const RANKED_STAGE_VERSION = 2;
+
 /** 日本時間の月曜 0 時で切り替わる週の番号 */
 export function weekOf(now: number): number {
   const jst = now + 9 * 3600_000;
@@ -65,9 +68,10 @@ export function weekOf(now: number): number {
  * 合言葉が無いときは、これまでどおりの計算(公開されているので、先読みはできてしまう)
  */
 export function weekSeeds(week: number, salt: string = process.env.RANKED_SEED_SALT ?? ""): number[] {
+  // ステージの作り方を変えたら RANKED_STAGE_VERSION を上げる。種が変わるので、古い作り方で残した人の記録やボットは使われない
   const base = salt
-    ? createHmac("sha256", salt).update(`ranked-week-${week}`).digest().readUInt32BE(0)
-    : (Math.imul(week, 0x9e3779b1) ^ 0x5eed5eed) >>> 0;
+    ? createHmac("sha256", salt).update(`ranked-v${RANKED_STAGE_VERSION}-week-${week}`).digest().readUInt32BE(0)
+    : (Math.imul(week, 0x9e3779b1) ^ 0x5eed5eed ^ Math.imul(RANKED_STAGE_VERSION, 0x85ebca6b)) >>> 0;
   const rng = mulberry(base);
   return Array.from({ length: SEEDS_PER_WEEK }, () => Math.floor(rng() * 2 ** 32) >>> 0);
 }

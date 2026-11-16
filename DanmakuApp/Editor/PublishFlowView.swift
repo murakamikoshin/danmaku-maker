@@ -258,6 +258,10 @@ struct PublishFlowView: View {
             let id: String
             do {
                 id = try await PublishService.publish(stage: stage, authorName: authorName, replay: replay, replayMonth: replayMonth, premium: purchases.isPremium, desc: desc)
+            } catch let e as PublishError where e.existingID != nil {
+                // 同じ中身をすでに公開していた(公開は通ったのに通信が切れて送り直したときなど)。そのステージを公開済みとして扱う
+                _ = await adShown
+                id = e.existingID!
             } catch {
                 _ = await adShown
                 throw error

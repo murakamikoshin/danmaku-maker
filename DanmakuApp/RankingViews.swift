@@ -113,11 +113,11 @@ struct HandleSheet: View {
                     }
                     GamePanel(title: "handle.adj") {
                         ChipGrid(items: (0..<PlayerHandle.choices).map { ($0, L("handle.adj.\($0)")) },
-                                 selection: Binding(get: { handles.handle.a }, set: { handles.handle.a = $0 }), idPrefix: "handle.adj", minimum: 96)
+                                 selection: Binding(get: { handles.handle.a }, set: { handles.handle.a = $0 }), idPrefix: "handle.adj", minimum: 120)
                     }
                     GamePanel(title: "handle.animal") {
                         ChipGrid(items: (0..<PlayerHandle.choices).map { ($0, L("handle.animal.\($0)")) },
-                                 selection: Binding(get: { handles.handle.n }, set: { handles.handle.n = $0 }), idPrefix: "handle.animal", minimum: 96)
+                                 selection: Binding(get: { handles.handle.n }, set: { handles.handle.n = $0 }), idPrefix: "handle.animal", minimum: 120)
                     }
                     Button { gameTap(); handles.handle = .random() } label: {
                         Label("handle.random", systemImage: "dice.fill").font(.system(size: 15, weight: .heavy))

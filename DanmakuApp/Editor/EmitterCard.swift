@@ -100,7 +100,7 @@ struct EmitterCard: View {
             // 自機を見ないパターン(雨など)は、狙いではなく「散らばり方」として出す(同じ欄に別の意味の言葉が出て紛らわしくないように)
             Text(full ? "editor.aim.label" : "editor.aim.label.scatter").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
             ChipGrid(items: items, selection: Binding(get: { emitter.aim ?? 0 }, set: { emitter.aim = $0 == 0 ? nil : $0 }),
-                     idPrefix: "emitter.aim.\(index)", minimum: 80)
+                     idPrefix: "emitter.aim.\(index)", minimum: 96)
             if emitter.aim == 1 {
                 Text(emitter.canRotate ? "editor.aim.help.fixed.rotate" : "editor.aim.help.fixed")
                     .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -182,14 +182,6 @@ struct EmitterCard: View {
                              selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
                              idPrefix: "emitter.shape.\(index)", minimum: 80)
                 }
-                // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ
-                HStack {
-                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
-                    Text("editor.mirror").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
-                    Spacer()
-                    GameToggle(isOn: Binding(get: { emitter.mir == 1 }, set: { emitter.mir = $0 ? 1 : nil }))
-                }
-                .accessibilityIdentifier("emitter.mirror.\(index)")
                 if isBoss {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.origin").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
@@ -231,6 +223,15 @@ struct EmitterCard: View {
             SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),
                       range: -180...180, step: 15, disabled: !emitter.canRotate,
                       nudge: { emitter.a = min(180, max(-180, emitter.a + $0)) }) { "\(Int($0))°" }
+            // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ。
+            // 向きの設定のすぐ下に置く(「くわしく」の奥の、弾の形と撃つ場所のあいだにあって、見つけにくかった)
+            HStack {
+                Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
+                Text("editor.mirror").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                Spacer()
+                GameToggle(isOn: Binding(get: { emitter.mir == 1 }, set: { emitter.mir = $0 ? 1 : nil }))
+            }
+            .accessibilityIdentifier("emitter.mirror.\(index)")
             if advanced {
                 SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart,
                           nudge: { emitter.r = min(90, max(-90, emitter.r.rounded() + Double($0))) }) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }

@@ -11,14 +11,18 @@ final class PreviewEngine {
     private var last: Date?
     private(set) var bullets: [Bullet] = []
     private(set) var player = Point(x: 180, y: PreviewEngine.height - 40)
-    /// いま流しているパターン(変わったら、最初からやり直す)
+    /// いま流しているパターン・狙い方(変わったら、最初からやり直す)
     private var pattern: Pattern?
+    private var aim: Int?
+    /// ランダムの狙い方の乱数(ゲームと同じく、狙う場所をここから引く)
+    private var aimRng = Mulberry32(seed: 7)
 
     func advance(to now: Date, emitter m: Emitter, boss: Bool, character: BossCharacter? = nil, characterScale: Double = 1) {
         // パターンを変えたら、前のパターンの撃つ時刻・弾を捨てて、すぐ撃ち始める(前の間隔が長いと、数秒なにも出なかった)
-        if pattern != m.t {
-            pattern = m.t
-            t = 0; next = 0; shot = 0; bullets = []; rng = Mulberry32(seed: 1)
+        // 狙い方(自機狙い・固定・ランダム)を変えたときも、最初からやり直す(見本が変わらなかった)
+        if pattern != m.t || aim != m.aim {
+            pattern = m.t; aim = m.aim
+            t = 0; next = 0; shot = 0; bullets = []; rng = Mulberry32(seed: 1); aimRng = Mulberry32(seed: 7)
         }
         // 間隔を短くしたときも、待たずに次を撃つ
         if next - t > max(0.05, m.i) { next = t }
@@ -36,7 +40,8 @@ final class PreviewEngine {
         defer { Emit.anchorScale = 1 }
         while t >= next {
             let before = bullets.count
-            Emit.emit(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, rng: &rng, into: &bullets)
+            // ゲームと同じ計算で、狙い方に合わせて撃つ
+            Simulation.emitAimed(m, shot: shot, cx: cx, cy: cy, px: player.x, py: player.y, aimRng: &aimRng, rng: &rng, into: &bullets)
             if let sh = m.sh { for j in before..<bullets.count { bullets[j].look = UInt8(sh) } }
             shot += 1
             next += max(0.05, m.i)

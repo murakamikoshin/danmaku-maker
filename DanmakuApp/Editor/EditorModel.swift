@@ -348,7 +348,12 @@ final class EditorModel: ObservableObject {
     var stage: Stage { draft.stage }
 
     /// テストプレイでクリアした内容と、いまの内容が同じか(変えると、自動で外れる)
-    var isVerified: Bool { entry.verifiedStage.map { $0.samePlay(as: stage) } ?? false }
+    var isVerified: Bool {
+        guard entry.verifiedStage.map({ $0.samePlay(as: stage) }) ?? false else { return false }
+        // ランダムの狙い方は月ごとに並びが変わる。前の月のクリアは、サーバーが受け付けないので、もう一度クリアしてもらう
+        if Simulation.usesMonth(stage) { return entry.verifiedMonth == Simulation.month(of: Date()) }
+        return true
+    }
     var clearReplay: Replay? { entry.verifiedReplay.flatMap { Replay(encoded: $0) } }
     var clearMonth: Int { entry.verifiedMonth ?? 0 }
     /// いまの内容を、すでに投稿したか

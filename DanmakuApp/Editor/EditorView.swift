@@ -385,6 +385,8 @@ private struct EnemyControls: View {
         if (BossCharacter.of(look: bossLook) == nil) != (BossCharacter.of(look: new) == nil) { bossSize = 1 }
         bossLook = new
         if BossCharacter.of(look: new) == .puni { awaken = 3 } else if was { awaken = nil }
+        // 図形のボスには覚醒の欄が無いので、残っていると消せない設定になる。図形にしたら外す
+        if BossCharacter.of(look: new) == nil { awaken = nil }
     }
 
     /// 選べる見た目。招待限定のボス(ぷにまる)も並べる(持っていなければ鍵つき。選べない)
@@ -503,9 +505,9 @@ private struct EnemyControls: View {
         }
     }
 
+    /// 見た目を選ぶ欄。横に流すと、右のほうにいるキャラクターのボス(堕天使など)に気づかないので、全部が見えるように折り返して並べる
     private func looks(selection: Binding<Int>, choices: [Int], idPrefix: String, trial: @escaping (Int) -> Bool, locked: @escaping (Int) -> Bool, image: @escaping (Int) -> UIImage, name: @escaping (Int) -> String) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 76), spacing: 8)], spacing: 8) {
                 ForEach(choices, id: \.self) { n in
                     let selected = selection.wrappedValue == n
                     Button { gameTap(); withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection.wrappedValue = n } } label: {
@@ -514,8 +516,10 @@ private struct EnemyControls: View {
                                 .colorMultiply(locked(n) ? .black : .white)
                                 .overlay { if locked(n) { Image(systemName: "lock.fill").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.yellow) } }
                             Text(name(n)).font(.system(size: 11, weight: .heavy))
+                                .lineLimit(1).minimumScaleFactor(0.6)
                                 .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
                         }
+                        .frame(maxWidth: .infinity)
                         .overlay(alignment: .topTrailing) {
                             if trial(n) {
                                 // 持っていないボスは「お試し」(テストプレイまで)
@@ -532,8 +536,8 @@ private struct EnemyControls: View {
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("\(idPrefix).\(n)")
                 }
-            }.padding(.vertical, 2)
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -1032,7 +1036,7 @@ struct DefeatPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("editor.defeat").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-            ChipGrid(items: items.map { ($0.0.rawValue, L($0.1)) }, selection: $selection, idPrefix: "editor.defeat", minimum: 78)
+            ChipGrid(items: items.map { ($0.0.rawValue, L($0.1)) }, selection: $selection, idPrefix: "editor.defeat", minimum: 96)
         }
     }
 }

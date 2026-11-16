@@ -27,6 +27,11 @@ final class GameScene: SKScene {
     private var pending = CGPoint.zero
     private var touchLast: CGPoint?
     private var finished = false
+    /// 弾幕バトルの 3・2・1 の間は、時間を進めない(SpriteView が場面の一時停止を解くことがあるので、止めるのは自分で持つ)。
+    /// 止めている間の指の動きも捨てる(始まった瞬間に、ためた分だけ飛ばないように)
+    var holding = false
+    /// 次のステップで終える(弾幕バトルで、相手が落ちて勝ちが決まったとき)。記録はそこまで
+    private var stopRequested = false
 
     private let skin: Skin
     private let bulletTextures: [SKTexture]
@@ -568,11 +573,16 @@ final class GameScene: SKScene {
     // MARK: ループ
 
     override func update(_ currentTime: TimeInterval) {
+        if holding {
+            lastTime = nil; accumulator = 0; pending = .zero
+            render(currentTime)
+            return
+        }
         if !finished {
             let dt = lastTime.map { min(0.05, currentTime - $0) } ?? 0
             lastTime = currentTime
             accumulator += dt
-            while accumulator >= DanmakuConfig.step && sim.outcome == .playing {
+            while accumulator >= DanmakuConfig.step && sim.outcome == .playing && !stopRequested {
                 accumulator -= DanmakuConfig.step
                 let m = takeMove()
                 moves.append(m)
@@ -581,6 +591,11 @@ final class GameScene: SKScene {
             }
         }
         render(currentTime)
+        if stopRequested && !finished {
+            finished = true
+            onFinish?(sim, moves)
+            return
+        }
         if !finished && sim.outcome != .playing {
             // 最後のボスを倒したときは、爆発を少し見せてから結果を出す(演出がオフなら、すぐ)
             // 雑魚を全部倒してクリアしたときも、弾けるのを少し見せる
@@ -961,6 +976,9 @@ extension GameScene {
         finished = true
         onFinish?(sim, moves)
     }
+
+    /// 勝ちが決まったので、ここで終える(弾幕バトル。いまのステップのあとで止める。記録はそこまで)
+    func endAfterThisStep() { stopRequested = true }
 
     /// 弾幕バトルの相手の自機: 自分と同じ形を薄く出す。落ちたら弾けて消える(見た目だけで、当たり判定はない)
     private func renderGhost() {

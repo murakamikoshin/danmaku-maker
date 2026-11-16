@@ -22,7 +22,22 @@ final class BattleModel: ObservableObject {
     /// 相手を探す時間(サーバーの SEARCH_MS と同じ)
     static let searchSeconds = 10
 
-    @Published private(set) var phase: Phase = .title
+    @Published private(set) var phase: Phase = .title {
+        didSet {
+            // 相手が見つかったら効果音。3・2・1 と対戦の間は、バトル専用の激しい曲(メニューのゆったりした曲のままだった)
+            if case .found = phase, !{ if case .found = oldValue { return true }; return false }() { AudioManager.shared.se(.match) }
+            playMusic()
+        }
+    }
+    /// バトルのタブが見えているか。見えていないときは曲を変えない(スワイプのプレイ中に、バトルの結果でメニューの曲に変わらないように)
+    private var tabVisible = true
+    private func playMusic() {
+        guard tabVisible else { return }
+        switch phase {
+        case .found, .playing, .waiting: AudioManager.shared.play(.battle)
+        case .title, .searching, .result, .failed: AudioManager.shared.play(.menu)
+        }
+    }
     @Published private(set) var status: BattleService.Status?
     @Published private(set) var match: BattleService.Match?
     /// 相手を待っている間、「待つのをやめる」を出すか(人同士で、30秒待ったら)と、押したけれど相手がまだ遊んでいたか
@@ -33,6 +48,9 @@ final class BattleModel: ObservableObject {
     var appActive = true
     /// 下のタブでバトルの画面が見えているか。見えていない間は、対戦の画面の描画を止める
     func setVisible(_ visible: Bool) {
+        tabVisible = visible
+        // バトルのタブに戻ったら、いまの場面の曲にする
+        if visible { playMusic() }
         // 止めるのは、相手を待つ間と結果のときだけ(3・2・1 と対戦の間はタブを移れないので触らない。カウントダウンの止め方を崩さないように)
         if !visible, phase == .waiting || isResult { scene?.isPaused = true; pausedByTab = true }
         if visible, pausedByTab { scene?.isPaused = false; pausedByTab = false }
@@ -63,6 +81,9 @@ final class BattleModel: ObservableObject {
     private var botSim: Simulation?
     private var botDeadTick: Int?
     private var lastSent = -100
+    /// 人の相手が生き残ったステップ数(サーバーが計算し終えた値)。自分がこれを越えたら、その場で勝ちとして終える
+    private var opponentFinalTicks: Int?
+    private var oppResultListener: ListenerRegistration?
 
     func loadStatus() async {
         status = try? await BattleService.status()
@@ -148,6 +169,8 @@ final class BattleModel: ObservableObject {
         scene.onTime = { [weak self] t in self?.myTime = max(0, t) }
         scene.onFinish = { [weak self] sim, moves in Task { @MainActor in await self?.finish(sim: sim, moves: moves) } }
         scene.isPaused = true
+        scene.holding = true
+        opponentFinalTicks = nil
         self.scene = scene
         if let opp = m.opponentUid, let uid {
             oppHandle = BattleService.observeOpponent(match: m.id, uid: opp) { [weak self] x, y, t, dead in
@@ -159,6 +182,9 @@ final class BattleModel: ObservableObject {
                 }
             }
             BattleService.sendPosition(match: m.id, uid: uid, x: DanmakuConfig.width / 2, y: DanmakuConfig.height * 0.85, tick: 0, dead: false)
+            oppResultListener = BattleService.listenOpponentTicks(match: m.id, opponent: opp) { [weak self] t in
+                Task { @MainActor in self?.opponentFinalTicks = t }
+            }
         }
         // サーバーの時計で決めた時刻に、二人同時に始める
         startTask = Task { [weak self] in
@@ -170,6 +196,7 @@ final class BattleModel: ObservableObject {
             }
             guard let self, !Task.isCancelled else { return }
             self.phase = .playing
+            self.scene?.holding = false
             self.scene?.isPaused = false
         }
     }
@@ -188,7 +215,12 @@ final class BattleModel: ObservableObject {
             }
             opponentTime = Double(now) / 120
         }
-        if let m = match, m.opponentUid != nil, let uid, sim.tick - lastSent >= 12 {
+        // 相手が先に落ちて、自分がその時間を越えたら、その場で勝ちとして終える(最後まで一人で避け続けなくていい)。
+        // ボットは記録から、人はサーバーが計算し終えた値から(相手の端末の申告だけでは決めない)。同じ時間で並んだときは、続けてかすりで決める
+        if let d = botDeadTick, sim.tick > d { scene?.endAfterThisStep() }
+        if let t = opponentFinalTicks, sim.tick > t { scene?.endAfterThisStep() }
+        // 位置は 1 秒に 20 回送る(相手の画面で、弾と重なって見えるずれを小さくする)
+        if let m = match, m.opponentUid != nil, let uid, sim.tick - lastSent >= 6 {
             lastSent = sim.tick
             BattleService.sendPosition(match: m.id, uid: uid, x: sim.player.x, y: sim.player.y, tick: sim.tick, dead: false)
         }
@@ -272,6 +304,8 @@ final class BattleModel: ObservableObject {
         if let h = oppHandle, let opp = match?.opponentUid, let id = match?.id { BattleService.stopOpponent(match: id, uid: opp, handle: h) }
         oppHandle = nil
         resultListener?.remove(); resultListener = nil
+        oppResultListener?.remove(); oppResultListener = nil
+        opponentFinalTicks = nil
         scene?.isPaused = true
         scene = nil
         botSim = nil

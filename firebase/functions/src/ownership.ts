@@ -64,11 +64,14 @@ export async function fetchPurchasedIds(uid: string, apiKey: string | undefined,
  * サインインに使った外部アカウント(Apple など)の目印。中身(Apple の ID)は残さず、ハッシュだけにする。
  * identities は ID トークンの firebase.identities({ "apple.com": ["…"], … })
  */
+/** 目印にする外部アカウント。メールアドレス(identities の email)は使わない(ハッシュでも、辞書で元に戻せてしまうため) */
+const MARK_PROVIDERS = new Set(["apple.com", "google.com"]);
+
 export function providerMarks(identities: unknown): string[] {
   if (!identities || typeof identities !== "object") return [];
   const out: string[] = [];
   for (const [provider, ids] of Object.entries(identities as Record<string, unknown>)) {
-    if (provider === "anonymous" || !Array.isArray(ids)) continue;
+    if (!MARK_PROVIDERS.has(provider) || !Array.isArray(ids)) continue;
     for (const id of ids) if (typeof id === "string" && id) out.push(createHash("sha256").update(`${provider}:${id}`).digest("hex"));
   }
   return [...new Set(out)];

@@ -7,11 +7,11 @@ final class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
     enum Track: String {
-        case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery", swipe = "bgm_swipe"
+        case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery", swipe = "bgm_swipe", battle = "bgm_battle"
         /// ステージの BGM 番号(0=ビビッド 1=ダーク 2=ゆったり 3=キラキラ 4=ミステリアス)の曲
         static func forNumber(_ n: Int) -> Track { [Track.stage, .boss, .menu, .bright, .mystery][min(max(n, 0), 4)] }
     }
-    enum Effect: String, CaseIterable { case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life", warning = "se_warning", boom = "se_boom", sparkle = "se_sparkle" }
+    enum Effect: String, CaseIterable { case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life", warning = "se_warning", boom = "se_boom", sparkle = "se_sparkle", match = "se_match" }
 
     @Published var bgmOn: Bool { didSet { UserDefaults.standard.set(bgmOn, forKey: "audio.bgm"); if bgmOn { resume() } else { fadeOut() } } }
     @Published var seOn: Bool { didSet { UserDefaults.standard.set(seOn, forKey: "audio.se") } }

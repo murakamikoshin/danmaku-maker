@@ -349,7 +349,10 @@ final class SwipeScene: SKScene {
         n.position = CGPoint(x: x, y: y); n.zPosition = 14
         n.verticalAlignmentMode = .center
         addChild(n)
-        bigTexts.append(BigText(node: n, life: life, max: life, base: 1, x: x, y: y, shake: reduceMotion ? shake * 0.25 : shake))
+        // 長い言葉(ロシア語・ポルトガル語など)が画面の左右で切れないように、幅に収まるまで縮める(ゲームの文字は自動で縮まない)
+        let base = min(1, 336 / max(1, n.frame.width))
+        n.setScale(base)
+        bigTexts.append(BigText(node: n, life: life, max: life, base: base, x: x, y: y, shake: reduceMotion ? shake * 0.25 : shake))
     }
 
     private func outlined(_ s: String, size: CGFloat, color: UIColor) -> NSAttributedString {
@@ -415,7 +418,7 @@ final class SwipeScene: SKScene {
             if bigTexts[i].life <= 0 { bigTexts[i].node.removeFromParent(); bigTexts.remove(at: i); continue }
             let age = bigTexts[i].max - bigTexts[i].life
             let scale: CGFloat = age < 0.1 ? 0.3 + CGFloat(age / 0.1) * 1.1 : age < 0.25 ? 1.4 - CGFloat((age - 0.1) / 0.15) * 0.4 : 1
-            bigTexts[i].node.setScale(scale)
+            bigTexts[i].node.setScale(scale * bigTexts[i].base)
             let fade = bigTexts[i].life / bigTexts[i].max
             bigTexts[i].node.alpha = fade < 0.25 ? CGFloat(fade / 0.25) : 1
             let s = age < 0.3 ? bigTexts[i].shake : 0

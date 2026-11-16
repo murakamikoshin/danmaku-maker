@@ -44,8 +44,14 @@ enum BattleService {
 
     enum Failure: Error { case unavailable, broken }
 
+    /// ステージの作り方の版(サーバーの RANKED_STAGE_VERSION と同じ)。違う版どうしでは、同じ種でも別のステージになるので、
+    /// 毎回サーバーに伝えて、合わなければ「アップデートが必要」で断ってもらう
+    static let stageVersion = 2
+
     private static func call(_ name: String, _ data: [String: Any] = [:]) async throws -> [String: Any] {
         guard Backend.isAvailable else { throw Failure.unavailable }
+        var data = data
+        data["sv"] = stageVersion
         let r = try await Backend.functions.httpsCallable(name).call(data)
         guard let d = r.data as? [String: Any] else { throw Failure.broken }
         return d
@@ -155,6 +161,15 @@ enum BattleService {
     }
 
     /// 人同士の対戦で、相手の記録が届いて結果が決まるのを待つ(Firestore の対戦の記録を見張る)
+    /// 相手の記録をサーバーが計算し終えたら、相手が生き残ったステップ数を知らせる(相手が落ちた時点で勝ちを決めるため。
+    /// 相手の端末の申告ではなく、サーバーが操作の記録から計算し直した値を使う)
+    static func listenOpponentTicks(match: String, opponent: String, onTicks: @escaping (Int) -> Void) -> ListenerRegistration {
+        Firestore.firestore().document("rankedMatches/\(match)").addSnapshotListener { snap, _ in
+            guard let r = (snap?.data()?["results"] as? [String: Any])?[opponent] as? [String: Any], let t = r["ticks"] as? NSNumber else { return }
+            onTicks(t.intValue)
+        }
+    }
+
     static func listenResult(match: String, uid: String, onResult: @escaping (Result) -> Void) -> ListenerRegistration {
         Firestore.firestore().document("rankedMatches/\(match)").addSnapshotListener { snap, _ in
             guard let m = snap?.data(), m["status"] as? String == "done",

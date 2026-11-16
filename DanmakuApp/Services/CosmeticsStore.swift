@@ -154,7 +154,8 @@ final class CosmeticsStore: ObservableObject {
     private func applyTickets(free: [String], tickets: Int, granted: Bool) {
         let bosses = Set(free.compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
         var next = ownership
-        next.freeBosses = ownership.freeBosses.union(bosses)
+        // サーバーの記録で置き換える(足していくだけだと、アカウントを替えたあとも持っている表示のまま残り、投稿で断られていた)
+        next.freeBosses = bosses
         if next != ownership { ownership = next }
         bossTickets = tickets
         ticketGranted = granted || ticketGranted

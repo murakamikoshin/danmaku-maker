@@ -47,7 +47,8 @@ struct ShopView: View {
     }
 
     var body: some View {
-        CompatNavigationStack {
+        // ナビゲーションの入れ物で包まない(包むと、下の帯広告とタブの余白が中身に伝わらず、一番下のカードが帯広告の下に隠れていた)
+        Group {
             VStack(spacing: 0) {
                 header
                 GameTabs(items: tabItems,
@@ -59,8 +60,8 @@ struct ShopView: View {
                         LazyVStack(alignment: .leading, spacing: 26) {
                             content
                         }
-                        // 下のタブに隠れないように、タブの高さぶん空ける
-                        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 110)
+                        // 下の帯広告とタブの分は、画面の外側(MainTabView)が空けるので、ここは少しだけ
+                        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 24)
                     }
                     .id(tab)
                     // 毎日のごほうびのお知らせから開いたときは、ごほうびのカードまで動かす
@@ -123,6 +124,7 @@ struct ShopView: View {
                 Button { gameTap(); Task { await purchases.restore() } } label: {
                     Label("store.restore", systemImage: "arrow.clockwise")
                         .font(.system(size: 13, weight: .bold)).foregroundStyle(.secondary)
+                        .frame(minHeight: 44).contentShape(Rectangle())   // 押せる範囲は 44pt
                 }
                 .buttonStyle(.plain)
                 .disabled(purchases.isBusy)
@@ -296,7 +298,7 @@ private struct ShotTile: View {
                 .clipShape(PixelRect(cornerRadius: 12))
             Text(LocalizedStringKey(shot.nameKey)).font(.display(16))
             Text(LocalizedStringKey(shot.detailKey)).font(.caption).foregroundStyle(.secondary)
-                .frame(height: 48, alignment: .topLeading)
+                .frame(minHeight: 48, alignment: .topLeading).fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
                 if cosmetics.ownership.has(shot) {
@@ -844,7 +846,7 @@ private struct PatternTile: View {
                 .clipShape(PixelRect(cornerRadius: 12))
             Text(L("pattern.\(pattern.rawValue)")).font(.display(16))
             Text(L("shop.pattern.\(pattern.rawValue)")).font(.caption).foregroundStyle(.secondary)
-                .frame(height: 44, alignment: .topLeading)
+                .frame(minHeight: 44, alignment: .topLeading).fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
                 if cosmetics.ownership.has(pattern) {
