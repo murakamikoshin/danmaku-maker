@@ -40,6 +40,12 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     /// バナーだけ出さないタブ(タブは出す)。弾幕バトルで落ちた直後の待ちの間(指が画面の下に残っていて、
     /// そこへ広告が出ると誤タップになるため)
     @Published private(set) var quietTabs: Set<String> = []
+    /// 下のタブを隠すタブ(スワイプ弾幕で、実際に弾をよけている間だけ。通信を待つ間は隠さない)
+    @Published private(set) var lockedTabs: Set<String> = []
+    func setLocked(tab: String, _ locked: Bool) {
+        guard lockedTabs.contains(tab) != locked else { return }
+        if locked { lockedTabs.insert(tab) } else { lockedTabs.remove(tab) }
+    }
     func setQuiet(tab: String, _ quiet: Bool) {
         guard quietTabs.contains(tab) != quiet else { return }
         if quiet { quietTabs.insert(tab) } else { quietTabs.remove(tab) }

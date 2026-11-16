@@ -65,11 +65,12 @@ function requireAny(req: CallableRequest): string {
 /**
  * サインインに使った外部アカウント(Apple など)の目印(ハッシュ)。ID トークンに無いとき(リンク直後の古いトークン)は、アカウントから読む
  */
-async function providerMarksOf(req: CallableRequest): Promise<string[]> {
-  // 匿名の人は外部アカウントを持たない(弾幕バトルなどで、毎回アカウントを読みに行かない)
-  if (req.auth?.token.firebase?.sign_in_provider === "anonymous") return [];
+async function providerMarksOf(req: CallableRequest, quick = false): Promise<string[]> {
+  // トークンの identities を先に見る(匿名から Apple につないだ人は、トークンの印が "anonymous" のままのことがある)
   const fromToken = providerMarks(req.auth?.token.firebase?.identities);
   if (fromToken.length > 0 || !req.auth) return fromToken;
+  // 弾幕バトルなど回数の多い呼び出しでは、匿名の人のアカウントを毎回読みに行かない
+  if (quick && req.auth.token.firebase?.sign_in_provider === "anonymous") return [];
   const u = await getAuth().getUser(req.auth.uid).catch(() => null);
   const ids: Record<string, string[]> = {};
   for (const p of u?.providerData ?? []) (ids[p.providerId] ??= []).push(p.uid);
@@ -80,10 +81,10 @@ async function providerMarksOf(req: CallableRequest): Promise<string[]> {
  * 利用停止(users/{uid}.banned)にした人は、投稿・コメント・いいね・通報・名前つきの記録・画像の送信・弾幕バトルができない。
  * 利用停止のままアカウントを消した人の外部アカウント(bannedProviders)で作り直した人も、同じく止めて、新しいアカウントにも印を付ける
  */
-async function assertNotBanned(uid: string, req?: CallableRequest): Promise<void> {
+async function assertNotBanned(uid: string, req?: CallableRequest, quick = false): Promise<void> {
   if ((await db.doc(`users/${uid}`).get()).get("banned") === true) throw new HttpsError("permission-denied", "banned");
   if (!req) return;
-  const marks = await providerMarksOf(req);
+  const marks = await providerMarksOf(req, quick);
   if (marks.length === 0) return;
   const hits = await db.getAll(...marks.map((m) => db.doc(`bannedProviders/${m}`)));
   if (hits.some((h) => h.exists)) {
@@ -797,10 +798,10 @@ export const rankedGetStatus = onCall(async (req) => rankedStatus(requireAny(req
 function requireRankedVersion(req: CallableRequest): void {
   if ((req.data as { sv?: unknown } | undefined)?.sv !== RANKED_STAGE_VERSION) throw new HttpsError("failed-precondition", "update-required");
 }
-export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedJoin(uid); });
+export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req, true); return rankedJoin(uid); });
 export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
-export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedBot(uid, req.data?.lang); });
-export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req); return rankedSubmit(uid, req.data); });
+export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req, true); return rankedBot(uid, req.data?.lang); });
+export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); requireRankedVersion(req); await assertNotBanned(uid, req, true); return rankedSubmit(uid, req.data); });
 /**
  * 人同士の対戦で、自分の記録を出したあと相手を待っているときに呼ぶ(「待つのをやめる」ボタンなど)。
  * 入力 { matchId }。相手がいなくなっている(位置の更新が止まった・一度もつながらない・締め切りを過ぎた)なら、その場で決着して結果を返す。

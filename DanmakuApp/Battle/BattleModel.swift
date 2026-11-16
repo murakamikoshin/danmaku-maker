@@ -2,6 +2,7 @@ import DanmakuCore
 import FirebaseAuth
 import FirebaseDatabase
 import FirebaseFirestore
+import FirebaseFunctions
 import Foundation
 import SpriteKit
 
@@ -254,8 +255,16 @@ final class BattleModel: ObservableObject {
             var sent: BattleService.Result??
             var lastError: Error?
             for attempt in 0..<3 where sent == nil {
-                if attempt > 0 { try? await Task.sleep(nanoseconds: UInt64(attempt) * 2_000_000_000) }
-                do { sent = .some(try await BattleService.submit(match: m.id, moves: moves)) } catch { lastError = error }
+                // 送り直しは、サーバーの連投の制限(3秒)を越えてから
+                if attempt > 0 { try? await Task.sleep(nanoseconds: 3_500_000_000) }
+                do { sent = .some(try await BattleService.submit(match: m.id, moves: moves)) } catch {
+                    lastError = error
+                    // 通信の失敗だけ送り直す(締め切り・利用停止・アップデートが必要などは、送り直しても変わらない)
+                    let ns = error as NSError
+                    let transient = ns.domain != FunctionsErrorDomain || [FunctionsErrorCode.unavailable.rawValue, FunctionsErrorCode.internal.rawValue,
+                                                                         FunctionsErrorCode.unknown.rawValue, FunctionsErrorCode.resourceExhausted.rawValue].contains(ns.code)
+                    if !transient { break }
+                }
             }
             guard let result = sent else { throw lastError ?? BattleService.Failure.broken }
             if let r = result {

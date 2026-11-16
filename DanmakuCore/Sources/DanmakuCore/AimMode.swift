@@ -28,11 +28,14 @@ extension Emitter {
         let path: [Double]? = t == .custom ? [0, 0, 0, 20, 0, 40] : nil
         let m = Emitter(t: t, x: 0.5, y: 0.2, s: 0, e: 30, i: 1, c: 8, v: 2, r: 10, k: 0, path: path)
         let W = DanmakuConfig.width, H = DanmakuConfig.height
+        // 覚醒したときだけ自機を狙う技もあるので(堕天使の羽など)、覚醒の前と後の両方を撃つ
         func shoot(px: Double, py: Double, seed: UInt32) -> [Bullet] {
             var out: [Bullet] = []
             var rng = Mulberry32(seed: seed)
-            for k in 0..<3 {
-                Emit.emit(m, shot: k, cx: W * 0.5, cy: H * 0.2, px: px, py: py, rng: &rng, into: &out)
+            for awakened in [false, true] {
+                for k in 0..<3 {
+                    Emit.emit(m, shot: k, cx: W * 0.5, cy: H * 0.2, px: px, py: py, rng: &rng, into: &out, awakened: awakened)
+                }
             }
             return out
         }

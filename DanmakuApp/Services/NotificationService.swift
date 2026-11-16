@@ -195,11 +195,11 @@ final class NotificationService: NSObject, ObservableObject {
 
     /// 初めて毎日のごほうびを受け取ったあとに1回だけ、お知らせの許可を求める(まだ聞いていないときだけ)
     func askReminderPermissionOnce() async {
-        guard !defaults.bool(forKey: Self.reminderAskedKey) else { return }
-        defaults.set(true, forKey: Self.reminderAskedKey)
+        guard !defaults.bool(forKey: Self.reminderAskedKey), !showReminderPrimer else { return }
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         authorization = status
         if status == .authorized || status == .provisional {
+            defaults.set(true, forKey: Self.reminderAskedKey)
             // 反応の通知をオンにしている人だけ、聞かずにオンにする(設定でいつでも切れる)。
             // 反応の通知をオフにしている人・設定で毎日のお知らせを選んだ人は、そのままにする
             guard enabled else { return }
@@ -207,8 +207,9 @@ final class NotificationService: NSObject, ObservableObject {
             defaults.set(true, forKey: "notify.reminders")
             return
         }
-        guard status == .notDetermined else { return }
-        // ごほうびのお祝いが終わってから聞く(重ならないように)
+        guard status == .notDetermined else { defaults.set(true, forKey: Self.reminderAskedKey); return }
+        // ごほうびのお祝いが終わってから聞く(重ならないように)。「聞いた」の印は、答えてもらったときに付ける
+        // (シートの上で受け取って、聞く画面が出せなかったときに、二度と聞けなくならないように)
         try? await Task.sleep(nanoseconds: 1_500_000_000)
         showReminderPrimer = true
     }
@@ -216,7 +217,14 @@ final class NotificationService: NSObject, ObservableObject {
     /// 先に聞いた画面で「受け取る」を選んだら、OS の許可を求める
     func acceptReminderPrimer() async {
         showReminderPrimer = false
+        defaults.set(true, forKey: Self.reminderAskedKey)
         _ = await setReminders(true)
+    }
+
+    /// 先に聞いた画面で「今はしない」を選んだ
+    func declineReminderPrimer() {
+        showReminderPrimer = false
+        defaults.set(true, forKey: Self.reminderAskedKey)
     }
 
     /// アプリを開いたら、予約していたお知らせは消す(開いている人には要らない)

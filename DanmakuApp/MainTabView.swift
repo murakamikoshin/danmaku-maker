@@ -68,7 +68,7 @@ struct MainTabView: View {
                 }
                 // 弾幕バトルの対戦中は、タブを出さない(指が触れて別のタブへ移ると、見えないまま対戦が続いてしまう)
                 // スワイプ弾幕のプレイ中も出さない(指が下のタブに触れて別のタブへ移ると、見えない裏でプレイが続いて被弾していた)
-                if !ads.playingTabs.contains("battle") && !ads.playingTabs.contains("swipe") {
+                if !ads.playingTabs.contains("battle") && !ads.lockedTabs.contains("swipe") {
                     TabBar(selection: $tab, showSwipe: swipeConfig.enabled, showBattle: battleConfig.enabled, battleBadge: !battleSeen,
                            shopBadge: !purchases.isPremium && shopSeenDay != rewards.today && (rewards.canClaim || adPatterns.canClaim))
                 }
@@ -77,6 +77,8 @@ struct MainTabView: View {
         .onChange(of: tab) {
             // 対戦中(3・2・1 と対戦)は、通知を開いたときなどでもタブを移さない(移ると、見えないまま止まって抜け出せなくなる)
             if ads.playingTabs.contains("battle"), $0 != .battle { pendingTab = $0; tab = .battle; return }
+            // スワイプ弾幕のプレイ中も同じ(通知を開いたときなど。終わってから移る)
+            if ads.lockedTabs.contains("swipe"), $0 != .swipe { pendingTab = $0; tab = .swipe; return }
             opened.insert($0); if $0 == .battle { battleSeen = true }; if $0 == .shop { shopSeenDay = rewards.today }
             // メニューのタブへ移ったら、メニューの曲に戻す(スワイプやバトルの曲が、ほかの画面で鳴り続けないように)
             if $0 == .play || $0 == .shop || $0 == .settings { AudioManager.shared.play(.menu) }
@@ -86,7 +88,10 @@ struct MainTabView: View {
         // ショップを開いたまま日付が変わったら、その日も見たことにする(見ている最中に印が出ないように)
         .onChange(of: rewards.today) { day in if tab == .shop { shopSeenDay = day } }
         .onChange(of: ads.playingTabs) { tabs in
-            if !tabs.contains("battle"), let next = pendingTab { pendingTab = nil; tab = next }
+            if !tabs.contains("battle"), !ads.lockedTabs.contains("swipe"), let next = pendingTab { pendingTab = nil; tab = next }
+        }
+        .onChange(of: ads.lockedTabs) { locked in
+            if !locked.contains("swipe"), !ads.playingTabs.contains("battle"), let next = pendingTab { pendingTab = nil; tab = next }
         }
         // ごほうびのお知らせは、弾幕バトルの対戦中(3・2・1 と対戦)には出さず、終わってから出す。相手探しの最中なら探すのをやめる
         .onChange(of: notice.pending.isEmpty) { empty in
@@ -97,10 +102,10 @@ struct MainTabView: View {
         }
         // 毎日のお知らせを受け取るか、OS の許可の前にアプリの中で一言聞く(対戦中は出さない)
         .gameDialog("notify.primer.title", isPresented: Binding(get: { notifications.showReminderPrimer && !ads.playingTabs.contains("battle") },
-                                                               set: { if !$0 { notifications.showReminderPrimer = false } }),
+                                                               set: { if !$0 { notifications.declineReminderPrimer() } }),
                     message: "notify.primer.message") {
             [GameDialogAction(title: "notify.primer.yes") { Task { await notifications.acceptReminderPrimer() } },
-             GameDialogAction(title: "notify.primer.no", role: .cancel) { notifications.showReminderPrimer = false }]
+             GameDialogAction(title: "notify.primer.no", role: .cancel) { notifications.declineReminderPrimer() }]
         }
         .task { await notice.check() }
         .task { await updates.refresh() }
