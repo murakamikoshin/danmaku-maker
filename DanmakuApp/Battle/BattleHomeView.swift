@@ -289,7 +289,7 @@ struct BattleHomeView: View {
             }
             .padding(20).gamePanel(radius: 18)
         case .result(let r):
-            BattleResultCard(result: r, opponent: model.match?.opponent.name ?? "",
+            BattleResultCard(result: r, opponent: model.match?.opponent.name ?? "", wonEarly: model.wonEarly,
                              again: { leave(showAd: true) { model.start() } }, quit: { leave(showAd: false) {} })
                 .padding(.horizontal, 20)
         default:
@@ -302,6 +302,8 @@ struct BattleHomeView: View {
 private struct BattleResultCard: View {
     let result: BattleService.Result
     let opponent: String
+    /// 相手が先に落ちたので、その場で勝ちとして終えた(秒数がほぼ同じに見えるので、理由を一言出す)
+    var wonEarly = false
     let again: () -> Void
     let quit: () -> Void
 
@@ -315,6 +317,10 @@ private struct BattleResultCard: View {
                 side(Text("battle.result.you"), result.me.ticks, GameStyle.cyanColor)
                 Text("VS").font(.display(14)).foregroundStyle(.secondary)
                 side(Text(verbatim: opponent), result.opp.ticks, GameStyle.pinkColor)
+            }
+            if wonEarly && result.outcome == .win {
+                Text("battle.result.early").font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow)
+                    .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             let d = result.ratingAfter - result.ratingBefore
             HStack(spacing: 6) {

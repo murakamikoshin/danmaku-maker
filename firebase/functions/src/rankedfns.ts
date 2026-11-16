@@ -371,7 +371,8 @@ export async function rankedSubmit(uid: string, data: unknown, now = Date.now())
     const opp = (m.players as string[]).find((u) => u !== uid);
     if (opp) await observeOpponent(matchId, opp, now).catch(() => undefined);
   }
-  if (sc.ticks >= 600) {
+  // 途中で止めた記録(勝ちで止めた・降参)は、その秒数で落ちた相手ではないので、ほかの人のボットの相手に使わない
+  if (sc.ticks >= 600 && !sc.stopped) {
     const prof = await profileOf(uid);
     const me = await playerOf(uid);
     // 1 人 1 つの種につき 1 本だけ残す(新しいもので上書き)。古いものは rankedSweep が消す

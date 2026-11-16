@@ -25,7 +25,12 @@ export function rankedStage(seed: number): SimStage {
   return { mode: "survive", durationSec: RANKED_DURATION, emitters, lifeMode: "lives", lifeCount: 1 };
 }
 
-export interface RankedScore { ticks: number; grazes: number }
+export interface RankedScore {
+  ticks: number;
+  grazes: number;
+  /** 当たる前に記録が尽きた(相手が先に落ちて勝ちで止めた・降参した)。ボットの相手には使わない */
+  stopped?: boolean;
+}
 
 /** 操作の記録([dx, dy, ...])から結果を計算する。記録が尽きたら、その場で落ちたものとする */
 export function rankedScore(seed: number, moves: ArrayLike<number>, moveCount: number): RankedScore {
@@ -36,7 +41,7 @@ export function rankedScore(seed: number, moves: ArrayLike<number>, moveCount: n
     if (k >= moveCount) break;
     sim.step(moves[k * 2]!, moves[k * 2 + 1]!);
   }
-  return { ticks: sim.tick, grazes: sim.grazeCount };
+  return { ticks: sim.tick, grazes: sim.grazeCount, ...(sim.outcome === "playing" && sim.tick < RANKED_DURATION * 120 ? { stopped: true } : {}) };
 }
 
 /** 1 = a の勝ち、-1 = b の勝ち、0 = 引き分け */

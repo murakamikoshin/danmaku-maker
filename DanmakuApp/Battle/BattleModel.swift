@@ -56,6 +56,8 @@ final class BattleModel: ObservableObject {
         if visible, pausedByTab { scene?.isPaused = false; pausedByTab = false }
         // 相手を探している間にほかのタブへ移ったら、探すのをやめる(見えないまま対戦が始まって負けないように)
         if !visible, case .searching = phase { cancel() }
+        // 相手を待つ間・結果のときにほかのタブへ移ったら、バトルの曲を止めてメニューの曲に
+        if !visible, phase == .waiting || isResult { AudioManager.shared.play(.menu) }
     }
     private var pausedByTab = false
     /// 相手探しを始めた回数(取り消した古い探索が、新しい探索の待ち列の行を消さないように見分ける)
@@ -171,6 +173,7 @@ final class BattleModel: ObservableObject {
         scene.isPaused = true
         scene.holding = true
         opponentFinalTicks = nil
+        forfeited = false; wonEarly = false
         self.scene = scene
         if let opp = m.opponentUid, let uid {
             oppHandle = BattleService.observeOpponent(match: m.id, uid: opp) { [weak self] x, y, t, dead in
@@ -234,7 +237,10 @@ final class BattleModel: ObservableObject {
 
     private func finish(sim: Simulation, moves: [Move]) async {
         guard let m = match, let uid else { return }
-        if m.opponentUid != nil {
+        // 相手が先に落ちて勝ちで止めたときは、相手の画面で自分が弾けて見えないよう「落ちた」とは送らない
+        let stoppedAsWinner = sim.outcome == .playing && !forfeited
+        wonEarly = stoppedAsWinner
+        if m.opponentUid != nil, !stoppedAsWinner {
             BattleService.sendPosition(match: m.id, uid: uid, x: sim.player.x, y: sim.player.y, tick: sim.tick, dead: true)
         }
         // ボット戦は、相手の残りを一気に進めて、すぐ結果へ
@@ -244,7 +250,15 @@ final class BattleModel: ObservableObject {
         }
         phase = .waiting
         do {
-            if let r = try await BattleService.submit(match: m.id, moves: moves) {
+            // 通信が一瞬切れただけで勝ちを失わないよう、記録の送信は少しあけて 3 回まで試す
+            var sent: BattleService.Result??
+            var lastError: Error?
+            for attempt in 0..<3 where sent == nil {
+                if attempt > 0 { try? await Task.sleep(nanoseconds: UInt64(attempt) * 2_000_000_000) }
+                do { sent = .some(try await BattleService.submit(match: m.id, moves: moves)) } catch { lastError = error }
+            }
+            guard let result = sent else { throw lastError ?? BattleService.Failure.broken }
+            if let r = result {
                 show(r)
             } else {
                 resultListener = BattleService.listenResult(match: m.id, uid: uid) { [weak self] r in
@@ -287,8 +301,12 @@ final class BattleModel: ObservableObject {
     /// 対戦中にやめる(降参)。その時点で落ちた扱い
     func forfeit() {
         guard phase == .playing else { return }
+        forfeited = true
         scene?.forfeit()
     }
+    private var forfeited = false
+    /// 相手が先に落ちたので、その場で勝ちとして終えたか(結果の画面で「相手が先に落ちた」と出す)
+    @Published private(set) var wonEarly = false
 
     /// 結果から入口へ戻る
     func backToTitle() {
