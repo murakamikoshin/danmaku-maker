@@ -16,6 +16,7 @@ import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina
 import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
 import { prepareWeek, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
+import { bossKeysOf, fetchPurchasedIds, ownsBossByPurchase, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
@@ -35,6 +36,9 @@ const POST_INTERVAL_MS = 10_000;
 
 /** 遊べるステージか(公開中、または「URLを知っている人だけ」)。非表示にされたものは遊べない */
 const isOpen = (status: unknown) => status === "published" || status === "unlisted";
+
+/** RevenueCat の秘密の API キー(sk_…)。投稿したステージのボスを、作者が買ったかを確かめる */
+const revenuecatApiKey = defineSecret("REVENUECAT_API_KEY");
 
 /** Sign in with Apple などでログイン済み（匿名ではない）ユーザーの uid を返す */
 /**
@@ -58,9 +62,33 @@ function requireAny(req: CallableRequest): string {
   return req.auth.uid;
 }
 
-/** 利用停止(users/{uid}.banned)にした人は、投稿・コメント・いいね・通報・名前つきの記録・画像の送信・弾幕バトルができない */
-async function assertNotBanned(uid: string): Promise<void> {
+/**
+ * サインインに使った外部アカウント(Apple など)の目印(ハッシュ)。ID トークンに無いとき(リンク直後の古いトークン)は、アカウントから読む
+ */
+async function providerMarksOf(req: CallableRequest): Promise<string[]> {
+  const fromToken = providerMarks(req.auth?.token.firebase?.identities);
+  if (fromToken.length > 0 || !req.auth) return fromToken;
+  const u = await getAuth().getUser(req.auth.uid).catch(() => null);
+  const ids: Record<string, string[]> = {};
+  for (const p of u?.providerData ?? []) (ids[p.providerId] ??= []).push(p.uid);
+  return providerMarks(ids);
+}
+
+/**
+ * 利用停止(users/{uid}.banned)にした人は、投稿・コメント・いいね・通報・名前つきの記録・画像の送信・弾幕バトルができない。
+ * 利用停止のままアカウントを消した人の外部アカウント(bannedProviders)で作り直した人も、同じく止めて、新しいアカウントにも印を付ける
+ */
+async function assertNotBanned(uid: string, req?: CallableRequest): Promise<void> {
   if ((await db.doc(`users/${uid}`).get()).get("banned") === true) throw new HttpsError("permission-denied", "banned");
+  if (!req) return;
+  const marks = await providerMarksOf(req);
+  if (marks.length === 0) return;
+  const hits = await db.getAll(...marks.map((m) => db.doc(`bannedProviders/${m}`)));
+  if (hits.some((h) => h.exists)) {
+    await db.doc(`users/${uid}`).set({ banned: true, bannedReason: "recreated" }, { merge: true });
+    logger.warn("banned-account-recreated", { uid });
+    throw new HttpsError("permission-denied", "banned");
+  }
 }
 
 function stageIdFrom(data: unknown): string {
@@ -80,7 +108,7 @@ async function saveOgp(id: string, stage: Stage): Promise<string> {
   return path;
 }
 
-export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, async (req) => {
+export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60, secrets: [revenuecatApiKey] }, async (req) => {
   const uid = await requireMember(req);
   const v = validatePublish(req.data);
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
@@ -110,7 +138,14 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asy
   const user = await userRef.get();
   const last = user.get("lastPostAt")?.toMillis?.() ?? 0;
   if (Date.now() - last < POST_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
-  if (user.get("banned") === true) throw new HttpsError("permission-denied", "banned");
+  await assertNotBanned(uid, req);
+  // 専用の絵のボスは、作者が持っているものだけ(チケット・招待でもらったものは users.freeBosses、買ったものは RevenueCat に聞く)
+  const needBosses = bossKeysOf(v.stage).filter((k) => !((user.get("freeBosses") as string[] | undefined) ?? []).includes(k));
+  if (needBosses.length > 0) {
+    const bought = await fetchPurchasedIds(uid, revenuecatApiKey.value() || undefined);
+    if (bought === null) logger.warn("boss-ownership-unverified", { uid, bosses: needBosses });
+    else if (!needBosses.every((k) => ownsBossByPurchase(k, bought))) throw new HttpsError("permission-denied", "boss-not-owned");
+  }
   // 1日に公開できる数の上限(「URLを知っている人だけ」の投稿は数えない)
   // 購入者かどうかは、アプリの申告か、購入の通知(RevenueCat)で残した記録(users.entitlements)。申告だけでも、1日 HARD_DAILY_POSTS 本まで
   const ent = user.get("entitlements") as { removeads?: unknown; lifetime?: unknown } | undefined;
@@ -282,7 +317,7 @@ export const submitResults = onCall(async (req) => {
 export const toggleLike = onCall(async (req) => {
   const uid = await requireMember(req);
   const id = stageIdFrom(req.data);
-  await assertNotBanned(uid);
+  await assertNotBanned(uid, req);
   const result = await db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), likeRef = db.doc(`stages/${id}/likes/${uid}`);
     const [stage, like] = await Promise.all([tx.get(ref), tx.get(likeRef)]);
@@ -307,7 +342,7 @@ export const reportStage = onCall(async (req) => {
   const id = stageIdFrom(req.data);
   const reason = (req.data as { reason?: unknown }).reason;
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
-  await assertNotBanned(uid);
+  await assertNotBanned(uid, req);
   return db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}`), repRef = db.doc(`reports/${id}_${uid}`);
     const [stage, rep] = await Promise.all([tx.get(ref), tx.get(repRef)]);
@@ -356,7 +391,7 @@ export const submitScore = onCall({ memory: "512MiB", timeoutSeconds: 60 }, asyn
   const dn = validateDisplayName(d.name);
   if (!dn.ok) throw new HttpsError("invalid-argument", "display-name");
   // 利用停止の人は、名前を出す記録は送れない(匿名の記録は、これまでどおり)
-  if (dn.name) await assertNotBanned(uid);
+  if (dn.name) await assertNotBanned(uid, req);
   if (typeof d.replay !== "string" || d.replay.length < 8 || d.replay.length > MAX_REPLAY_CHARS || !/^[A-Za-z0-9+/]+={0,2}$/.test(d.replay)) {
     throw new HttpsError("invalid-argument", "replay");
   }
@@ -428,7 +463,7 @@ export const postComment = onCall(async (req) => {
   if (!Number.isInteger(a) || !Number.isInteger(n) || (a as number) < 0 || (a as number) >= HANDLE_CHOICES || (n as number) < 0 || (n as number) >= HANDLE_CHOICES) {
     throw new HttpsError("invalid-argument", "handle");
   }
-  await assertNotBanned(uid);
+  await assertNotBanned(uid, req);
   const stageRef = db.doc(`stages/${id}`);
   const stage = await stageRef.get();
   if (!stage.exists || !isOpen(stage.get("status"))) throw new HttpsError("not-found", "stage");
@@ -481,7 +516,7 @@ export const reportComment = onCall(async (req) => {
   const reason = (req.data as { reason?: unknown }).reason;
   if (typeof cid !== "string" || !/^[A-Za-z0-9]{10,40}$/.test(cid)) throw new HttpsError("invalid-argument", "comment-id");
   if (!(REPORT_REASONS as readonly unknown[]).includes(reason)) throw new HttpsError("invalid-argument", "reason");
-  await assertNotBanned(uid);
+  await assertNotBanned(uid, req);
   return db.runTransaction(async (tx) => {
     const ref = db.doc(`stages/${id}/comments/${cid}`), repRef = db.doc(`commentReports/${id}_${cid}_${uid}`), stageRef = db.doc(`stages/${id}`);
     const [comment, rep, st] = await Promise.all([tx.get(ref), tx.get(repRef), tx.get(stageRef)]);
@@ -555,7 +590,7 @@ export const savePreviewImage = onCall({ memory: "256MiB" }, async (req) => {
   const ref = db.doc(`stages/${id}`);
   const snap = await ref.get();
   if (!snap.exists || snap.get("authorUid") !== uid) throw new HttpsError("permission-denied", "not-author");
-  await assertNotBanned(uid);
+  await assertNotBanned(uid, req);
   await getStorage().bucket().file(`pv/${id}.png`).save(png, { contentType: "image/png", metadata: { cacheControl: "public, max-age=3600" } });
   // pvv: 静止画の作り方の版。2 = 弾が出そろうところまで進めて撮ったもの(1.2.1〜)。それより前の画像は、弾がほとんど写っていない
   const v = Number((req.data as { v?: unknown })?.v);
@@ -627,6 +662,11 @@ export const deleteStage = onCall({ timeoutSeconds: 120, memory: "512MiB" }, asy
 /** アカウント削除。投稿したステージ・リプレイ・OGP画像・いいね・ユーザー情報を消し、認証ユーザーも削除する */
 export const deleteAccount = onCall({ timeoutSeconds: 300, memory: "512MiB" }, async (req) => {
   const uid = requireAny(req);
+  // 利用停止のまま消す人は、外部アカウント(Apple など)の目印だけ残す(作り直して利用停止を抜けられないように。中身の ID は残さない)
+  if ((await db.doc(`users/${uid}`).get()).get("banned") === true) {
+    const marks = await providerMarksOf(req);
+    for (const m of marks) await db.doc(`bannedProviders/${m}`).set({ at: FieldValue.serverTimestamp() });
+  }
 
   const mine = await db.collection("stages").where("authorUid", "==", uid).get();
   for (const s of mine.docs) await eraseStage(s.ref);
@@ -750,10 +790,10 @@ export const searchStages = onCall(async (req) => {
 
 // ---------- ランク戦(リアルタイム対戦。仕様書「ランク戦 仕様書(リアルタイム対戦)」) ----------
 export const rankedGetStatus = onCall(async (req) => rankedStatus(requireAny(req)));
-export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedJoin(uid); });
+export const rankedJoinQueue = onCall(async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedJoin(uid); });
 export const rankedLeaveQueue = onCall(async (req) => rankedLeave(requireAny(req)));
-export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedBot(uid, req.data?.lang); });
-export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid); return rankedSubmit(uid, req.data); });
+export const rankedStartBot = onCall({ memory: "1GiB", timeoutSeconds: 120 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedBot(uid, req.data?.lang); });
+export const rankedSubmitRun = onCall({ memory: "1GiB", timeoutSeconds: 60 }, async (req) => { const uid = requireAny(req); await assertNotBanned(uid, req); return rankedSubmit(uid, req.data); });
 /**
  * 人同士の対戦で、自分の記録を出したあと相手を待っているときに呼ぶ(「待つのをやめる」ボタンなど)。
  * 入力 { matchId }。相手がいなくなっている(位置の更新が止まった・一度もつながらない・締め切りを過ぎた)なら、その場で決着して結果を返す。

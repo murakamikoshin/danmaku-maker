@@ -72285,6 +72285,71 @@
           }
         }
       }
+    },
+    "error.publish.boss-not-owned": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このステージには、まだ持っていないボスが使われています。ショップで手に入れてから投稿してください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This stage uses a boss you don't own yet. Get it in the Shop, then publish."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此关卡使用了你尚未拥有的Boss。请先在商店获得后再发布。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此關卡使用了你尚未擁有的Boss。請先在商店取得後再發布。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 스테이지에는 아직 갖고 있지 않은 보스가 사용되었습니다. 상점에서 얻은 뒤 게시해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta fase usa un jefe que aún no tienes. Consíguelo en la Tienda y luego publícala."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce niveau utilise un boss que vous ne possédez pas encore. Obtenez-le dans la Boutique, puis publiez."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Stage nutzt einen Boss, den du noch nicht besitzt. Hol ihn dir im Shop und veröffentliche dann."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta fase usa um chefe que você ainda não tem. Consiga-o na Loja e depois publique."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этом уровне есть босс, которого у вас ещё нет. Получите его в магазине, затем опубликуйте."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

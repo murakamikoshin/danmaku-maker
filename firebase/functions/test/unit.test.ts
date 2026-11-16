@@ -275,7 +275,7 @@ describe("ステージの説明(desc、1.3.0)", () => {
     expect(validatePublish(good({ desc: "https://a.example" }))).toEqual({ ok: false, error: "desc-link" });
     // 名前・作者名・段階の名前にも URL は書けない(全角の点などで書いたものも)
     expect(validatePublish(good({ name: "見てexample.com" }))).toEqual({ ok: false, error: "name-link" });
-    expect(validatePublish(good({ name: "www．example" }))).toEqual({ ok: false, error: "name-link" });
+    expect(validatePublish(good({ name: "www．example．ｓｈｏｐ" }))).toEqual({ ok: false, error: "name-link" });
     expect(validatePublish(good({ authorName: "https://x" }))).toEqual({ ok: false, error: "author-link" });
     expect(validatePublish(good({ authorName: "abc.jp" }))).toEqual({ ok: false, error: "author-link" });
     expect(validatePublish(good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, phaseInfo: [{ n: "a.com" }, {}, {}] }))).toEqual({ ok: false, error: "phase-link" });
@@ -1255,9 +1255,9 @@ describe("公開の水増し・出し直し対策", () => {
 
 describe("URL の検査で、笑いの表現を URL と間違えない(3回目の検証)", () => {
   it("www… や ｗｗｗ．．． は URL ではない", () => {
-    for (const t of ["むずいwww…", "神ステージwww…!", "草ｗｗｗ．．．", "www", "笑www.", "ｗｗｗ‥", "ｗｗｗ．２回目でクリア"]) expect(hasLink(t), t).toBe(false);
+    for (const t of ["むずいwww…", "神ステージwww…!", "草ｗｗｗ．．．", "www", "笑www.", "ｗｗｗ‥", "ｗｗｗ．２回目でクリア", "www.Nice", "最高www.Nice!", "wwww.Good job", "ｗｗｗ．ｎｉｃｅ"]) expect(hasLink(t), t).toBe(false);
   });
   it("本物の URL は、これまでどおり見つける", () => {
-    for (const t of ["www.example.com", "ｗｗｗ．ｅｘａｍｐｌｅ．ｃｏｍ", "https://x", "discord․gg", "example．com"]) expect(hasLink(t), t).toBe(true);
+    for (const t of ["www.example.com", "www.my-site.shop", "ｗｗｗ．ｅｘａｍｐｌｅ．ｃｏｍ", "https://x", "discord․gg", "example．com"]) expect(hasLink(t), t).toBe(true);
   });
 });

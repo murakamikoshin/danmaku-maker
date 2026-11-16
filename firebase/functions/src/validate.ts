@@ -660,8 +660,9 @@ export function normalizeMultiline(raw: unknown, maxLines: number): string | nul
   return kept.length > maxLines ? null : kept.join("\n");
 }
 
-// www. は、後ろに英字が続くときだけ(「草www…」「ｗｗｗ．２回目」のような笑いの表現を、URL と間違えないように。「www.example」は URL とみなす)
-const LINK_RE = /https?:|www\.[a-z]|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
+// www. は、後ろに「名前.英字」が続くときだけ(「草www…」「ｗｗｗ．２回目」「www.Nice」のような笑いの表現を、URL と間違えないように。
+// 「www.example.com」「www.example.xyz」は URL とみなす)
+const LINK_RE = /https?:|www\.[a-z0-9-]+\.[a-z]|[a-z0-9-]+\.(com|net|org|jp|io|co|me|ly|gg|xyz)\b|\/\//i;
 /**
  * URL が書かれているか。全角の点(．)・小さな点(․)・全角の英字・見えない文字を挟んだ書き方も、そろえてから調べる。
  * 改行をまたいで書いたもの(example\n.com)も見る
