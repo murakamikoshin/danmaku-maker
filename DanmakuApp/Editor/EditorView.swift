@@ -204,6 +204,8 @@ struct PreviewLook: Equatable {
     var bossMove = 0
     var bossX: Double?
     var bossY: Double?
+    /// 竜王の段階ごとの姿(見本は段階1の姿で動かす)
+    var forms: [Int]?
     /// キャラクターのボスの大きさの倍率(半径 ÷ 40。図形のボスは 1)
     var characterScale: Double {
         guard BossCharacter.of(look: bossLook) != nil, DanmakuConfig.characterRadiusRange.contains(bossSize) else { return 1 }
@@ -215,7 +217,7 @@ struct PreviewLook: Equatable {
         bullets = draft.themeBullets; background = draft.themeBackground; ship = draft.themeShip
         customs = draft.customImages
         bossSize = draft.bossSize; bossLook = draft.bossLook; mooks = draft.mooks; mookLook = draft.mookLook
-        bossMove = draft.bossMove; bossX = draft.bossX; bossY = draft.bossY
+        bossMove = draft.bossMove; bossX = draft.bossX; bossY = draft.bossY; forms = draft.forms
     }
 
     /// ボスの、場面が始まって t 秒後の位置(ゲームの Simulation.bossPosition と同じ式)
@@ -674,48 +676,76 @@ private struct StatusBox: View {
 private struct BGMPanel: View {
     @ObservedObject var model: EditorModel
     @ObservedObject private var audio = AudioManager.shared
-    private let names = ["bgm.0", "bgm.1", "bgm.2", "bgm.3", "bgm.4"]
-    private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, GameStyle.violet]
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showShop = false
+    /// 鍵つき(竜王の曲)を試聴したとき、ショップへの案内を出す
+    @State private var lockedTapped: Int?
+    private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, GameStyle.violet,
+                                  Color(UIColor(hex: 0xFF6A2B)), Color(UIColor(hex: 0xC0263E))]
 
     private var selected: Int {
         model.draft.bgm ?? (model.draft.mode == .survive ? 0 : 1)
     }
 
+    /// 選べない(竜王の曲で、竜王を持っていない)。もう選んであるもの(コピーしたステージなど)は、外せるように鍵を出さない
+    private func locked(_ i: Int) -> Bool {
+        Stage.dragonBGMs.contains(i) && !cosmetics.ownership.has(BossCharacter.dragon) && model.draft.bgm != i
+    }
+
     var body: some View {
         GamePanel(title: "editor.bgm", tint: GameStyle.violet) {
             VStack(spacing: 8) {
-                ForEach(0..<5, id: \.self) { i in
+                ForEach(0..<Stage.bgmCount, id: \.self) { i in
                     let on = selected == i
+                    let lock = locked(i)
                     Button {
                         gameTap()
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { model.draft.bgm = i }
+                        // 試聴は、持っていなくてもできる。選ぶのは持っている人だけ
+                        if lock {
+                            lockedTapped = i
+                        } else {
+                            lockedTapped = nil
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { model.draft.bgm = i }
+                        }
                         model.previewingBGM = i
                         AudioManager.shared.preview(.forNumber(i))
                     } label: {
                         HStack(spacing: 12) {
                             ZStack {
                                 Circle().fill(tints[i].opacity(on ? 0.35 : 0.15))
-                                Image(systemName: on ? "speaker.wave.2.fill" : "music.note").font(.system(size: 14, weight: .bold)).foregroundStyle(tints[i])
+                                Image(systemName: on || lockedTapped == i ? "speaker.wave.2.fill" : "music.note").font(.system(size: 14, weight: .bold)).foregroundStyle(tints[i])
                             }
                             .frame(width: 34, height: 34)
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(LocalizedStringKey(names[i])).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
-                                Text(L("\(names[i]).sub")).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                                Text(LocalizedStringKey("bgm.\(i)")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                                Text(L("bgm.\(i).sub")).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                             }
                             Spacer()
+                            if lock { Image(systemName: "lock.fill").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.yellow) }
                             if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(tints[i]) }
                         }
                         .padding(10)
                         .background(on ? tints[i].opacity(0.14) : Color.white.opacity(0.05), in: PixelRect(cornerRadius: 14))
                         .overlay(PixelRect(cornerRadius: 14).stroke(on ? tints[i] : Color.clear, lineWidth: 1.5))
+                        .opacity(lock ? 0.7 : 1)
                     }
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityAddTraits(on ? .isSelected : [])
                     .accessibilityIdentifier("editor.bgm.\(i)")
+                    if lockedTapped == i && lock {
+                        // 竜王を持っている人だけ選べる(遊ぶ人は、持っていなくてもこの曲で遊べる)
+                        VStack(spacing: 6) {
+                            Text("editor.bgm.dragon.locked").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                            GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
+                                .accessibilityIdentifier("editor.bgm.dragon.shop")
+                        }
+                    }
                 }
             }
             Text("editor.bgm.note").font(.caption).foregroundStyle(.secondary)
         }
+        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: "boss.\(BossCharacter.dragon.productKey)") }
     }
 }
 
@@ -1138,7 +1168,7 @@ private struct WaveCard: View {
     private var content: some View {
         var look = PreviewLook(draft: model.draft)
         look.bossSize = wave.bossSize ?? 1; look.bossLook = wave.bossLook ?? 0; look.mooks = wave.mooks; look.mookLook = wave.mookLook ?? 0
-        look.bossMove = wave.bossMove; look.bossX = wave.bossX; look.bossY = wave.bossY
+        look.bossMove = wave.bossMove; look.bossX = wave.bossX; look.bossY = wave.bossY; look.forms = wave.forms
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(String(format: L("editor.wave.title"), i + 1)).font(.display(15)).foregroundStyle(GameStyle.yellow)

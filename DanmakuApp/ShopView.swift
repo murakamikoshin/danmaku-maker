@@ -984,6 +984,10 @@ private struct BossShopCard: View {
                     .frame(maxWidth: .infinity)
                     .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                     Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
+                    if boss == .dragon {
+                        // おまけ: ステージの BGM に竜王の曲 2 つ
+                        Label("shop.boss.dragon.bgm", systemImage: "music.note").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                    }
                     if !cosmetics.ownership.has(boss) { trialButton }
                     // チケットの枚数は上の行に分ける(ボタン 2 つと同じ行だと、狭い画面で文字が縦に折れる)
                     VStack(alignment: .trailing, spacing: 8) {
@@ -996,7 +1000,8 @@ private struct BossShopCard: View {
                             if ticket { TicketCount() }
                             if boss.ticketEligible && boss.ticketCost > 1 {
                                 // 竜王はチケット 3 枚。足りなくても、何枚で交換できるかは見せる
-                                Text(String(format: L("shop.boss.ticket.cost"), boss.ticketCost, cosmetics.availableBossClaims))
+                                Text(ticket ? String(format: L("shop.boss.ticket.cost"), boss.ticketCost, cosmetics.availableBossClaims)
+                                     : String(format: L("shop.boss.ticket.short"), boss.ticketCost, cosmetics.availableBossClaims, boss.ticketCost - cosmetics.availableBossClaims))
                                     .font(.system(size: 12, weight: .heavy)).foregroundStyle(ticket ? GameStyle.green : GameStyle.text.opacity(0.6))
                             }
                             HStack(spacing: 10) {

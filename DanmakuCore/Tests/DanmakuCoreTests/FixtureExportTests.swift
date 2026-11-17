@@ -427,6 +427,13 @@ final class FixtureExportTests: XCTestCase {
                           bossLook: BossCharacter.dragon.rawValue)
             stages.append(("dragon-sequence", Stage(name: "ds", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 20, waves: [w1, w2]).sanitized()))
         }
+        // 技を 1 つだけ置いたステージを、10 技 × 4 つの姿で(どの技も必ず照合する)
+        for (mi, mv) in dAll.enumerated() {
+            for f in 0..<4 { stages.append(("dragon-one-\(mi)-f\(f)", dragon([mv], i: 0.5, forms: [f, f, f]))) }
+        }
+        // ライフ制(即死・バインドが起きる)と、技 2 つが交互に出るか
+        stages.append(("dragon-end-lives", dragon([.dragonEnd, .dragonTail], i: 0.3, forms: [3, 3, 3], life: .lives, count: 3)))
+        stages.append(("dragon-gale-tail", dragon([.dragonGale, .dragonTail], i: 0.5, forms: [1, 2, 3])))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

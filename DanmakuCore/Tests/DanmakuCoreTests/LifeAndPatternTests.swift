@@ -471,6 +471,18 @@ final class BGMTests: XCTestCase {
         XCTAssertEqual(stage(.boss, bgm: 4).sanitized().bgm, 4)
     }
 
+    /// 1.4.0: 竜王の曲(5・6)。選べて、7 以上は捨てる。公開には竜王を持っている必要がある(遊ぶのは誰でも)
+    func testDragonBGMs() {
+        XCTAssertEqual(stage(.boss, bgm: 5).sanitized().bgm, 5)
+        XCTAssertEqual(stage(.survive, bgm: 6).sanitized().bgm, 6)
+        XCTAssertNil(stage(.boss, bgm: 7).sanitized().bgm)
+        XCTAssertEqual(stage(.boss, bgm: 6).effectiveBGM, 6)
+        XCTAssertEqual(stage(.boss, bgm: 7).effectiveBGM, 1)
+        XCTAssertEqual(stage(.boss, bgm: 5).bossesNeededToPublish, [.dragon])
+        XCTAssertEqual(stage(.boss, bgm: 4).bossesNeededToPublish, [])
+        XCTAssertEqual(stage(.boss, bgm: 5).seed, stage(.boss, bgm: nil).seed)
+    }
+
     func testBGMDoesNotChangeTheSeedOrBehaviour() {
         XCTAssertEqual(stage(.boss, bgm: 3).seed, stage(.boss, bgm: nil).seed)
         XCTAssertEqual(Simulation.run(stage: stage(.survive, bgm: 2), moves: []), Simulation.run(stage: stage(.survive, bgm: nil), moves: []))

@@ -95,12 +95,11 @@ enum DragonArt {
 
     // MARK: ゲームで使う絵(SKTexture)
 
+    /// 塗ったコマ。キーは「姿:動き」。姿が変わったら、前の姿の待機以外の絵は捨てる(メモリを食うので)
     private static var texCache: [String: [SKTexture]] = [:]
-    private static var texForm = -1
-    /// 姿 form の動き anim のコマ。姿が変わったら、前の姿の絵は捨てる(メモリを食うので)
     static func textures(_ anim: String, form: Int) -> [SKTexture] {
-        if form != texForm { texCache.removeAll(); texForm = form }
-        if let t = texCache[anim] { return t }
+        let key = "\(form):\(anim)"
+        if let t = texCache[key] { return t }
         guard let m = meta, let sheet = coloredSheet(anim, form: form) else { return [] }
         let all = SKTexture(cgImage: sheet)
         all.filteringMode = .nearest
@@ -114,15 +113,43 @@ enum DragonArt {
             t.filteringMode = .nearest
             return t
         }
-        texCache[anim] = list
+        texCache[key] = list
         return list
     }
+    /// もう塗ってあるか
+    static func isLoaded(_ anim: String, form: Int) -> Bool { texCache["\(form):\(anim)"] != nil }
     /// 使う動きを先に塗っておく(技の途中で塗ると、一瞬止まるので)
     static func preload(_ anims: [String], form: Int) {
         for a in anims { _ = textures(a, form: form) }
     }
-    /// ゲームが終わったら捨てる
-    static func purge() { texCache.removeAll(); texForm = -1 }
+    /// 姿 form 以外の、待機でない絵を捨てる(待機の絵は、姿が変わる瞬間に止まらないよう残す)
+    static func keepMoves(of form: Int) {
+        texCache = texCache.filter { $0.key.hasPrefix("\(form):") || $0.key.hasSuffix(":idle") }
+    }
+    /// ゲームが終わったら捨てる(色の番号の絵も)
+    static func purge() { texCache.removeAll(); labels.removeAll(); faceCache.removeAll() }
+
+    /// カットインに出す顔(待機の1コマ目の顔のあたり)。小さい所だけ塗る(大きな絵全体を持たない)
+    private static var faceCache: [Int: CGImage] = [:]
+    static func face(form: Int) -> CGImage? {
+        if let f = faceCache[form] { return f }
+        guard let l = labelSheet("idle"), !palettes.isEmpty else { return nil }
+        let pal = palettes[min(max(form, 0), palettes.count - 1)]
+        let x0 = 84, y0 = 40, w = 88, h = 44
+        guard x0 + w <= l.w, y0 + h <= l.h else { return nil }
+        var out = [UInt32](repeating: 0, count: w * h)
+        for y in 0..<h { for x in 0..<w {
+            let v = l.px[(y0 + y) * l.w + x0 + x]
+            if v != 0 { out[y * w + x] = pal[Int(v)] }
+        } }
+        let data = out.withUnsafeBufferPointer { Data(buffer: $0) }
+        guard let prov = CGDataProvider(data: data as CFData),
+              let img = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue), provider: prov, decode: nil, shouldInterpolate: false, intent: .defaultIntent)
+        else { return nil }
+        faceCache[form] = img
+        return img
+    }
 
     /// 弾が当たったときに白く光らせる(形はそのまま)
     static let flashShader = SKShader(source: """

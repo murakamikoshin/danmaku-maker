@@ -714,6 +714,14 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (waveT >= 0) {
       // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
       if (sp.boss) setAnchorScale(charScale);
+      // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す(アプリと同じ)
+      let dragonPick = -1;
+      if (sp.boss && banner <= 0 && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
+        sp.emitters.forEach((m, idx) => {
+          if (dragonMoveIndex(m.t) < 0 || mookDestroyed(idx) || !firesInPhase(m.ph, phase) || !(waveT >= next[idx]!)) return;
+          if (dragonPick < 0 || next[idx]! < next[dragonPick]!) dragonPick = idx;
+        });
+      }
       sp.emitters.forEach((m, idx) => {
         if (mookDestroyed(idx)) return;
         if (sp.boss) {
@@ -721,7 +729,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
           const dm = dragonMoveIndex(m.t);
           if (dm >= 0) {
             // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(アプリと同じ)
-            if (waveT >= next[idx]! && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
+            if (idx === dragonPick) {
               dragonStart(dragon, dm, dragonForm());
               shotCount[idx]!++;
               next[idx] = waveT + Math.max(0.05, m.i);

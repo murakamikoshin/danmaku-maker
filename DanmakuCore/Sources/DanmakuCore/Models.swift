@@ -815,8 +815,17 @@ public struct Stage: Codable, Equatable, Sendable {
     /// 実際に使うプレビューの開始秒
     public var effectivePreviewStart: Int { min(max(0, previewStart ?? 0), maxPreviewStart) }
 
-    /// 選べる BGM の数
-    public static let bgmCount = 5
+    /// 選べる BGM の数(5・6 は竜王の曲。1.4.0 から。古い版は範囲外なので、いつもの曲で鳴る)
+    public static let bgmCount = 7
+    /// 竜王を持っている人だけが選べる BGM の番号(遊ぶ人は持っていなくても鳴る。サーバーの DRAGON_BGMS と同じ)
+    public static let dragonBGMs: ClosedRange<Int> = 5...6
+
+    /// 公開するのに持っている必要があるボス(使っているボスと、竜王の曲を選んでいれば竜王)
+    public var bossesNeededToPublish: [BossCharacter] {
+        var list = usedBosses
+        if let b = bgm, Stage.dragonBGMs.contains(b), !list.contains(.dragon) { list.append(.dragon) }
+        return list
+    }
 
     /// 実際に流す BGM の番号
     public var effectiveBGM: Int {

@@ -20,8 +20,51 @@ final class PreviewEngine {
     /// ボスの、いまの位置(ステージで決めた動き・位置の指定どおり。ゲームと同じ式)
     private(set) var bossAt = Point(x: 180, y: DanmakuConfig.height * 0.18)
 
+    /// 竜王の技の見本: 本体が動き、範囲攻撃もあるので、ゲームと同じ計算(Simulation)をそのまま回す
+    private(set) var zones: [DragonZone] = []
+    private var dragonSim: Simulation?
+    private var dragonKey: String?
+    private var dragonIdle = 0.0
+    private var dragonAcc = 0.0
+
+    private func advanceDragon(dt: Double, emitter m: Emitter, look: PreviewLook) {
+        let f = min(max(look.forms?.first ?? 0, 0), 3)
+        let key = "\(m.t.rawValue)|\(m.i)|\(f)|\(look.bossMove)|\(look.bossX ?? -1)|\(look.bossY ?? -1)|\(look.bossSize)"
+        if dragonSim == nil || dragonKey != key || dragonIdle > 1.2 {
+            var e = m
+            e.s = 0; e.e = 60; e.ph = 0
+            var st = Stage(name: "", mode: .boss, durationSec: 60, bossHp: 9999, bossMove: look.bossMove, emitters: [e], lifeMode: .lives, lifeCount: 9,
+                           bossSize: look.bossSize, bossLook: BossCharacter.dragon.rawValue)
+            st.bossX = look.bossX; st.bossY = look.bossY
+            st.forms = [f, f, f]
+            var sim = Simulation(stage: st.sanitized())
+            sim.invincible = true
+            // 始まりの「READY」の間は飛ばす
+            for _ in 0..<Int(DanmakuConfig.readySeconds / DanmakuConfig.step) { sim.step(.zero) }
+            dragonSim = sim; dragonKey = key; dragonIdle = 0; dragonAcc = 0
+        }
+        guard var sim = dragonSim else { return }
+        dragonAcc += dt
+        while dragonAcc >= DanmakuConfig.step { sim.step(.zero); dragonAcc -= DanmakuConfig.step }
+        // 技が終わって少し待ったら、最初から(同じ技をくり返し見せる)
+        dragonIdle = sim.dragon.busy ? 0 : dragonIdle + dt
+        dragonSim = sim
+        bullets = sim.bullets.filter { !$0.isHiddenBody }
+        zones = sim.dragon.zones
+        bossAt = sim.bossPosition
+        player = sim.player
+    }
+
     func advance(to now: Date, emitter m: Emitter, boss: Bool, look: PreviewLook) {
         let character = BossCharacter.of(look: look.bossLook)
+        if boss, character == .dragon, m.t.dragonMove != nil {
+            let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
+            last = now
+            pattern = nil
+            advanceDragon(dt: dt, emitter: m, look: look)
+            return
+        }
+        if dragonSim != nil { dragonSim = nil; zones = []; bullets = [] }
         // パターンを変えたら、前のパターンの撃つ時刻・弾を捨てて、すぐ撃ち始める(前の間隔が長いと、数秒なにも出なかった)
         // 狙い方(自機狙い・固定・ランダム)を変えたときも、最初からやり直す(見本が変わらなかった)
         if pattern != m.t || aim != m.aim {
@@ -95,6 +138,11 @@ struct EmitterPreview: View {
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
                 ctx.scaleBy(x: s, y: s)
                 drawSource(&ctx, skin: skin, bossImage: bossImage)
+                // 竜王の範囲攻撃(ショップ・技の絵と同じ描き方)
+                if !engine.zones.isEmpty {
+                    let zones = engine.zones
+                    ctx.withCGContext { cg in BossPatternIcon.drawZones(cg, zones, scale: 1, ox: 0, height: CGFloat(PreviewEngine.height)) }
+                }
                 // 自機(当たる場所の白い点つき)
                 let sw: CGFloat = 20, sh: CGFloat = 24
                 let pt = engine.player

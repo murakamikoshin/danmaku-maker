@@ -13,14 +13,17 @@ export const NOT_IN_LIFETIME: readonly string[] = ["puni"];
 export const PRODUCT_PREFIX = "com.koshin.danmakumaker.";
 
 type LookPart = { bossLook?: number };
-/** ステージで使っている、専用の絵のボスの商品名(重複なし) */
-export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[] }): string[] {
+/** 竜王を持っている人だけが選べる BGM の番号(アプリの Stage.dragonBGMs と同じ) */
+export const DRAGON_BGMS: readonly number[] = [5, 6];
+/** ステージを公開するのに持っている必要がある、専用の絵のボスの商品名(重複なし)。竜王の曲を選んでいれば竜王も */
+export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[]; bgm?: number }): string[] {
   const looks = [stage.bossLook, ...(stage.waves ?? []).map((w) => w.bossLook)];
   const keys = new Set<string>();
   for (const l of looks) {
     const k = l === undefined ? undefined : BOSS_BY_LOOK[l];
     if (k) keys.add(k);
   }
+  if (stage.bgm !== undefined && DRAGON_BGMS.includes(stage.bgm)) keys.add("dragon");
   return [...keys];
 }
 

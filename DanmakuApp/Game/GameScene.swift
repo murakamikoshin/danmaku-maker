@@ -101,6 +101,12 @@ final class GameScene: SKScene {
     private let waveLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     /// 竜王の場面の演出(竜王が出るステージだけ)と、画面のゆれ・寄りに使うカメラ
     private var dragonLayer: DragonLayer?
+    /// 竜王の姿のうち、このステージで使うもの(待機の絵を先に塗っておく)
+    private var dragonForms: Set<Int> = []
+    /// いま塗ってある技の絵の姿と、姿が変わったあと1コマに1つずつ塗る残りの動き
+    private var dragonTexForm = -1
+    private var dragonMoveAnims: [String] = []
+    private var dragonPending: [String] = []
     private var dragonCamera: SKCameraNode?
     private var dragonActive = false
 
@@ -134,7 +140,12 @@ final class GameScene: SKScene {
             bossTexture = SpriteFactory.boss(flash: false); bossFlashTexture = SpriteFactory.boss(flash: true)
         }
         bossNode = SKSpriteNode(texture: bossTexture)
-        if stage.usedBosses.contains(.dragon) { dragonLayer = DragonLayer() }
+        if stage.usedBosses.contains(.dragon) {
+            dragonLayer = DragonLayer()
+            // 選ばれた姿(選んでいなければ、通常と覚醒の蒼炎)
+            let picked = (stage.forms ?? []) + (stage.waves ?? []).flatMap { $0.forms ?? [] }
+            dragonForms = Set((picked.isEmpty ? [0, 1] : picked).map { min(max($0, 0), 3) })
+        }
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
         #endif
@@ -410,7 +421,10 @@ final class GameScene: SKScene {
     private func applyEnemyLooks() {
         let bossSize = CGSize(width: EnemyArt.bossPoints(size: sim.bossSizeIndex), height: EnemyArt.bossPoints(size: sim.bossSizeIndex))
         characterNormal = nil; characterAwakened = nil
-        if let c = sim.bossCharacter, let art = BossSprites.art(c, awakened: false) {
+        if sim.bossCharacter == .dragon, dragonLayer != nil {
+            // 竜王の絵は DragonArt から毎コマ選ぶ(見本用の BossSprites の絵は作らない。メモリを食うので)
+            if let t = DragonArt.textures("idle", form: sim.dragonForm).first { bossTexture = t; bossFlashTexture = t }
+        } else if let c = sim.bossCharacter, let art = BossSprites.art(c, awakened: false) {
             // 専用の絵を持つボスは、自分の画像への差し替えより優先する(絵・位置・当たり判定が決まっているため)
             characterNormal = art
             characterAwakened = BossSprites.art(c, awakened: true)
@@ -511,6 +525,7 @@ final class GameScene: SKScene {
     private func updateDragonActive() {
         let on = dragonLayer != nil && sim.isBoss && sim.bossCharacter == .dragon
         dragonActive = on
+        if on { dragonLayer?.resetScene() }
         dragonLayer?.root.isHidden = !on
         for s in starNodes { s.node.isHidden = on }
         if !on {
@@ -519,8 +534,14 @@ final class GameScene: SKScene {
             return
         }
         // 使う動きを先に塗っておく(技の途中で塗ると、一瞬止まるので)
+        // 待機の絵は使う姿の全部、技の絵はいまの姿の分(姿が変わったら、1コマに1つずつ塗り直す)
         let moves = sim.currentEmitters.compactMap { $0.t.dragonMove }
-        DragonArt.preload(["idle"] + moves.flatMap(DragonArt.anims(for:)), form: sim.dragonForm)
+        dragonMoveAnims = moves.flatMap(DragonArt.anims(for:))
+        for f in dragonForms.union([sim.dragonForm]) { DragonArt.preload(["idle"], form: f) }
+        dragonTexForm = sim.dragonForm
+        DragonArt.keepMoves(of: dragonTexForm)
+        DragonArt.preload(dragonMoveAnims, form: dragonTexForm)
+        dragonPending = []
     }
 
     /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
@@ -579,12 +600,12 @@ final class GameScene: SKScene {
     // MARK: 入力（画面のどこでもドラッグで相対移動）
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let t = touches.first { touchLast = t.location(in: self) }
+        if let t = touches.first { touchLast = t.location(in: camera ?? self) }
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let t = touches.first, let last = touchLast else { return }
-        let p = t.location(in: self)
+        let p = t.location(in: camera ?? self)   // カメラ(竜王のゆれ・寄り)の影響を受けない座標で読む
         pending.x += (p.x - last.x) * GameScene.dragScale
         pending.y -= (p.y - last.y) * GameScene.dragScale   // SpriteKit は上が +y
         touchLast = p
@@ -777,6 +798,12 @@ final class GameScene: SKScene {
             if dragonActive, let d = dragonLayer {
                 // 竜王: 技ごとの動き(構え・技中・硬直・横向き)を、段階ごとの姿の色で
                 let fr = DragonArt.frame(for: sim.dragon, waveFrames: Int(max(0, sim.t) * 60))
+                if sim.dragonForm != dragonTexForm {
+                    dragonTexForm = sim.dragonForm
+                    DragonArt.keepMoves(of: dragonTexForm)
+                    dragonPending = dragonMoveAnims.filter { !DragonArt.isLoaded($0, form: dragonTexForm) }
+                }
+                if let a = dragonPending.popLast() { _ = DragonArt.textures(a, form: dragonTexForm) }
                 let tex = DragonArt.textures(fr.anim, form: sim.dragonForm)
                 if !tex.isEmpty { bossNode.texture = tex[min(fr.index, tex.count - 1)] }
                 let ds = DragonArt.drawSize

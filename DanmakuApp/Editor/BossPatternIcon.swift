@@ -17,6 +17,34 @@ enum BossPatternIcon {
         return img
     }
 
+    /// 竜王の範囲攻撃を描く(技の絵・エディタの見本で同じ)。s は論理px → 描く点の倍率、ox は横のずらし、height は描く高さ
+    static func drawZones(_ ctx: CGContext, _ zones: [DragonZone], scale s: CGFloat, ox: CGFloat, height: CGFloat) {
+        guard !zones.isEmpty else { return }
+        let c = UIColor(cgColor: DragonLayer.col(DragonLayer.FXC[0][1]))
+        ctx.saveGState()
+        ctx.setFillColor(c.withAlphaComponent(0.35).cgColor); ctx.setStrokeColor(c.cgColor); ctx.setLineWidth(1)
+        for z in zones {
+            let zx = ox + CGFloat(z.x) * s, zy = CGFloat(z.y) * s
+            switch z.shape {
+            case .rect: ctx.fill(CGRect(x: ox + CGFloat(z.x) * s, y: zy, width: CGFloat(z.w) * s, height: CGFloat(z.h) * s))
+            case .circle: ctx.fillEllipse(in: CGRect(x: zx - CGFloat(z.r) * s, y: zy - CGFloat(z.r) * s, width: CGFloat(z.r) * 2 * s, height: CGFloat(z.r) * 2 * s))
+            case .ring: ctx.strokeEllipse(in: CGRect(x: zx - CGFloat(z.r) * s, y: zy - CGFloat(z.r) * s, width: CGFloat(z.r) * 2 * s, height: CGFloat(z.r) * 2 * s))
+            case .beam:
+                ctx.saveGState(); ctx.translateBy(x: zx, y: zy); ctx.rotate(by: CGFloat(z.a))
+                ctx.fill(CGRect(x: 0, y: -CGFloat(z.w) * s / 2, width: CGFloat(z.len) * s, height: CGFloat(z.w) * s)); ctx.restoreGState()
+            case .safe:
+                // 安全な輪の外側を塗る(輪の中だけ抜く)
+                ctx.beginTransparencyLayer(auxiliaryInfo: nil)
+                ctx.fill(CGRect(x: ox, y: 0, width: CGFloat(DanmakuConfig.width) * s, height: height))
+                ctx.setBlendMode(.clear)
+                for c in z.safe { ctx.fillEllipse(in: CGRect(x: ox + CGFloat(c.x - c.r) * s, y: CGFloat(c.y - c.r) * s, width: CGFloat(c.r) * 2 * s, height: CGFloat(c.r) * 2 * s)) }
+                ctx.setBlendMode(.normal)
+                ctx.endTransparencyLayer()
+            }
+        }
+        ctx.restoreGState()
+    }
+
     private static func render(_ p: DanmakuCore.Pattern, boss: BossCharacter) -> UIImage {
         // ゲームと同じ場所: ボスはキャラクターの定位置、自機は画面の下のほう
         var home = boss.position(waveT: 0)
@@ -68,26 +96,7 @@ enum BossPatternIcon {
                 UIImage(cgImage: art.frames[0]).draw(in: CGRect(x: ox + CGFloat(home.x) * s - w / 2, y: CGFloat(home.y) * s - h / 2, width: w, height: h), blendMode: .normal, alpha: 0.55)
             }
             // 竜王の範囲攻撃(予告も当たっている間も、うすい色で)
-            if !zones.isEmpty {
-                let c = UIColor(cgColor: DragonLayer.col(DragonLayer.FXC[0][1]))
-                ctx.setFillColor(c.withAlphaComponent(0.35).cgColor); ctx.setStrokeColor(c.cgColor); ctx.setLineWidth(1)
-                for z in zones {
-                    let zx = ox + CGFloat(z.x) * s, zy = CGFloat(z.y) * s
-                    switch z.shape {
-                    case .rect: ctx.fill(CGRect(x: ox + CGFloat(z.x) * s, y: zy, width: CGFloat(z.w) * s, height: CGFloat(z.h) * s))
-                    case .circle: ctx.fillEllipse(in: CGRect(x: zx - CGFloat(z.r) * s, y: zy - CGFloat(z.r) * s, width: CGFloat(z.r) * 2 * s, height: CGFloat(z.r) * 2 * s))
-                    case .ring: ctx.strokeEllipse(in: CGRect(x: zx - CGFloat(z.r) * s, y: zy - CGFloat(z.r) * s, width: CGFloat(z.r) * 2 * s, height: CGFloat(z.r) * 2 * s))
-                    case .beam:
-                        ctx.saveGState(); ctx.translateBy(x: zx, y: zy); ctx.rotate(by: CGFloat(z.a))
-                        ctx.fill(CGRect(x: 0, y: -CGFloat(z.w) * s / 2, width: CGFloat(z.len) * s, height: CGFloat(z.w) * s)); ctx.restoreGState()
-                    case .safe:
-                        ctx.fill(CGRect(x: ox, y: 0, width: CGFloat(DanmakuConfig.width) * s, height: side))
-                        ctx.setBlendMode(.clear)
-                        for c in z.safe { ctx.fillEllipse(in: CGRect(x: ox + CGFloat(c.x - c.r) * s, y: CGFloat(c.y - c.r) * s, width: CGFloat(c.r) * 2 * s, height: CGFloat(c.r) * 2 * s)) }
-                        ctx.setBlendMode(.normal)
-                    }
-                }
-            }
+            drawZones(ctx, zones, scale: s, ox: ox, height: side)
             // 弾(待機中のものは描かない)。小さすぎると見えないので、少し大きめに描く
             for b in bullets.prefix(220) where !b.isDormant {
                 let x = ox + CGFloat(b.x) * s, y = CGFloat(b.y) * s

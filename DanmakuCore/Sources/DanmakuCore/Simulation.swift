@@ -1129,13 +1129,21 @@ public struct Simulation {
             // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
             if isBoss { Emit.anchorScale = spec.characterScale }
             defer { if isBoss { Emit.anchorScale = 1 } }
+            // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す
+            // (並びの先頭が毎回勝つと、後ろの技が一度も出ないため。サーバーの fullsim.ts と同じ)
+            var dragonPick = -1
+            if isBoss && banner <= 0 && dragonReady {
+                for (idx, m) in spec.emitters.enumerated() where m.t.dragonMove != nil && !mookDestroyed(idx) && m.fires(inPhase: phase) && waveT >= next[idx] {
+                    if dragonPick < 0 || next[idx] < next[dragonPick] { dragonPick = idx }
+                }
+            }
             for (idx, m) in spec.emitters.enumerated() {
                 if mookDestroyed(idx) { continue }
                 if isBoss {
                     if !m.fires(inPhase: phase) || banner > 0 { next[idx] = waveT; continue }
                     if let dm = m.t.dragonMove {
                         // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(間隔は「最短の間隔」)
-                        if waveT >= next[idx] && dragonReady {
+                        if idx == dragonPick {
                             dragonStart(dm)
                             shotCount[idx] += 1
                             next[idx] = waveT + max(0.05, m.i)

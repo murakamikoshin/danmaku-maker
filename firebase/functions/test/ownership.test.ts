@@ -6,6 +6,10 @@ describe("ボスを持っているか", () => {
     expect(bossKeysOf({ bossLook: 3 })).toEqual([]);
     expect(bossKeysOf({ bossLook: 5 })).toEqual(["fallen_angel"]);
     expect(bossKeysOf({ waves: [{ bossLook: 6 }, { bossLook: 12 }, { bossLook: 6 }, {}] }).sort()).toEqual(["hire", "kitsune"]);
+    // 竜王の曲(5・6)を選んだら、竜王を持っている必要がある
+    expect(bossKeysOf({ bossLook: 3, bgm: 5 })).toEqual(["dragon"]);
+    expect(bossKeysOf({ bossLook: 13, bgm: 6 })).toEqual(["dragon"]);
+    expect(bossKeysOf({ bossLook: 5, bgm: 4 })).toEqual(["fallen_angel"]);
   });
   it("単品か永久パックで持っている。招待限定のボスは永久パックに含まれない", () => {
     const p = "com.koshin.danmakumaker.";

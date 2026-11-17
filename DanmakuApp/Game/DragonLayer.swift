@@ -65,6 +65,8 @@ final class DragonLayer {
     private var lastForm = -1
     private var formCutT = -1
     private var formCut = 0
+    /// カットインに出す段階の番号(姿の番号とは別。作者は段階ごとに好きな姿を選べる)
+    private var formPhase = 1
     private var prevBoss = CGPoint(x: 180, y: 128)
     private var bSpd = 0.0
 
@@ -158,6 +160,13 @@ final class DragonLayer {
         sparkNode.blendMode = .add
     }
 
+    /// 竜王の場面に入ったとき、前の場面の演出(火花・ゆれ・カットイン)を持ち越さない
+    func resetScene() {
+        fx.removeAll(); flashes.removeAll(); started.removeAll()
+        shake = 0; punch = 0; heat = 0
+        lastTick = -1; lastLife = -1; lastForm = -1; formCutT = -1
+    }
+
     // MARK: 進める(60Hz)
 
     /// シミュレーションを進めたあとに呼ぶ。60Hz のコマの数だけ、見た目を進める
@@ -179,7 +188,7 @@ final class DragonLayer {
         // 姿が変わった(段階が変わった): カットインと、光の輪
         if lastForm < 0 { lastForm = lv }
         if lv != lastForm {
-            lastForm = lv; formCut = lv; formCutT = 0
+            lastForm = lv; formCut = lv; formPhase = sim.phase; formCutT = 0
             heat = max(heat, 18); addShake(12); punch = 1
             spark(B.x, B.y, 90, 9, life: 40, s: 3)
             flashes.append(Flash(x: B.x, y: B.y, r: 300, life: 36, ring: true))
@@ -1265,13 +1274,7 @@ final class DragonLayer {
         if heat > 0 { heat -= 1; c.setFillColor(CGColor(gray: 1, alpha: Double(heat) / 40)); c.fill(CGRect(x: 0, y: 0, width: W, height: H)) }
     }
 
-    private var faces: [Int: CGImage] = [:]
-    private func faceImage(_ form: Int) -> CGImage? {
-        if let f = faces[form] { return f }
-        let f = DragonArt.frames("idle", form: form).first?.cropping(to: CGRect(x: 84, y: 40, width: 88, height: 44))
-        faces[form] = f
-        return f
-    }
+    private func faceImage(_ form: Int) -> CGImage? { DragonArt.face(form: form) }
 
     /// カットイン: 画面を横切る帯に、竜の目のアップと姿の名前
     private func drawCutIn(_ c: CGContext, _ t: Double, _ len: Double, C: [CGColor], boss: SKSpriteNode) {
@@ -1294,7 +1297,7 @@ final class DragonLayer {
         c.setFillColor(DragonLayer.white); c.fill(CGRect(x: 0, y: y0 - 2, width: W, height: 2)); c.fill(CGRect(x: 0, y: y0 + h, width: W, height: 2))
         c.setFillColor(C[2]); c.fill(CGRect(x: 0, y: y0 - 4, width: W, height: 1)); c.fill(CGRect(x: 0, y: y0 + h + 3, width: W, height: 1))
         guard e > 0.6 else { return }
-        let small = formCut > 0 ? String(format: L("dragon.cutin.awaken"), formCut) : L("dragon.cutin.normal")
+        let small = formPhase > 1 ? String(format: L("dragon.cutin.awaken"), formPhase) : L("dragon.cutin.normal")
         let big = formCut > 0 ? L("dragon.form.\(formCut)") : L("enemy.boss.13")
         let x = 14 - (1 - e) * 80 + t * 0.25
         UIGraphicsPushContext(c)

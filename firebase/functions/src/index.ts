@@ -199,11 +199,18 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60, secre
     displayName: v.stage.authorName, postCount: FieldValue.increment(1), lastPostAt: FieldValue.serverTimestamp(),
     ...quotaFields(unlisted ? quota : afterPost(quota, premium)),
     ...(unlisted ? { unlistedDay: jstDay(now), unlistedToday: unlistedToday + 1 } : {}),
-    // 初めて公開したとき(「URLを知っている人だけ」は数えない): ボスの無料チケットを1枚渡す
-    ...(!unlisted && user.get("ticketGranted") !== true ? { ticketGranted: true, bossTickets: FieldValue.increment(1) } : {}),
     createdAt: user.get("createdAt") ?? FieldValue.serverTimestamp(),
     blockedUids: user.exists ? user.get("blockedUids") ?? [] : [],
   }, { merge: true });
+
+  // 初めて公開したとき(「URLを知っている人だけ」は数えない): ボスの無料チケットを1枚渡す。
+  // claimBossTicket(初めての人は、この1枚を先に使える)と同時に動いても二重に渡さないよう、トランザクションの中で確かめる
+  if (!unlisted) {
+    await db.runTransaction(async (tx) => {
+      const u = await tx.get(userRef);
+      if (u.get("ticketGranted") !== true) tx.set(userRef, { ticketGranted: true, bossTickets: FieldValue.increment(1) }, { merge: true });
+    });
+  }
 
   try {
     await db.doc(`stages/${id}`).update({ ogImagePath: await saveOgp(id, v.stage) });

@@ -321,7 +321,10 @@ describe("validatePublish: BGM", () => {
     expect(boss0.ok && boss0.stage.bgm).toBe(0);
     expect(validatePublish(good()).ok && "bgm" in (validatePublish(good()) as { stage: object }).stage).toBe(false);
   });
-  it.each([[5], [-1], [1.5], ["a"]])("範囲外 %s は拒否", (b) => {
+  it("竜王の曲(5・6)は選べる(1.4.0)", () => {
+    for (const b of [5, 6]) { const r = validatePublish(good({ bgm: b })); expect(r.ok && r.stage.bgm).toBe(b); }
+  });
+  it.each([[7], [-1], [1.5], ["a"]])("範囲外 %s は拒否", (b) => {
     expect(validatePublish(good({ bgm: b }))).toEqual({ ok: false, error: "bgm" });
   });
 });

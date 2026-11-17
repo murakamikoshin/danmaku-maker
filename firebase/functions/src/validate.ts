@@ -293,7 +293,8 @@ export const UNLIMITED_CAP_SEC = 600;
 /** 実際に使う制限時間(秒) */
 export const timeLimitSec = (mode: string, durationSec: number) => (mode === "boss" && durationSec === 0 ? UNLIMITED_CAP_SEC : durationSec);   // 連戦の durationSec は、場面の合計(切り替えの時間を含む)
 
-export const BGM_COUNT = 5;
+/** 選べる BGM の数(5・6 は竜王の曲。1.4.0 から。アプリの Stage.bgmCount と同じ) */
+export const BGM_COUNT = 7;
 
 export const MAX_NAME = 20;
 export const MAX_AUTHOR = 12;
