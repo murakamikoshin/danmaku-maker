@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 
 /** ボスの見た目の番号 → 商品名(アプリの BossCharacter.productKey と同じ) */
 export const BOSS_BY_LOOK: Readonly<Record<number, string>> = {
-  5: "fallen_angel", 6: "kitsune", 7: "ice_queen", 8: "reaper", 9: "witch", 10: "mech", 11: "puni", 12: "hire",
+  5: "fallen_angel", 6: "kitsune", 7: "ice_queen", 8: "reaper", 9: "witch", 10: "mech", 11: "puni", 12: "hire", 13: "dragon",
 };
 /** 永久買い切りパックでも手に入らないボス(招待限定。アプリの BossCharacter.purchasable が false のもの) */
 export const NOT_IN_LIFETIME: readonly string[] = ["puni"];

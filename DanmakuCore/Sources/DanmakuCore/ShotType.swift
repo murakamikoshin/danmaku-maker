@@ -43,4 +43,6 @@ public struct PlayerShot: Equatable, Sendable {
     public var y: Double
     public var vx: Double
     public var damage: Int
+    /// 縦の速さ(px/秒)。ふつうはまっすぐ上へ 600。竜王の星喰いで、口へ吸い寄せられると変わる
+    public var vy: Double = -600
 }

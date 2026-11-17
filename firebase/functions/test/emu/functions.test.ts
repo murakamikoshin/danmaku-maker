@@ -67,6 +67,17 @@ describe("ボスの無料チケット", () => {
     await call("publishStage", stage);
     expect((await db.doc(`users/${uidOf()}`).get()).get("bossTickets")).toBe(0);   // 公開しても、もう一枚はもらえない
   });
+  it("竜王はチケット3枚。足りないと断り、3枚あればもらえる", async () => {
+    await publish();
+    // 1 枚しかない(初めての公開でもらった分)
+    expect(await callErr("claimBossTicket", { boss: "dragon" })).toMatch(/no-ticket/);
+    await db.doc(`users/${uidOf()}`).set({ bossTickets: 3 }, { merge: true });
+    expect(await call("claimBossTicket", { boss: "dragon" })).toMatchObject({ freeBosses: ["dragon"], bossTickets: 0 });
+  });
+  it("まだ公開していない人は、初めての1枚だけでは竜王をもらえない", async () => {
+    await signUp();
+    expect(await callErr("claimBossTicket", { boss: "dragon" })).toMatch(/no-ticket/);
+  });
   it("チケットがないときと、知らないボス・匿名は拒否", async () => {
     await publish();
     await call("claimBossTicket", { boss: "fallen_angel" });

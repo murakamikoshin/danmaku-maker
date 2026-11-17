@@ -273,6 +273,7 @@ extension Bullet {
             y = u1 + sin(ang) * maxSpeed * e * 0.8
             return .alive
         }
+        if script >= Bullet.dragonPlainScript, let m = advanceDragonScript(dt: dt) { return m }
         if let m = advanceBossScript(dt: dt, playerX: playerX, playerY: playerY) { return m }
         if script == Bullet.foldScript {
             // 御札: 決まった時間で直角に折れる(覚醒すると、もう一度逆に折れてジグザグになる)
@@ -592,6 +593,9 @@ public enum Emit {
                                       follow: PathFollow(ref: ref, ox: cx, oy: cy, cosR: cos(a), sinR: sin(a), scale: m.v / 2)))
                 }
             }
+        case .dragonBreath, .dragonRaid, .dragonGale, .dragonInhale, .dragonGlide, .dragonRoar, .dragonQuake, .dragonTail, .dragonRampage, .dragonEnd:
+            // 竜王の技は、弾を出すだけではない(本体の動き・範囲攻撃)。Simulation が DragonState で動かす(Dragon.swift)
+            break
         case .hireSukui, .hireYoyo, .hireHanabi, .hireRipple, .hireKaiyu:
             emitHire(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake:
@@ -621,8 +625,8 @@ public struct Simulation {
     public private(set) var tick = 0
     /// ゲーム内時間。READY 中は負。試作と同じく 1/120 を足していく
     public private(set) var t = -DanmakuConfig.readySeconds
-    public private(set) var player = Point(x: DanmakuConfig.width / 2, y: DanmakuConfig.height * 0.85)
-    public private(set) var bullets: [Bullet] = []
+    public internal(set) var player = Point(x: DanmakuConfig.width / 2, y: DanmakuConfig.height * 0.85)
+    public internal(set) var bullets: [Bullet] = []
     public private(set) var shots: [PlayerShot] = []
     public let shotType: ShotType
     public private(set) var hp: Int
@@ -632,17 +636,17 @@ public struct Simulation {
     /// 「第N段階」表示の残り秒数
     public private(set) var banner = 0.0
     public private(set) var flash = 0.0
-    public private(set) var outcome = Outcome.playing
+    public internal(set) var outcome = Outcome.playing
     /// 被弾を無視する。UI テスト専用（アプリ側は DEBUG ビルドでしか立てない）
     public var invincible = false
     /// 復活直後の無敵が切れるステップ
-    public private(set) var shieldUntilTick = 0
+    public internal(set) var shieldUntilTick = 0
     /// 自機の耐久(ライフ制のときはライフの数、HP 制のときは HP)
     public let lifeMode: LifeMode
     public let lifeMax: Int
-    public private(set) var lifeLeft: Int
+    public internal(set) var lifeLeft: Int
     /// 被弾の直後に残りを数える表示用(秒)。画面のひらめきに使う
-    public private(set) var hitFlash = 0.0
+    public internal(set) var hitFlash = 0.0
     /// ボスを倒した回数と、直近の撃破の場所・演出(画面の演出に使う。計算には関わらない)
     public private(set) var defeats = 0
     public private(set) var lastDefeatPosition = Point(x: 0, y: 0)
@@ -666,7 +670,9 @@ public struct Simulation {
     private var cooldown = 0.0
     /// 失楽園の抜け道など、ステージごとに決まる数(ステージのシード)
     private let salt: UInt32
-    private var rng: Mulberry32
+    var rng: Mulberry32
+    /// 竜王の状態(竜王のステージだけで使う。Dragon.swift)
+    public internal(set) var dragon = DragonState()
     private var next: [Double]
     private var shotCount: [Int]
     /// 倒せる雑魚の残りの体力(発射台ごと。雑魚がいない・倒せない発射台は 0)。0 になった雑魚の発射台は、その場面では撃たない
@@ -843,7 +849,7 @@ public struct Simulation {
         return false
     }
 
-    private var spec: WaveSpec { specs[waveIndex] }
+    var spec: WaveSpec { specs[waveIndex] }
     /// 画面に出す、ボスの大きさ(0=小 1=中 2=大)と見た目、雑魚の大きさ(nil は出さない)と見た目。いまの場面のもの
     public var bossSizeIndex: Int { spec.size }
     /// 自機の弾が当たる、ボスの半径(論理px)。キャラクターのボスは決まった値、図形のボスは大きさの指定(小・中・大 または 半径)
@@ -888,6 +894,7 @@ public struct Simulation {
     /// 次の場面へ。画面の弾と自機の弾を消し、切り替えの間(自機は動ける)のあと、新しい場面が始まる
     private mutating func advanceWave() {
         waveIndex += 1
+        dragon.abort()
         waveStart = t + Wave.intermissionSeconds
         lastShotWaveT = -1
         bullets.removeAll(keepingCapacity: true)
@@ -951,7 +958,9 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
-        Simulation.bossPosition(character: spec.character, move: spec.move, homeDX: spec.homeDX, homeDY: spec.homeDY, t: waveT)
+        let p = Simulation.bossPosition(character: spec.character, move: spec.move, homeDX: spec.homeDX, homeDY: spec.homeDY, t: waveT)
+        // 竜王は、技で本体が動く(飛んでくる・飛び回る)
+        return dragon.boff.x == 0 && dragon.boff.y == 0 ? p : Point(x: p.x + dragon.boff.x, y: p.y + dragon.boff.y)
     }
 
     /// ボスの、場面が始まって t 秒後の位置(動き・位置の指定・キャラクターを含む)。ゲームとエディタの発射台の見本で同じ式を使う
@@ -1012,8 +1021,12 @@ public struct Simulation {
         tick += 1
         t += dt
         if hitFlash > 0 { hitFlash = max(0, hitFlash - dt) }
-        player.x = Simulation.clamp(player.x + Double(move.dx) * Move.unit, 6, W - 6)
-        player.y = Simulation.clamp(player.y + Double(move.dy) * Move.unit, 6, H - 6)
+        // 竜王のバインド中は、動けない(入力を使わない)
+        if dragon.bind == 0 {
+            player.x = Simulation.clamp(player.x + Double(move.dx) * Move.unit, 6, W - 6)
+            player.y = Simulation.clamp(player.y + Double(move.dy) * Move.unit, 6, H - 6)
+        }
+        if spec.character == .dragon && (dragon.wind.x != 0 || dragon.wind.y != 0 || dragon.pull != 0) { dragonPushPlayer() }
         // 落ちてくる1UP: 自機が触れたら取る。画面の下へ出たら消える
         if var item = oneUpItem {
             item.y += Simulation.oneUpFallSpeed * dt
@@ -1031,7 +1044,7 @@ public struct Simulation {
             let ph = phaseOf()
             if ph != phase {
                 phase = ph
-                if ph > 1 { bullets.removeAll(keepingCapacity: true); banner = 1.2 }
+                if ph > 1 { bullets.removeAll(keepingCapacity: true); banner = 1.2; dragon.abort() }
             }
             if banner > 0 { banner -= dt }
             cooldown -= dt
@@ -1043,13 +1056,16 @@ public struct Simulation {
             }
             var w = 0
             for var s in shots {
+                // 竜王の星喰い: 自機の弾は口へ吸い込まれて、食べられる(ボスに届かない)
+                if dragon.absorbing && dragonAbsorb(&s) { continue }
                 s.x += s.vx * dt
-                s.y -= 600 * dt
+                s.y += s.vy * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 if hitMook(s) { continue }
                 let dx = s.x - bp.x, dy = s.y - bp.y
                 let br = bossHitRadius
-                if dx * dx + dy * dy < br * br {
+                // 吸い込みの間は、ボスに当たらない(口に届いて食べられる)
+                if !dragon.absorbing && dx * dx + dy * dy < br * br {
                     damageDealt += s.damage
                     if !isDamageRace { hp -= s.damage }
                     flash = 0.06; continue
@@ -1094,7 +1110,7 @@ public struct Simulation {
             var w = 0
             for var s in shots {
                 s.x += s.vx * dt
-                s.y -= 600 * dt
+                s.y += s.vy * dt
                 if s.y < -10 || s.x < -10 || s.x > W + 10 { continue }
                 if hitMook(s) { continue }
                 shots[w] = s; w += 1
@@ -1117,6 +1133,16 @@ public struct Simulation {
                 if mookDestroyed(idx) { continue }
                 if isBoss {
                     if !m.fires(inPhase: phase) || banner > 0 { next[idx] = waveT; continue }
+                    if let dm = m.t.dragonMove {
+                        // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(間隔は「最短の間隔」)
+                        if waveT >= next[idx] && dragonReady {
+                            dragonStart(dm)
+                            shotCount[idx] += 1
+                            next[idx] = waveT + max(0.05, m.i)
+                            lastShotWaveT = waveT
+                        }
+                        continue
+                    }
                     while waveT >= next[idx] {
                         // ボス戦でも、好きな場所から出せる(p == 1)。雨は、これまでどおり位置を使わない
                         let fx = m.firesFromPoint ? m.x * W : bp.x
@@ -1141,6 +1167,15 @@ public struct Simulation {
             }
         }
 
+        if spec.character == .dragon && isBoss && waveT >= 0 {
+            // 竜王は 60Hz(偶数ステップ)で進める。本体の当たり判定は、毎ステップ体に重ねる
+            if tick % 2 == 0 { dragonFrame() }
+            let bp = bossPosition
+            for i in bullets.indices where bullets[i].script == Bullet.dragonBodyScript {
+                bullets[i].x = bp.x; bullets[i].y = bp.y + 10 * bossScale
+            }
+        }
+
         var w = 0
         var born: [Bullet] = []
         for i in 0..<bullets.count {
@@ -1154,6 +1189,16 @@ public struct Simulation {
             if motion == .gone { continue }
             if b.isDormant {
                 // 待機中の弾・暗転の印: 見えず、当たらない
+                bullets[w] = b; w += 1
+                continue
+            }
+            if b.dragonPersistent {
+                // 竜王の本体・竜巻・大火球: 当たっても消えない(当たったあと少しの間は、竜王の攻撃が当たらない)
+                if !b.isHiddenBody && (b.x < -60 || b.x > W + 60 || b.y < -80 || b.y > H + 60) { continue }
+                let dx = b.x - player.x, dy = b.y - player.y
+                if dx * dx + dy * dy < b.hitDistanceSquared {
+                    if dragonHit(bind: b.script == Bullet.dragonTornadoScript ? Int(b.homeLeft) : 0, kill: false) { return }
+                }
                 bullets[w] = b; w += 1
                 continue
             }
@@ -1198,6 +1243,12 @@ public struct Simulation {
         }
         bullets.removeSubrange(w...)
         bullets.append(contentsOf: born)
+        // 竜王の範囲攻撃
+        if !dragon.zones.isEmpty {
+            for z in dragon.zones where dragonZoneHits(z) {
+                if dragonHit(bind: z.bind, kill: z.kill) { return }
+            }
+        }
         if waveT >= spec.limit {
             if waveIndex + 1 < specs.count {
                 // 連戦の途中: ボスの場面は、時間切れで失敗。生き残る場面は、クリアして次へ

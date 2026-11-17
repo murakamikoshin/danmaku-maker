@@ -401,6 +401,33 @@ final class FixtureExportTests: XCTestCase {
             }
         }
 
+        // 1.4.0: 竜王(本体の移動・範囲攻撃・風・引き寄せ・バインド・即死・吸い込み)。ここより前の並びは変えない
+        func dragon(_ moves: [DanmakuCore.Pattern], i: Double, forms: [Int]?, phases: Int? = nil, mode: DanmakuCore.Mode = .boss,
+                    life: LifeMode = .hp, count: Int = 20, hp: Int = 300, move: Int? = nil, size: Int? = nil) -> Stage {
+            let ems = moves.enumerated().map { idx, t in Emitter(t: t, x: 0.5, y: 0.2, s: Double(idx) * 0.5, e: 60, i: i, c: 1, v: 1, r: 0, k: idx % 5) }
+            var st = Stage(name: "d", mode: mode, durationSec: 60, bossHp: mode == .boss ? hp : nil, bossMove: move, emitters: ems,
+                           lifeMode: life, lifeCount: count, bossSize: size, bossLook: BossCharacter.dragon.rawValue)
+            st.phases = phases
+            st.forms = forms
+            return st.sanitized()
+        }
+        let dAll = DanmakuCore.Pattern.dragon
+        stages.append(("dragon-all-normal", dragon(dAll, i: 0.5, forms: nil)))
+        stages.append(("dragon-all-forms-0123", dragon(dAll, i: 0.5, forms: [0, 1, 2, 3], phases: 4, hp: 150)))
+        stages.append(("dragon-damage-forms", dragon(dAll, i: 0.5, forms: [1, 2, 3], mode: .damage)))
+        stages.append(("dragon-lives-white", dragon(dAll, i: 0.5, forms: [3, 3, 3], life: .lives, count: 3)))
+        stages.append(("dragon-moved-big", dragon(Array(dAll.prefix(5)), i: 1.0, forms: [0, 2, 3], move: 4, size: 60)))
+        stages.append(("dragon-raid-glide-rampage", dragon([.dragonRaid, .dragonGlide, .dragonRampage], i: 0.3, forms: [2, 2, 3])))
+        stages.append(("dragon-inhale-roar-end", dragon([.dragonInhale, .dragonRoar, .dragonEnd], i: 0.3, forms: [1, 3, 3])))
+        do {
+            var w1 = Wave(kind: .boss, durationSec: 40, bossHp: 150, bossMove: 0, emitters: dAll.prefix(5).map { Emitter(t: $0, x: 0.5, y: 0.2, s: 0, e: 40, i: 0.5, c: 1, v: 1, r: 0, k: 0) },
+                          bossLook: BossCharacter.dragon.rawValue)
+            w1.forms = [0, 1, 2]
+            let w2 = Wave(kind: .boss, durationSec: 40, bossHp: 150, bossMove: 1, emitters: dAll.suffix(5).map { Emitter(t: $0, x: 0.5, y: 0.2, s: 0, e: 40, i: 0.5, c: 1, v: 1, r: 0, k: 0) },
+                          bossLook: BossCharacter.dragon.rawValue)
+            stages.append(("dragon-sequence", Stage(name: "ds", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 20, waves: [w1, w2]).sanitized()))
+        }
+
         var cases: [Case] = []
         var seed: UInt64 = 1
         for (name, st) in stages {

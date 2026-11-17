@@ -10,6 +10,7 @@ import { emitWitch, isWitchPattern } from "./witch.js";
 import { emitReaper, isReaperPattern } from "./reaper.js";
 import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
+import { DRAGON_BODY, DRAGON_INV, DRAGON_LOOK, DRAGON_RADIUS, DRAGON_TORNADO, Stage as DStage, abortDragon, cloneDragon, dragonAbsorb, dragonFrame, dragonMoveIndex, dragonPushPlayer, dragonStart, isDragonPersistent, newDragon, stepDragonBullet, zoneHits, type DragonEnv } from "./dragon.js";
 import { BOSS_MOVE_COUNT, PATTERNS, firesInPhase, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -147,10 +148,12 @@ export interface SimStage {
   bodyHit?: boolean | null;
   /** ボスの段階の数(3〜5。無ければ3)。1.3.0 から */
   phases?: number | null;
+  /** 竜王だけ: 段階ごとの姿(0〜3)。1.4.0 から */
+  forms?: number[] | null;
 }
 
 /** 1つの場面。連戦以外は、ステージ全体が「場面1つ」 */
-interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean; bodyHit: boolean; phases: number; oneUp: number }
+interface Spec { boss: boolean; damage: boolean; limit: number; hp: number; move: number; emitters: Emitter[]; size: number; look: number; awaken?: number; forms?: number[]; homeDX: number; homeDY: number; mooks?: number; breakable: boolean; mookHits: number; mooksClear: boolean; bodyHit: boolean; phases: number; oneUp: number }
 /** 倒せる雑魚の体力・当たる半径(アプリの DanmakuConfig.mookHp / Simulation.mookRadius と同じ) */
 const MOOK_HP = 20;
 /** 雑魚を倒すのに当てる回数(1〜50、無ければ 20)。アプリの Wave.sanitizedMookHits と同じ */
@@ -164,9 +167,9 @@ const ONE_UP_HEAL = 3, ONE_UP_FALL = 90, ONE_UP_RADIUS = 18;
 
 function specsOf(st: SimStage): Spec[] {
   if (st.mode === "sequence" && st.waves && st.waves.length > 0) {
-    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true, bodyHit: w.kind === "boss" && w.bodyHit === true, phases: w.kind === "boss" ? (w.phases ?? 3) : 3, oneUp: w.kind === "boss" ? (w.oneUp ?? 0) : 0 }));
+    return st.waves.map((w) => ({ boss: w.kind === "boss", damage: false, limit: w.durationSec, hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, size: w.bossSize ?? 1, look: w.bossLook ?? 0, awaken: w.awaken, forms: w.kind === "boss" ? (w.forms ?? undefined) : undefined, homeDX: ((w.bossX ?? 0.5) - 0.5) * W, homeDY: ((w.bossY ?? 0.2) - 0.2) * H, mooks: w.mooks ?? undefined, breakable: w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true, mookHits: mookHitsOf(w.mookHits), mooksClear: w.kind === "survive" && w.mooks !== undefined && w.mooks !== null && w.mooksBreakable === true && w.mooksClear === true, bodyHit: w.kind === "boss" && w.bodyHit === true, phases: w.kind === "boss" ? (w.phases ?? 3) : 3, oneUp: w.kind === "boss" ? (w.oneUp ?? 0) : 0 }));
   }
-  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true, bodyHit: st.mode !== "survive" && st.bodyHit === true, phases: st.mode !== "survive" ? (st.phases ?? 3) : 3, oneUp: 0 }];
+  return [{ boss: st.mode !== "survive", damage: st.mode === "damage", limit: timeLimitSec(st.mode, st.durationSec), hp: st.bossHp ?? 0, move: st.bossMove ?? 0, emitters: st.emitters, size: st.bossSize ?? 1, look: st.bossLook ?? 0, awaken: st.awaken ?? undefined, forms: st.mode !== "survive" ? (st.forms ?? undefined) : undefined, homeDX: ((st.bossX ?? 0.5) - 0.5) * W, homeDY: ((st.bossY ?? 0.2) - 0.2) * H, mooks: st.mooks ?? undefined, breakable: st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true, mookHits: mookHitsOf(st.mookHits), mooksClear: st.mode === "survive" && st.mooks !== undefined && st.mooks !== null && st.mooksBreakable === true && st.mooksClear === true, bodyHit: st.mode !== "survive" && st.bodyHit === true, phases: st.mode !== "survive" ? (st.phases ?? 3) : 3, oneUp: 0 }];
 }
 
 export type Outcome = "playing" | "cleared" | "hit" | "timeUp";
@@ -234,7 +237,7 @@ interface Bullet {
   /** 堕天使の技だけが使う予備の数値(羽・破片・閉じる輪)。アプリの Bullet と同じ意味 */
   u0?: number; u1?: number; u2?: number; u3?: number;
 }
-interface Shot { x: number; y: number; vx: number; damage: number }
+interface Shot { x: number; y: number; vx: number; damage: number; vy: number }
 
 /** 左右反転(線対称)。アプリの Bullet.mirrorX と同じ */
 function mirrorBullet(b: Bullet) {
@@ -393,6 +396,8 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       break;
     }
     default: {
+      // 竜王の技は、弾を出すだけではない(本体の動き・範囲攻撃)。createSim が dragon.ts で動かす
+      if (dragonMoveIndex(m.t) >= 0) break;
       if (isHirePattern(m.t)) { emitHire(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isPuniPattern(m.t)) { emitPuni(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isMechPattern(m.t)) { emitMech(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
@@ -478,6 +483,46 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   let outcome: Outcome = "playing";
   let invincible = false, countsGrazes = true, grazeCount = 0;
   let grazedThisStep: Bullet[] = [];
+  /** 竜王の状態(アプリの Simulation.dragon と同じ) */
+  let dragon = newDragon();
+  const isDragon = () => spec().boss && spec().look === DRAGON_LOOK;
+  /** 本体のずれを足す前の、ボスの位置(アプリの Simulation.bossPosition(character:...) と同じ) */
+  const dragonBase = (): { x: number; y: number } => {
+    const sp = spec(), wt = Math.max(0, t - waveStart);
+    let base: { x: number; y: number };
+    if (sp.move === 0) base = { x: W / 2 + Math.sin(wt * 60 * 0.012) * 12, y: 128 + Math.sin(wt * 60 * 0.02) * 5 };
+    else { const q = bossPoint(sp.move, wt); base = { x: q.x, y: q.y + CHARACTER_MOVE_Y_OFFSET }; }
+    return sp.move === 0 && sp.homeDX === 0 && sp.homeDY === 0 ? base
+      : { x: Math.min(Math.max(base.x + sp.homeDX, 40), W - 40), y: Math.min(Math.max(base.y + sp.homeDY, 60), H * 0.5) };
+  };
+  const denv: DragonEnv = {
+    get d() { return dragon; },
+    rng: () => rng(),
+    px: () => px, py: () => py,
+    setPlayer: (x, y) => { px = x; py = y; },
+    bullets: () => bullets,
+    setBullets: (b) => { bullets = b as Bullet[]; },
+    base: dragonBase,
+    get scale() { return characterScaleOf(spec().size); },
+    maxBullets: MAX_BULLETS,
+  } as DragonEnv;
+  /** いまの段階の姿(アプリの dragonForm) */
+  const dragonForm = (): number => {
+    const f = spec().forms;
+    if (f && phase - 1 < f.length && phase >= 1) return Math.min(Math.max(f[phase - 1]!, 0), 3);
+    const aw = spec().awaken;
+    return spec().boss && aw !== undefined && phase >= aw ? 1 : 0;
+  };
+  /** 竜王の攻撃(範囲・本体・竜巻・大火球)に当たったとき。終わったら true(アプリの dragonHit) */
+  const dragonHit = (bind: number, kill: boolean): boolean => {
+    if (invincible || tick < shieldUntil || dragon.inv > 0) return false;
+    dragon.inv = DRAGON_INV;
+    if (bind > 0) dragon.bind = Math.max(dragon.bind, bind);
+    lifeLeft = kill ? 0 : lifeLeft - 1;
+    if (lifeLeft <= 0) { outcome = "hit"; return true; }
+    if (lifeMode === "lives") shieldUntil = tick + Math.round(LIFE_SHIELD_SECONDS / STEP);
+    return false;
+  };
 
   /** いまの段階。HP(ダメージ勝負は時間)を段階の数で等分する(アプリの phaseOf と同じ。3段階はこれまでと同じ) */
   const phaseOf = (waveT: number) => {
@@ -521,6 +566,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   /** 次の場面へ: 画面の弾と自機の弾を消し、切り替えの間(自機は動ける)のあとに新しい場面が始まる */
   const advanceWave = (dt: number) => {
     wi += 1;
+    abortDragon(dragon);
     waveStart = t + INTERMISSION;
     bullets = [];
     shots = [];
@@ -553,8 +599,12 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     const dt = STEP;
     tick += 1;
     t += dt;
-    px = clamp(px + dx0 * MOVE_UNIT, 6, W - 6);
-    py = clamp(py + dy0 * MOVE_UNIT, 6, H - 6);
+    // 竜王のバインド中は、動けない(入力を使わない)
+    if (dragon.bind === 0) {
+      px = clamp(px + dx0 * MOVE_UNIT, 6, W - 6);
+      py = clamp(py + dy0 * MOVE_UNIT, 6, H - 6);
+    }
+    if (isDragon() && (dragon.windX !== 0 || dragon.windY !== 0 || dragon.pull !== 0)) dragonPushPlayer(denv);
     // 落ちてくる1UP: 自機が触れたら取る。画面の下へ出たら消える(アプリと同じ)
     if (oneUpItem) {
       const item = { x: oneUpItem.x, y: oneUpItem.y + ONE_UP_FALL * dt };
@@ -565,7 +615,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK || sp.look === REAPER_LOOK || sp.look === WITCH_LOOK || sp.look === MECH_LOOK || sp.look === PUNI_LOOK || sp.look === HIRE_LOOK;
+    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK || sp.look === REAPER_LOOK || sp.look === WITCH_LOOK || sp.look === MECH_LOOK || sp.look === PUNI_LOOK || sp.look === HIRE_LOOK || sp.look === DRAGON_LOOK;
     const wt = Math.max(0, waveT);
     let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {
@@ -574,36 +624,40 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (sp.boss && angel) {
       // キャラクターのボス: 動きの指定がなければ定位置のゆれ。指定があれば、図形のボスと同じ動きを、キャラクターの高さで(アプリの bossPosition と同じ)
       let base: { x: number; y: number };
-      if (sp.move === 0) base = { x: W / 2 + Math.sin(wt * 60 * 0.012) * 30, y: 128 + Math.sin(wt * 60 * 0.02) * 5 };
+      if (sp.move === 0) base = { x: W / 2 + Math.sin(wt * 60 * 0.012) * (sp.look === DRAGON_LOOK ? 12 : 30), y: 128 + Math.sin(wt * 60 * 0.02) * 5 };
       else { const q = bossPoint(sp.move, wt); base = { x: q.x, y: q.y + CHARACTER_MOVE_Y_OFFSET }; }
       bp = sp.move === 0 && sp.homeDX === 0 && sp.homeDY === 0 ? base
         : { x: Math.min(Math.max(base.x + sp.homeDX, 40), W - 40), y: Math.min(Math.max(base.y + sp.homeDY, 60), H * 0.5) };
     }
+    // 竜王は、技で本体が動く(アプリの bossPosition と同じく、ずれを足す)
+    if (sp.boss && sp.look === DRAGON_LOOK && (dragon.boffX !== 0 || dragon.boffY !== 0)) bp = { x: bp.x + dragon.boffX, y: bp.y + dragon.boffY };
     const bx = !sp.boss ? 0 : bp.x;
     const by = !sp.boss ? 0 : bp.y;
     const charScale = angel ? characterScaleOf(sp.size) : 1;
-    const bossRadius = angel ? FALLEN_ANGEL_RADIUS * charScale : bossRadiusOf(sp.size);
+    const bossRadius = angel ? (sp.look === DRAGON_LOOK ? DRAGON_RADIUS : FALLEN_ANGEL_RADIUS) * charScale : bossRadiusOf(sp.size);
     if (sp.boss) {
       const ph = phaseOf(waveT);
       if (ph !== phase) {
         phase = ph;
-        if (ph > 1) { bullets = []; banner = 1.2; }
+        if (ph > 1) { bullets = []; banner = 1.2; abortDragon(dragon); }
       }
       if (banner > 0) banner -= dt;
       cooldown -= dt;
       if (!swipe && waveT >= 0 && cooldown <= 0) {
         cooldown = shotDef.interval;
-        for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage });
+        for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage, vy: -600 });
       }
       let w = 0;
       for (let i = 0; i < shots.length; i++) {
         const s = shots[i]!;
+        // 竜王の星喰い: 自機の弾は口へ吸い込まれて、食べられる(ボスに届かない)
+        if (dragon.absorbing && dragonAbsorb(denv, s)) continue;
         s.x += s.vx * dt;
-        s.y -= 600 * dt;
+        s.y += s.vy * dt;
         if (s.y < -10 || s.x < -10 || s.x > W + 10) continue;
         if (hitMook(s)) continue;
         const dx = s.x - bx, dy = s.y - by;
-        if (dx * dx + dy * dy < bossRadius ** 2) {
+        if (!dragon.absorbing && dx * dx + dy * dy < bossRadius ** 2) {
           damage += s.damage;
           if (!sp.damage) hp -= s.damage;
           flash = 0.06; continue;
@@ -638,13 +692,13 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       cooldown -= dt;
       if (!swipe && waveT >= 0 && cooldown <= 0) {
         cooldown = shotDef.interval;
-        for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage });
+        for (const v of shotDef.volley) shots.push({ x: px + v.dx, y: py - 10, vx: v.vx, damage: v.damage, vy: -600 });
       }
       let w = 0;
       for (let i = 0; i < shots.length; i++) {
         const s = shots[i]!;
         s.x += s.vx * dt;
-        s.y -= 600 * dt;
+        s.y += s.vy * dt;
         if (s.y < -10 || s.x < -10 || s.x > W + 10) continue;
         if (hitMook(s)) continue;
         shots[w++] = s;
@@ -664,6 +718,16 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         if (mookDestroyed(idx)) return;
         if (sp.boss) {
           if (!firesInPhase(m.ph, phase) || banner > 0) { next[idx] = waveT; return; }
+          const dm = dragonMoveIndex(m.t);
+          if (dm >= 0) {
+            // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(アプリと同じ)
+            if (waveT >= next[idx]! && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
+              dragonStart(dragon, dm, dragonForm());
+              shotCount[idx]!++;
+              next[idx] = waveT + Math.max(0.05, m.i);
+            }
+            return;
+          }
           while (waveT >= next[idx]!) {
             fire(m, idx, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by,
               sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);
@@ -682,12 +746,34 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       setAnchorScale(1);
     }
 
+    if (isDragon() && waveT >= 0) {
+      // 竜王は 60Hz(偶数ステップ)で進める。本体の当たり判定は、毎ステップ体に重ねる
+      if (tick % 2 === 0) dragonFrame(denv);
+      const b0 = dragonBase();
+      const bpx = b0.x + dragon.boffX, bpy = b0.y + dragon.boffY;
+      const bx2 = dragon.boffX === 0 && dragon.boffY === 0 ? b0.x : bpx, by2 = dragon.boffX === 0 && dragon.boffY === 0 ? b0.y : bpy;
+      const sc = characterScaleOf(sp.size);
+      for (const q of bullets) if (q.script === DRAGON_BODY) { q.x = bx2; q.y = by2 + 10 * sc; }
+    }
+
     let w = 0;
     let died = false;
     const born: Bullet[] = [];
     for (let i = 0; i < bullets.length; i++) {
       const b = bullets[i]!;
-      const bm = stepBossScript(b, dt, px, py);
+      const dm2 = b.script >= 30 ? stepDragonBullet(b, dt) : null;
+      if (dm2 === "gone") continue;
+      if (dm2 === "alive" && isDragonPersistent(b)) {
+        // 竜王の本体・竜巻・大火球: 当たっても消えない(アプリと同じ)
+        if (b.script !== DRAGON_BODY && (b.x < -60 || b.x > W + 60 || b.y < -80 || b.y > H + 60)) continue;
+        const ex = b.x - px, ey = b.y - py;
+        if (ex * ex + ey * ey < hitDistanceSquared(b)) {
+          if (dragonHit(b.script === DRAGON_TORNADO ? Math.trunc(b.homeLeft) : 0, false)) { died = true; break; }
+        }
+        bullets[w++] = b;
+        continue;
+      }
+      const bm = dm2 ?? stepBossScript(b, dt, px, py);
       if (bm === "gone") continue;
       if (bm === "burst") {
         for (const c of branchChildren(b)) {
@@ -920,6 +1006,10 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (died) return;
     bullets.length = w;
     for (const nb of born) bullets.push(nb);
+    // 竜王の範囲攻撃
+    if (dragon.zones.length > 0) {
+      for (const z of dragon.zones) if (zoneHits(z, px, py) && dragonHit(z.bind, z.kill)) return;
+    }
     observe?.(tick, bullets, { x: px, y: py });
     if (waveT >= sp.limit) {
       if (wi + 1 < specs.length) {
@@ -963,13 +1053,13 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
   };
 
   /** 状態を丸ごと控える/戻す(ボットが先読みするため)。控えは入れ替わらない値のコピー */
-  type Snap = { wi: number; lifeLeft: number; hp: number; damage: number; defeats: number; next: number[]; shotCount: number[]; mookHP: number[]; bullets: Bullet[]; shots: Shot[]; tick: number; t: number; waveStart: number; px: number; py: number; phase: number; banner: number; flash: number; cooldown: number; shieldUntil: number; outcome: Outcome; grazeCount: number; rng: number };
-  const snapshot = (): Snap => ({ wi, lifeLeft, hp, damage, defeats, next: [...next], shotCount: [...shotCount], mookHP: [...mookHP], bullets: bullets.map((b) => ({ ...b })), shots: shots.map((x) => ({ ...x })), tick, t, waveStart, px, py, phase, banner, flash, cooldown, shieldUntil, outcome, grazeCount, rng: rng.state });
+  type Snap = { wi: number; lifeLeft: number; hp: number; damage: number; defeats: number; next: number[]; shotCount: number[]; mookHP: number[]; bullets: Bullet[]; shots: Shot[]; tick: number; t: number; waveStart: number; px: number; py: number; phase: number; banner: number; flash: number; cooldown: number; shieldUntil: number; outcome: Outcome; grazeCount: number; rng: number; dragon: ReturnType<typeof newDragon> };
+  const snapshot = (): Snap => ({ wi, lifeLeft, hp, damage, defeats, next: [...next], shotCount: [...shotCount], mookHP: [...mookHP], bullets: bullets.map((b) => ({ ...b })), shots: shots.map((x) => ({ ...x })), tick, t, waveStart, px, py, phase, banner, flash, cooldown, shieldUntil, outcome, grazeCount, rng: rng.state, dragon: cloneDragon(dragon) });
   const restore = (c: Snap) => {
     wi = c.wi; lifeLeft = c.lifeLeft; hp = c.hp; damage = c.damage; defeats = c.defeats; next = [...c.next]; shotCount = [...c.shotCount]; mookHP = [...c.mookHP];
     bullets = c.bullets.map((b) => ({ ...b })); shots = c.shots.map((x) => ({ ...x }));
     tick = c.tick; t = c.t; waveStart = c.waveStart; px = c.px; py = c.py; phase = c.phase; banner = c.banner; flash = c.flash; cooldown = c.cooldown;
-    shieldUntil = c.shieldUntil; outcome = c.outcome; grazeCount = c.grazeCount; rng.state = c.rng; grazedThisStep = [];
+    shieldUntil = c.shieldUntil; outcome = c.outcome; grazeCount = c.grazeCount; rng.state = c.rng; grazedThisStep = []; dragon = cloneDragon(c.dragon);
   };
 
   return {

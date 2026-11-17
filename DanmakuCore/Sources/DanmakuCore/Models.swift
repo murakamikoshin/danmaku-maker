@@ -3,9 +3,9 @@ import Foundation
 /// 論理画面・固定ステップなどの定数
 public enum DanmakuConfig {
     public static let formatVersion = 1
-    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP)。
-    /// サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 4
+    /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP、
+    /// 5=1.4.0〜の竜王)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
+    public static let contentLevel = 5
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -224,6 +224,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case hireRipple
     /// ぐるぐる回遊(覚醒: 二重の輪)
     case hireKaiyu
+    // 竜王(2026-11-17 に追加。DragonMove と同じ並び)
+    case dragonBreath, dragonRaid, dragonGale, dragonInhale, dragonGlide, dragonRoar, dragonQuake, dragonTail, dragonRampage, dragonEnd
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -260,6 +262,7 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
         case .mech: return mech
         case .puni: return puni
         case .hire: return hire
+        case .dragon: return dragon
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)
@@ -335,6 +338,8 @@ public struct Wave: Codable, Equatable, Sendable {
     public var phases: Int?
     /// 段階ごとの名前と「必殺技」(見た目だけ。段階の始めに、名前を大きく出す)。nil は付けない。ボスの場面だけ。1.3.0 から
     public var phaseInfo: [PhaseInfo]?
+    /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階1から順に)。技の強さも姿で変わる。nil はすべて通常。1.4.0 から
+    public var forms: [Int]?
     /// このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 倒したら自動で)。nil は出さない。最後の場面には付けない。1.3.0 から
     public var oneUp: Int?
 
@@ -393,6 +398,13 @@ public struct Wave: Codable, Equatable, Sendable {
     }
 
     /// 覚醒する段階(2〜段階の数)。それ以外は覚醒しない
+    /// 竜王の段階ごとの姿。竜王でなければ nil。段階の数にそろえ、0〜3 に収める。全部 0(通常)なら nil
+    static func sanitizedForms(_ v: [Int]?, phases: Int, look: Int?) -> [Int]? {
+        guard look == BossCharacter.dragon.rawValue, let v, !v.isEmpty else { return nil }
+        let f = (0..<phases).map { i in i < v.count ? min(max(v[i], 0), 3) : 0 }
+        return f.allSatisfy { $0 == 0 } ? nil : f
+    }
+
     static func sanitizedAwaken(_ v: Int?, phases: Int = 3) -> Int? {
         guard let v, (2...phases).contains(v) else { return nil }
         return v
@@ -491,6 +503,8 @@ public struct Wave: Codable, Equatable, Sendable {
         out.phases = isBoss ? Wave.sanitizedPhaseCount(phases) : nil
         out.phaseInfo = isBoss ? PhaseInfo.sanitized(phaseInfo, count: nPh) : nil
         out.oneUp = isBoss ? Wave.sanitizedOneUp(oneUp) : nil
+        out.forms = isBoss ? Wave.sanitizedForms(forms, phases: nPh, look: look) : nil
+        if out.forms != nil || look == BossCharacter.dragon.rawValue { out.awaken = nil }
         return out
     }
 }
@@ -691,6 +705,8 @@ struct WaveSpec {
     var mooksClear = false
     /// 覚醒する段階(nil は覚醒しない)
     var awaken: Int?
+    /// 竜王の段階ごとの姿
+    var forms: [Int]?
     /// ボスの位置のずらし量(px。標準の位置からの差)
     var homeDX = 0.0
     var homeDY = 0.0
@@ -769,6 +785,8 @@ public struct Stage: Codable, Equatable, Sendable {
     /// ボスの段階の数・段階ごとの名前と必殺技(Wave.phases / phaseInfo と同じ。ボス戦・ダメージ勝負だけ。連戦は場面ごと)。1.3.0 から
     public var phases: Int?
     public var phaseInfo: [PhaseInfo]?
+    /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階1から順に)。技の強さも姿で変わる。nil はすべて通常。1.4.0 から
+    public var forms: [Int]?
 
     public var lookBullets: Theme { themeBullets ?? .classic }
     public var lookBackground: Theme { themeBackground ?? .classic }
@@ -832,7 +850,7 @@ public struct Stage: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name, mode, durationSec, bossHp, bossMove, emitters, formatVersion, lifeMode, lifeCount, bgm
         case themeBullets, themeBackground, themeShip, hideMarkers, waves, bossWarning, bossDefeat, bossSize, mooks, bossLook, mookLook, shot, rewardFx, awaken, previewStart, noPreview, bossX, bossY
-        case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo
+        case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo, forms
     }
 
     public static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
@@ -841,11 +859,11 @@ public struct Stage: Codable, Equatable, Sendable {
     var waveSpecs: [WaveSpec] {
         if mode == .sequence, let ws = waves, !ws.isEmpty {
             return ws.map { w in
-                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height), bodyHit: w.kind == .boss && w.bodyHit == true,
+                WaveSpec(boss: w.kind == .boss, damage: false, limit: Double(w.durationSec), hp: w.bossHp ?? 0, move: w.bossMove ?? 0, emitters: w.emitters, warning: w.warning == true, defeat: w.defeatEffect, size: w.bossSize ?? 1, look: w.bossLook ?? 0, mooks: w.mooks, mookLook: w.mookLook ?? 0, mooksBreakable: w.mooks != nil && w.mooksBreakable == true, mookHits: Wave.sanitizedMookHits(w.mookHits) ?? DanmakuConfig.mookHp, mooksClear: w.kind == .survive && w.mooks != nil && w.mooksBreakable == true && w.mooksClear == true, awaken: w.awaken, forms: w.kind == .boss ? w.forms : nil, homeDX: Stage.homeShift(w.bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(w.bossY, 0.2, DanmakuConfig.height), bodyHit: w.kind == .boss && w.bodyHit == true,
                          phases: w.kind == .boss ? w.phaseCount : 3, oneUp: w.kind == .boss ? (w.oneUp ?? 0) : 0)
             }
         }
-        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), bodyHit: mode != .survive && bodyHit == true,
+        return [WaveSpec(boss: mode != .survive, damage: mode == .damage, limit: Double(timeLimitSec), hp: bossHp ?? 0, move: bossMove ?? 0, emitters: emitters, warning: bossWarning == true, defeat: bossDefeatEffect, size: bossSize ?? 1, look: bossLook ?? 0, mooks: mooks, mookLook: mookLook ?? 0, mooksBreakable: mooks != nil && mooksBreakable == true, mookHits: Wave.sanitizedMookHits(mookHits) ?? DanmakuConfig.mookHp, mooksClear: mode == .survive && mooks != nil && mooksBreakable == true && mooksClear == true, awaken: awaken, forms: mode != .survive ? forms : nil, homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), bodyHit: mode != .survive && bodyHit == true,
                          phases: mode != .survive ? (phases ?? 3) : 3)]
     }
 
@@ -909,6 +927,7 @@ public struct Stage: Codable, Equatable, Sendable {
         shot = (try? d.decodeIfPresent(ShotType.self, forKey: .shot)) ?? nil
         rewardFx = (try? d.decodeIfPresent([Int].self, forKey: .rewardFx)) ?? nil
         awaken = try d.decodeIfPresent(Int.self, forKey: .awaken)
+        forms = (try? d.decodeIfPresent([Int].self, forKey: .forms)) ?? nil
         previewStart = try d.decodeIfPresent(Int.self, forKey: .previewStart)
         noPreview = try d.decodeIfPresent(Bool.self, forKey: .noPreview)
         bossX = try d.decodeIfPresent(Double.self, forKey: .bossX)
@@ -957,6 +976,7 @@ public struct Stage: Codable, Equatable, Sendable {
         try c.encodeIfPresent(shot, forKey: .shot)
         try c.encodeIfPresent(rewardFx, forKey: .rewardFx)
         try c.encodeIfPresent(awaken, forKey: .awaken)
+        try c.encodeIfPresent(forms, forKey: .forms)
         try c.encodeIfPresent(previewStart, forKey: .previewStart)
         try c.encodeIfPresent(noPreview, forKey: .noPreview)
     }
@@ -1063,6 +1083,8 @@ public struct Stage: Codable, Equatable, Sendable {
         out.bodyHit = (isBossMode && bodyHit == true) ? true : nil
         out.phases = isBossMode ? Wave.sanitizedPhaseCount(phases) : nil
         out.phaseInfo = isBossMode ? PhaseInfo.sanitized(phaseInfo, count: nPh) : nil
+        out.forms = isBossMode ? Wave.sanitizedForms(forms, phases: nPh, look: look) : nil
+        if out.forms != nil || look == BossCharacter.dragon.rawValue { out.awaken = nil }
         return out
     }
 }

@@ -497,7 +497,7 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 13 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 14 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
@@ -649,6 +649,31 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       for (const look of [2, 5, 6, 7, 8, 9, 10, 11]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
     }
     expect(validatePublish(boss({ ...pat("puniPoyon"), bossLook: 12, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
+  });
+
+  it("竜王の技は、竜王(bossLook 13)のボスにだけ置け、竜王のステージは needs: 5(1.4.0 以降が必要)", () => {
+    const pat = (t: string) => ({ emitters: [em({ t })] });
+    for (const t of ["dragonBreath", "dragonRaid", "dragonGale", "dragonInhale", "dragonGlide", "dragonRoar", "dragonQuake", "dragonTail", "dragonRampage", "dragonEnd"]) {
+      const ok = validatePublish(boss({ ...pat(t), bossLook: 13, bossMove: 0 }));
+      expect(ok.ok && [ok.stage.emitters[0]!.t, ok.stage.needs]).toEqual([t, 5]);
+      for (const look of [2, 5, 11, 12]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
+    }
+    expect(validatePublish(boss({ ...pat("hireSukui"), bossLook: 13, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
+  });
+
+  it("竜王の段階ごとの姿: 段階の数と同じ長さの 0〜3。竜王だけ・覚醒とは一緒に使えない・全部通常は入れない", () => {
+    const base = { emitters: [em({ t: "dragonRoar" })], bossLook: 13, bossMove: 0 };
+    const ok = validatePublish(boss({ ...base, forms: [0, 1, 3] }));
+    expect(ok.ok && ok.stage.forms).toEqual([0, 1, 3]);
+    const zero = validatePublish(boss({ ...base, forms: [0, 0, 0] }));
+    expect(zero.ok && "forms" in zero.stage).toBe(false);
+    expect(validatePublish(boss({ ...base, forms: [0, 1] }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ ...base, forms: [0, 1, 4] }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ ...base, forms: [0, 1.5, 2] }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ ...base, forms: [0, 1, 2], awaken: 2 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ emitters: [em({ t: "ring" })], bossLook: 12, bossMove: 0, forms: [0, 1, 2] }))).toEqual({ ok: false, error: "look" });
+    const five = validatePublish(boss({ ...base, phases: 5, forms: [0, 1, 2, 3, 3] }));
+    expect(five.ok && five.stage.forms).toEqual([0, 1, 2, 3, 3]);
   });
 
   it("ぷにまるの技は、ぷにまる(bossLook 11)のボスにだけ置ける", () => {

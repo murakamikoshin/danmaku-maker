@@ -219,7 +219,9 @@ async function rewardInviter(r: { granted: boolean; inviter?: string } | undefin
 }
 
 /** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
-const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni", "hire"];
+const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni", "hire", "dragon"];
+/** 1 体もらうのに使うチケットの枚数(書いていないボスは 1 枚)。竜王は 3 枚(アプリの BossCharacter.ticketCost と同じ) */
+export const TICKET_COST: Readonly<Record<string, number>> = { dragon: 3 };
 /** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
 const PAID_ONLY_BOSSES: string[] = ["puni"];
 
@@ -239,8 +241,11 @@ export const claimBossTicket = onCall(async (req) => {
     if (free.includes(boss)) return { freeBosses: free, bossTickets: (user.get("bossTickets") as number | undefined) ?? 0 };
     const tickets = (user.get("bossTickets") as number | undefined) ?? 0;
     const first = user.get("ticketGranted") !== true && ((user.get("postCount") as number | undefined) ?? 0) === 0;
-    if (tickets <= 0 && !first) throw new HttpsError("failed-precondition", "no-ticket");
-    const left = first ? 0 : tickets - 1;
+    // 持っているチケット(まだ一度も公開していない人は、初めての公開でもらう 1 枚を先に使える)
+    const have = Math.max(0, tickets) + (first ? 1 : 0);
+    const cost = TICKET_COST[boss] ?? 1;
+    if (have < cost) throw new HttpsError("failed-precondition", "no-ticket", { need: cost, have });
+    const left = have - cost;
     const base = user.exists ? {} : { displayName: "", postCount: 0, blockedUids: [], createdAt: FieldValue.serverTimestamp() };
     tx.set(userRef, { ...base, freeBosses: [...free, boss], bossTickets: left, ticketGranted: true }, { merge: true });
     return { freeBosses: [...free, boss], bossTickets: left };
@@ -743,7 +748,7 @@ export const refreshTrendingScores = onSchedule({ schedule: "every 60 minutes", 
 
 /** 世界のステージを、ステージ名か作者名で探す(部分一致。ひらがな/カタカナ・全角/半角・大文字小文字は区別しない) */
 const SEARCH_FIELDS = ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm", "themeBullets", "themeBackground",
-  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "phases", "phaseInfo", "desc", "needs", "pv", "pvv",
+  "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat", "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY", "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "phases", "phaseInfo", "forms", "desc", "needs", "pv", "pvv",
   "authorUid", "authorName", "plays", "clears", "likes", "comments"] as const;
 /** 自分が投稿したステージの一覧と、もらったハート・遊ばれた数などの合計 */
 export const myStages = onCall(async (req) => {

@@ -10,7 +10,7 @@ export const INTERMISSION_BUDGET = 2;
 
 export const DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [0, 30, 60, 90, 120, 180], damage: [30, 60, 90, 120, 180], sequence: [] } as const;
 // 並びを変えない(乱数シードに順番を使っている)。新しいものは必ず後ろに足す
-export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake", "hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu"] as const;
+export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake", "hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu", "dragonBreath", "dragonRaid", "dragonGale", "dragonInhale", "dragonGlide", "dragonRoar", "dragonQuake", "dragonTail", "dragonRampage", "dragonEnd"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
@@ -69,6 +69,8 @@ export interface Wave {
   phases?: number;
   /** 段階ごとの名前(16文字まで)と必殺技。見た目だけ。ボスの場面だけ。1.3.0 から */
   phaseInfo?: PhaseInfo[];
+  /** 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階の数と同じ長さ。全部 0 は入れない)。1.4.0 から(needs: 5) */
+  forms?: number[];
   /** このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 自動)。最後の場面には付けない。1.3.0 から(needs: 3) */
   oneUp?: 1 | 2;
   /** ボスの位置(動きの中心。x は 0.2〜0.8、y は 0.1〜0.3、0.05 刻み。標準=x 0.5, y 0.2 は入れない) */
@@ -126,6 +128,8 @@ export interface Stage {
   /** ボスの段階の数(4 か 5)・段階ごとの名前と必殺技(Wave と同じ。ボス戦・ダメージ勝負だけ)。1.3.0 から */
   phases?: number;
   phaseInfo?: PhaseInfo[];
+  /** 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階の数と同じ長さ。全部 0 は入れない)。1.4.0 から(needs: 5) */
+  forms?: number[];
   /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
   shot?: "spread" | "heavy";
   /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
@@ -181,7 +185,9 @@ function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean
 }
 
 /** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女、7 は雪の女王)。アプリの BossCharacter.maxLook と同じ */
-export const BOSS_LOOK_MAX = 12;
+export const BOSS_LOOK_MAX = 13;
+/** 竜王の見た目の番号(技で本体が動く・段階ごとに姿を選ぶ)。1.4.0 から */
+export const DRAGON_LOOK = 13;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
 export const BOSS_CHARACTER_MIN = 5;
 /** 堕天使だけが使える技。堕天使(bossLook 5)のボスの場面にだけ置ける */
@@ -199,8 +205,10 @@ export const MECH_PATTERNS = ["mechLockOn", "mechMissiles", "mechGatling", "mech
 /** ぷにまるだけが使える技。ぷにまる(bossLook 11)のボスの場面にだけ置ける */
 export const HIRE_PATTERNS = ["hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu"] as const;
 export const PUNI_PATTERNS = ["puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake"] as const;
+/** 竜王だけが使える技。竜王(bossLook 13)のボスの場面にだけ置ける */
+export const DRAGON_PATTERNS = ["dragonBreath", "dragonRaid", "dragonGale", "dragonInhale", "dragonGlide", "dragonRoar", "dragonQuake", "dragonTail", "dragonRampage", "dragonEnd"] as const;
 /** ボスのキャラクター専用の技と、持ち主の見た目の番号(堕天使 5、九尾 6、雪の女王 7、死神 8、魔女 9、機神 10、ぷにまる 11)。アプリの Pattern.moves(of:) と同じ */
-const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLEN_ANGEL_PATTERNS, 5], [KITSUNE_PATTERNS, 6], [ICE_QUEEN_PATTERNS, 7], [REAPER_PATTERNS, 8], [WITCH_PATTERNS, 9], [MECH_PATTERNS, 10], [PUNI_PATTERNS, 11], [HIRE_PATTERNS, 12]];
+const MOVE_OWNERS: ReadonlyArray<readonly [readonly string[], number]> = [[FALLEN_ANGEL_PATTERNS, 5], [KITSUNE_PATTERNS, 6], [ICE_QUEEN_PATTERNS, 7], [REAPER_PATTERNS, 8], [WITCH_PATTERNS, 9], [MECH_PATTERNS, 10], [PUNI_PATTERNS, 11], [HIRE_PATTERNS, 12], [DRAGON_PATTERNS, 13]];
 /** ボスのキャラクター専用の技を、持ち主でない見た目のボスに置いていないか(true なら不正) */
 const wrongBossPattern = (list: Emitter[], look: number | undefined): boolean =>
   list.some((m) => MOVE_OWNERS.some(([moves, owner]) => moves.includes(m.t) && look !== owner));
@@ -338,6 +346,13 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
   return { ok: true, list };
 }
 
+/** 竜王の段階ごとの姿: 無し、または 段階の数と同じ長さの 0〜3 の整数。竜王のボスだけ。全部 0 なら入れない(アプリの Wave.sanitizedForms と同じ形) */
+function formsVal(v: unknown, n: number, dragon: boolean): { ok: boolean; v?: number[] } {
+  if (v === undefined || v === null) return { ok: true };
+  if (!dragon || !Array.isArray(v) || v.length !== n || !v.every((x) => Number.isInteger(x) && x >= 0 && x <= 3)) return { ok: false };
+  return { ok: true, v: (v as number[]).every((x) => x === 0) ? undefined : [...(v as number[])] };
+}
+
 /** 連戦の場面を検証する */
 function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } | { ok: false; error: string } {
   if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_WAVES) return { ok: false, error: "wave-count" };
@@ -403,6 +418,10 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wBody = (w as { bodyHit?: unknown }).bodyHit;
     if (wBody !== undefined && wBody !== null && wBody !== true && wBody !== false) return { ok: false, error: "wave-look" };
     if (wBody === true && kind !== "boss") return { ok: false, error: "wave-look" };
+    const wDragon = kind === "boss" && wBossLook.v === DRAGON_LOOK;
+    const wForms = formsVal((w as { forms?: unknown }).forms, wN, wDragon);
+    // 竜王は、覚醒の代わりに段階ごとの姿を選ぶ(覚醒は使わない)
+    if (!wForms.ok || (wDragon && wAwaken.v !== undefined)) return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
       ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}), ...(w.mooksBreakable === true && wMooks.v !== undefined ? { mooksBreakable: true as const, ...(wHits.v !== undefined ? { mookHits: wHits.v } : {}), ...(wClear.v ? { mooksClear: true as const } : {}) } : {}),
@@ -411,6 +430,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}),
       ...(wBody === true ? { bodyHit: true as const } : {}),
       ...(wPhases.v !== undefined ? { phases: wPhases.v } : {}), ...(wInfo.v ? { phaseInfo: wInfo.v } : {}),
+      ...(wForms.v ? { forms: wForms.v } : {}),
       ...(wOneUp.v !== undefined ? { oneUp: wOneUp.v as 1 | 2 } : {}) });
   }
   // 1UP は、次の場面があるボスだけ(最後のボスを倒したらクリア)
@@ -554,6 +574,9 @@ export function validatePublish(input: unknown): Validated {
   const bBody = (input as { bodyHit?: unknown }).bodyHit;
   if (bBody !== undefined && bBody !== null && bBody !== true && bBody !== false) return { ok: false, error: "look" };
   if (bBody === true && mode !== "boss" && mode !== "damage") return { ok: false, error: "look" };
+  const bDragon = (mode === "boss" || mode === "damage") && bBossLook.v === DRAGON_LOOK;
+  const bForms = formsVal((input as { forms?: unknown }).forms, bN, bDragon);
+  if (!bForms.ok || (bDragon && bAwaken.v !== undefined)) return { ok: false, error: "look" };
   // 遊べるアプリの版: 体当たり(1.2.1〜)は 3、新しいボスなど(1.2.0〜)は 2
   // 2つの段階で撃つ発射台(1.2.1〜)も 3
   // 狙い方・4〜5段階・1UP(1.3.0〜)は 4(1.2.1 は 3 まで遊べるので、それより上にする)
@@ -561,7 +584,9 @@ export function validatePublish(input: unknown): Validated {
   const multiPhase = allEms.some((m) => m.ph > 3 && m.ph < 100 && phasesOf(m.ph).every((x) => x <= 3));
   const uses130 = allEms.some((m) => m.aim !== undefined || phasesOf(m.ph).some((x) => x > 3)) || bPhases.v !== undefined
     || (waves ?? []).some((w) => w.phases !== undefined || w.oneUp !== undefined);
-  const needs = uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 竜王(1.4.0〜)は 5
+  const usesDragon = bBossLook.v === DRAGON_LOOK || (waves ?? []).some((w) => w.bossLook === DRAGON_LOOK);
+  const needs = usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;
@@ -618,7 +643,8 @@ export function validatePublish(input: unknown): Validated {
       ...(shot ? { shot } : {}), ...(rewardFx ? { rewardFx } : {}),
       ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}),
       ...(bBody === true ? { bodyHit: true as const } : {}), ...(desc ? { desc } : {}),
-      ...(bPhases.v !== undefined ? { phases: bPhases.v } : {}), ...(bInfo.v ? { phaseInfo: bInfo.v } : {}) },
+      ...(bPhases.v !== undefined ? { phases: bPhases.v } : {}), ...(bInfo.v ? { phaseInfo: bInfo.v } : {}),
+      ...(bForms.v ? { forms: bForms.v } : {}) },
   };
 }
 

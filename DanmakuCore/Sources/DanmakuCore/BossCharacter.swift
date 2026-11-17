@@ -20,6 +20,8 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     case puni = 11
     /// 金魚姫(金魚すくいの金魚娘)
     case hire = 12
+    /// 竜王(技で本体が動く・範囲攻撃・段階ごとに姿を選ぶ。Dragon.swift)
+    case dragon = 13
 
     /// 図形のボスの数(0〜4)。bossLook がこれ以上ならキャラクター
     public static let firstCharacterLook = 5
@@ -40,13 +42,14 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         case .mech: return "mech"
         case .puni: return "puni"
         case .hire: return "hire"
+        case .dragon: return "dragon"
         }
     }
 
     /// 無料チケットで手に入れられるか。課金専用のボスは false にする(サーバーの PAID_ONLY_BOSSES と同じにする)
     public var ticketEligible: Bool {
         switch self {
-        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .hire: return true
+        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .hire, .dragon: return true
         case .puni: return false
         }
     }
@@ -62,6 +65,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public var hitRadius: Double {
         switch self {
         case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire: return 40
+        case .dragon: return 56
         }
     }
 
@@ -72,6 +76,10 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         switch self {
         case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire:
             return Point(x: DanmakuConfig.width / 2 + sin(t * 60 * 0.012) * 30,
+                         y: 128 + sin(t * 60 * 0.02) * 5)
+        case .dragon:
+            // 竜王は大きいので、横の揺れを小さく(試射場と同じ)
+            return Point(x: DanmakuConfig.width / 2 + sin(t * 60 * 0.012) * 12,
                          y: 128 + sin(t * 60 * 0.02) * 5)
         }
     }

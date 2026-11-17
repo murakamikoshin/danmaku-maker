@@ -10,9 +10,12 @@ public enum BulletLook {
         case fox, ofuda, plankton, bubble, ink, missile, hex, shell, flake, icicle, shard, soul, blade, chain, jelly, eye, tooth, goo
         // 金魚姫の弾(2026-11-11 に追加)
         case kingyo, yoyo, spark, awa
+        // 竜王の弾(2026-11-17 に追加。当たる大きさは、弾ごとに Bullet.radius で決める)
+        case flame, slash, gust, sun, rock, spine, tornado, ember, pshot
     }
     /// 各種類の、弾そのものの半径(px)
-    static let bodyRadius: [Double] = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5]
+    static let bodyRadius: [Double] = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5,
+                                        3, 4, 4, 5, 4, 2.5, 5, 2, 2]
     /// 自機の当たり判定の半径(px)
     static let playerRadius = 2.5
 
@@ -31,7 +34,7 @@ public enum BulletLook {
     /// 進む向きへ回して描く弾か(ほかは回さない)
     public static func isOriented(_ k: Kind) -> Bool {
         switch k {
-        case .fox, .ofuda, .missile, .shell, .icicle, .shard, .soul, .chain, .tooth, .kingyo: return true
+        case .fox, .ofuda, .missile, .shell, .icicle, .shard, .soul, .chain, .tooth, .kingyo, .flame, .slash, .spine, .pshot, .gust: return true
         default: return false
         }
     }

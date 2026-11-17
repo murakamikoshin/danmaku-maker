@@ -63,7 +63,7 @@ final class ShopTests: XCTestCase {
         o.posts = 10
         XCTAssertTrue(o.hasUnlocked(.rainbow))
         XCTAssertFalse(Ownership(owned: Set(Product.all)).hasUnlocked(.gold), "買っても、投稿数で解放されるものは解放されない")
-        XCTAssertEqual(Product.all.count, 48)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個)
+        XCTAssertEqual(Product.all.count, 49)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個、竜王で49個)
     }
 
     func testLifetimeGrantsPurchasableBossesButNotInviteOnly() {
@@ -76,8 +76,8 @@ final class ShopTests: XCTestCase {
     }
 
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 48)
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 48)
+        XCTAssertEqual(Product.all.count, 49)
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 49)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))
