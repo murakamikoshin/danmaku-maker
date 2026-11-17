@@ -110,7 +110,16 @@ final class GameScene: SKScene {
     private var dragonCamera: SKCameraNode?
     private var dragonActive = false
 
-    init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none) {
+    /// エディタの見本(竜王の技)として、小さな枠の中で動かす。自機は当たらず、効果音を鳴らさず、指で動かさない。
+    /// 本物のゲームが動いている間は止まる(重くしないため)
+    let isPreview: Bool
+    /// いま動いている本物のゲームの数(見本はこれが 0 のときだけ進める)
+    private(set) static var liveGames = 0
+    /// 竜王の絵を使っている場面の数(0 になったら、塗った絵を捨てる。見本と本物が同時にあるときに、相手の絵を消さない)
+    private static var dragonScenes = 0
+
+    init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none, preview: Bool = false) {
+        isPreview = preview
         effectsOn = effects
         fx = rewardFX
         // ランダムの狙い方は、遊んだ月(UTC)の並びで撃つ(同じ月のあいだは毎回同じ)
@@ -149,7 +158,11 @@ final class GameScene: SKScene {
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
         #endif
+        if preview { sim.invincible = true }
         super.init(size: CGSize(width: GameScene.W, height: GameScene.H))
+        isUserInteractionEnabled = !preview
+        if !preview { GameScene.liveGames += 1 }
+        if dragonLayer != nil { GameScene.dragonScenes += 1 }
         scaleMode = .aspectFit
         backgroundColor = skin.background
         buildNodes()
@@ -157,7 +170,16 @@ final class GameScene: SKScene {
 
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is not used") }
 
-    deinit { if dragonLayer != nil { DragonArt.purge() } }
+    deinit {
+        if !isPreview { GameScene.liveGames -= 1 }
+        if dragonLayer != nil {
+            GameScene.dragonScenes -= 1
+            if GameScene.dragonScenes == 0 { DragonArt.purge() }
+        }
+    }
+
+    /// 効果音(見本では鳴らさない)
+    private func se(_ e: AudioManager.Effect) { if !isPreview { AudioManager.shared.se(e) } }
 
     private func pos(_ x: Double, _ y: Double) -> CGPoint { CGPoint(x: x, y: GameScene.H - y) }
 
@@ -579,7 +601,7 @@ final class GameScene: SKScene {
         // 警告: ボスの場面の開始前に、赤い点滅とサイレン(演出がオフなら、出さない)
         if sim.warningNow && effectsOn {
             warningLeft = index == 0 ? DanmakuConfig.readySeconds : Wave.intermissionSeconds
-            AudioManager.shared.se(.warning)
+            se(.warning)
         }
         if index > 0 {
             centerLabel.text = "WAVE \(index + 1)"
@@ -627,6 +649,7 @@ final class GameScene: SKScene {
     // MARK: ループ
 
     override func update(_ currentTime: TimeInterval) {
+        if isPreview && GameScene.liveGames > 0 { lastTime = nil; accumulator = 0; return }
         if holding {
             lastTime = nil; accumulator = 0; pending = .zero
             render(currentTime)
@@ -887,11 +910,11 @@ final class GameScene: SKScene {
         if status != lastStatus {
             if lastStatus.0 > status.0 && lastStatus.0 >= 0 {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                if status.0 > 0 { AudioManager.shared.se(.lifeLost) }
+                if status.0 > 0 { se(.lifeLost) }
             } else if status.0 > lastStatus.0 && lastStatus.0 > 0 {
                 // 1UP を取った
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                AudioManager.shared.se(.get)
+                se(.get)
             }
             lastStatus = status
             onStatus?(status.0, status.1, status.2)
@@ -908,17 +931,17 @@ final class GameScene: SKScene {
         guard effect != .none else { return }
         let center = pos(p.x, p.y)
         if let r = fx.burst { rewardBurst(r, at: center) }
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        if !isPreview { UINotificationFeedbackGenerator().notificationOccurred(.success) }
         switch effect {
         case .none: return
         case .explosion:
-            AudioManager.shared.se(.boom)
+            se(.boom)
             flashScreen(UIColor.white, peak: 0.55, duration: 0.35)
             ring(at: center, color: UIColor(hex: 0xFFD166), maxRadius: 150, width: 6, duration: 0.55)
             ring(at: center, color: UIColor(hex: 0xFF6B9D), maxRadius: 100, width: 4, duration: 0.45)
             burst(at: center, count: 46, colors: [0xFFD166, 0xFF8A5C, 0xFF6B9D, 0xFFFFFF].map { UIColor(hex: $0) }, speed: 70...230, size: 3...7, life: 0.6...1.1, gravity: 60)
         case .fireworks:
-            AudioManager.shared.se(.sparkle)
+            se(.sparkle)
             for (i, c) in [0xFF6B9D, 0x5CE1E6, 0xFFD166, 0xB28DFF, 0x7CF29C].enumerated() {
                 let off = CGPoint(x: center.x + CGFloat(cos(Double(i) * 1.26) * 38), y: center.y + CGFloat(sin(Double(i) * 1.26) * 38))
                 run(after: Double(i) * 0.12) { [weak self] in
@@ -927,7 +950,7 @@ final class GameScene: SKScene {
             }
             ring(at: center, color: .white, maxRadius: 120, width: 3, duration: 0.5)
         case .hearts:
-            AudioManager.shared.se(.sparkle)
+            se(.sparkle)
             for i in 0..<16 {
                 let n = SKLabelNode(text: "♥")
                 n.fontName = "AvenirNext-Heavy"
@@ -942,7 +965,7 @@ final class GameScene: SKScene {
             }
             ring(at: center, color: UIColor(hex: 0xFF6B9D), maxRadius: 110, width: 4, duration: 0.5)
         case .stardust:
-            AudioManager.shared.se(.sparkle)
+            se(.sparkle)
             for i in 0..<28 {
                 let n = SKLabelNode(text: i % 3 == 0 ? "✦" : "★")
                 n.fontName = "AvenirNext-Heavy"
@@ -1101,7 +1124,7 @@ extension GameScene {
             burst.run(.sequence([.group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]), .removeFromParent()]))
         }
         n.isHidden = true
-        AudioManager.shared.se(.boom)
+        se(.boom)
     }
 
     fileprivate func renderRewardFX() {

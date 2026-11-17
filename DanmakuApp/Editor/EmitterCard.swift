@@ -176,8 +176,9 @@ struct EmitterCard: View {
 
             if emitter.aimSupport != .none { aimPicker }
 
-            if advanced && isDragonMove {
-                // 竜王の技: 弾の形・撃つ場所・向きは決まっている。選べるのは、出す段階と間隔だけ
+            if isDragonMove {
+                // 竜王の技: 弾の形・撃つ場所・向きは決まっている。選べるのは、出す段階と間隔だけ。
+                // ほかに選ぶものが無いので、段階は「かんたん」でも出す(「くわしく」の奥にあって、見つからなかった)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("editor.phase").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     PhaseChips(code: $emitter.ph, index: index, count: phaseCount)

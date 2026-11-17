@@ -58,7 +58,25 @@ final class AudioManager: ObservableObject {
         guard track != current || !sounding else { return }
         current = track
         guard bgmOn else { return }
+        // 全画面広告の最中に曲が替わったら、いまの曲は止めておき、広告を閉じたときに新しい曲から鳴らす
+        if adShowing { stopIntro(); player?.stop(); player = nil; return }
         start(track, withIntro: withIntro, fade: true)
+    }
+
+    /// 全画面広告が出ている(広告の音と重ねないよう、その間は BGM を止める)
+    private var adShowing = false
+
+    /// 全画面広告を出す直前に呼ぶ。BGM を一時停止する
+    func adWillShow() {
+        adShowing = true
+        pause()
+    }
+
+    /// 全画面広告を閉じた(または出せなかった)ときに呼ぶ。止めていた BGM を続きから鳴らす
+    func adDidClose() {
+        guard adShowing else { return }
+        adShowing = false
+        resumeIfNeeded()
     }
 
     /// 試聴(BGM の設定がオフでも、選んだ曲を聴けるようにする)。イントロのある曲は、イントロから
@@ -119,7 +137,11 @@ final class AudioManager: ObservableObject {
         }
         player?.pause()
     }
-    func resumeIfNeeded() { if bgmOn, let p = player, !p.isPlaying { p.play() } else if bgmOn, player == nil { resume() } }
+    /// 広告の最中(広告をタップして裏に回り、戻ってきたときなど)は鳴らさない。広告を閉じたら adDidClose が鳴らす
+    func resumeIfNeeded() {
+        guard !adShowing else { return }
+        if bgmOn, let p = player, !p.isPlaying { p.play() } else if bgmOn, player == nil { resume() }
+    }
 
     private func fadeOut() {
         stopIntro()

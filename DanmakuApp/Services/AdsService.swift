@@ -333,6 +333,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }
+            AudioManager.shared.adWillShow()   // 広告の音と BGM を重ねない(閉じたら finishPresentation で戻す)
             ad.present(from: vc)
         }
         return true
@@ -348,6 +349,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         lastAdAt = Date()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             interstitialDismiss = { cont.resume() }
+            AudioManager.shared.adWillShow()   // 広告の音と BGM を重ねない(閉じたら finishPresentation で戻す)
             ad.present(from: vc)
         }
         return true
@@ -359,6 +361,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         earned = false
         return await withCheckedContinuation { cont in
             onDismiss = { cont.resume(returning: $0) }
+            AudioManager.shared.adWillShow()   // 広告の音と BGM を重ねない(閉じたら finishPresentation で戻す)
             ad.present(from: vc) { [weak self] in self?.earned = true }
         }
     }
@@ -374,6 +377,7 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
     }
 
     private func finishPresentation() async {
+        AudioManager.shared.adDidClose()
         if interstitialDismiss != nil {
             interstitial = nil
             let h = interstitialDismiss
