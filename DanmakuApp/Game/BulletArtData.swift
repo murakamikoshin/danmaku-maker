@@ -24,8 +24,17 @@ enum BulletArtData {
         ["..ooo..", ".oBBBo.", "oBWBBBo", "oSSSSSo", "oBBBBBo", ".oBBBo.", "..ooo..", "...o..."],
         ["..W..", ".WYW.", "WYYYW", ".WYW.", "..W.."],
         [".ooo.", "oW..o", "o...o", "o...o", ".ooo."],
+        ["..ooo..", ".oYYYo.", "oYWWWYo", "oYWWWYo", "oOYWYOo", ".oOYOo.", ".oOOOo.", "..oOo..", "..oOo..", "...o..."],
+        ["......ooo", "....ooWWo", "..ooWWYo.", ".oWWYYo..", "oWWYYo...", "oWYYo....", "oWYo.....", "oWYo.....", ".oWYo....", "..oWYo...", "...ooo..."],
+        ["..oo.....", ".oWWoo...", "oWLLWWoo.", ".oLLLLWWo", "..ooLLLWo", "....oLLWo", "..ooLLWo.", ".oLLWWo..", "oWWWoo...", ".ooo....."],
+        ["...ooooo...", "..oYYYYYo..", ".oYYWWWYYo.", "oYYWWWWWYYo", "oYWWWWWWWYo", "oYWWWWWWWYo", "oYWWWWWWWYo", "oYYWWWWWYYo", ".oYYWWWYYo.", "..oYYYYYo..", "...ooooo..."],
+        ["..oooo...", ".oRRRRoo.", "oRRrRRRRo", "oRrrRRYRo", "oRRRRYYRo", "oRRrRRRRo", ".oRRRrRo.", "..ooooo.."],
+        [".W.", ".W.", "oWo", "oYo", "oYo", "oYo", "oyo", "oyo", "oyo", ".o."],
+        ["oWWWWWWWWWo", ".oLLLLLLLo.", ".oWWWWWWWo.", "..oLLLLLo..", "..oWWWWWo..", "...oLLLo...", "...oWWWo...", "....oLo....", "....oWo....", ".....o....."],
+        ["..o..", ".oYo.", "oYWYo", ".oYo.", "..o.."],
+        [".W.", "oWo", "oCo", "oCo", "oCo", ".o."],
     ]
-    /// [種類][0=通常 1=覚醒] → 文字 → 色(#rrggbb)
+    /// [種類][0=通常 1=覚醒(竜王の弾は 0〜3 = 姿)] → 文字 → 色(#rrggbb)
     static let palettes: [[[Character: String]]] = [
         [["o": "#14286a", "b": "#2878f0", "B": "#6ec8ff", "W": "#ebfaff"], ["o": "#2a0a46", "b": "#7a28c8", "B": "#c88cff", "W": "#f6e8ff"]],
         [["k": "#3c1414", "w": "#f5ebd7", "r": "#c81e32"], ["k": "#1a0a28", "w": "#d8c8f0", "r": "#8c28dc"]],
@@ -49,5 +58,14 @@ enum BulletArtData {
         [["o": "#20507a", "B": "#78c8ff", "W": "#ffffff", "S": "#ff5078"], ["o": "#40104a", "B": "#c878ff", "W": "#ffffff", "S": "#ffd040"]],
         [["W": "#fff6c8", "Y": "#ffb420"], ["W": "#ffe0f6", "Y": "#e050ff"]],
         [["o": "#8cd8f8", "W": "#ffffff"], ["o": "#c8a0ff", "W": "#ffffff"]],
+        [["o": "#7a1408", "O": "#f0541e", "Y": "#ffb428", "W": "#fff4c8"], ["o": "#0a2a6a", "O": "#1e78f0", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#3c0a50", "O": "#aa28a0", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#a06414", "O": "#ffc83c", "Y": "#fff0aa", "W": "#ffffff"]],
+        [["o": "#7a1408", "Y": "#ffb428", "W": "#fff4c8"], ["o": "#0a2a6a", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#3c0a50", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#a06414", "Y": "#ffdc64", "W": "#ffffff"]],
+        [["o": "#8c5a28", "L": "#ffd28c", "W": "#fff6dc"], ["o": "#14508c", "L": "#8cdcff", "W": "#f0fcff"], ["o": "#641478", "L": "#f08cf0", "W": "#fff0ff"], ["o": "#b4823c", "L": "#fff0b4", "W": "#ffffff"]],
+        [["o": "#c83c14", "Y": "#ffb428", "W": "#fff4c8"], ["o": "#1450c8", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#8c1e96", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#dca028", "Y": "#fff0aa", "W": "#ffffff"]],
+        [["o": "#3c1410", "R": "#8c2a20", "r": "#5a1a14", "Y": "#ffb428"], ["o": "#0c0a24", "R": "#3a3070", "r": "#241c50", "Y": "#5ad2ff"], ["o": "#1e0a32", "R": "#501e78", "r": "#32144e", "Y": "#ff5adc"], ["o": "#a07828", "R": "#fff0d2", "r": "#d4bc96", "Y": "#ffc83c"]],
+        [["o": "#6a3c08", "W": "#fff4c8", "Y": "#ffc83c", "y": "#c88214"], ["o": "#0a2a6a", "W": "#ffffff", "Y": "#78dcff", "y": "#2890e6"], ["o": "#3c0a50", "W": "#ffffff", "Y": "#ff78e6", "y": "#b432aa"], ["o": "#a06414", "W": "#ffffff", "Y": "#fff0aa", "y": "#ffc83c"]],
+        [["o": "#b43c14", "L": "#ff8c28", "W": "#ffdc8c"], ["o": "#143c96", "L": "#3c96ff", "W": "#b4e6ff"], ["o": "#641478", "L": "#c83cc8", "W": "#ffb4fa"], ["o": "#c88c28", "L": "#ffdc64", "W": "#ffffff"]],
+        [["o": "#e0541e", "Y": "#ffb428", "W": "#fff0b4"], ["o": "#1e78f0", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#aa28a0", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#ffc83c", "Y": "#fff0aa", "W": "#ffffff"]],
+        [["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"]],
     ]
 }

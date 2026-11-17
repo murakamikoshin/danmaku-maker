@@ -110,13 +110,13 @@ struct PublishFlowView: View {
                     }
                     if boss.inviteLimited {
                         Text("publish.boss.invite").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
-                    } else if cosmetics.canClaimBossTicket && boss.ticketEligible {
+                    } else if cosmetics.canClaim(boss) {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
                         TicketCount()
                         GameActionButton(title: "publish.boss.ticket", systemImage: "ticket.fill", fill: GameStyle.reward) { confirmTicket = true }
                         .disabled(claimingTicket).opacity(claimingTicket ? 0.5 : 1)
                         .accessibilityIdentifier("publish.boss.ticket")
-                        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: "ticket.confirm.message") {
+                        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: boss.ticketCost > 1 ? LocalizedStringKey(String(format: L("ticket.confirm.message.n"), boss.ticketCost)) : "ticket.confirm.message") {
                             [GameDialogAction(title: "ticket.confirm.use") {
                                 Task {
                                     claimingTicket = true

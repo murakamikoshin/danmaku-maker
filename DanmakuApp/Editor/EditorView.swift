@@ -72,6 +72,7 @@ struct EditorView: View {
                                               mooksClear: model.draft.mode == .survive ? $model.draft.mooksClear : nil,
                                               bodyHit: model.draft.mode != .survive ? $model.draft.bodyHit : nil,
                                               phaseCount: model.draft.phases ?? 3,
+                                              forms: $model.draft.forms,
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
@@ -357,6 +358,8 @@ private struct EnemyControls: View {
     var bodyHit: Binding<Bool>? = nil
     /// ボスの段階の数(覚醒の段階は、2〜この数から選ぶ)
     var phaseCount = 3
+    /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil の欄は出さない
+    var forms: Binding<[Int]?>? = nil
     /// 連戦の場面か(説明の文を「次の場面へ」にする)
     var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
@@ -398,6 +401,8 @@ private struct EnemyControls: View {
         if BossCharacter.of(look: new) == .puni { awaken = 3 } else if was { awaken = nil }
         // 図形のボスには覚醒の欄が無いので、残っていると消せない設定になる。図形にしたら外す
         if BossCharacter.of(look: new) == nil { awaken = nil }
+        // 竜王は「覚醒」ではなく、段階ごとに姿を選ぶ。竜王をやめたら姿の設定は外す
+        if BossCharacter.of(look: new) == .dragon { awaken = nil } else if let forms { forms.wrappedValue = nil }
     }
 
     /// 選べる見た目。招待限定のボス(ぷにまる)も並べる(持っていなければ鍵つき。選べない)
@@ -451,7 +456,25 @@ private struct EnemyControls: View {
                     .accessibilityIdentifier("editor.boss.trial")
                     .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: "boss.\(b.productKey)") }
                 }
-                if isCharacter {
+                if BossCharacter.of(look: bossLook) == .dragon, let forms {
+                    // 竜王: 段階ごとに姿を選ぶ(技の強さも姿で変わる)
+                    Text("editor.dragon.forms").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    ForEach(1...max(1, phaseCount), id: \.self) { p in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(String(format: L("play.phase"), p)).font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.8))
+                            ChipGrid(items: (0...3).map { ($0, L("dragon.form.\($0)")) },
+                                     selection: Binding(get: { (forms.wrappedValue ?? []).indices.contains(p - 1) ? forms.wrappedValue![p - 1] : 0 },
+                                                        set: { v in
+                                                            var a = forms.wrappedValue ?? []
+                                                            while a.count < phaseCount { a.append(0) }
+                                                            a[p - 1] = v
+                                                            forms.wrappedValue = a.allSatisfy { $0 == 0 } ? nil : Array(a.prefix(phaseCount))
+                                                        }),
+                                     idPrefix: "editor.dragon.form.\(p)", minimum: 64)
+                        }
+                    }
+                    Text("editor.dragon.forms.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                } else if isCharacter {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + (2...max(2, phaseCount)).map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
@@ -1186,6 +1209,7 @@ private struct WaveCard: View {
                                   mookHits: Binding(get: { wave.mookHits ?? DanmakuConfig.mookHp }, set: { model.draft.waves[i].mookHits = $0 }),
                                   bodyHit: Binding(get: { wave.bodyHit == true }, set: { model.draft.waves[i].bodyHit = $0 ? true : nil }),
                                   phaseCount: wave.phases ?? 3,
+                                  forms: Binding(get: { wave.forms }, set: { model.draft.waves[i].forms = $0 }),
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {

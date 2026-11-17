@@ -106,7 +106,7 @@ public struct DragonState: Equatable, Sendable {
     /// 動けない残りフレーム
     public internal(set) var bind = 0
     /// 当たらない残りフレーム
-    var inv = 0
+    public internal(set) var inv = 0
     public internal(set) var zones: [DragonZone] = []
     public internal(set) var marks: [DragonMark] = []
 
@@ -222,7 +222,7 @@ extension Simulation {
         let b = bossPosition, s = bossScale
         return Point(x: b.x + dx * s, y: b.y + dy * s)
     }
-    var dragonMouth: Point { dragonPoint(22, -28) }
+    public var dragonMouth: Point { dragonPoint(22, -28) }
     func dragonHand(_ right: Bool) -> Point { right ? dragonPoint(76, 16) : dragonPoint(-80, 16) }
     func dragonWing(_ right: Bool) -> Point { right ? dragonPoint(172, 24) : dragonPoint(-172, 24) }
     func aimFrom(_ o: Point) -> Double { atan2(player.y - o.y, player.x - o.x) }
@@ -382,7 +382,7 @@ extension Simulation {
         player = Point(x: min(max(p.x, 6), W - 6), y: min(max(p.y, 6), H - 6))
     }
 
-    func dragonPullTarget() -> Point? {
+    public func dragonPullTarget() -> Point? {
         if dragon.pull == 1 { return dragonMouth }
         var best: Point?, bd = Double.infinity
         for b in bullets where b.script == Bullet.dragonTornadoScript {

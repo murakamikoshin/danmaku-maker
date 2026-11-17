@@ -54,6 +54,9 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         }
     }
 
+    /// 無料チケットで手に入れるのに使う枚数(サーバーの TICKET_COST と同じにする)。竜王は 3 枚
+    public var ticketCost: Int { self == .dragon ? 3 : 1 }
+
     /// 招待限定のボスか(買えず、チケットでも手に入らない。招待の特典としてだけ手に入る)。サーバーの INVITE_ONLY_BOSSES と同じにする
     public var inviteLimited: Bool { self == .puni }
     /// 商品として買えるか

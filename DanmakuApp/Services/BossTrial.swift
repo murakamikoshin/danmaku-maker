@@ -11,6 +11,7 @@ enum BossTrial {
     static let phases = [1, 2, 2, 3, 3]
 
     static func stage(for boss: BossCharacter) -> Stage {
+        if boss == .dragon { return dragonStage() }
         let emitters = Pattern.moves(of: boss).enumerated().map { i, p -> Emitter in
             var e = Emitter.make(p, end: Double(durationSec))
             e.ph = phases[min(i, phases.count - 1)]
@@ -19,5 +20,20 @@ enum BossTrial {
         return Stage(name: L("enemy.boss.\(boss.rawValue)"), mode: .boss, durationSec: durationSec, bossHp: bossHp, bossMove: 1,
                      emitters: emitters, lifeMode: .lives, lifeCount: lives, bossWarning: true,
                      bossLook: boss.rawValue, awaken: 3).sanitized()
+    }
+
+    /// 竜王のお試し: 4 段階で、姿が 通常 → 蒼炎 → 紫電 → 白金 と変わる。技 10 個を段階ごとに分けて出す
+    static let dragonPhases = [1, 1, 2, 2, 2, 3, 3, 3, 4, 4]
+    private static func dragonStage() -> Stage {
+        let emitters = Pattern.dragon.enumerated().map { i, p -> Emitter in
+            var e = Emitter.make(p, end: 150)
+            e.ph = dragonPhases[i]
+            return e
+        }
+        var st = Stage(name: L("enemy.boss.13"), mode: .boss, durationSec: 150, bossHp: 900, bossMove: 1,
+                       emitters: emitters, lifeMode: .lives, lifeCount: 5, bossWarning: true, bossLook: BossCharacter.dragon.rawValue)
+        st.phases = 4
+        st.forms = [0, 1, 2, 3]
+        return st.sanitized()
     }
 }

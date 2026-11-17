@@ -992,8 +992,13 @@ private struct BossShopCard: View {
                             Label("shop.owned", systemImage: "checkmark.circle.fill")
                                 .font(.footnote.bold()).foregroundStyle(GameStyle.green)
                         } else {
-                            let ticket = cosmetics.canClaimBossTicket && boss.ticketEligible
+                            let ticket = cosmetics.canClaim(boss)
                             if ticket { TicketCount() }
+                            if boss.ticketEligible && boss.ticketCost > 1 {
+                                // 竜王はチケット 3 枚。足りなくても、何枚で交換できるかは見せる
+                                Text(String(format: L("shop.boss.ticket.cost"), boss.ticketCost, cosmetics.availableBossClaims))
+                                    .font(.system(size: 12, weight: .heavy)).foregroundStyle(ticket ? GameStyle.green : GameStyle.text.opacity(0.6))
+                            }
                             HStack(spacing: 10) {
                                 if ticket {
                                     Button { gameTap(); confirmTicket = true } label: {
@@ -1018,7 +1023,7 @@ private struct BossShopCard: View {
         .fullScreenCover(item: $trialStage) { t in
             PlayView(stage: t.stage, title: L("shop.boss.trial.prefix") + t.stage.name, trial: true) { trialStage = nil }
         }
-        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: "ticket.confirm.message") {
+        .gameDialog(LocalizedStringKey(String(format: L("ticket.confirm.title"), L("enemy.boss.\(boss.rawValue)"))), isPresented: $confirmTicket, message: boss.ticketCost > 1 ? LocalizedStringKey(String(format: L("ticket.confirm.message.n"), boss.ticketCost)) : "ticket.confirm.message") {
             [GameDialogAction(title: "ticket.confirm.use") { Task { await cosmetics.claimBossTicket(boss) } }, .cancel()]
         }
     }
@@ -1052,9 +1057,9 @@ private struct BossShopCard: View {
     }
 
     private func sprite(awakened: Bool) -> some View {
-        VisibleTimeline(interval: BossSprites.frameDuration) { tl in
+        VisibleTimeline(interval: boss == .dragon ? DragonArt.frameSeconds : BossSprites.frameDuration) { tl in
             if let art = BossSprites.shopArt(boss, awakened: awakened) {
-                let i = BossSprites.frameIndex(at: tl.date.timeIntervalSinceReferenceDate)
+                let i = art.frameIndex(at: tl.date.timeIntervalSinceReferenceDate)
                 Image(decorative: art.frames[i], scale: 1)
                     .interpolation(.none).resizable().aspectRatio(art.size, contentMode: .fit)
                     .frame(maxWidth: .infinity)

@@ -28,6 +28,12 @@ final class DragonTests: XCTestCase {
         return (sim, sawZone, maxB, finished)
     }
 
+    func testTicketCostMatchesServer() {
+        // サーバーの TICKET_COST(dragon: 3)と同じ。ほかのボスは 1 枚
+        XCTAssertEqual(BossCharacter.dragon.ticketCost, 3)
+        for b in BossCharacter.allCases where b != .dragon { XCTAssertEqual(b.ticketCost, 1) }
+    }
+
     func testOnlyTheDragonCanUseDragonMovesAndFormsAreSanitized() {
         let em = Pattern.dragon.map { Emitter(t: $0, x: 0.5, y: 0.2, s: 0, e: 60, i: 3, c: 1, v: 1, r: 0, k: 0) }
         var other = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: em, bossLook: BossCharacter.hire.rawValue)

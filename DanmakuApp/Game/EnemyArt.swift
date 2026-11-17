@@ -28,7 +28,11 @@ enum EnemyArt {
 
     static func bossImage(look: Int, size: Int, flash: Bool) -> UIImage {
         // 専用の絵を持つボス: エディタの選択肢・プレビュー用に、1コマ目の絵を返す
-        if let c = BossCharacter.of(look: look), let art = BossSprites.shopArt(c, awakened: false) { return UIImage(cgImage: art.frames[0], scale: 1, orientation: .up) }
+        if let c = BossCharacter.of(look: look), let art = BossSprites.shopArt(c, awakened: false) {
+            // 竜王の絵は横長(240×200)。四角い枠でつぶれないよう、まん中を正方形に切り出す
+            if c == .dragon, let sq = art.frames[0].cropping(to: CGRect(x: 30, y: 10, width: 180, height: 180)) { return UIImage(cgImage: sq, scale: 1, orientation: .up) }
+            return UIImage(cgImage: art.frames[0], scale: 1, orientation: .up)
+        }
         let key = "b\(look).\(size).\(flash)"
         if let c = cache[key] { return c }
         let color = flash ? UIColor.white : Palette.pink

@@ -64,6 +64,9 @@ extension Emitter {
         case .kitsuneSunshower: return Emitter(t: t, e: end, i: 0.05, c: 8, v: 2.2, r: 0)
         case .kitsuneTorii: return Emitter(t: t, e: end, i: 0.45, c: 22, v: 1.4, r: 60)
         case .kitsuneDance: return Emitter(t: t, e: end, i: 0.05, c: 9, v: 2.2, r: 0)
+        case .dragonBreath, .dragonRaid, .dragonGale, .dragonInhale, .dragonGlide, .dragonRoar, .dragonQuake, .dragonTail, .dragonRampage, .dragonEnd:
+            // 竜王の技は 1 つずつ(ほかの技の途中なら待つ)。間隔は「次に出せるまでの最短の時間」。技が交互に出るよう、長めにしておく
+            return Emitter(t: t, e: end, i: 5.0, c: 1, v: 1.0, r: 0)
         default:
             // 広告で解放するパターン: 表の初期値
             let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
@@ -116,6 +119,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
     /// ボスの段階の数(4・5。nil は3段階)と、段階ごとの名前・必殺技(見た目だけ)
     var phases: Int?
     var phaseInfo: [PhaseInfo]?
+    /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil はすべて通常
+    var forms: [Int]?
     /// このボスを倒したときの1UP(1 = 拾う、2 = 自動。nil は出さない。最後の場面では使わない)
     var oneUp: Int?
     var emitters: [Emitter]
@@ -138,6 +143,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
         w.bodyHit = (kind == .boss && bodyHit == true) ? true : nil
         w.phases = kind == .boss ? phases : nil
         w.phaseInfo = kind == .boss ? phaseInfo : nil
+        w.forms = kind == .boss ? forms : nil
         w.oneUp = kind == .boss ? oneUp : nil
         return w
     }
@@ -225,12 +231,14 @@ struct Draft: Codable, Equatable {
     /// ボスの段階の数(4・5。nil は3段階)と、段階ごとの名前・必殺技(ボス戦・ダメージ勝負。見た目だけ)
     var phases: Int?
     var phaseInfo: [PhaseInfo]?
+    /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil はすべて通常
+    var forms: [Int]?
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo, forms }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -270,6 +278,7 @@ struct Draft: Codable, Equatable {
         emitters = try c.decodeIfPresent([Emitter].self, forKey: .emitters) ?? [Emitter.make(.swirl, end: 20)]
         phases = try? c.decodeIfPresent(Int.self, forKey: .phases)
         phaseInfo = try? c.decodeIfPresent([PhaseInfo].self, forKey: .phaseInfo)
+        forms = try? c.decodeIfPresent([Int].self, forKey: .forms)
     }
 
     /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
@@ -303,6 +312,7 @@ struct Draft: Codable, Equatable {
         st.shipSkin = shipSkin
         st.phases = (mode == .boss || mode == .damage) ? phases : nil
         st.phaseInfo = (mode == .boss || mode == .damage) ? phaseInfo : nil
+        st.forms = (mode == .boss || mode == .damage) ? forms : nil
         return st.sanitized()
     }
 

@@ -34,6 +34,8 @@ final class CosmeticsStore: ObservableObject {
 
     /// 無料でボスと交換できる回数(チケットの枚数に、初めての公開のための 1 体を足したもの)
     var availableBossClaims: Int { bossTickets + ((!ticketGranted && postedCount == 0) ? 1 : 0) }
+    /// チケットでこのボスをもらえるか(竜王はチケット 3 枚)
+    func canClaim(_ boss: BossCharacter) -> Bool { boss.ticketEligible && availableBossClaims >= boss.ticketCost }
 
     /// 投稿したステージの数(サーバーの記録から数えた、いちばん多い値)。投稿数で解放される見た目に使う
     @Published private(set) var postedCount: Int

@@ -167,14 +167,23 @@ struct EmitterCard: View {
                 }
             }
 
+            if !isDragonMove {
             VStack(alignment: .leading, spacing: 6) {
                 Text("editor.color.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                 ColorSwatches(selection: $emitter.k, index: index, theme: look.bullets)
             }
+            }
 
             if emitter.aimSupport != .none { aimPicker }
 
-            if advanced {
+            if advanced && isDragonMove {
+                // 竜王の技: 弾の形・撃つ場所・向きは決まっている。選べるのは、出す段階と間隔だけ
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.phase").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    PhaseChips(code: $emitter.ph, index: index, count: phaseCount)
+                    Text("editor.phase.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            } else if advanced {
                 // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸。見た目だけ(当たる範囲は同じ)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
@@ -217,6 +226,9 @@ struct EmitterCard: View {
             SliderRow(label: "editor.interval", value: Binding(get: { Double(IntervalScale.index(emitter.i)) }, set: { emitter.i = IntervalScale.seconds(Int($0)) }),
                       range: 0...Double(IntervalScale.maxIndex), step: 1,
                       nudge: { emitter.i = IntervalScale.nudged(emitter.i, by: $0) }) { _ in IntervalScale.label(emitter.i) }
+            if isDragonMove {
+                Text("editor.dragon.interval.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            } else {
             SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
             SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
             // 向き: スライダーは 15° きざみ、− / + で 1° ずつ
@@ -236,6 +248,7 @@ struct EmitterCard: View {
                 SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart,
                           nudge: { emitter.r = min(90, max(-90, emitter.r.rounded() + Double($0))) }) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }
             }
+            }   // if !isDragonMove
             }   // if !collapsed
         }
         .padding(14)
@@ -245,6 +258,9 @@ struct EmitterCard: View {
         .accessibilityIdentifier("emitter.card.\(index)")
         .sheet(item: $shopFocus) { ShopView(focus: $0.id) }
     }
+
+    /// 竜王の技(本体が動く・範囲攻撃。数・速さ・向きなどは使わない)
+    private var isDragonMove: Bool { emitter.t.dragonMove != nil }
 
     /// 撃つ場所を選ぶ。「好きな場所」にしたとき、場所がボスのすぐ近く(初期値のまま)なら、少し離して変わったことが分かるようにする
     private func choosePoint(_ p: Int) {

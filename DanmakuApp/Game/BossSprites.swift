@@ -16,6 +16,9 @@ enum BossSprites {
         let size: CGSize
         /// 構え・技中・硬直の絵(あるものだけ)。通常の姿と覚醒した姿で別。flash は、弾が当たったときの白い姿
         var actions: [Action: (frames: [SKTexture], flash: [SKTexture])] = [:]
+        /// 待機の 1 コマの長さ(秒)。竜王だけ短い(25 コマ/秒)
+        var frameDuration = BossSprites.frameDuration
+        func frameIndex(at t: Double) -> Int { Int(max(0, t) / frameDuration) % max(1, frames.count) }
     }
 
     /// 技の前後の動き: 構え → 技中(ループ)→ 硬直 → 待機。見た目だけ
@@ -34,6 +37,7 @@ enum BossSprites {
 
     /// 通常の姿と、覚醒した姿の絵。覚醒の絵がないボスは awakened が nil
     static func art(_ c: BossCharacter, awakened: Bool) -> Art? {
+        if c == .dragon { return dragonArt(form: awakened ? 1 : 0) }
         let name = awakened ? c.awakenedSheet : c.sheet
         guard let name else { return nil }
         if let a = cache[name] { return a }
@@ -70,9 +74,24 @@ enum BossSprites {
 
     /// ショップの見本用の、軽い待機の絵(8コマ)。構え・技中・白い影などは作らない(ショップの一覧で全ボスぶんを一度に読み込んでも重くならないように)。
     /// 絵の読み込みは最初の1回だけで、以降は取り出すだけ
-    struct ShopArt { let frames: [CGImage]; let size: CGSize }
+    struct ShopArt {
+        let frames: [CGImage]; let size: CGSize
+        /// 1 コマの長さ(秒)。竜王だけ短い
+        var frameDuration = BossSprites.frameDuration
+        func frameIndex(at t: Double) -> Int { Int(max(0, t) / frameDuration) % max(1, frames.count) }
+    }
     private static var shopCache: [String: ShopArt] = [:]
     static func shopArt(_ c: BossCharacter, awakened: Bool) -> ShopArt? {
+        if c == .dragon {
+            // 竜王: 待機(72 コマ)を色の番号の絵から塗る。覚醒の見本は蒼炎
+            let key = "dragon\(awakened ? 1 : 0)"
+            if let a = shopCache[key] { return a }
+            let fr = DragonArt.frames("idle", form: awakened ? 1 : 0)
+            guard let f0 = fr.first else { return nil }
+            let a = ShopArt(frames: fr, size: CGSize(width: f0.width, height: f0.height), frameDuration: DragonArt.frameSeconds)
+            shopCache[key] = a
+            return a
+        }
         guard let name = awakened ? c.awakenedSheet : c.sheet else { return nil }
         if let a = shopCache[name] { return a }
         guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
@@ -82,6 +101,19 @@ enum BossSprites {
         guard frames.count == frameCount else { return nil }
         let art = ShopArt(frames: frames, size: CGSize(width: fw, height: fh))
         shopCache[name] = art
+        return art
+    }
+
+    /// 竜王の待機の絵(エディタの見本・プレビュー用)。ゲームの中は DragonArt から、技ごとの動きを使う
+    private static func dragonArt(form: Int) -> Art? {
+        let key = "dragon_art_\(form)"
+        if let a = cache[key] { return a }
+        let fr = DragonArt.frames("idle", form: form)
+        guard let f0 = fr.first else { return nil }
+        let tex = fr.map { cg -> SKTexture in let t = SKTexture(cgImage: cg); t.filteringMode = .nearest; return t }
+        var art = Art(frames: tex, flashFrames: tex, still: UIImage(cgImage: f0, scale: 1, orientation: .up), size: DragonArt.drawSize)
+        art.frameDuration = DragonArt.frameSeconds
+        cache[key] = art
         return art
     }
 
@@ -122,6 +154,7 @@ extension BossCharacter {
         case .mech: return "mech_idle_sheet"
         case .puni: return "puni_idle_sheet"
         case .hire: return "hire_idle_sheet"
+        case .dragon: return nil      // 竜王は DragonArt(色の番号の絵を姿ごとに塗る)
         }
     }
     /// 覚醒した姿の画像ファイル名。nil は、姿を変えない
@@ -135,6 +168,7 @@ extension BossCharacter {
         case .mech: return "mech_awakened_idle_sheet"
         case .puni: return "puni_awakened_idle_sheet"
         case .hire: return "hire_awakened_idle_sheet"
+        case .dragon: return nil
         }
     }
 }

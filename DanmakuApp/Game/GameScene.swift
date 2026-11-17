@@ -99,6 +99,10 @@ final class GameScene: SKScene {
     private var warningLeft = 0.0
     private let warningOverlay = SKSpriteNode(color: UIColor(red: 1, green: 0.1, blue: 0.2, alpha: 1), size: CGSize(width: 360, height: 540))
     private let waveLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+    /// 竜王の場面の演出(竜王が出るステージだけ)と、画面のゆれ・寄りに使うカメラ
+    private var dragonLayer: DragonLayer?
+    private var dragonCamera: SKCameraNode?
+    private var dragonActive = false
 
     init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none) {
         effectsOn = effects
@@ -130,6 +134,7 @@ final class GameScene: SKScene {
             bossTexture = SpriteFactory.boss(flash: false); bossFlashTexture = SpriteFactory.boss(flash: true)
         }
         bossNode = SKSpriteNode(texture: bossTexture)
+        if stage.usedBosses.contains(.dragon) { dragonLayer = DragonLayer() }
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
         #endif
@@ -140,6 +145,8 @@ final class GameScene: SKScene {
     }
 
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is not used") }
+
+    deinit { if dragonLayer != nil { DragonArt.purge() } }
 
     private func pos(_ x: Double, _ y: Double) -> CGPoint { CGPoint(x: x, y: GameScene.H - y) }
 
@@ -296,6 +303,15 @@ final class GameScene: SKScene {
         bossNode.zPosition = 2
         bossNode.isHidden = !sim.isBoss
         addChild(bossNode)
+        if let d = dragonLayer {
+            d.root.isHidden = true
+            addChild(d.root)
+            let cam = SKCameraNode()
+            cam.position = CGPoint(x: W / 2, y: H / 2)
+            addChild(cam)
+            camera = cam
+            dragonCamera = cam
+        }
         shipNode.zPosition = 3
         addChild(shipNode)
         if shipSkinFrames.count > 1 {
@@ -434,7 +450,7 @@ final class GameScene: SKScene {
         defer { lastBossPoint = cur }
         guard effectsOn, let last = lastBossPoint else { bossNode.zRotation = 0; return }
         let vx = (cur.x - last.x) * 60, vy = (cur.y - last.y) * 60   // 論理px/秒
-        let target = max(-0.22, min(0.22, -vx * 0.0018))
+        let target = dragonActive ? 0 : max(-0.22, min(0.22, -vx * 0.0018))     // 竜王は傾けない(試射場と同じ)
         bossNode.zRotation += (target - bossNode.zRotation) * 0.2
         let speed = (vx * vx + vy * vy).squareRoot()
         ghostTick += 1
@@ -491,6 +507,22 @@ final class GameScene: SKScene {
         }
     }
 
+    /// 竜王の場面か。竜王の場面では、背景・弾・範囲攻撃を竜王の演出で描き、星は隠す
+    private func updateDragonActive() {
+        let on = dragonLayer != nil && sim.isBoss && sim.bossCharacter == .dragon
+        dragonActive = on
+        dragonLayer?.root.isHidden = !on
+        for s in starNodes { s.node.isHidden = on }
+        if !on {
+            bossNode.shader = nil
+            dragonCamera?.position = CGPoint(x: GameScene.W / 2, y: GameScene.H / 2); dragonCamera?.setScale(1)
+            return
+        }
+        // 使う動きを先に塗っておく(技の途中で塗ると、一瞬止まるので)
+        let moves = sim.currentEmitters.compactMap { $0.t.dragonMove }
+        DragonArt.preload(["idle"] + moves.flatMap(DragonArt.anims(for:)), form: sim.dragonForm)
+    }
+
     /// 場面が始まったときの表示のつくり直し: 発射位置の予告・ボスの出し入れ・帯の色・場面の数字・警告
     private func enterWave(_ index: Int) {
         lastBossPoint = nil
@@ -518,6 +550,7 @@ final class GameScene: SKScene {
         }
         bossNode.isHidden = !sim.isBoss
         applyEnemyLooks()
+        updateDragonActive()
         barFill.color = sim.isBoss ? Palette.pink : Palette.gold
         for sep in barSeparators { sep.isHidden = !sim.isBoss }
         waveLabel.isHidden = sim.waveCount <= 1
@@ -590,6 +623,7 @@ final class GameScene: SKScene {
                 onStep?(sim)
             }
         }
+        if dragonActive { dragonLayer?.advance(sim) }
         render(currentTime)
         if stopRequested && !finished {
             finished = true
@@ -649,6 +683,11 @@ final class GameScene: SKScene {
                     n.isHidden = true
                     drawBlast(b, slot: blastCount)
                     blastCount += 1
+                    continue
+                }
+                if dragonActive && b.isDragon {
+                    // 竜王の弾は、竜王の演出の絵(DragonLayer)に描く。本体の当たり判定は見えない
+                    n.isHidden = true
                     continue
                 }
                 if b.isDormant && !b.dormantGlow {
@@ -735,7 +774,22 @@ final class GameScene: SKScene {
             bossNode.position = pos(bp.x, bp.y)
             updateAwaken(at: bp)
             animateBossMotion(to: CGPoint(x: bp.x, y: bp.y))
-            if let normal = characterNormal {
+            if dragonActive, let d = dragonLayer {
+                // 竜王: 技ごとの動き(構え・技中・硬直・横向き)を、段階ごとの姿の色で
+                let fr = DragonArt.frame(for: sim.dragon, waveFrames: Int(max(0, sim.t) * 60))
+                let tex = DragonArt.textures(fr.anim, form: sim.dragonForm)
+                if !tex.isEmpty { bossNode.texture = tex[min(fr.index, tex.count - 1)] }
+                let ds = DragonArt.drawSize
+                bossNode.size = CGSize(width: ds.width * sim.bossScale, height: ds.height * sim.bossScale)
+                bossNode.shader = sim.flash > 0 ? DragonArt.flashShader : nil
+                bossNode.zRotation = 0
+                d.render(sim, boss: bossNode)
+                if let cam = dragonCamera {
+                    let o = d.cameraOffset()
+                    cam.position = CGPoint(x: W / 2 + o.dx, y: H / 2 - o.dy)
+                    cam.setScale(1 / o.zoom)
+                }
+            } else if let normal = characterNormal {
                 let swapped = awakenStartT.map { sim.t - $0 >= GameScene.awakenSwap } ?? true
                 let art = (sim.isAwakened && swapped ? characterAwakened : nil) ?? normal
                 // キャラクターのボスの大きさ(当たり判定と同じ倍率)
