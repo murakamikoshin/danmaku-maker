@@ -123,6 +123,9 @@ final class AdsService: NSObject, ObservableObject, FullScreenContentDelegate {
         await requestTracking()
         // ATT の結果が出たので、広告の効果計測(AppsFlyer)を始めてよい
         AttributionService.shared.trackingDecided()
+        // 年齢制限(9+)に合う広告だけを出す: 内容の上限を PG に(大人向け T・MA は出さない)。
+        // 1.3.1 の審査で「年齢制限に合わない広告が出た」と指摘された(Guideline 2.5.18)。メディエーションにも伝わる
+        MobileAds.shared.requestConfiguration.maxAdContentRating = .parentalGuidance
         await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
             MobileAds.shared.start { _ in c.resume() }
         }
