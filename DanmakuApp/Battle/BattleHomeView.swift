@@ -118,7 +118,7 @@ struct BattleHomeView: View {
                     Text(String(format: L("battle.provisional"), 10 - s.games)).font(.display(17)).foregroundStyle(GameStyle.text)
                         .lineLimit(2).minimumScaleFactor(0.7).fixedSize(horizontal: false, vertical: true)
                 } else {
-                    Text(LocalizedStringKey("battle.rank.\(s.rank)")).font(.display(22)).foregroundStyle(RankEmblem.color(s.rank))
+                    Text(LocalizedStringKey("battle.rank." + s.rank)).font(.display(22)).foregroundStyle(RankEmblem.color(s.rank))
                 }
                 Text(String(format: L("battle.rating"), s.rating)).font(.system(size: 15, weight: .heavy, design: .monospaced)).foregroundStyle(GameStyle.text)
                     .accessibilityIdentifier("battle.rating")
@@ -265,7 +265,11 @@ struct BattleHomeView: View {
                         Text(String(format: L("battle.rating"), m.opponent.rating)).font(.system(size: 13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
                     }
                 }
-                Text("\(n)").font(.display(64)).foregroundStyle(GameStyle.yellow).compatNumericTransition()
+                if n > 0 {
+                    Text("\(n)").font(.display(64)).foregroundStyle(GameStyle.yellow).compatNumericTransition()
+                } else {
+                    ProgressView().tint(GameStyle.yellow).frame(height: 64)
+                }
             }
             .padding(24).gamePanel(radius: 20)
         case .waiting:
@@ -309,7 +313,7 @@ private struct BattleResultCard: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Text(LocalizedStringKey("battle.result.\(result.outcome.rawValue)"))
+            Text(LocalizedStringKey("battle.result." + result.outcome.rawValue))
                 .font(.display(34))
                 .lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(result.outcome == .win ? GameStyle.yellow : result.outcome == .lose ? GameStyle.dim : GameStyle.text)
@@ -330,7 +334,7 @@ private struct BattleResultCard: View {
             }
             .foregroundStyle(GameStyle.text)
             if BattleService.rankOf(result.ratingBefore) != result.rank {
-                Text(LocalizedStringKey("battle.rank.\(result.rank)")).font(.display(18)).foregroundStyle(RankEmblem.color(result.rank))
+                Text(LocalizedStringKey("battle.rank." + result.rank)).font(.display(18)).foregroundStyle(RankEmblem.color(result.rank))
             }
             HStack(spacing: 10) {
                 Button { gameTap(); quit() } label: {

@@ -35,7 +35,14 @@ struct SavedStage: Identifiable, Codable, Equatable {
 
     var stage: Stage { draft.stage }
     /// クリア確認は、遊びの中身(弾・敵・時間など)が同じかで判断する。名前を付け直しただけでは外れない
-    var isVerified: Bool { verifiedStage.map { $0.samePlay(as: stage) } ?? false }
+    var isVerified: Bool { Self.isVerified(stage, against: verifiedStage, month: verifiedMonth) }
+    /// ランダムの狙い方は月ごとに並びが変わる。前の月のクリアは、サーバーが受け付けないので、確認済みとしない
+    /// (エディタの EditorModel.isVerified と同じ決まり)
+    static func isVerified(_ stage: Stage, against verified: Stage?, month: Int?, now: Date = Date()) -> Bool {
+        guard verified.map({ $0.samePlay(as: stage) }) ?? false else { return false }
+        if Simulation.usesMonth(stage) { return month == Simulation.month(of: now) }
+        return true
+    }
     var isPublished: Bool { publishedStage != nil && publishedStage == stage && publishedID != nil }
     var displayName: String { draft.name.trimmingCharacters(in: .whitespaces).isEmpty ? L("mystage.unnamed") : draft.name }
 }

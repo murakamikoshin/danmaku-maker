@@ -84,8 +84,9 @@ describe("弾幕バトルの不正対策", () => {
     const now = 1_000_000;
     expect(queueRowExpired({ r: 1000, at: now - 1000, m: "x", s: now + 3000 }, now)).toBe(false);
     expect(queueRowExpired({ r: 1000, at: now - 5000, m: "x", s: now - 1 }, now)).toBe(true);
-    // 始まる時刻を持たない古い行は、待ち始め + 4 秒で始まったとみなす
-    expect(queueRowExpired({ r: 1000, at: now - 4000, m: "x" }, now)).toBe(true);
+    // 始まる時刻を持たない古い行は、待ち始め + 6.5 秒(START_DELAY_MS)で始まったとみなす
+    expect(queueRowExpired({ r: 1000, at: now - 6500, m: "x" }, now)).toBe(true);
+    expect(queueRowExpired({ r: 1000, at: now - 6000, m: "x" }, now)).toBe(false);
     expect(queueRowExpired({ r: 1000, at: now - 1000 }, now)).toBe(false);
     expect(queueRowExpired({ r: 1000, at: now - 16_000 }, now)).toBe(true);
     expect(queueRowExpired(null, now)).toBe(true);

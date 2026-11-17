@@ -137,7 +137,10 @@ final class CosmeticsStore: ObservableObject {
 
     /// サーバーに保存されている無料チケットの状態を読み直す(もらったボスは、ずっと残る)
     func refreshBossTickets(uid: String?) async {
-        guard let uid, Backend.isAvailable, let d = try? await Firestore.firestore().document("users/\(uid)").getDocument().data() else { return }
+        // 読んでいる間に、チケットを使った(サーバーの新しい結果が先に届いた)なら、古い読み込みの結果で戻さない
+        let started = ticketGeneration
+        guard let uid, Backend.isAvailable, let d = try? await Firestore.firestore().document("users/\(uid)").getDocument().data(),
+              started == ticketGeneration else { return }
         applyTickets(free: d["freeBosses"] as? [String] ?? [], tickets: (d["bossTickets"] as? NSNumber)?.intValue ?? 0, granted: d["ticketGranted"] as? Bool ?? false)
     }
 
@@ -151,7 +154,11 @@ final class CosmeticsStore: ObservableObject {
         return true
     }
 
+    /// チケットの状態を書き換えた回数(古い読み込みの結果で、新しい状態を上書きしないため)
+    private var ticketGeneration = 0
+
     private func applyTickets(free: [String], tickets: Int, granted: Bool) {
+        ticketGeneration &+= 1
         let bosses = Set(free.compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
         var next = ownership
         // サーバーの記録で置き換える(足していくだけだと、アカウントを替えたあとも持っている表示のまま残り、投稿で断られていた)

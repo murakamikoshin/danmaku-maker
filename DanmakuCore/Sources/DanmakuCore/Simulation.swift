@@ -951,17 +951,22 @@ public struct Simulation {
     }
 
     public var bossPosition: Point {
-        if let c = spec.character {
+        Simulation.bossPosition(character: spec.character, move: spec.move, homeDX: spec.homeDX, homeDY: spec.homeDY, t: waveT)
+    }
+
+    /// ボスの、場面が始まって t 秒後の位置(動き・位置の指定・キャラクターを含む)。ゲームとエディタの発射台の見本で同じ式を使う
+    public static func bossPosition(character: BossCharacter?, move: Int, homeDX: Double, homeDY: Double, t: Double) -> Point {
+        if let c = character {
             // キャラクターのボス: 動きの指定がなければ、これまで通りの定位置のゆれ。指定があれば、図形のボスと同じ動きを、キャラクターの高さで
-            let base = spec.move == 0 ? c.position(waveT: waveT)
-                : { let q = Simulation.bossPoint(move: spec.move, t: waveT); return Point(x: q.x, y: q.y + BossCharacter.moveYOffset) }()
-            if spec.move == 0 && spec.homeDX == 0 && spec.homeDY == 0 { return base }
-            return Point(x: min(max(base.x + spec.homeDX, 40), DanmakuConfig.width - 40), y: min(max(base.y + spec.homeDY, 60), DanmakuConfig.height * 0.5))
+            let base = move == 0 ? c.position(waveT: t)
+                : { let q = Simulation.bossPoint(move: move, t: t); return Point(x: q.x, y: q.y + BossCharacter.moveYOffset) }()
+            if move == 0 && homeDX == 0 && homeDY == 0 { return base }
+            return Point(x: min(max(base.x + homeDX, 40), DanmakuConfig.width - 40), y: min(max(base.y + homeDY, 60), DanmakuConfig.height * 0.5))
         }
-        let p = Simulation.bossPoint(move: spec.move, t: waveT)
-        if spec.homeDX == 0 && spec.homeDY == 0 { return p }
+        let p = Simulation.bossPoint(move: move, t: t)
+        if homeDX == 0 && homeDY == 0 { return p }
         // ボスの位置の指定: 動きの中心をずらす。画面の外に出ないよう、端で止める
-        return Point(x: min(max(p.x + spec.homeDX, 24), DanmakuConfig.width - 24), y: min(max(p.y + spec.homeDY, 24), DanmakuConfig.height * 0.5))
+        return Point(x: min(max(p.x + homeDX, 24), DanmakuConfig.width - 24), y: min(max(p.y + homeDY, 24), DanmakuConfig.height * 0.5))
     }
 
     private func phaseOf() -> Int {

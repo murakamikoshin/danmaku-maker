@@ -199,6 +199,10 @@ struct PreviewLook: Equatable {
     var bossLook = 0
     var mooks: Int?
     var mookLook = 0
+    /// ボスの動きと位置の指定(発射台の見本でも、ゲームと同じ場所から撃つ)
+    var bossMove = 0
+    var bossX: Double?
+    var bossY: Double?
     /// キャラクターのボスの大きさの倍率(半径 ÷ 40。図形のボスは 1)
     var characterScale: Double {
         guard BossCharacter.of(look: bossLook) != nil, DanmakuConfig.characterRadiusRange.contains(bossSize) else { return 1 }
@@ -210,6 +214,13 @@ struct PreviewLook: Equatable {
         bullets = draft.themeBullets; background = draft.themeBackground; ship = draft.themeShip
         customs = draft.customImages
         bossSize = draft.bossSize; bossLook = draft.bossLook; mooks = draft.mooks; mookLook = draft.mookLook
+        bossMove = draft.bossMove; bossX = draft.bossX; bossY = draft.bossY
+    }
+
+    /// ボスの、場面が始まって t 秒後の位置(ゲームの Simulation.bossPosition と同じ式)
+    func bossPoint(t: Double) -> Point {
+        Simulation.bossPosition(character: BossCharacter.of(look: bossLook), move: bossMove,
+                                homeDX: Stage.homeShift(bossX, 0.5, DanmakuConfig.width), homeDY: Stage.homeShift(bossY, 0.2, DanmakuConfig.height), t: t)
     }
 }
 
@@ -1104,6 +1115,7 @@ private struct WaveCard: View {
     private var content: some View {
         var look = PreviewLook(draft: model.draft)
         look.bossSize = wave.bossSize ?? 1; look.bossLook = wave.bossLook ?? 0; look.mooks = wave.mooks; look.mookLook = wave.mookLook ?? 0
+        look.bossMove = wave.bossMove; look.bossX = wave.bossX; look.bossY = wave.bossY
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(String(format: L("editor.wave.title"), i + 1)).font(.display(15)).foregroundStyle(GameStyle.yellow)

@@ -141,7 +141,8 @@ final class BattleModel: ObservableObject {
         guard case .searching = phase else { return }
         stopQueue()
         searchTask?.cancel()
-        phase = .found(countdown: 3)
+        // 0 = 相手は決まったが、始まる時刻がまだ届いていない(数字の代わりに「準備中」を出す)
+        phase = .found(countdown: 0)
         do {
             let m = try await BattleService.liveMatch(id: id, myUid: uid)
             await begin(m)
@@ -150,7 +151,7 @@ final class BattleModel: ObservableObject {
 
     private func goBot(uid: String) async {
         stopQueue()
-        phase = .found(countdown: 3)
+        phase = .found(countdown: 0)
         do {
             let r = try await BattleService.bot()
             if let m = r.match { await begin(m) } else { await begin(try await BattleService.liveMatch(id: r.id, myUid: uid)) }
@@ -191,11 +192,14 @@ final class BattleModel: ObservableObject {
             }
         }
         // サーバーの時計で決めた時刻に、二人同時に始める
+        // ボット戦は自分だけなので、届くまでに時間がかかっても 3・2・1 を最後まで数えてから始める
+        // (遅く始めるぶんにはサーバーの確かめに引っかからない)。人同士は、二人そろえるためにサーバーの時刻どおり
+        let startAt = m.botMoves != nil ? max(m.startAt, Date().timeIntervalSince1970 * 1000 + offset + 3_000) : m.startAt
         startTask = Task { [weak self] in
             while let self, !Task.isCancelled {
-                let leftMs = m.startAt - (Date().timeIntervalSince1970 * 1000 + offset)
+                let leftMs = startAt - (Date().timeIntervalSince1970 * 1000 + offset)
                 if leftMs <= 0 { break }
-                self.phase = .found(countdown: max(1, Int(ceil(leftMs / 1000))))
+                self.phase = .found(countdown: min(3, max(1, Int(ceil(leftMs / 1000)))))
                 try? await Task.sleep(nanoseconds: UInt64(min(leftMs, 200) * 1_000_000))
             }
             guard let self, !Task.isCancelled else { return }

@@ -835,7 +835,7 @@ public struct Stage: Codable, Equatable, Sendable {
         case mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo
     }
 
-    static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
+    public static func homeShift(_ v: Double?, _ standard: Double, _ size: Double) -> Double { ((v ?? standard) - standard) * size }
 
     /// シミュレーションが使う場面の一覧。連戦以外は、これまでのステージ全体を「場面1つ」として扱う
     var waveSpecs: [WaveSpec] {

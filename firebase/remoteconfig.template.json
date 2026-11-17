@@ -9,7 +9,7 @@
     },
     "battle_enabled": {
       "defaultValue": {
-        "value": "true"
+        "value": "false"
       },
       "description": "弾幕バトル(リアルタイム対戦)のタブを出す",
       "valueType": "BOOLEAN"

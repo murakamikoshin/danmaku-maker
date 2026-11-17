@@ -31,7 +31,7 @@ const rtdb = () => getDatabaseWithUrl(RTDB_URL);
 export const SEARCH_MS = 10_000;
 const STALE_MS = 15_000;
 /** マッチしてから始まるまで(3・2・1 を見せる) */
-const START_DELAY_MS = 4_000;
+const START_DELAY_MS = 6_500;
 /** 始まってから結果を出すまでの締め切り(180 秒 + 通信の余裕) */
 const SUBMIT_DEADLINE_MS = (RANKED_DURATION + 60) * 1000;
 /** 週ごとのステージの数 */
