@@ -1,5 +1,6 @@
 import DanmakuCore
 import SwiftUI
+import FirebaseFirestore
 
 /// 結果画面の「ランキングに記録する」
 struct RankingSubmitPanel: View {
@@ -144,6 +145,10 @@ struct RankingSection: View {
     @State private var entries: [ScoreEntry] = []
     @State private var loading = true
     @State private var failed = false
+    /// 「もっと見る」: 最後に読んだ記録(次はその次から)、続きがありそうか、読んでいる最中か
+    @State private var last: DocumentSnapshot?
+    @State private var hasMore = false
+    @State private var loadingMore = false
 
     var body: some View {
         GamePanel(title: "ranking.title", tint: GameStyle.yellow) {
@@ -157,6 +162,13 @@ struct RankingSection: View {
             } else {
                 VStack(spacing: 6) {
                     ForEach(Array(entries.enumerated()), id: \.element.id) { idx, e in row(rank: idx + 1, e) }
+                }
+                if loadingMore {
+                    HStack { Spacer(); ProgressView().tint(GameStyle.yellow); Spacer() }.padding(.vertical, 6)
+                } else if hasMore {
+                    // 次の 100 件(1000 位まで)
+                    GameActionButton(title: "ranking.more", systemImage: "chevron.down", fill: GameStyle.gold) { Task { await loadMore() } }
+                        .accessibilityIdentifier("ranking.more")
                 }
             }
         }
@@ -186,7 +198,25 @@ struct RankingSection: View {
 
     private func load() async {
         loading = true; failed = false
-        do { entries = try await RankingService.top(stageID: stageID, mode: mode) } catch { failed = true }
+        do {
+            let p = try await RankingService.page(stageID: stageID, mode: mode, after: nil, limit: RankingService.listSize)
+            entries = p.entries; last = p.last; hasMore = p.full
+        } catch { failed = true }
         loading = false
+    }
+
+    /// 「もっと見る」: 次の 100 件を後ろに足す(1000 位まで)
+    private func loadMore() async {
+        guard !loadingMore, let after = last else { return }
+        loadingMore = true
+        do {
+            let room = RankingService.maxListed - entries.count
+            let p = try await RankingService.page(stageID: stageID, mode: mode, after: after, limit: min(RankingService.morePage, room))
+            let seen = Set(entries.map(\.id))
+            entries += p.entries.filter { !seen.contains($0.id) }
+            last = p.last
+            hasMore = p.full && entries.count < RankingService.maxListed
+        } catch { hasMore = true }
+        loadingMore = false
     }
 }

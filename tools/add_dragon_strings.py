@@ -18,6 +18,12 @@ MOVES = [
     ('dragonTail', ['Schwanzhieb', 'Tail Strike', 'Coletazo', 'Coup de queue', '竜尾一閃', '용미일섬', 'Golpe de cauda', 'Удар хвоста', '龙尾一闪', '龍尾一閃']),
     ('dragonRampage', ['Purpurner Wirbel', 'Crimson Cyclone', 'Ciclón carmesí', 'Cyclone écarlate', '紅蓮の大旋回', '홍련의 대선회', 'Ciclone carmesim', 'Багровый вихрь', '红莲大回旋', '紅蓮大迴旋']),
     ('dragonEnd', ['Feuer von Megiddo', 'Fire of Megiddo', 'Fuego de Meguido', 'Feu de Megiddo', 'メギドの火', '메기도의 불', 'Fogo de Megido', 'Огонь Мегиддо', '米吉多之火', '米吉多之火']),
+    # 数・速さ・向きなどを自由に決められる技(1.4.0 で追加)
+    ('dragonWings', ['Doppelflügelschlag', 'Twin-Wing Beat', 'Aleteo de alas gemelas', 'Battement des ailes jumelles', '双翼の羽ばたき', '쌍익의 날갯짓', 'Batida das asas gêmeas', 'Взмах двух крыльев', '双翼振翅', '雙翼振翅']),
+    ('dragonGeyser', ['Aufsteigende Feuersäulen', 'Erupting Pillars', 'Pilares en erupción', 'Piliers jaillissants', '噴き上がる火柱', '솟구치는 불기둥', 'Pilares em erupção', 'Извергающиеся столпы', '喷涌火柱', '噴湧火柱']),
+    ('dragonClaw', ['Dreifachklaue', 'Triple Claw', 'Triple garra', 'Triple griffe', '竜爪三連', '용조삼연', 'Garra tripla', 'Тройной коготь', '龙爪三连', '龍爪三連']),
+    ('dragonTwister', ['Wandernder Wirbelsturm', 'Marching Twister', 'Tornado errante', 'Tornade en marche', '竜巻の行進', '회오리의 행진', 'Tornado em marcha', 'Шествие смерча', '龙卷行进', '龍捲行進']),
+    ('dragonJaws', ['Fangzange', 'Fang Pincer', 'Pinza de colmillos', 'Tenaille de crocs', '牙の挟み撃ち', '송곳니 협공', 'Pinça de presas', 'Клыковые клещи', '獠牙夹击', '獠牙夾擊']),
 ]
 FORMS = [
     ['Normal', 'Normal', 'Normal', 'Normal', '通常', '통상', 'Normal', 'Обычный', '通常', '通常'],
@@ -26,6 +32,8 @@ FORMS = [
     ['Platin', 'Platinum', 'Platino', 'Platine', '白金', '백금', 'Platina', 'Платина', '白金', '白金'],
 ]
 TEXT = {
+    # ランキングの「もっと見る」(1.4.0。次の100件、1000位まで)。順番: de en es fr ja ko pt-BR ru zh-Hans zh-Hant
+    'ranking.more': ['Mehr anzeigen', 'Show more', 'Ver más', 'Voir plus', 'もっと見る', '더 보기', 'Ver mais', 'Показать ещё', '查看更多', '查看更多'],
     'dragon.cutin.awaken': ['ERWACHEN · STUFE %d', 'AWAKENING · STAGE %d', 'DESPERTAR · NIVEL %d', 'ÉVEIL · NIVEAU %d', '覚醒 第%d段階', '각성 %d단계',
                             'DESPERTAR · NÍVEL %d', 'ПРОБУЖДЕНИЕ · СТУПЕНЬ %d', '觉醒 第%d阶段', '覺醒 第%d階段'],
     'dragon.cutin.normal': ['Normale Gestalt', 'Normal Form', 'Forma normal', 'Forme normale', '通常の姿', '통상 모습', 'Forma normal', 'Обычный облик', '通常形态', '通常形態'],
@@ -87,8 +95,8 @@ TEXT = {
                                  'このボスは、チケット%lld枚と交換です。交換したあとは、取り消せません。', '이 보스는 티켓 %lld장과 교환해요. 교환 후에는 취소할 수 없어요.',
                                  'Este chefe custa %lld tickets. Não dá para desfazer.', 'Этот босс стоит %lld билета. Отменить нельзя.',
                                  '这个 Boss 需要%lld张券兑换。兑换后无法撤销。', '這個 Boss 需要%lld張券兌換。兌換後無法撤銷。'],
-    'shop.boss.13.desc': ['Drachenkönig: 10 Techniken und 4 Gestalten', 'Dragon King — 10 moves and 4 forms', 'Rey Dragón: 10 técnicas y 4 formas', 'Roi Dragon : 10 techniques et 4 formes',
-                          '竜王 ― 10の技と、4つの姿', '용왕 ― 기술 10개와 모습 4가지', 'Rei Dragão: 10 golpes e 4 formas', 'Король драконов: 10 приёмов и 4 облика', '龙王 ― 10种招式与4种形态', '龍王 ― 10種招式與4種形態'],
+    'shop.boss.13.desc': ['Drachenkönig: 15 Techniken und 4 Gestalten', 'Dragon King — 15 moves and 4 forms', 'Rey Dragón: 15 técnicas y 4 formas', 'Roi Dragon : 15 techniques et 4 formes',
+                          '竜王 ― 15の技と、4つの姿', '용왕 ― 기술 15개와 모습 4가지', 'Rei Dragão: 15 golpes e 4 formas', 'Король драконов: 15 приёмов и 4 облика', '龙王 ― 15种招式与4种形态', '龍王 ― 15種招式與4種形態'],
 }
 SECT = ['{b}: Techniken (nur mit diesem Aussehen)', '{b} moves (only with this look)', '{b}: técnicas (solo con este aspecto)', '{b} : techniques (uniquement avec cet aspect)',
         '{b}の技(この見た目のときだけ)', '{b}의 기술 (이 모습일 때만)', '{b}: golpes (só com este visual)', '{b}: приёмы (только с этим обликом)', '{b}的招式(仅限此外观)', '{b}的招式(僅限此外觀)']

@@ -78,7 +78,7 @@ struct EmitterPreview: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
 
     var body: some View {
-        if isBoss, BossCharacter.of(look: look.bossLook) == .dragon, emitter.t.dragonMove != nil {
+        if isBoss, BossCharacter.of(look: look.bossLook) == .dragon, emitter.t.bossCharacter == .dragon {
             // 竜王の技は、ゲーム画面そのもので見せる(絵・炎・範囲攻撃・弾・背景・速さがゲームと同じ)
             DragonMovePreview(emitter: emitter, look: look)
         } else {
@@ -173,7 +173,7 @@ private struct DragonMovePreview: View {
         return 0
     }
     private var key: String {
-        "\(emitter.t.rawValue)|\(emitter.i)|\(form)|\(look.bossMove)|\(look.bossX ?? -1)|\(look.bossY ?? -1)|\(look.bossSize)|\(look.bullets)|\(look.background)|\(look.ship)"
+        "\(String(describing: emitter))|\(form)|\(look.bossMove)|\(look.bossX ?? -1)|\(look.bossY ?? -1)|\(look.bossSize)|\(look.bullets)|\(look.background)|\(look.ship)"
     }
 
     var body: some View {

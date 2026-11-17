@@ -83,7 +83,7 @@ products.push(
   { id: 'boss.witch', yen: 400, ref: 'Boss Deep-Sea Witch', ja: ['深海の魔女', 'ステージに置けるボス「深海の魔女」。5つの技と覚醒つき。'], en: ['Deep-Sea Witch', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'boss.hire', yen: 400, ref: 'Boss Goldfish Princess', ja: ['金魚姫', 'ステージに置けるボス「金魚姫」。5つの技と覚醒つき。'], en: ['Goldfish Princess', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
   { id: 'boss.mech', yen: 400, ref: 'Boss Mech Deity', ja: ['機神', 'ステージに置けるボス「機神」。5つの技と覚醒つき。'], en: ['Mech Deity', 'A boss for your stages, with 5 moves and awakening.'], notes: bossNotes },
-  { id: 'boss.dragon', yen: 1200, ref: 'Boss Dragon King', ja: ['竜王', 'ステージに置ける大型ボス「竜王」。10の技と4つの姿つき。'], en: ['Dragon King', 'A huge boss for your stages, with 10 moves and 4 forms.'],
+  { id: 'boss.dragon', yen: 1200, ref: 'Boss Dragon King', ja: ['竜王', 'ステージに置ける大型ボス「竜王」。15の技と4つの姿つき。'], en: ['Dragon King', 'A huge boss for your stages, with 15 moves and 4 forms.'],
     notes: bossNotes.replace('Buy "Fallen Angel"', 'Buy "Dragon King"') },
   { id: 'patternmaker', yen: 1000, ref: 'Pattern Maker', ja: ['弾幕作成モード', '指で線を描いて、自分だけの弾幕を作れます。'], en: ['Pattern Maker', 'Draw a line to make your own bullet pattern.'], notes: makerNotes },
   { id: 'lifetime', yen: 3000, ref: 'Lifetime Pack', ja: ['永久買い切りパック', '全部の課金コンテンツと広告削除を、今後の追加分もずっと。'], en: ['Lifetime Pack', 'All paid items and Remove Ads, forever.'], notes: lifetimeNotes },

@@ -64,6 +64,8 @@ struct SwipeRankRow: Identifiable {
 /// ランキングの取得結果(今月か累計か)
 struct SwipeRanking {
     var rows: [SwipeRankRow] = []
+    /// まだ続きがある(「もっと見る」で次の 100 件。1000 位まで)
+    var hasMore = false
     var myRank: Int?
     var myScore: BigScore?
     /// 今月のとき: 月の ID(例 2026-11)・終わる時刻・参加人数
@@ -186,19 +188,23 @@ final class SwipeService: ObservableObject {
     }
 
     /// ランキング。monthly が true なら今月(日本時間の毎月 1 日 0:00 にリセット)、false なら累計
-    func ranking(monthly: Bool) async throws -> SwipeRanking {
-        let d = try await call("swipeRanking", monthly ? ["period": "month"] : [:])
+    /// start は「もっと見る」の読み始め(0, 100, 200 …)。2 ページ目からは、自分の順位・参加人数は入らない
+    func ranking(monthly: Bool, start: Int = 0) async throws -> SwipeRanking {
+        var args: [String: Any] = monthly ? ["period": "month"] : [:]
+        if start > 0 { args["start"] = start }
+        let d = try await call("swipeRanking", args)
         // 月間のランキングに対応していない古いサーバーの応答(累計)を、今月のものとして見せない
         if monthly, (d["period"] as? String) != "month" { throw SwipeError.other("period-unsupported") }
         let rows = (d["rows"] as? [[String: Any]] ?? []).enumerated().map { i, r -> SwipeRankRow in
             let name = (r["name"] as? String) ?? PlayerHandle.name(a: (r["a"] as? NSNumber)?.intValue ?? 0, n: (r["n"] as? NSNumber)?.intValue ?? 0, num: (r["num"] as? NSNumber)?.intValue ?? 0)
-            return SwipeRankRow(id: i, rank: (r["rank"] as? NSNumber)?.intValue ?? i + 1, mine: (r["mine"] as? Bool) ?? false,
+            return SwipeRankRow(id: start + i, rank: (r["rank"] as? NSNumber)?.intValue ?? start + i + 1, mine: (r["mine"] as? Bool) ?? false,
                                 score: BigScore((r["score"] as? String) ?? "0") ?? .zero, bestStreak: (r["bestStreak"] as? NSNumber)?.intValue ?? 0, name: name,
                                 title: (r["title"] as? String).flatMap { TitleID.isValid($0) ? $0 : nil },
                                 crown: (r["crown"] as? NSNumber)?.intValue ?? 0, medal: (r["medal"] as? Bool) ?? false)
         }
         let my = d["my"] as? [String: Any]
         var out = SwipeRanking(rows: rows, myRank: (my?["rank"] as? NSNumber)?.intValue, myScore: (my?["score"] as? String).flatMap { BigScore($0) })
+        out.hasMore = (d["hasMore"] as? Bool) ?? false
         if monthly {
             out.month = d["month"] as? String
             out.endsAt = (d["endsAt"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue / 1000) }

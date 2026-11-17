@@ -596,6 +596,8 @@ public enum Emit {
         case .dragonBreath, .dragonRaid, .dragonGale, .dragonInhale, .dragonGlide, .dragonRoar, .dragonQuake, .dragonTail, .dragonRampage, .dragonEnd:
             // 竜王の技は、弾を出すだけではない(本体の動き・範囲攻撃)。Simulation が DragonState で動かす(Dragon.swift)
             break
+        case .dragonWings, .dragonGeyser, .dragonClaw, .dragonTwister, .dragonJaws:
+            emitDragonFree(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out)
         case .hireSukui, .hireYoyo, .hireHanabi, .hireRipple, .hireKaiyu:
             emitHire(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake:
@@ -1128,7 +1130,10 @@ public struct Simulation {
         if waveT >= 0 {
             // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
             if isBoss { Emit.anchorScale = spec.characterScale }
-            defer { if isBoss { Emit.anchorScale = 1 } }
+            // 竜王の自由な技は、いまの段階の姿で強さが変わる(サーバーの fullsim.ts と同じ)
+            let dragonBoss = isBoss && bossCharacter == .dragon
+            if dragonBoss { Emit.dragonLv = dragonForm }
+            defer { if isBoss { Emit.anchorScale = 1 }; if dragonBoss { Emit.dragonLv = 0 } }
             // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す
             // (並びの先頭が毎回勝つと、後ろの技が一度も出ないため。サーバーの fullsim.ts と同じ)
             var dragonPick = -1

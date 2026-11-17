@@ -5,6 +5,7 @@ import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING
 import { CHARACTER_MOVE_Y_OFFSET, CURVE_SCRIPT, HOLD_SCRIPT, KAIYU_SCRIPT, characterScaleOf, setAnchorScale, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, WOBBLE_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
 import { WARP_SCRIPT, emitPuni, isPuniPattern } from "./puni.js";
 import { emitHire, isHirePattern } from "./hire.js";
+import { emitDragonFree, isDragonFreePattern, setDragonLv } from "./dragonfree.js";
 import { emitMech, isMechPattern } from "./mech.js";
 import { emitWitch, isWitchPattern } from "./witch.js";
 import { emitReaper, isReaperPattern } from "./reaper.js";
@@ -398,6 +399,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
     default: {
       // 竜王の技は、弾を出すだけではない(本体の動き・範囲攻撃)。createSim が dragon.ts で動かす
       if (dragonMoveIndex(m.t) >= 0) break;
+      if (isDragonFreePattern(m.t)) { emitDragonFree(m, k, cx, cy, px, py, rng, out, MAX_BULLETS); break; }
       if (isHirePattern(m.t)) { emitHire(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isPuniPattern(m.t)) { emitPuni(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isMechPattern(m.t)) { emitMech(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
@@ -714,6 +716,8 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
     if (waveT >= 0) {
       // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
       if (sp.boss) setAnchorScale(charScale);
+      // 竜王の自由な技は、いまの段階の姿で強さが変わる(アプリと同じ)
+      if (sp.boss && sp.look === DRAGON_LOOK) setDragonLv(dragonForm());
       // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す(アプリと同じ)
       let dragonPick = -1;
       if (sp.boss && banner <= 0 && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
@@ -752,6 +756,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         }
       });
       setAnchorScale(1);
+      setDragonLv(0);
     }
 
     if (isDragon() && waveT >= 0) {

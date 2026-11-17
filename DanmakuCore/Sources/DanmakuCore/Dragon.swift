@@ -143,6 +143,8 @@ extension Pattern {
     public static let dragon: [Pattern] = [.dragonBreath, .dragonRaid, .dragonGale, .dragonInhale, .dragonGlide,
                                            .dragonRoar, .dragonQuake, .dragonTail, .dragonRampage, .dragonEnd]
     public var dragonMove: DragonMove? { Pattern.dragon.firstIndex(of: self).flatMap { DragonMove(rawValue: $0) } }
+    /// 竜王の、数・速さ・向き・左右反転を自由に決められる技(ふつうの技と同じく弾を出すだけ。本体は動かない)
+    public static let dragonFree: [Pattern] = [.dragonWings, .dragonGeyser, .dragonClaw, .dragonTwister, .dragonJaws]
 }
 
 // MARK: - 弾
@@ -160,8 +162,12 @@ extension Bullet {
     public static let dragonBodyScript = 34
     /// メギドの火の予告中に降る火の玉(焼き尽くす瞬間に消える)
     public static let dragonDropScript = 35
+    /// 曲がる弾(双翼・竜巻)。u1 秒の間、u0 (ラジアン/秒) で向きを変えながら進み、そのあとはまっすぐ
+    public static let dragonCurveScript = 36
+    /// 止まって待ってから動く弾(火柱・爪・牙)。fuse 秒はその場に止まる(見えて、当たる)。そのあと (vx, vy) で進む(重力 gravity があれば落ちる)
+    public static let dragonWaitScript = 37
 
-    public var isDragon: Bool { script >= Bullet.dragonPlainScript && script <= Bullet.dragonDropScript }
+    public var isDragon: Bool { script >= Bullet.dragonPlainScript && script <= Bullet.dragonWaitScript }
     /// 当たっても消えない竜王の弾(本体・竜巻・大火球)
     public var dragonPersistent: Bool {
         script == Bullet.dragonBodyScript || script == Bullet.dragonTornadoScript || script == Bullet.dragonSunScript
@@ -196,6 +202,21 @@ extension Bullet {
         case Bullet.dragonBodyScript:
             age += dt
             return age >= fuse ? .gone : .alive
+        case Bullet.dragonCurveScript:
+            age += dt
+            if age < u1 {
+                let sp = (vx * vx + vy * vy).squareRoot()
+                let na = atan2(vy, vx) + u0 * dt
+                vx = cos(na) * sp; vy = sin(na) * sp
+            }
+            x += vx * dt; y += vy * dt
+            return .alive
+        case Bullet.dragonWaitScript:
+            age += dt
+            if age < fuse { return .alive }
+            if gravity != 0 { vy += gravity * dt }
+            x += vx * dt; y += vy * dt
+            return .alive
         default:
             return nil
         }

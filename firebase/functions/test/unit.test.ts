@@ -664,6 +664,16 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(boss({ ...pat("hireSukui"), bossLook: 13, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
   });
 
+  it("竜王の自由な技(1.4.0)も、竜王(bossLook 13)のボスにだけ置け、数・速さ・向き・左右反転はそのまま残る", () => {
+    for (const t of ["dragonWings", "dragonGeyser", "dragonClaw", "dragonTwister", "dragonJaws"]) {
+      const ok = validatePublish(boss({ emitters: [em({ t, c: 11, v: 3.5, a: 25, mir: 1 })], bossLook: 13, bossMove: 0 }));
+      expect(ok.ok && ok.stage.needs).toBe(5);
+      const e = ok.ok ? ok.stage.emitters[0]! : undefined;
+      expect(e && [e.t, e.c, e.v, e.a, e.mir]).toEqual([t, 11, 3.5, 25, 1]);
+      for (const look of [2, 5, 12]) expect(validatePublish(boss({ emitters: [em({ t })], bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
+    }
+  });
+
   it("竜王の段階ごとの姿: 段階の数と同じ長さの 0〜3。竜王だけ・覚醒とは一緒に使えない・全部通常は入れない", () => {
     const base = { emitters: [em({ t: "dragonRoar" })], bossLook: 13, bossMove: 0 };
     const ok = validatePublish(boss({ ...base, forms: [0, 1, 3] }));

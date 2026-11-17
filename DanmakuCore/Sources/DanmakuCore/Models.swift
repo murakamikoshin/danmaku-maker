@@ -226,6 +226,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case hireKaiyu
     // 竜王(2026-11-17 に追加。DragonMove と同じ並び)
     case dragonBreath, dragonRaid, dragonGale, dragonInhale, dragonGlide, dragonRoar, dragonQuake, dragonTail, dragonRampage, dragonEnd
+    // 竜王の、数・速さ・向きなどを自由に決められる技(1.4.0。DragonFreePatterns.swift)
+    case dragonWings, dragonGeyser, dragonClaw, dragonTwister, dragonJaws
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -262,7 +264,7 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
         case .mech: return mech
         case .puni: return puni
         case .hire: return hire
-        case .dragon: return dragon
+        case .dragon: return dragon + dragonFree
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)

@@ -91,10 +91,25 @@ enum RankingService {
     /// 時間で競うモードか(ボス戦と連戦は、クリアまでの時間。ダメージ勝負は、ダメージ)
     static func byTime(_ mode: Mode) -> Bool { mode == .boss || mode == .sequence }
 
+    /// 「もっと見る」で 1 回に読む件数と、読める最後の順位(読み込みの費用を抑えるため)
+    static let morePage = 100
+    static let maxListed = 1000
+
     static func top(stageID: String, mode: Mode) async throws -> [ScoreEntry] {
+        try await page(stageID: stageID, mode: mode, after: nil, limit: listSize).entries
+    }
+
+    /// 上位から limit 件。after を渡すと、その記録の次から(「もっと見る」)。last は次に渡す目印、full は limit 件そろったか(続きがありそうか)
+    static func page(stageID: String, mode: Mode, after: DocumentSnapshot?, limit: Int) async throws -> (entries: [ScoreEntry], last: DocumentSnapshot?, full: Bool) {
         let col = Firestore.firestore().collection("stages/\(stageID)/scores")
-        let snap = try await col.order(by: "value", descending: !byTime(mode)).limit(to: listSize).getDocuments()
-        return snap.documents.compactMap { doc in
+        var q = col.order(by: "value", descending: !byTime(mode))
+        if let after { q = q.start(afterDocument: after) }
+        let snap = try await q.limit(to: limit).getDocuments()
+        return (entries(snap.documents), snap.documents.last ?? after, snap.documents.count == limit)
+    }
+
+    private static func entries(_ docs: [QueryDocumentSnapshot]) -> [ScoreEntry] {
+        docs.compactMap { doc in
             let d = doc.data()
             guard let uid = d["uid"] as? String, let value = (d["value"] as? NSNumber)?.intValue else { return nil }
             return ScoreEntry(uid: uid, a: (d["a"] as? NSNumber)?.intValue ?? 0, n: (d["n"] as? NSNumber)?.intValue ?? 0,

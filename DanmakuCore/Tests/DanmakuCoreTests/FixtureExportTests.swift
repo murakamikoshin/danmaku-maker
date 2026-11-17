@@ -434,6 +434,26 @@ final class FixtureExportTests: XCTestCase {
         // ライフ制(即死・バインドが起きる)と、技 2 つが交互に出るか
         stages.append(("dragon-end-lives", dragon([.dragonEnd, .dragonTail], i: 0.3, forms: [3, 3, 3], life: .lives, count: 3)))
         stages.append(("dragon-gale-tail", dragon([.dragonGale, .dragonTail], i: 0.5, forms: [1, 2, 3])))
+        // 1.4.0: 竜王の自由な技 5 つ(数・速さ・向き・左右反転)を、4 つの姿で。竜王の技とも混ぜる
+        func free(_ t: DanmakuCore.Pattern, i: Double, c: Int, v: Double, a: Int = 0, mir: Bool = false, k: Int = 0) -> Emitter {
+            var e = Emitter(t: t, x: 0.5, y: 0.2, s: 0, e: 60, i: i, c: c, v: v, r: 0, k: k)
+            e.a = a
+            if mir { e.mir = 1 }
+            return e
+        }
+        let fAll = DanmakuCore.Pattern.dragonFree
+        for (fi, ft) in fAll.enumerated() {
+            for f in 0..<4 {
+                var st = dragon([], i: 1, forms: [f, f, f])
+                st.emitters = [free(ft, i: [1.6, 2.4, 2.6, 0.35, 3.0][fi], c: [6, 4, 9, 5, 9][fi], v: [2.2, 3.0, 2.4, 1.8, 1.6][fi], a: f * 7 - 10, mir: f == 2, k: f)]
+                stages.append(("dragon-free-\(fi)-f\(f)", st.sanitized()))
+            }
+        }
+        do {
+            var st = dragon([.dragonBreath, .dragonTail], i: 0.5, forms: [0, 2, 3], life: .lives, count: 3)
+            st.emitters += fAll.enumerated().map { idx, t in free(t, i: 0.8 + Double(idx) * 0.3, c: 3 + idx * 2, v: 1.5 + Double(idx) * 0.4, a: idx * 5, mir: idx % 2 == 1, k: idx) }
+            stages.append(("dragon-free-mixed", st.sanitized()))
+        }
 
         var cases: [Case] = []
         var seed: UInt64 = 1

@@ -322,18 +322,29 @@ async function profilesOf(uids: string[]): Promise<Map<string, { title: string |
   return out;
 }
 
-/** 上位 100 件と、自分の順位。period が "month" なら今月(日本時間の毎月 1 日 0:00 区切り)、それ以外は累計 */
-export async function swipeRanking(uid: string, period?: unknown) {
+/** ランキングの 1 回に読む件数と、「もっと見る」で読める最後の順位(読み込みの費用を抑えるため) */
+export const RANK_PAGE = 100, RANK_MAX = 1000;
+/** 「もっと見る」の読み始め(0, 100, 200 … 900)。それ以外は 0(先頭から) */
+export const rankStart = (v: unknown): number =>
+  typeof v === "number" && Number.isInteger(v) && v >= 0 && v < RANK_MAX && v % RANK_PAGE === 0 ? v : 0;
+
+/** 上位 100 件と、自分の順位。period が "month" なら今月(日本時間の毎月 1 日 0:00 区切り)、それ以外は累計。
+ *  start(100 の倍数)を渡すと、その次の 100 件(「もっと見る」。1000 位まで)。2 ページ目からは、自分の順位・参加人数は返さない */
+export async function swipeRanking(uid: string, period?: unknown, startRaw?: unknown) {
   const monthly = period === "month";
   const month = monthIdJst(Date.now());
   const col = monthly ? db().collection(`swipeMonthly/${month}/scores`) : db().collection("swipeScores");
-  const top = await col.orderBy("key", "desc").limit(100).get();
+  const start = rankStart(startRaw);
+  const q = col.orderBy("key", "desc");
+  const top = await (start > 0 ? q.offset(start) : q).limit(RANK_PAGE).get();
+  const hasMore = top.size === RANK_PAGE && start + RANK_PAGE < RANK_MAX;
   const profiles = await profilesOf(top.docs.map((d) => d.id));
   const rows = top.docs.map((d, i) => {
     const p = profiles.get(d.id);
-    return { rank: i + 1, uid: d.id === uid ? d.id : undefined, mine: d.id === uid, score: d.get("score") as string, bestStreak: d.get("bestStreak") as number, a: d.get("a") as number, n: d.get("n") as number, num: d.get("num") as number, name: (d.get("name") as string | undefined) ?? null,
+    return { rank: start + i + 1, uid: d.id === uid ? d.id : undefined, mine: d.id === uid, score: d.get("score") as string, bestStreak: d.get("bestStreak") as number, a: d.get("a") as number, n: d.get("n") as number, num: d.get("num") as number, name: (d.get("name") as string | undefined) ?? null,
       title: p?.title ?? null, crown: p?.crown ?? 0, medal: p?.medal ?? false };
   });
+  if (start > 0) return { rows, start, hasMore, period: monthly ? "month" : "all", ...(monthly ? { month, endsAt: monthEndMs(month) } : {}) };
   const mine = await col.doc(uid).get();
   let my: { rank: number; score: string; bestStreak: number } | null = null;
   if (mine.exists) {
@@ -341,7 +352,7 @@ export async function swipeRanking(uid: string, period?: unknown) {
     my = { rank: ahead.data().count + 1, score: mine.get("score") as string, bestStreak: mine.get("bestStreak") as number };
   }
   const total = monthly ? (await col.count().get()).data().count : null;
-  return { rows, my, period: monthly ? "month" : "all", ...(monthly ? { month, endsAt: monthEndMs(month), total } : {}) };
+  return { rows, my, start, hasMore, period: monthly ? "month" : "all", ...(monthly ? { month, endsAt: monthEndMs(month), total } : {}) };
 }
 
 // ---------- 課金の通知(RevenueCat) ----------

@@ -860,7 +860,7 @@ export const claimFounder = onCall(async (req) => {
   const cutoff = Number(process.env.FOUNDER_CUTOFF_MS);
   return claimFounderFn(db, uid, Number.isFinite(created) ? created : null, Number.isFinite(cutoff) && cutoff > 0 ? cutoff : null);
 });
-export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period));
+export const swipeRanking = onCall(async (req) => loadSwipeRanking(requireAny(req), req.data?.period, req.data?.start));
 /** 称号を付ける(null で外す)。持っている称号だけ */
 export const setCrown = onCall(async (req) => setCrownFn(db, requireAny(req), req.data?.id ?? null));
 export const setTitle = onCall(async (req) => setTitleFn(db, requireAny(req), req.data?.id ?? null));

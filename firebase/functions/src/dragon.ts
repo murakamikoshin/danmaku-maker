@@ -13,6 +13,8 @@ export type DragonMoveName = (typeof DRAGON_MOVES)[number];
 export const dragonMoveIndex = (t: string): number => (DRAGON_MOVES as readonly string[]).indexOf(t);
 
 export const DRAGON_PLAIN = 30, DRAGON_SUN = 31, DRAGON_TORNADO = 32, DRAGON_EMBER = 33, DRAGON_BODY = 34, DRAGON_DROP = 35;
+/** 竜王の自由な技(dragonfree.ts)の弾: 曲がる弾、止まって待ってから動く弾(アプリの dragonCurveScript / dragonWaitScript) */
+export const DRAGON_CURVE = 36, DRAGON_WAIT = 37;
 const WINDUP = 30, RECOVER = 15, REST = 50, INV = 40, TAIL_LEN = 380;
 /** 吸い込みで、自機の弾の速さを口の向きへ寄せる割合(アプリの Bullet.absorbLerp) */
 const ABSORB_LERP = 1 - Math.sqrt(0.92);
@@ -173,6 +175,22 @@ export function stepDragonBullet(b: BossBullet, dt: number): "alive" | "gone" | 
     case DRAGON_BODY:
       b.age += dt;
       return b.age >= (b.fuse ?? 0) ? "gone" : "alive";
+    case DRAGON_CURVE: {
+      b.age += dt;
+      if (b.age < (b.u1 ?? 0)) {
+        const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        const na = Math.atan2(b.vy, b.vx) + (b.u0 ?? 0) * dt;
+        b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+      }
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      return "alive";
+    }
+    case DRAGON_WAIT:
+      b.age += dt;
+      if (b.age < (b.fuse ?? 0)) return "alive";
+      if (b.gravity) b.vy += b.gravity * dt;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      return "alive";
     default:
       return null;
   }

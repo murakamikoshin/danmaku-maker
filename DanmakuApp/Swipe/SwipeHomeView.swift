@@ -481,6 +481,11 @@ struct SwipeRankingView: View {
                     VStack(spacing: 6) {
                         ForEach(data.rows) { row in rankRow(row) }
                     }
+                    if data.hasMore && !loading {
+                        // 次の 100 件(1000 位まで)
+                        GameActionButton(title: "ranking.more", systemImage: "chevron.down", fill: GameStyle.cyan) { Task { await loadMore() } }
+                            .accessibilityIdentifier("swipe.rank.more")
+                    }
                     Text(monthly ? "swipe.rank.footer.month" : "swipe.rank.footer")
                         .font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.55)).multilineTextAlignment(.center)
                     if loading { ProgressView().tint(GameStyle.pinkColor).padding(.vertical, 8) }
@@ -576,6 +581,21 @@ struct SwipeRankingView: View {
     private func load() async {
         loading = true; failed = false
         do { data = try await service.ranking(monthly: monthly) } catch { failed = true }
+        loading = false
+    }
+
+    /// 「もっと見る」: 次の 100 件を後ろに足す(自分の順位・参加人数は、最初に読んだものを使う)
+    private func loadMore() async {
+        let wasMonthly = monthly
+        loading = true; failed = false
+        do {
+            let next = try await service.ranking(monthly: wasMonthly, start: data.rows.count)
+            // 読んでいる間にタブを切り替えたら、捨てる
+            if wasMonthly == monthly {
+                data.rows += next.rows
+                data.hasMore = next.hasMore
+            }
+        } catch { failed = true }
         loading = false
     }
 
