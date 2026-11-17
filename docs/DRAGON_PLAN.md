@@ -46,3 +46,4 @@
 - 2026-11-17 夜: Functions を本番に全部デプロイ(dragon-140 1cf1d81。竜王の技・forms・BGM 7・竜王の曲の所持チェック・チケット3枚・無料チケットのトランザクション)。ASC に boss.dragon(¥1,200、提出準備中、Apple ID 6835870292、174地域、日英、審査メモ・画像入り。画像は仮でボス戦のストア画像)、RevenueCat に登録(prod719241571e)。永久パックはコード側で自動的に含む。残り: 実機確認、TestFlight、1.4.0 の提出物の下書きに boss.dragon を入れる
 - 2026-11-17 夜: dragon-140 を push、1.4.0 ビルド89 を GitHub Actions で TestFlight へ(bb2f2fe)。Koshin の実機確認待ち
 - 2026-11-18: Koshin の希望で、数・速さ・向き・左右反転を自由に決められる技を5つ追加(双翼の羽ばたき・噴き上がる火柱・竜爪三連・竜巻の行進・牙の挟み撃ち。Pattern.dragonFree、DragonFreePatterns.swift / dragonfree.ts、弾の動き dragonCurveScript 36・dragonWaitScript 37、強さは段階の姿 Emit.dragonLv)。竜王の技は合わせて15個。お試しは8個の上限で2つ欠けていたのを直して15個全部。ランキングに「もっと見る」(100件ずつ、1000位まで)。広告の内容の上限を PG に(1.3.1 の審査の指摘)。Swift 432件・照合 3,784件・Functions 220件 通過、ビルド成功
+- 2026-11-18: 1.4.0 ビルド92 を TestFlight へ(c1f1846)。Functions 本番デプロイ済み。Koshin の実機確認待ち
