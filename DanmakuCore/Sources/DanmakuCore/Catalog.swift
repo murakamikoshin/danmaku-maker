@@ -98,7 +98,7 @@ public enum Product: Hashable, Sendable {
         case .patternPack: return 600
         case .patternPack2: return 600
         case .patternMaker: return 1000
-        case .boss: return 400
+        case .boss(let b): return b == .dragon ? 1200 : 400
         case .lifetime: return 3000
         }
     }
