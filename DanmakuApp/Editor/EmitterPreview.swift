@@ -179,7 +179,9 @@ private struct DragonMovePreview: View {
     var body: some View {
         ZStack {
             if let scene {
+                // SpriteView は最初に渡したシーンを持ち続けるので、作り直したら見た目ごと差し替える
                 SpriteView(scene: scene, preferredFramesPerSecond: 60, options: [.ignoresSiblingOrder])
+                    .id(ObjectIdentifier(scene))
             } else {
                 Color(Skin.of(look.background).background)
             }
