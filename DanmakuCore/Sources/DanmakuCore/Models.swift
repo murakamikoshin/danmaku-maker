@@ -527,7 +527,10 @@ public struct PhaseInfo: Codable, Equatable, Sendable {
     /// 必殺技の効果音(1 一閃・2 轟・3 覚醒・4 和・5 禍・6 きらめき・7 爆発)。nil は鳴らさない。
     /// 必殺技のときだけ入れる。見た目(音)だけ。1.4.0 から
     public var se: Int?
-    public init(n: String? = nil, sp: Bool? = nil, fx: Int? = nil, se: Int? = nil) { self.n = n; self.sp = sp; self.fx = fx; self.se = se }
+    /// 名前を出さない(必殺技でない段階だけ。金色の帯を出さない)。見た目だけで、段階の変わり目の間は変わらない。1.4.0 から
+    /// (古い版は、この項目を読み飛ばして、金色の帯で出す)
+    public var h: Bool?
+    public init(n: String? = nil, sp: Bool? = nil, fx: Int? = nil, se: Int? = nil, h: Bool? = nil) { self.n = n; self.sp = sp; self.fx = fx; self.se = se; self.h = h }
 
     public static let maxName = 16
     /// 選べる演出の番号(0 は帯のカットイン。保存するときは入れない)
@@ -554,9 +557,9 @@ public struct PhaseInfo: Codable, Equatable, Sendable {
             let sp = raw.sp == true
             let fx = raw.fx.flatMap { sp && $0 != 0 && fxRange.contains($0) ? $0 : nil }
             let se = raw.se.flatMap { sp && seRange.contains($0) ? $0 : nil }
-            return PhaseInfo(n: sanitizedName(raw.n), sp: sp ? true : nil, fx: fx, se: se)
+            return PhaseInfo(n: sanitizedName(raw.n), sp: sp ? true : nil, fx: fx, se: se, h: !sp && raw.h == true ? true : nil)
         }
-        return out.contains { $0.n != nil || $0.sp != nil } ? out : nil
+        return out.contains { $0.n != nil || $0.sp != nil || $0.h != nil } ? out : nil
     }
 }
 

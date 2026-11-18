@@ -55,6 +55,12 @@ struct BossPhaseControls: View {
                              if let e = AudioManager.Effect.special(v) { Task { @MainActor in AudioManager.shared.se(e) } }
                          }),
                          idPrefix: "\(idPrefix).se.\(i)", minimum: 80)
+            } else {
+                // 必殺技でない段階は、金色の帯で名前を出すか、何も出さないかを選べる(1.4.0)
+                Text("editor.phases.show").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
+                ChipGrid(items: [(0, L("editor.phases.show.band")), (1, L("editor.phases.show.none"))],
+                         selection: Binding(get: { item(i).h == true ? 1 : 0 }, set: { v in update(i) { $0.h = v == 1 ? true : nil } }),
+                         idPrefix: "\(idPrefix).show.\(i)", minimum: 96)
             }
         }
     }
@@ -70,7 +76,7 @@ struct BossPhaseControls: View {
                 .accessibilityIdentifier("\(idPrefix).name.\(i)")
             VStack(spacing: 2) {
                 Text("editor.phases.special").font(.system(size: 10, weight: .heavy)).foregroundStyle(item(i).sp == true ? GameStyle.pinkColor : .secondary)
-                GameToggle(isOn: Binding(get: { item(i).sp == true }, set: { v in update(i) { $0.sp = v ? true : nil; if !v { $0.fx = nil; $0.se = nil } } }))
+                GameToggle(isOn: Binding(get: { item(i).sp == true }, set: { v in update(i) { $0.sp = v ? true : nil; if v { $0.h = nil } else { $0.fx = nil; $0.se = nil } } }))
             }
             .accessibilityIdentifier("\(idPrefix).special.\(i)")
         }
@@ -96,7 +102,7 @@ struct BossPhaseControls: View {
         var list = info ?? []
         while list.count < Emitter.phaseCountRange.upperBound { list.append(PhaseInfo()) }
         change(&list[i])
-        info = list.contains { ($0.n ?? "").isEmpty == false || $0.sp == true } ? list : nil
+        info = list.contains { ($0.n ?? "").isEmpty == false || $0.sp == true || $0.h == true } ? list : nil
     }
 }
 

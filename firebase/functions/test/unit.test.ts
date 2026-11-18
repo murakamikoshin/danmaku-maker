@@ -1137,6 +1137,15 @@ describe("段階 4・5、段階の名前と必殺技、1UP(1.3.0)", () => {
     const both = validatePublish(boss({ phaseInfo: [{ n: "奥義", sp: true, fx: 2, se: 5 }, {}, {}] }));
     expect(both.ok && both.stage.phaseInfo?.[0]).toEqual({ n: "奥義", sp: true, fx: 2, se: 5 });
   });
+  it("段階の名前を出さない(h)は、必殺技でない段階だけに付く", () => {
+    const r = validatePublish(boss({ phaseInfo: [{ h: true }, { n: "奥義", sp: true, h: true }, { h: false }] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.stage.phaseInfo).toEqual([{ h: true }, { n: "奥義", sp: true }, {}]);
+    expect(validatePublish(boss({ phaseInfo: [{ h: 1 }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ h: "true" }, {}, {}] })).ok).toBe(false);
+    const off = validatePublish(boss({ phaseInfo: [{ h: false }, {}, {}] }));
+    if (off.ok) expect(off.stage.phaseInfo).toBeUndefined();
+  });
   it("1UP は、最後ではないボスの場面だけ。使うと needs 4", () => {
     const r = seq([seqWave({ oneUp: 1 }), seqWave()]);
     expect(r.ok).toBe(true);

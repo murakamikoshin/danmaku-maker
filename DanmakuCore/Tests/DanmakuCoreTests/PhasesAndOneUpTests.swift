@@ -107,6 +107,21 @@ final class PhasesAndOneUpTests: XCTestCase {
         XCTAssertEqual(PhaseInfo.seRange, 1...7)
     }
 
+    /// 段階の名前を出さない(1.4.0): 必殺技でない段階だけに付く。それだけでも残る。計算には関わらない
+    func testPhaseHideIsDecorOnly() {
+        var s = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 500, bossMove: 0, emitters: [Emitter(t: .ring, i: 0.3, c: 8)])
+        s.phaseInfo = [PhaseInfo(), PhaseInfo(h: true), PhaseInfo(n: "奥義", sp: true, h: true)]
+        let clean = s.sanitized()
+        XCTAssertEqual(clean.phaseInfo, [PhaseInfo(), PhaseInfo(h: true), PhaseInfo(n: "奥義", sp: true)], "必殺技は出さないにできない")
+        var plain = s; plain.phaseInfo = nil
+        XCTAssertEqual(Simulation.run(stage: clean, moves: []), Simulation.run(stage: plain.sanitized(), moves: []))
+        XCTAssertEqual(clean.seed, plain.sanitized().seed)
+        let back = try! JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(clean))
+        XCTAssertEqual(back.phaseInfo, clean.phaseInfo)
+        var off = s; off.phaseInfo = [PhaseInfo(h: false), PhaseInfo(), PhaseInfo()]
+        XCTAssertNil(off.sanitized().phaseInfo)
+    }
+
     private func sequence(oneUp: Int?, last: Int? = 2, lives: Int = 2, mode: LifeMode = .lives) -> Stage {
         var w1 = Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .ring, i: 2, c: 2)])
         w1.oneUp = oneUp

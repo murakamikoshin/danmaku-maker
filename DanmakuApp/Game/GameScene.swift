@@ -442,16 +442,17 @@ final class GameScene: SKScene {
     }
 
     /// 段階 phase の見出し(作者が付けた名前、なければ「第N段階」)と、必殺技か、必殺技の演出の種類・効果音
-    private func phaseTitle(_ phase: Int) -> (text: String, special: Bool, custom: Bool, fx: Int, se: Int) {
+    private func phaseTitle(_ phase: Int) -> (text: String, special: Bool, custom: Bool, fx: Int, se: Int, hidden: Bool) {
         let info = sim.stage.phaseInfo(forWave: sim.waveIndex)
         let item = info.flatMap { phase - 1 < $0.count ? $0[phase - 1] : nil }
         let name = item?.n ?? String(format: L("play.phase"), phase)
-        return (name, item?.sp == true, item?.n != nil || item?.sp == true, item?.fx ?? 0, item?.se ?? 0)
+        let hidden = item?.sp != true && item?.h == true
+        return (name, item?.sp == true, !hidden && (item?.n != nil || item?.sp == true), item?.fx ?? 0, item?.se ?? 0, hidden)
     }
 
     /// 段階の名前を出す。elapsed は、出し始めてからの秒(0〜1.2)。
     /// 演出がオフのとき・エディタの見本では、真ん中の文字だけ(動き・帯・顔なし)
-    private func showPhaseTitle(_ title: (text: String, special: Bool, custom: Bool, fx: Int, se: Int), elapsed: Double) {
+    private func showPhaseTitle(_ title: (text: String, special: Bool, custom: Bool, fx: Int, se: Int, hidden: Bool), elapsed: Double) {
         // 必殺技の効果音。1つの見出しにつき1回だけ(演出がオフのとき・見本では鳴らさない)
         let sound = "\(sim.waveIndex)|\(sim.phase)"
         if soundedBanner != sound {
@@ -960,9 +961,14 @@ final class GameScene: SKScene {
                 centerLabel.fontColor = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
                 centerLabel.isHidden = e < GameScene.awakenSwap
             } else {
-                // 段階が変わってからの秒(banner は 1.2 から 0 へ減る)
-                showPhaseTitle(phaseTitle(sim.phase), elapsed: PhaseBanner.length - sim.banner)
-                bannerOn = true
+                // 段階が変わってからの秒(banner は 1.2 から 0 へ減る)。「出さない」にした段階は、何も出さない(間は同じ)
+                let title = phaseTitle(sim.phase)
+                if title.hidden {
+                    centerLabel.isHidden = true
+                } else {
+                    showPhaseTitle(title, elapsed: PhaseBanner.length - sim.banner)
+                    bannerOn = true
+                }
             }
         } else if sim.isBoss && sim.phase == 1 && sim.waveT >= 0 && sim.waveT < 1.2 && phaseTitle(1).custom {
             // 第1段階に名前・必殺技を付けたときは、ボスが撃ち始めるところで名前を出す(見た目だけ。撃つのは止めない)

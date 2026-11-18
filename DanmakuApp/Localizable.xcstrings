@@ -69432,61 +69432,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "名前を付けると、段階の始めに大きく出ます(空なら「第N段階」)。「必殺技の演出」をオンにすると、必殺技として目立つ色で出ます。見た目だけで、弾幕は変わりません。必殺技は、名前の出方(カットイン・一文字ずつ・魔法陣)と効果音も選べます。"
+            "value": "名前を付けると、段階の始めに大きく出ます(空なら「第N段階」)。「必殺技の演出」をオンにすると、必殺技として目立つ色で出ます。見た目だけで、弾幕は変わりません。必殺技は、名前の出方(カットイン・一文字ずつ・魔法陣)と効果音も選べます。必殺技でない段階は、名前を「出さない」にもできます。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A name appears in large text when the phase starts (blank shows \"Phase N\"). Turn on \"Special style\" to show it as a special move in a bold color. It's cosmetic only and doesn't change the bullets. For a special move you can also pick how the name appears (cut-in, letter by letter, or magic circle) and a sound effect."
+            "value": "A name appears in large text when the phase starts (blank shows \"Phase N\"). Turn on \"Special style\" to show it as a special move in a bold color. It's cosmetic only and doesn't change the bullets. For a special move you can also pick how the name appears (cut-in, letter by letter, or magic circle) and a sound effect. For a phase that isn't a special move, you can also hide the name."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "取名后,阶段开始时会大字显示(留空则显示「第N阶段」)。打开「必杀技演出」后,会以醒目的颜色作为必杀技显示。仅影响外观,不改变弹幕。必杀技还可以选择名称的出现方式(特写、逐字、魔法阵)和音效。"
+            "value": "取名后,阶段开始时会大字显示(留空则显示「第N阶段」)。打开「必杀技演出」后,会以醒目的颜色作为必杀技显示。仅影响外观,不改变弹幕。必杀技还可以选择名称的出现方式(特写、逐字、魔法阵)和音效。非必杀技的阶段,也可以设为「不显示」名称。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "取名後,階段開始時會大字顯示(留空則顯示「第N階段」)。打開「必殺技演出」後,會以醒目的顏色作為必殺技顯示。僅影響外觀,不改變彈幕。必殺技還可以選擇名稱的出現方式(特寫、逐字、魔法陣)和音效。"
+            "value": "取名後,階段開始時會大字顯示(留空則顯示「第N階段」)。打開「必殺技演出」後,會以醒目的顏色作為必殺技顯示。僅影響外觀,不改變彈幕。必殺技還可以選擇名稱的出現方式(特寫、逐字、魔法陣)和音效。非必殺技的階段,也可以設為「不顯示」名稱。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이름을 붙이면 페이즈가 시작될 때 크게 표시돼요(비우면 「페이즈 N」). 「필살기 연출」를 켜면 눈에 띄는 색으로 필살기처럼 표시돼요. 보이는 것만 바뀌고 탄막은 바뀌지 않아요. 필살기는 이름이 나오는 방식(컷인·한 글자씩·마법진)과 효과음도 고를 수 있어요."
+            "value": "이름을 붙이면 페이즈가 시작될 때 크게 표시돼요(비우면 「페이즈 N」). 「필살기 연출」를 켜면 눈에 띄는 색으로 필살기처럼 표시돼요. 보이는 것만 바뀌고 탄막은 바뀌지 않아요. 필살기는 이름이 나오는 방식(컷인·한 글자씩·마법진)과 효과음도 고를 수 있어요. 필살기가 아닌 페이즈는 이름을 「표시 안 함」으로 할 수도 있어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El nombre aparece en grande al empezar la fase (vacío muestra «Fase N»). Activa «Estilo especial» para mostrarlo como movimiento especial con un color llamativo. Solo es visual; no cambia las balas. En un movimiento especial también puedes elegir cómo aparece el nombre (banda, letra a letra o círculo mágico) y un efecto de sonido."
+            "value": "El nombre aparece en grande al empezar la fase (vacío muestra «Fase N»). Activa «Estilo especial» para mostrarlo como movimiento especial con un color llamativo. Solo es visual; no cambia las balas. En un movimiento especial también puedes elegir cómo aparece el nombre (banda, letra a letra o círculo mágico) y un efecto de sonido. En una fase que no es movimiento especial, también puedes ocultar el nombre."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le nom s'affiche en grand au début de la phase (vide : « Phase N »). Activez « Style spécial » pour l'afficher comme coup spécial dans une couleur vive. C'est purement visuel, les tirs ne changent pas. Pour un coup spécial, vous pouvez aussi choisir l'apparition du nom (bandeau, lettre à lettre ou cercle magique) et un effet sonore."
+            "value": "Le nom s'affiche en grand au début de la phase (vide : « Phase N »). Activez « Style spécial » pour l'afficher comme coup spécial dans une couleur vive. C'est purement visuel, les tirs ne changent pas. Pour un coup spécial, vous pouvez aussi choisir l'apparition du nom (bandeau, lettre à lettre ou cercle magique) et un effet sonore. Pour une phase qui n'est pas un coup spécial, vous pouvez aussi masquer le nom."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der Name erscheint groß zu Beginn der Phase (leer zeigt „Phase N“). Mit „Spezial-Stil“ wird er als Spezialangriff in auffälliger Farbe gezeigt. Nur optisch – die Kugeln ändern sich nicht. Bei einem Spezialangriff lässt sich auch wählen, wie der Name erscheint (Cut-in, buchstabenweise oder magischer Kreis) und einen Soundeffekt."
+            "value": "Der Name erscheint groß zu Beginn der Phase (leer zeigt „Phase N“). Mit „Spezial-Stil“ wird er als Spezialangriff in auffälliger Farbe gezeigt. Nur optisch – die Kugeln ändern sich nicht. Bei einem Spezialangriff lässt sich auch wählen, wie der Name erscheint (Cut-in, buchstabenweise oder magischer Kreis) und einen Soundeffekt. Bei einer Phase ohne Spezialangriff lässt sich der Name auch ausblenden."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "O nome aparece grande no início da fase (vazio mostra \"Fase N\"). Ative \"Estilo especial\" para exibi-lo como golpe especial em cor de destaque. É só visual; não muda os tiros. Em um golpe especial, você também pode escolher como o nome aparece (faixa, letra a letra ou círculo mágico) e um efeito sonoro."
+            "value": "O nome aparece grande no início da fase (vazio mostra \"Fase N\"). Ative \"Estilo especial\" para exibi-lo como golpe especial em cor de destaque. É só visual; não muda os tiros. Em um golpe especial, você também pode escolher como o nome aparece (faixa, letra a letra ou círculo mágico) e um efeito sonoro. Em uma fase que não é golpe especial, você também pode ocultar o nome."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Название крупно показывается в начале фазы (пусто — «Фаза N»). Включите «Стиль спецприёма», чтобы показать его ярким цветом как спецприём. Только внешний вид, пули не меняются. Для спецприёма можно выбрать и то, как появляется название (полоса, по буквам или магический круг) и звуковой эффект."
+            "value": "Название крупно показывается в начале фазы (пусто — «Фаза N»). Включите «Стиль спецприёма», чтобы показать его ярким цветом как спецприём. Только внешний вид, пули не меняются. Для спецприёма можно выбрать и то, как появляется название (полоса, по буквам или магический круг) и звуковой эффект. Для фазы без спецприёма название можно и скрыть."
           }
         }
       }
@@ -76312,6 +76312,201 @@
           "stringUnit": {
             "state": "translated",
             "value": "爆炸"
+          }
+        }
+      }
+    },
+    "editor.phases.show": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名前の出し方"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name style"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称显示方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名稱顯示方式"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름 표시 방식"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estilo del nombre"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Style du nom"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Namens-Stil"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estilo do nome"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стиль названия"
+          }
+        }
+      }
+    },
+    "editor.phases.show.band": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金色の帯"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gold band"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金色横条"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金色橫條"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "금색 띠"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banda dorada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bandeau doré"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goldband"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faixa dourada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Золотая полоса"
+          }
+        }
+      }
+    },
+    "editor.phases.show.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出さない"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不顯示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시 안 함"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masqué"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausblenden"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не показывать"
           }
         }
       }

@@ -39,7 +39,8 @@ export interface Emitter {
 
 /** ボスの段階の名前と必殺技(見た目だけ。アプリの PhaseInfo と同じ) */
 export interface PhaseInfo { n?: string; sp?: true; /** 必殺技の演出の種類(1 = 一文字ずつ、2 = 魔法陣。帯のカットインは入れない)。必殺技のときだけ。1.4.0 から */ fx?: 1 | 2;
-  /** 必殺技の効果音(1〜7。鳴らさないときは入れない)。必殺技のときだけ。1.4.0 から */ se?: number }
+  /** 必殺技の効果音(1〜7。鳴らさないときは入れない)。必殺技のときだけ。1.4.0 から */ se?: number;
+  /** 名前を出さない(金色の帯を出さない)。必殺技でない段階だけ。1.4.0 から */ h?: true }
 
 export interface Wave {
   kind: WaveKind;
@@ -289,9 +290,14 @@ function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: Pha
       if (typeof item.se !== "number" || !Number.isInteger(item.se) || item.se < 1 || item.se > MAX_PHASE_SE) return { ok: false, error: "phase-info" };
       if (p.sp) p.se = item.se;
     }
+    // 名前を出さない: 必殺技の段階に付いていたら、捨てる(アプリの PhaseInfo.sanitized と同じ)
+    if (item.h !== undefined && item.h !== null && item.h !== false) {
+      if (item.h !== true) return { ok: false, error: "phase-info" };
+      if (!p.sp) p.h = true;
+    }
     out.push(p);
   }
-  return { ok: true, v: out.some((p) => p.n !== undefined || p.sp) ? out : undefined };
+  return { ok: true, v: out.some((p) => p.n !== undefined || p.sp || p.h) ? out : undefined };
 }
 type LevelPart = { bossLook?: number; bossSize?: number; bossMove?: number | null; bossX?: number; bossY?: number; mooksBreakable?: true };
 /** 1 つの場面(または 1 面のステージ)が、1.2.0 以降の内容を使うか */
