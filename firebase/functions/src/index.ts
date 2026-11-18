@@ -16,6 +16,7 @@ import { applyPurchaseEvent, buildPool, checkClip, checkMissingClips, getStamina
 import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
 import { prepareWeek, RANKED_STAGE_VERSION, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
+import { syncLatestVersion } from "./appversion.js";
 import { bossKeysOf, fetchPurchasedIds, ownsBossByPurchase, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
@@ -912,4 +913,9 @@ export const revenuecatWebhook = onRequest({ secrets: [revenuecatSecret] }, asyn
     logger.error("revenuecat-webhook-failed", { error: String(e) });
     res.status(500).send("error");
   }
+});
+
+/** 1時間ごと: 新しい版が日本とアメリカの App Store に出たら、Remote Config の update_latest_version をその版にする(古い版に「新しいバージョンがあります」) */
+export const syncAppStoreVersion = onSchedule({ schedule: "every 60 minutes", timeZone: "Asia/Tokyo", timeoutSeconds: 60, memory: "256MiB" }, async () => {
+  await syncLatestVersion();
 });
