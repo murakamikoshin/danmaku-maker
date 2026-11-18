@@ -730,7 +730,8 @@ private struct BGMPanel: View {
                             }
                             .frame(width: 34, height: 34)
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(LocalizedStringKey("bgm.\(i)")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                                // LocalizedStringKey に \(i) を入れるとキーが "bgm.%lld" になって名前が引けないので、L で引く
+                                Text(L("bgm.\(i)")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
                                 Text(L("bgm.\(i).sub")).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                             }
                             Spacer()

@@ -149,9 +149,12 @@ struct PlayView: View {
         self.ranking = ranking
         self.onStart = onStart
         self.onExit = onExit
-        let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest || trial, customs: customs))
-        m.onResult = onResult
-        _model = StateObject(wrappedValue: m)
+        // StateObject の中身は、最初の1回だけ作る(ここで作ると、親の再描画のたびに使われないゲーム画面ができて、重くなる・音が鳴る)
+        _model = StateObject(wrappedValue: {
+            let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest || trial, customs: customs))
+            m.onResult = onResult
+            return m
+        }())
     }
 
     var body: some View { screenContent.hidesBannerWhileShown() }

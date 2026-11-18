@@ -102,6 +102,8 @@ final class GameScene: SKScene {
     /// 最後のボスを倒したとき、爆発を見せてから結果を出すための待ち(秒)
     private var finishDelay = 0.0
     private var warningLeft = 0.0
+    /// 警告の音をまだ鳴らしていない(シーンが動き出した最初のコマで鳴らす)
+    private var warningSoundPending = false
     private let warningOverlay = SKSpriteNode(color: UIColor(red: 1, green: 0.1, blue: 0.2, alpha: 1), size: CGSize(width: 360, height: 540))
     private let waveLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     /// 竜王の場面の演出(竜王が出るステージだけ)と、画面のゆれ・寄りに使うカメラ
@@ -654,7 +656,8 @@ final class GameScene: SKScene {
         // 警告: ボスの場面の開始前に、赤い点滅とサイレン(演出がオフなら、出さない)
         if sim.warningNow && effectsOn {
             warningLeft = index == 0 ? DanmakuConfig.readySeconds : Wave.intermissionSeconds
-            se(.warning)
+            // 音は画面に出て動き出してから鳴らす(作っただけで使われないシーンが鳴らして、2回聞こえることがあった)
+            warningSoundPending = true
         }
         if index > 0 {
             centerLabel.text = "WAVE \(index + 1)"
@@ -830,6 +833,7 @@ final class GameScene: SKScene {
         updateWarpMarks(bs)
 
         if sim.waveIndex != shownWave { enterWave(sim.waveIndex) }
+        if warningSoundPending { warningSoundPending = false; se(.warning) }
         if sim.defeats > shownDefeats {
             shownDefeats = sim.defeats
             if effectsOn { playDefeat(at: sim.lastDefeatPosition, effect: sim.lastDefeatEffect) }
