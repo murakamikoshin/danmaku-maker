@@ -52169,61 +52169,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wähle ein Pixel-Schiff, das du beim Spielen benutzt. Nur das Aussehen ändert sich."
+            "value": "Wähle dein übliches Pixel-Schiff. In Stages, für die der Ersteller ein Schiff gewählt hat, wird dieses benutzt. Nur das Aussehen ändert sich."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick a pixel-art ship to fly with. Only the look changes."
+            "value": "Pick the pixel-art ship you usually fly. Stages where the creator chose a ship use that one instead. Only the look changes."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige una nave pixel art para jugar. Solo cambia el aspecto."
+            "value": "Elige tu nave pixel art habitual. En los niveles donde el creador eligió una nave, se usa esa. Solo cambia el aspecto."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisis un vaisseau pixel art pour jouer. Seul l’aspect change."
+            "value": "Choisis ton vaisseau pixel art habituel. Dans les niveaux où le créateur a choisi un vaisseau, c’est celui-là qui est utilisé. Seul l’aspect change."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "遊ぶときに使うドット絵の自機を選べます。見た目だけで、当たり判定は変わりません。"
+            "value": "ふだん遊ぶときに使うドット絵の自機を選べます。作った人が自機を決めたステージでは、そちらが出ます。見た目だけで、当たり判定は変わりません。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "플레이할 때 쓸 도트 기체를 고르세요. 모양만 바뀌고 판정은 그대로예요."
+            "value": "평소 플레이할 때 쓸 도트 기체를 고르세요. 만든 사람이 기체를 정한 스테이지에서는 그 기체가 나와요. 모양만 바뀌고 판정은 그대로예요."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolha uma nave em pixel art para jogar. Só muda o visual."
+            "value": "Escolha a nave em pixel art que você costuma usar. Nas fases em que o criador escolheu uma nave, ela é usada. Só muda o visual."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выберите пиксельный корабль для игры. Меняется только внешний вид."
+            "value": "Выберите свой обычный пиксельный корабль. В уровнях, где автор выбрал корабль, используется он. Меняется только внешний вид."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "选择游戏时使用的像素战机。只改变外观，判定不变。"
+            "value": "选择平时游戏使用的像素战机。在作者指定了战机的关卡中，会使用作者选的战机。只改变外观，判定不变。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "選擇遊戲時使用的像素戰機。只改變外觀，判定不變。"
+            "value": "選擇平時遊戲使用的像素戰機。在作者指定了戰機的關卡中，會使用作者選的戰機。只改變外觀，判定不變。"
           }
         }
       }
