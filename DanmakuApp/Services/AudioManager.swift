@@ -21,7 +21,25 @@ final class AudioManager: ObservableObject {
             }
         }
     }
-    enum Effect: String, CaseIterable { case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life", warning = "se_warning", boom = "se_boom", sparkle = "se_sparkle", match = "se_match" }
+    enum Effect: String, CaseIterable {
+        case tap = "se_tap", hit = "se_hit", clear = "se_clear", fail = "se_fail", get = "se_get", lifeLost = "se_life", warning = "se_warning", boom = "se_boom", sparkle = "se_sparkle", match = "se_match"
+        /// 必殺技の名前を出すときの音(1.4.0。ステージを作る人が選ぶ)
+        case specialIssen = "se_special_issen", specialTodoroki = "se_special_todoroki", specialKakusei = "se_special_kakusei", specialWa = "se_special_wa", specialMaga = "se_special_maga"
+
+        /// 必殺技の効果音の番号(DanmakuCore の PhaseInfo.se)から、鳴らす音。0・範囲の外は鳴らさない
+        static func special(_ n: Int) -> Effect? {
+            switch n {
+            case 1: return .specialIssen
+            case 2: return .specialTodoroki
+            case 3: return .specialKakusei
+            case 4: return .specialWa
+            case 5: return .specialMaga
+            case 6: return .sparkle
+            case 7: return .boom
+            default: return nil
+            }
+        }
+    }
 
     @Published var bgmOn: Bool { didSet { UserDefaults.standard.set(bgmOn, forKey: "audio.bgm"); if bgmOn { resume() } else { fadeOut() } } }
     @Published var seOn: Bool { didSet { UserDefaults.standard.set(seOn, forKey: "audio.se") } }

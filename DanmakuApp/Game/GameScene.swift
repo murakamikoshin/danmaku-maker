@@ -81,6 +81,11 @@ final class GameScene: SKScene {
     private let centerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     /// 必殺技の段階で、名前の上に出す小さな「必殺技」の文字
     private let specialLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+    /// 段階の名前・必殺技の名前の演出(帯のカットインなど)。演出がオフのとき・エディタの見本では作らず、
+    /// 真ん中の文字だけ(centerLabel と specialLabel)で出す
+    private var phaseBanner: PhaseBanner?
+    /// 必殺技の効果音を鳴らした見出し(場面と段階)。同じ見出しで二度鳴らさない
+    private var soundedBanner = ""
     /// 落ちてくる1UP(連戦で、1UP を付けたボスを倒したとき)
     private let oneUpNode = SKNode()
     private var barSeparators: [SKSpriteNode] = []
@@ -388,6 +393,14 @@ final class GameScene: SKScene {
         specialLabel.zPosition = 8
         specialLabel.isHidden = true
         addChild(specialLabel)
+        if effectsOn && !isPreview {
+            // 帯・魔法陣・顔は、弾(4)と自機(3)より下。名前の文字は、ほかの見出しと同じ高さ
+            let b = PhaseBanner(width: W, height: H)
+            b.back.zPosition = 2.6
+            b.front.zPosition = 8
+            addChild(b.back); addChild(b.front)
+            phaseBanner = b
+        }
         // 1UP: 緑の丸に「1UP」
         let orb = SKShapeNode(circleOfRadius: CGFloat(Simulation.oneUpPickRadius) * 0.8)
         orb.fillColor = UIColor(red: 0.2, green: 0.85, blue: 0.45, alpha: 0.9)
@@ -419,12 +432,52 @@ final class GameScene: SKScene {
         }
     }
 
-    /// 段階 phase の見出し(作者が付けた名前、なければ「第N段階」)と、必殺技か
-    private func phaseTitle(_ phase: Int) -> (text: String, special: Bool, custom: Bool) {
+    /// 段階 phase の見出し(作者が付けた名前、なければ「第N段階」)と、必殺技か、必殺技の演出の種類・効果音
+    private func phaseTitle(_ phase: Int) -> (text: String, special: Bool, custom: Bool, fx: Int, se: Int) {
         let info = sim.stage.phaseInfo(forWave: sim.waveIndex)
         let item = info.flatMap { phase - 1 < $0.count ? $0[phase - 1] : nil }
         let name = item?.n ?? String(format: L("play.phase"), phase)
-        return (name, item?.sp == true, item?.n != nil || item?.sp == true)
+        return (name, item?.sp == true, item?.n != nil || item?.sp == true, item?.fx ?? 0, item?.se ?? 0)
+    }
+
+    /// 段階の名前を出す。elapsed は、出し始めてからの秒(0〜1.2)。
+    /// 演出がオフのとき・エディタの見本では、真ん中の文字だけ(動き・帯・顔なし)
+    private func showPhaseTitle(_ title: (text: String, special: Bool, custom: Bool, fx: Int, se: Int), elapsed: Double) {
+        // 必殺技の効果音。1つの見出しにつき1回だけ(演出がオフのとき・見本では鳴らさない)
+        let sound = "\(sim.waveIndex)|\(sim.phase)"
+        if soundedBanner != sound {
+            soundedBanner = sound
+            if effectsOn, title.special, let e = AudioManager.Effect.special(title.se) { se(e) }
+        }
+        guard let banner = phaseBanner else {
+            showCenter(title.text, color: title.special ? UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1) : Palette.gold, special: title.special)
+            return
+        }
+        centerLabel.isHidden = true
+        // 竜王の場面では、竜王の炎・弾の絵(DragonLayer の 2.45〜)より下に置く
+        banner.back.zPosition = dragonActive ? 2.2 : 2.6
+        let style: PhaseBanner.Style = title.special ? (PhaseBanner.Style(rawValue: title.fx) ?? .band) : .band
+        // 竜王の姿が変わるカットイン(まん中より少し下の帯)が出ている間は、重ならないよう上にずらす
+        let raised = dragonActive && (dragonLayer?.isCutInShowing ?? false)
+        banner.show(title.text, special: title.special, style: style, tag: L("play.special"), elapsed: elapsed, raised: raised) { bannerFace() }
+    }
+
+    /// 必殺技の演出に出す、いまのボスの顔
+    private func bannerFace() -> PhaseBanner.Face? {
+        if sim.bossCharacter == .dragon, dragonLayer != nil {
+            // 竜王: カットインと同じ、顔のアップ(いまの姿の色)
+            guard let cg = DragonArt.face(form: sim.dragonForm) else { return nil }
+            let t = SKTexture(cgImage: cg)
+            t.filteringMode = .nearest
+            return PhaseBanner.Face(texture: t, size: CGSize(width: CGFloat(cg.width) * 2, height: CGFloat(cg.height) * 2), focus: CGPoint(x: 0.5, y: 0.5))
+        }
+        if let art = (sim.isAwakened ? characterAwakened : nil) ?? characterNormal {
+            return PhaseBanner.Face.pixelArt(art.still, texture: art.frames[0])
+        }
+        // 図形のボス・自分の画像のボス: 絵の全体を大きく出す
+        let s = bossTexture.size()
+        let k = 125 / max(1, max(s.width, s.height))
+        return PhaseBanner.Face(texture: bossTexture, size: CGSize(width: s.width * k, height: s.height * k), focus: CGPoint(x: 0.5, y: 0.5))
     }
 
     /// 真ん中の大きな文字。長い名前は、画面の幅に収まるまで小さくする
@@ -878,6 +931,8 @@ final class GameScene: SKScene {
         }
 
         specialLabel.isHidden = true
+        // 段階の名前の演出を、このコマで出したか(出さなかったら、下で消す)
+        var bannerOn = false
         // 長い段階名で小さくしたあとも、ほかの見出し(WAVE・WARNING・覚醒など)はいつもの大きさで出す
         if centerLabel.fontSize != 28 { centerLabel.fontSize = 28 }
         if warningLeft > 0 {
@@ -894,17 +949,19 @@ final class GameScene: SKScene {
                 centerLabel.fontColor = UIColor(red: 1, green: 0.24, blue: 0.31, alpha: 1)
                 centerLabel.isHidden = e < GameScene.awakenSwap
             } else {
-                let title = phaseTitle(sim.phase)
-                showCenter(title.text, color: title.special ? UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1) : Palette.gold, special: title.special)
+                // 段階が変わってからの秒(banner は 1.2 から 0 へ減る)
+                showPhaseTitle(phaseTitle(sim.phase), elapsed: PhaseBanner.length - sim.banner)
+                bannerOn = true
             }
         } else if sim.isBoss && sim.phase == 1 && sim.waveT >= 0 && sim.waveT < 1.2 && phaseTitle(1).custom {
             // 第1段階に名前・必殺技を付けたときは、ボスが撃ち始めるところで名前を出す(見た目だけ。撃つのは止めない)
-            let title = phaseTitle(1)
-            showCenter(title.text, color: title.special ? UIColor(red: 1, green: 0.36, blue: 0.62, alpha: 1) : Palette.gold, special: title.special)
+            showPhaseTitle(phaseTitle(1), elapsed: sim.waveT)
+            bannerOn = true
         } else {
             centerLabel.isHidden = true
             centerLabel.fontColor = Palette.text
         }
+        if !bannerOn { phaseBanner?.hide() }
         onTime?(sim.stage.isUnlimitedTime ? max(0, sim.t) : max(0, sim.waveLimit - max(0, sim.waveT)))
         let status = (sim.lifeLeft, sim.lifeMax, sim.damageDealt)
         if status != lastStatus {

@@ -64,6 +64,8 @@ final class DragonLayer {
     private var lastLife = -1
     private var lastForm = -1
     private var formCutT = -1
+    /// 姿が変わるカットイン(画面を横切る帯)を出している間か。段階の名前の演出が、重ならない場所へよけるために聞く
+    var isCutInShowing: Bool { formCutT >= 0 }
     private var formCut = 0
     /// カットインに出す段階の番号(姿の番号とは別。作者は段階ごとに好きな姿を選べる)
     private var formPhase = 1
@@ -188,7 +190,8 @@ final class DragonLayer {
         // 姿が変わった(段階が変わった): カットインと、光の輪
         if lastForm < 0 { lastForm = lv }
         if lv != lastForm {
-            lastForm = lv; formCut = lv; formPhase = sim.phase; formCutT = 0
+            // カットイン(帯)は、ステージを作った人がオフにできる。光の輪・ゆれは、そのまま出す
+            lastForm = lv; formCut = lv; formPhase = sim.phase; formCutT = sim.stage.hidesDragonCutIn(forWave: sim.waveIndex) ? -1 : 0
             heat = max(heat, 18); addShake(12); punch = 1
             spark(B.x, B.y, 90, 9, life: 40, s: 3)
             flashes.append(Flash(x: B.x, y: B.y, r: 300, life: 36, ring: true))

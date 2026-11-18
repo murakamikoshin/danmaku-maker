@@ -38,7 +38,8 @@ export interface Emitter {
 }
 
 /** ボスの段階の名前と必殺技(見た目だけ。アプリの PhaseInfo と同じ) */
-export interface PhaseInfo { n?: string; sp?: true }
+export interface PhaseInfo { n?: string; sp?: true; /** 必殺技の演出の種類(1 = 一文字ずつ、2 = 魔法陣。帯のカットインは入れない)。必殺技のときだけ。1.4.0 から */ fx?: 1 | 2;
+  /** 必殺技の効果音(1〜7。鳴らさないときは入れない)。必殺技のときだけ。1.4.0 から */ se?: number }
 
 export interface Wave {
   kind: WaveKind;
@@ -71,6 +72,8 @@ export interface Wave {
   phaseInfo?: PhaseInfo[];
   /** 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階の数と同じ長さ。全部 0 は入れない)。1.4.0 から(needs: 5) */
   forms?: number[];
+  /** 竜王だけ: 姿が変わるときのカットインを出さない(true だけ入れる)。見た目だけ。1.4.0 から */
+  noCutIn?: true;
   /** このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 自動)。最後の場面には付けない。1.3.0 から(needs: 3) */
   oneUp?: 1 | 2;
   /** ボスの位置(動きの中心。x は 0.2〜0.8、y は 0.1〜0.3、0.05 刻み。標準=x 0.5, y 0.2 は入れない) */
@@ -130,6 +133,8 @@ export interface Stage {
   phaseInfo?: PhaseInfo[];
   /** 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金。段階の数と同じ長さ。全部 0 は入れない)。1.4.0 から(needs: 5) */
   forms?: number[];
+  /** 竜王だけ: 姿が変わるときのカットインを出さない(true だけ入れる。Wave と同じ)。見た目だけ。1.4.0 から */
+  noCutIn?: true;
   /** 自機の撃ち方(標準=standard は入れない)。作者が決めて、遊ぶ全員がその撃ち方で遊ぶ */
   shot?: "spread" | "heavy";
   /** 作者が付けた、毎日のごほうびの演出(報酬の番号。種類ごとに1つまで、種類の順)。見た目だけ */
@@ -250,7 +255,7 @@ export const isPhaseCode = (ph: number, n: number): boolean => {
 };
 /** この段階で撃つか(アプリの Emitter.fires(inPhase:) と同じ) */
 export const firesInPhase = (ph: number, phase: number): boolean => ph === 0 || phasesOf(ph).includes(phase);
-/** 段階ごとの名前と必殺技を検証する。段階の数と同じ長さの配列。名前は1〜16文字・改行なし・NGワードなし。何も付いていなければ undefined */
+/** 段階ごとの名前と必殺技を検証する。段階の数と同じ長さの配列。名前は1〜16文字・改行なし・NGワードなし。演出の種類は 1 か 2、効果音は 1〜7(どちらも必殺技だけ)。何も付いていなければ undefined */
 function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: PhaseInfo[] } | { ok: false; error: string } {
   if (v === undefined || v === null) return { ok: true };
   if (!boss || !Array.isArray(v) || v.length !== n) return { ok: false, error: "phase-info" };
@@ -273,6 +278,16 @@ function phaseInfoVal(v: unknown, n: number, boss: boolean): { ok: true; v?: Pha
     if (item.sp !== undefined && item.sp !== null && item.sp !== false) {
       if (item.sp !== true) return { ok: false, error: "phase-info" };
       p.sp = true;
+    }
+    // 演出の種類: 0(帯のカットイン)は入れない。必殺技でない段階に付いていたら、捨てる(アプリの PhaseInfo.sanitized と同じ)
+    if (item.fx !== undefined && item.fx !== null && item.fx !== 0) {
+      if (item.fx !== 1 && item.fx !== 2) return { ok: false, error: "phase-info" };
+      if (p.sp) p.fx = item.fx;
+    }
+    // 効果音: 鳴らさない(0)は入れない。必殺技でない段階に付いていたら、捨てる
+    if (item.se !== undefined && item.se !== null && item.se !== 0) {
+      if (typeof item.se !== "number" || !Number.isInteger(item.se) || item.se < 1 || item.se > MAX_PHASE_SE) return { ok: false, error: "phase-info" };
+      if (p.sp) p.se = item.se;
     }
     out.push(p);
   }
@@ -303,6 +318,8 @@ export const MAX_AUTHOR = 12;
 export const MAX_EMITTERS = 8;
 /** 段階の名前の長さの上限(アプリの PhaseInfo.maxName と同じ) */
 export const MAX_PHASE_NAME = 16;
+/** 必殺技の効果音の番号の上限(アプリの PhaseInfo.seRange と同じ) */
+export const MAX_PHASE_SE = 7;
 export const MAX_REPLAY_CHARS = 120_000;
 
 export type Validated = { ok: true; stage: Stage; clearReplay: string | null } | { ok: false; error: string };
@@ -425,6 +442,9 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wForms = formsVal((w as { forms?: unknown }).forms, wN, wDragon);
     // 竜王は、覚醒の代わりに段階ごとの姿を選ぶ(覚醒は使わない)
     if (!wForms.ok || (wDragon && wAwaken.v !== undefined)) return { ok: false, error: "wave-look" };
+    // カットインを出さない: 竜王でなければ、捨てる(アプリの sanitized と同じ)
+    const wCut = (w as { noCutIn?: unknown }).noCutIn;
+    if (wCut !== undefined && wCut !== null && wCut !== true && wCut !== false) return { ok: false, error: "wave-look" };
     total += d;
     list.push({ kind, durationSec: d, bossHp, bossMove, emitters: em.list, ...(warning ? { warning } : {}), ...(defeat !== undefined ? { defeat } : {}),
       ...(wSize.v !== undefined ? { bossSize: wSize.v } : {}), ...(wMooks.v !== undefined ? { mooks: wMooks.v } : {}), ...(w.mooksBreakable === true && wMooks.v !== undefined ? { mooksBreakable: true as const, ...(wHits.v !== undefined ? { mookHits: wHits.v } : {}), ...(wClear.v ? { mooksClear: true as const } : {}) } : {}),
@@ -433,7 +453,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
       ...(wHx.v !== undefined ? { bossX: wHx.v } : {}), ...(wHy.v !== undefined ? { bossY: wHy.v } : {}),
       ...(wBody === true ? { bodyHit: true as const } : {}),
       ...(wPhases.v !== undefined ? { phases: wPhases.v } : {}), ...(wInfo.v ? { phaseInfo: wInfo.v } : {}),
-      ...(wForms.v ? { forms: wForms.v } : {}),
+      ...(wForms.v ? { forms: wForms.v } : {}), ...(wDragon && wCut === true ? { noCutIn: true as const } : {}),
       ...(wOneUp.v !== undefined ? { oneUp: wOneUp.v as 1 | 2 } : {}) });
   }
   // 1UP は、次の場面があるボスだけ(最後のボスを倒したらクリア)
@@ -580,6 +600,8 @@ export function validatePublish(input: unknown): Validated {
   const bDragon = (mode === "boss" || mode === "damage") && bBossLook.v === DRAGON_LOOK;
   const bForms = formsVal((input as { forms?: unknown }).forms, bN, bDragon);
   if (!bForms.ok || (bDragon && bAwaken.v !== undefined)) return { ok: false, error: "look" };
+  const bCut = (input as { noCutIn?: unknown }).noCutIn;
+  if (bCut !== undefined && bCut !== null && bCut !== true && bCut !== false) return { ok: false, error: "look" };
   // 遊べるアプリの版: 体当たり(1.2.1〜)は 3、新しいボスなど(1.2.0〜)は 2
   // 2つの段階で撃つ発射台(1.2.1〜)も 3
   // 狙い方・4〜5段階・1UP(1.3.0〜)は 4(1.2.1 は 3 まで遊べるので、それより上にする)
@@ -647,7 +669,7 @@ export function validatePublish(input: unknown): Validated {
       ...(previewStart !== undefined ? { previewStart } : {}), ...(noPreview ? { noPreview } : {}),
       ...(bBody === true ? { bodyHit: true as const } : {}), ...(desc ? { desc } : {}),
       ...(bPhases.v !== undefined ? { phases: bPhases.v } : {}), ...(bInfo.v ? { phaseInfo: bInfo.v } : {}),
-      ...(bForms.v ? { forms: bForms.v } : {}) },
+      ...(bForms.v ? { forms: bForms.v } : {}), ...(bDragon && bCut === true ? { noCutIn: true as const } : {}) },
   };
 }
 

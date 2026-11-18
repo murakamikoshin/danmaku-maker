@@ -34,6 +34,25 @@ final class DragonTests: XCTestCase {
         for b in BossCharacter.allCases where b != .dragon { XCTAssertEqual(b.ticketCost, 1) }
     }
 
+    /// カットインを出さない設定(1.4.0): 竜王だけに付く。見た目だけで、計算には関わらない
+    func testCutInSwitchIsDragonOnlyAndDecorOnly() {
+        let em = [Emitter(t: Pattern.dragon[0], x: 0.5, y: 0.2, s: 0, e: 60, i: 3, c: 1, v: 1, r: 0, k: 0)]
+        var d = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: em, bossLook: BossCharacter.dragon.rawValue)
+        d.noCutIn = true
+        let s = d.sanitized()
+        XCTAssertEqual(s.noCutIn, true)
+        XCTAssertTrue(s.hidesDragonCutIn(forWave: 0))
+        var plain = d; plain.noCutIn = nil
+        XCTAssertFalse(plain.sanitized().hidesDragonCutIn(forWave: 0))
+        XCTAssertEqual(Simulation.run(stage: s, moves: []), Simulation.run(stage: plain.sanitized(), moves: []))
+        XCTAssertEqual(s.seed, plain.sanitized().seed)
+        let back = try! JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(s))
+        XCTAssertEqual(back.noCutIn, true)
+        var other = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: [Emitter(t: .ring)], bossLook: BossCharacter.hire.rawValue)
+        other.noCutIn = true
+        XCTAssertNil(other.sanitized().noCutIn, "竜王だけ")
+    }
+
     func testOnlyTheDragonCanUseDragonMovesAndFormsAreSanitized() {
         let em = Pattern.dragon.map { Emitter(t: $0, x: 0.5, y: 0.2, s: 0, e: 60, i: 3, c: 1, v: 1, r: 0, k: 0) }
         var other = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: em, bossLook: BossCharacter.hire.rawValue)

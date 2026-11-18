@@ -87,6 +87,26 @@ final class PhasesAndOneUpTests: XCTestCase {
         XCTAssertEqual(back.phaseInfo, clean.phaseInfo)
     }
 
+    /// 必殺技の演出の種類と効果音(1.4.0): 必殺技だけに付く。範囲の外は入れない。計算には関わらない
+    func testPhaseFxIsDecorOnly() {
+        var s = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 500, bossMove: 0, emitters: [Emitter(t: .ring, i: 0.3, c: 8)])
+        s.phaseInfo = [PhaseInfo(n: "奥義", sp: true, fx: 2, se: 5), PhaseInfo(sp: true, fx: 0, se: 0), PhaseInfo(n: "ふつう", fx: 1, se: 3)]
+        let clean = s.sanitized()
+        XCTAssertEqual(clean.phaseInfo, [PhaseInfo(n: "奥義", sp: true, fx: 2, se: 5), PhaseInfo(sp: true), PhaseInfo(n: "ふつう")])
+        var wild = s; wild.phaseInfo = [PhaseInfo(sp: true, fx: 9, se: 8), PhaseInfo(sp: true, se: -1), PhaseInfo()]
+        XCTAssertEqual(wild.sanitized().phaseInfo, [PhaseInfo(sp: true), PhaseInfo(sp: true), PhaseInfo()])
+        var plain = s; plain.phaseInfo = nil
+        XCTAssertEqual(Simulation.run(stage: clean, moves: []), Simulation.run(stage: plain.sanitized(), moves: []))
+        XCTAssertEqual(clean.seed, plain.sanitized().seed)
+        let back = try! JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(clean))
+        XCTAssertEqual(back.phaseInfo, clean.phaseInfo)
+        // 1.3.x が保存した形(fx なし)も、そのまま読める
+        let old = try! JSONDecoder().decode([PhaseInfo].self, from: Data(#"[{"n":"a","sp":true},{}]"#.utf8))
+        XCTAssertEqual(old, [PhaseInfo(n: "a", sp: true), PhaseInfo()])
+        // 効果音は 1〜7。演出とは別々に選べる
+        XCTAssertEqual(PhaseInfo.seRange, 1...7)
+    }
+
     private func sequence(oneUp: Int?, last: Int? = 2, lives: Int = 2, mode: LifeMode = .lives) -> Stage {
         var w1 = Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .ring, i: 2, c: 2)])
         w1.oneUp = oneUp

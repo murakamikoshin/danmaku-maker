@@ -73,6 +73,7 @@ struct EditorView: View {
                                               bodyHit: model.draft.mode != .survive ? $model.draft.bodyHit : nil,
                                               phaseCount: model.draft.phases ?? 3,
                                               forms: $model.draft.forms,
+                                              dragonCutIn: Binding(get: { model.draft.noCutIn != true }, set: { model.draft.noCutIn = $0 ? nil : true }),
                                               usesCharacterPatterns: model.draft.emitters.contains { $0.t.bossCharacter != nil },
                                               convertCharacterPatterns: { model.convertCharacterPatterns() })
                             }
@@ -362,6 +363,8 @@ private struct EnemyControls: View {
     var phaseCount = 3
     /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil の欄は出さない
     var forms: Binding<[Int]?>? = nil
+    /// 竜王だけ: 姿が変わるときのカットインを出すか(オンが標準)。nil の欄は出さない
+    var dragonCutIn: Binding<Bool>? = nil
     /// 連戦の場面か(説明の文を「次の場面へ」にする)
     var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
@@ -404,7 +407,7 @@ private struct EnemyControls: View {
         // 図形のボスには覚醒の欄が無いので、残っていると消せない設定になる。図形にしたら外す
         if BossCharacter.of(look: new) == nil { awaken = nil }
         // 竜王は「覚醒」ではなく、段階ごとに姿を選ぶ。竜王をやめたら姿の設定は外す
-        if BossCharacter.of(look: new) == .dragon { awaken = nil } else if let forms { forms.wrappedValue = nil }
+        if BossCharacter.of(look: new) == .dragon { awaken = nil } else if let forms { forms.wrappedValue = nil; dragonCutIn?.wrappedValue = true }
     }
 
     /// 選べる見た目。招待限定のボス(ぷにまる)も並べる(持っていなければ鍵つき。選べない)
@@ -476,6 +479,16 @@ private struct EnemyControls: View {
                         }
                     }
                     Text("editor.dragon.forms.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    if let dragonCutIn {
+                        // 姿が変わるときのカットイン(帯に、顔と姿の名前)。見た目だけ
+                        HStack(spacing: 10) {
+                            Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 22)
+                            Text("editor.dragon.cutin").font(.system(size: 14, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            Spacer()
+                            GameToggle(isOn: dragonCutIn)
+                        }
+                        .accessibilityIdentifier("editor.dragon.cutin")
+                    }
                 } else if isCharacter {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + (2...max(2, phaseCount)).map { ($0, String(format: L("play.phase"), $0)) },
@@ -1240,6 +1253,7 @@ private struct WaveCard: View {
                                   bodyHit: Binding(get: { wave.bodyHit == true }, set: { model.draft.waves[i].bodyHit = $0 ? true : nil }),
                                   phaseCount: wave.phases ?? 3,
                                   forms: Binding(get: { wave.forms }, set: { model.draft.waves[i].forms = $0 }),
+                                  dragonCutIn: Binding(get: { wave.noCutIn != true }, set: { model.draft.waves[i].noCutIn = $0 ? nil : true }),
                                   usesCharacterPatterns: wave.emitters.contains { $0.t.bossCharacter != nil },
                                   convertCharacterPatterns: { model.convertCharacterPatterns(inWave: waveID) })
                     HStack {

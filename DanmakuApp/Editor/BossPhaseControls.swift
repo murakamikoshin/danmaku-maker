@@ -38,8 +38,24 @@ struct BossPhaseControls: View {
         }
     }
 
-    /// 1つの段階: 名前の欄と、必殺技のスイッチ
+    /// 1つの段階: 名前の欄と、必殺技のスイッチ。必殺技にすると、その下で演出の種類を選べる(1.4.0)
     private func row(_ i: Int) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            nameRow(i)
+            if item(i).sp == true {
+                Text("editor.phases.fx").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
+                ChipGrid(items: [(0, L("editor.phases.fx.0")), (1, L("editor.phases.fx.1")), (2, L("editor.phases.fx.2"))],
+                         selection: Binding(get: { item(i).fx ?? 0 }, set: { v in update(i) { $0.fx = v == 0 ? nil : v } }),
+                         idPrefix: "\(idPrefix).fx.\(i)", minimum: 96)
+                Text("editor.phases.se").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary).padding(.top, 2)
+                ChipGrid(items: (0...7).map { ($0, L("editor.phases.se.\($0)")) },
+                         selection: Binding(get: { item(i).se ?? 0 }, set: { v in update(i) { $0.se = v == 0 ? nil : v } }),
+                         idPrefix: "\(idPrefix).se.\(i)", minimum: 80)
+            }
+        }
+    }
+
+    private func nameRow(_ i: Int) -> some View {
         HStack(spacing: 8) {
             TextField("", text: nameBinding(i), prompt: Text(String(format: L("play.phase"), i + 1)))
                 .textFieldStyle(.plain)
@@ -50,7 +66,7 @@ struct BossPhaseControls: View {
                 .accessibilityIdentifier("\(idPrefix).name.\(i)")
             VStack(spacing: 2) {
                 Text("editor.phases.special").font(.system(size: 10, weight: .heavy)).foregroundStyle(item(i).sp == true ? GameStyle.pinkColor : .secondary)
-                GameToggle(isOn: Binding(get: { item(i).sp == true }, set: { v in update(i) { $0.sp = v ? true : nil } }))
+                GameToggle(isOn: Binding(get: { item(i).sp == true }, set: { v in update(i) { $0.sp = v ? true : nil; if !v { $0.fx = nil; $0.se = nil } } }))
             }
             .accessibilityIdentifier("\(idPrefix).special.\(i)")
         }

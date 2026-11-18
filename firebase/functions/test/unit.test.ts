@@ -674,6 +674,17 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     }
   });
 
+  it("竜王のカットインを出さない設定: 竜王だけに付く(true だけ入れる)。ほかのボスでは捨てる", () => {
+    const base = { emitters: [em({ t: "dragonRoar" })], bossLook: 13, bossMove: 0 };
+    const off = validatePublish(boss({ ...base, noCutIn: true }));
+    expect(off.ok && off.stage.noCutIn).toBe(true);
+    const on = validatePublish(boss({ ...base, noCutIn: false }));
+    expect(on.ok && "noCutIn" in on.stage).toBe(false);
+    const other = validatePublish(boss({ noCutIn: true }));
+    expect(other.ok && "noCutIn" in other.stage).toBe(false);
+    expect(validatePublish(boss({ ...base, noCutIn: 1 }))).toEqual({ ok: false, error: "look" });
+  });
+
   it("竜王の段階ごとの姿: 段階の数と同じ長さの 0〜3。竜王だけ・覚醒とは一緒に使えない・全部通常は入れない", () => {
     const base = { emitters: [em({ t: "dragonRoar" })], bossLook: 13, bossMove: 0 };
     const ok = validatePublish(boss({ ...base, forms: [0, 1, 3] }));
@@ -1100,6 +1111,31 @@ describe("段階 4・5、段階の名前と必殺技、1UP(1.3.0)", () => {
     const empty = validatePublish(boss({ phaseInfo: [{}, {}, { sp: false }] }));
     if (empty.ok) expect(empty.stage.phaseInfo).toBeUndefined();
     expect(validatePublish(good({ phaseInfo: [{}, {}, {}] })).ok).toBe(false);
+  });
+  it("必殺技の演出の種類は 1 か 2。必殺技だけに付く。帯のカットイン(0)は入れない。needs は上げない", () => {
+    const r = validatePublish(boss({ phaseInfo: [{ n: "奥義", sp: true, fx: 2 }, { sp: true, fx: 0 }, { n: "ふつう", fx: 1 }] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.stage.phaseInfo).toEqual([{ n: "奥義", sp: true, fx: 2 }, { sp: true }, { n: "ふつう" }]);
+      expect(r.stage.needs).toBe(undefined);
+    }
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, fx: 3 }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, fx: "1" }, {}, {}] })).ok).toBe(false);
+  });
+  it("必殺技の効果音は 1〜7。必殺技だけに付く。鳴らさない(0)は入れない。needs は上げない", () => {
+    const r = validatePublish(boss({ phaseInfo: [{ n: "奥義", sp: true, se: 7 }, { sp: true, se: 0 }, { n: "ふつう", se: 3 }] }));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.stage.phaseInfo).toEqual([{ n: "奥義", sp: true, se: 7 }, { sp: true }, { n: "ふつう" }]);
+      expect(r.stage.needs).toBe(undefined);
+    }
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, se: 8 }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, se: -1 }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, se: 1.5 }, {}, {}] })).ok).toBe(false);
+    expect(validatePublish(boss({ phaseInfo: [{ sp: true, se: "1" }, {}, {}] })).ok).toBe(false);
+    // 演出と効果音は別々に選べる
+    const both = validatePublish(boss({ phaseInfo: [{ n: "奥義", sp: true, fx: 2, se: 5 }, {}, {}] }));
+    expect(both.ok && both.stage.phaseInfo?.[0]).toEqual({ n: "奥義", sp: true, fx: 2, se: 5 });
   });
   it("1UP は、最後ではないボスの場面だけ。使うと needs 4", () => {
     const r = seq([seqWave({ oneUp: 1 }), seqWave()]);

@@ -127,6 +127,8 @@ struct DraftWave: Codable, Equatable, Identifiable {
     var phaseInfo: [PhaseInfo]?
     /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil はすべて通常
     var forms: [Int]?
+    /// 竜王だけ: 姿が変わるときのカットインを出さない(true だけ入れる)
+    var noCutIn: Bool?
     /// このボスを倒したときの1UP(1 = 拾う、2 = 自動。nil は出さない。最後の場面では使わない)
     var oneUp: Int?
     var emitters: [Emitter]
@@ -150,6 +152,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
         w.phases = kind == .boss ? phases : nil
         w.phaseInfo = kind == .boss ? phaseInfo : nil
         w.forms = kind == .boss ? forms : nil
+        w.noCutIn = (kind == .boss && noCutIn == true) ? true : nil
         w.oneUp = kind == .boss ? oneUp : nil
         return w
     }
@@ -239,12 +242,14 @@ struct Draft: Codable, Equatable {
     var phaseInfo: [PhaseInfo]?
     /// 竜王だけ: 段階ごとの姿(0 通常・1 蒼炎・2 紫電・3 白金)。nil はすべて通常
     var forms: [Int]?
+    /// 竜王だけ: 姿が変わるときのカットインを出さない(true だけ入れる)
+    var noCutIn: Bool?
 
     init() {}
 
     /// 前のバージョンで保存した下書き(耐久の項目がない)も読めるようにする
     init(from decoder: Decoder) throws {
-        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo, forms }
+        enum K: String, CodingKey { case name, authorName, mode, duration, bossHp, bossMove, lifeMode, lifeCount, bgm, emitters, themeBullets, themeBackground, themeShip, hideMarkers, customBoss, customBullet, customShip, waves, bossWarning, bossDefeat, shot, rewardFx, bossSize, bossLook, mooks, mookLook, awaken, previewStart, noPreview, bossX, bossY, mooksBreakable, mookHits, mooksClear, shipSkin, bodyHit, phases, phaseInfo, forms, noCutIn }
         let c = try decoder.container(keyedBy: K.self)
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         authorName = try c.decodeIfPresent(String.self, forKey: .authorName) ?? ""
@@ -285,6 +290,7 @@ struct Draft: Codable, Equatable {
         phases = try? c.decodeIfPresent(Int.self, forKey: .phases)
         phaseInfo = try? c.decodeIfPresent([PhaseInfo].self, forKey: .phaseInfo)
         forms = try? c.decodeIfPresent([Int].self, forKey: .forms)
+        noCutIn = try? c.decodeIfPresent(Bool.self, forKey: .noCutIn)
     }
 
     /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
@@ -319,6 +325,7 @@ struct Draft: Codable, Equatable {
         st.phases = (mode == .boss || mode == .damage) ? phases : nil
         st.phaseInfo = (mode == .boss || mode == .damage) ? phaseInfo : nil
         st.forms = (mode == .boss || mode == .damage) ? forms : nil
+        st.noCutIn = ((mode == .boss || mode == .damage) && noCutIn == true) ? true : nil
         return st.sanitized()
     }
 
