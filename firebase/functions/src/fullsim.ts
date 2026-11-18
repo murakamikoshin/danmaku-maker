@@ -11,7 +11,7 @@ import { emitWitch, isWitchPattern } from "./witch.js";
 import { emitReaper, isReaperPattern } from "./reaper.js";
 import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
-import { DRAGON_BODY, DRAGON_INV, DRAGON_LOOK, DRAGON_RADIUS, DRAGON_TORNADO, Stage as DStage, abortDragon, cloneDragon, dragonAbsorb, dragonFrame, dragonMoveIndex, dragonPushPlayer, dragonStart, isDragonPersistent, newDragon, stepDragonBullet, zoneHits, type DragonEnv } from "./dragon.js";
+import { DRAGON_BODY, DRAGON_CURVE, DRAGON_INV, DRAGON_WAIT, DRAGON_LOOK, DRAGON_RADIUS, DRAGON_TORNADO, Stage as DStage, abortDragon, cloneDragon, dragonAbsorb, dragonFrame, dragonMoveIndex, dragonPushPlayer, dragonStart, isDragonPersistent, newDragon, stepDragonBullet, zoneHits, type DragonEnv } from "./dragon.js";
 import { BOSS_MOVE_COUNT, PATTERNS, firesInPhase, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -36,7 +36,12 @@ const BEAM_CHARGE = 1.0, BEAM_FIRE = 0.5, BEAM_HIT_R2 = 81;
 const GIANT_HIT_R2 = 400;
 /** ふつうの弾の当たる半径、爆風の当たる時間、地雷の爆風の半径と散る弾の数。アプリの DanmakuConfig と同じ */
 /** ボス専用の弾の、弾そのものの半径(種類の順はアプリの BulletLook.Kind と同じ)と、自機の半径、専用の弾の最初の look */
-const BULLET_BODY_R = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5];
+const BULLET_BODY_R = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5,
+  3, 4, 4, 5, 4, 2.5, 5, 2, 2];
+/** 画面の外に出た弾を消す距離。竜王の自由な技の弾は、画面の外(翼の先・飛び去った本体・自機から離れた爪あと)から入ってくるので広く取る(アプリの Bullet.offscreenMargin と同じ) */
+export function offscreenMargin(b: { script: number }): number {
+  return b.script === DRAGON_CURVE || b.script === DRAGON_WAIT ? 400 : 20;
+}
 const PLAYER_R = 2.5, FIRST_SPECIAL_LOOK = 16;
 export function lookHitDistance(look: number | undefined): number | undefined {
   if (look === undefined || look < FIRST_SPECIAL_LOOK) return undefined;
@@ -249,7 +254,7 @@ function mirrorBullet(b: Bullet) {
     case FOLD_SCRIPT: b.u1 = -(b.u1 ?? 0); break;
     case SWAY_SCRIPT: if ((b.u3 ?? 0) !== 1) b.u2 = -(b.u2 ?? 0); break;
     case HOLD_SCRIPT: b.u1 = b.u2 === 1 ? -(b.u1 ?? 0) : Math.PI - (b.u1 ?? 0); break;
-    case WIND_SCRIPT: case CURVE_SCRIPT: b.u0 = -(b.u0 ?? 0); break;
+    case WIND_SCRIPT: case CURVE_SCRIPT: case DRAGON_CURVE: b.u0 = -(b.u0 ?? 0); break;
     case ORBIT_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.u3 = -(b.u3 ?? 0); break;
     case LATERAL_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); b.u2 = -(b.u2 ?? 0); break;
     case WARP_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); break;
@@ -715,48 +720,57 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     if (waveT >= 0) {
       // キャラクターのボスの大きさに合わせて、技の出る場所を広げる・縮める(撃ち終わったら戻す)
-      if (sp.boss) setAnchorScale(charScale);
-      // 竜王の自由な技は、いまの段階の姿で強さが変わる(アプリと同じ)
-      if (sp.boss && sp.look === DRAGON_LOOK) setDragonLv(dragonForm());
-      // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す(アプリと同じ)
-      let dragonPick = -1;
-      if (sp.boss && banner <= 0 && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
-        sp.emitters.forEach((m, idx) => {
-          if (dragonMoveIndex(m.t) < 0 || mookDestroyed(idx) || !firesInPhase(m.ph, phase) || !(waveT >= next[idx]!)) return;
-          if (dragonPick < 0 || next[idx]! < next[dragonPick]!) dragonPick = idx;
-        });
-      }
-      sp.emitters.forEach((m, idx) => {
-        if (mookDestroyed(idx)) return;
-        if (sp.boss) {
-          if (!firesInPhase(m.ph, phase) || banner > 0) { next[idx] = waveT; return; }
-          const dm = dragonMoveIndex(m.t);
-          if (dm >= 0) {
-            // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(アプリと同じ)
-            if (idx === dragonPick) {
-              dragonStart(dragon, dm, dragonForm());
-              shotCount[idx]!++;
-              next[idx] = waveT + Math.max(0.05, m.i);
-            }
-            return;
-          }
-          while (waveT >= next[idx]!) {
-            fire(m, idx, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by,
-              sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);
-            shotCount[idx]!++;
-            next[idx]! += Math.max(0.05, m.i);
-          }
-        } else {
-          const end = Math.min(m.e, sp.limit);
-          while (waveT >= next[idx]! && next[idx]! < end) {
-            fire(m, idx, m.x * W, m.y * H, false, 0);   // 耐えきる場面は、これまでどおり salt を使わない
-            shotCount[idx]!++;
-            next[idx]! += Math.max(0.05, m.i);
-          }
+      try {
+        if (sp.boss) setAnchorScale(charScale);
+        // 竜王の自由な技は、いまの段階の姿で強さが変わる(アプリと同じ)
+        if (sp.boss && sp.look === DRAGON_LOOK) setDragonLv(dragonForm());
+        // 竜王の技は 1 つずつ。時間が来ている技のうち、いちばん長く待っているもの(next が小さい。同じなら前のもの)を出す(アプリと同じ)
+        let dragonPick = -1;
+        if (sp.boss && banner <= 0 && sp.look === DRAGON_LOOK && dragon.stage === DStage.Idle) {
+          sp.emitters.forEach((m, idx) => {
+            if (dragonMoveIndex(m.t) < 0 || mookDestroyed(idx) || !firesInPhase(m.ph, phase) || !(waveT >= next[idx]!)) return;
+            if (dragonPick < 0 || next[idx]! < next[dragonPick]!) dragonPick = idx;
+          });
         }
-      });
-      setAnchorScale(1);
-      setDragonLv(0);
+        sp.emitters.forEach((m, idx) => {
+          if (mookDestroyed(idx)) return;
+          if (sp.boss) {
+            if (!firesInPhase(m.ph, phase) || banner > 0) { next[idx] = waveT; return; }
+            const dm = dragonMoveIndex(m.t);
+            if (dm >= 0) {
+              // 竜王の技: 本体が動くので 1 つずつ。ほかの技の途中なら、終わるまで待つ(アプリと同じ)
+              if (idx === dragonPick) {
+                dragonStart(dragon, dm, dragonForm());
+                shotCount[idx]!++;
+                next[idx] = waveT + Math.max(0.05, m.i);
+              }
+              return;
+            }
+            while (waveT >= next[idx]!) {
+              const before = bullets.length;
+              fire(m, idx, m.t === "rain" ? 0 : m.p === 1 ? m.x * W : bx, m.p === 1 ? m.y * H : by,
+                sp.boss && sp.awaken !== undefined && phase >= sp.awaken, salt);
+              // 弾の形(くの字・丸)を選んだ発射台は、出た弾の見た目を上書きする(当たる距離も見た目で決まる。アプリと同じ)
+              if (m.sh) for (let j = before; j < bullets.length; j++) bullets[j]!.look = m.sh;
+              shotCount[idx]!++;
+              next[idx]! += Math.max(0.05, m.i);
+            }
+          } else {
+            const end = Math.min(m.e, sp.limit);
+            while (waveT >= next[idx]! && next[idx]! < end) {
+              const before = bullets.length;
+              fire(m, idx, m.x * W, m.y * H, false, 0);   // 耐えきる場面は、これまでどおり salt を使わない
+              if (m.sh) for (let j = before; j < bullets.length; j++) bullets[j]!.look = m.sh;
+              shotCount[idx]!++;
+              next[idx]! += Math.max(0.05, m.i);
+            }
+          }
+        });
+      } finally {
+        // 途中で例外が出ても、次の計算に持ち越さない
+        setAnchorScale(1);
+        setDragonLv(0);
+      }
     }
 
     if (isDragon() && waveT >= 0) {
@@ -1000,7 +1014,9 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
       }
       }
       if (isDormant(b)) { bullets[w++] = b; continue; }
-      if (b.script !== RING_SCRIPT && (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20)) continue;
+      // 竜王の自由な技の弾は、画面の外で待つ・曲がって入ってくる間は消さない(アプリと同じ)
+      const cull = offscreenMargin(b);
+      if (b.script !== RING_SCRIPT && (b.x < -cull || b.x > W + cull || b.y < -cull || b.y > H + cull)) continue;
       const dx = b.x - px, dy = b.y - py;
       if (dx * dx + dy * dy < hitDistanceSquared(b)) {
         if (invincible || tick < shieldUntil) continue;

@@ -402,10 +402,11 @@ public struct Wave: Codable, Equatable, Sendable {
     }
 
     /// 覚醒する段階(2〜段階の数)。それ以外は覚醒しない
-    /// 竜王の段階ごとの姿。竜王でなければ nil。段階の数にそろえ、0〜3 に収める。全部 0(通常)なら nil
+    /// 竜王の段階ごとの姿。竜王でなければ nil。段階の数にそろえ(足りなければ最後の姿で埋める)、0〜3 に収める。全部 0(通常)なら nil
     static func sanitizedForms(_ v: [Int]?, phases: Int, look: Int?) -> [Int]? {
         guard look == BossCharacter.dragon.rawValue, let v, !v.isEmpty else { return nil }
-        let f = (0..<phases).map { i in i < v.count ? min(max(v[i], 0), 3) : 0 }
+        // 段階を増やして足りない分は、直前の段階の姿を引き継ぐ(エディタの表示と同じ)
+        let f = (0..<phases).map { i in min(max(i < v.count ? v[i] : v[v.count - 1], 0), 3) }
         return f.allSatisfy { $0 == 0 } ? nil : f
     }
 

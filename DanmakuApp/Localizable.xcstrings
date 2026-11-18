@@ -60361,25 +60361,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Use your ticket on “%@”?"
+            "value": "Use tickets on “%@”?"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ticket für „%@“ einlösen?"
+            "value": "Tickets für „%@“ einlösen?"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "¿Usar tu ticket en «%@»?"
+            "value": "¿Usar tickets en «%@»?"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Utiliser ton ticket pour « %@ » ?"
+            "value": "Utiliser des tickets pour « %@ » ?"
           }
         },
         "ko": {
@@ -60391,13 +60391,13 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usar seu ticket em “%@”?"
+            "value": "Usar tickets em “%@”?"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Обменять билет на «%@»?"
+            "value": "Обменять билеты на «%@»?"
           }
         },
         "zh-Hans": {
@@ -69432,61 +69432,61 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "名前を付けると、段階の始めに大きく出ます(空なら「第N段階」)。「必殺技の演出」をオンにすると、必殺技として目立つ色で出ます。見た目だけで、弾幕は変わりません。必殺技は、名前の出方(カットイン・一文字ずつ・魔法陣)も選べます。"
+            "value": "名前を付けると、段階の始めに大きく出ます(空なら「第N段階」)。「必殺技の演出」をオンにすると、必殺技として目立つ色で出ます。見た目だけで、弾幕は変わりません。必殺技は、名前の出方(カットイン・一文字ずつ・魔法陣)と効果音も選べます。"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A name appears in large text when the phase starts (blank shows \"Phase N\"). Turn on \"Special style\" to show it as a special move in a bold color. It's cosmetic only and doesn't change the bullets. For a special move you can also pick how the name appears (cut-in, letter by letter, or magic circle)."
+            "value": "A name appears in large text when the phase starts (blank shows \"Phase N\"). Turn on \"Special style\" to show it as a special move in a bold color. It's cosmetic only and doesn't change the bullets. For a special move you can also pick how the name appears (cut-in, letter by letter, or magic circle) and a sound effect."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "取名后,阶段开始时会大字显示(留空则显示「第N阶段」)。打开「必杀技演出」后,会以醒目的颜色作为必杀技显示。仅影响外观,不改变弹幕。必杀技还可以选择名称的出现方式(特写、逐字、魔法阵)。"
+            "value": "取名后,阶段开始时会大字显示(留空则显示「第N阶段」)。打开「必杀技演出」后,会以醒目的颜色作为必杀技显示。仅影响外观,不改变弹幕。必杀技还可以选择名称的出现方式(特写、逐字、魔法阵)和音效。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "取名後,階段開始時會大字顯示(留空則顯示「第N階段」)。打開「必殺技演出」後,會以醒目的顏色作為必殺技顯示。僅影響外觀,不改變彈幕。必殺技還可以選擇名稱的出現方式(特寫、逐字、魔法陣)。"
+            "value": "取名後,階段開始時會大字顯示(留空則顯示「第N階段」)。打開「必殺技演出」後,會以醒目的顏色作為必殺技顯示。僅影響外觀,不改變彈幕。必殺技還可以選擇名稱的出現方式(特寫、逐字、魔法陣)和音效。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이름을 붙이면 페이즈가 시작될 때 크게 표시돼요(비우면 「페이즈 N」). 「필살기 연출」를 켜면 눈에 띄는 색으로 필살기처럼 표시돼요. 보이는 것만 바뀌고 탄막은 바뀌지 않아요. 필살기는 이름이 나오는 방식(컷인·한 글자씩·마법진)도 고를 수 있어요."
+            "value": "이름을 붙이면 페이즈가 시작될 때 크게 표시돼요(비우면 「페이즈 N」). 「필살기 연출」를 켜면 눈에 띄는 색으로 필살기처럼 표시돼요. 보이는 것만 바뀌고 탄막은 바뀌지 않아요. 필살기는 이름이 나오는 방식(컷인·한 글자씩·마법진)과 효과음도 고를 수 있어요."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El nombre aparece en grande al empezar la fase (vacío muestra «Fase N»). Activa «Estilo especial» para mostrarlo como movimiento especial con un color llamativo. Solo es visual; no cambia las balas. En un movimiento especial también puedes elegir cómo aparece el nombre (banda, letra a letra o círculo mágico)."
+            "value": "El nombre aparece en grande al empezar la fase (vacío muestra «Fase N»). Activa «Estilo especial» para mostrarlo como movimiento especial con un color llamativo. Solo es visual; no cambia las balas. En un movimiento especial también puedes elegir cómo aparece el nombre (banda, letra a letra o círculo mágico) y un efecto de sonido."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le nom s'affiche en grand au début de la phase (vide : « Phase N »). Activez « Style spécial » pour l'afficher comme coup spécial dans une couleur vive. C'est purement visuel, les tirs ne changent pas. Pour un coup spécial, vous pouvez aussi choisir l'apparition du nom (bandeau, lettre à lettre ou cercle magique)."
+            "value": "Le nom s'affiche en grand au début de la phase (vide : « Phase N »). Activez « Style spécial » pour l'afficher comme coup spécial dans une couleur vive. C'est purement visuel, les tirs ne changent pas. Pour un coup spécial, vous pouvez aussi choisir l'apparition du nom (bandeau, lettre à lettre ou cercle magique) et un effet sonore."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der Name erscheint groß zu Beginn der Phase (leer zeigt „Phase N“). Mit „Spezial-Stil“ wird er als Spezialangriff in auffälliger Farbe gezeigt. Nur optisch – die Kugeln ändern sich nicht. Bei einem Spezialangriff lässt sich auch wählen, wie der Name erscheint (Cut-in, buchstabenweise oder magischer Kreis)."
+            "value": "Der Name erscheint groß zu Beginn der Phase (leer zeigt „Phase N“). Mit „Spezial-Stil“ wird er als Spezialangriff in auffälliger Farbe gezeigt. Nur optisch – die Kugeln ändern sich nicht. Bei einem Spezialangriff lässt sich auch wählen, wie der Name erscheint (Cut-in, buchstabenweise oder magischer Kreis) und einen Soundeffekt."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "O nome aparece grande no início da fase (vazio mostra \"Fase N\"). Ative \"Estilo especial\" para exibi-lo como golpe especial em cor de destaque. É só visual; não muda os tiros. Em um golpe especial, você também pode escolher como o nome aparece (faixa, letra a letra ou círculo mágico)."
+            "value": "O nome aparece grande no início da fase (vazio mostra \"Fase N\"). Ative \"Estilo especial\" para exibi-lo como golpe especial em cor de destaque. É só visual; não muda os tiros. Em um golpe especial, você também pode escolher como o nome aparece (faixa, letra a letra ou círculo mágico) e um efeito sonoro."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Название крупно показывается в начале фазы (пусто — «Фаза N»). Включите «Стиль спецприёма», чтобы показать его ярким цветом как спецприём. Только внешний вид, пули не меняются. Для спецприёма можно выбрать и то, как появляется название (полоса, по буквам или магический круг)."
+            "value": "Название крупно показывается в начале фазы (пусто — «Фаза N»). Включите «Стиль спецприёма», чтобы показать его ярким цветом как спецприём. Только внешний вид, пули не меняются. Для спецприёма можно выбрать и то, как появляется название (полоса, по буквам или магический круг) и звуковой эффект."
           }
         }
       }
@@ -73917,61 +73917,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "ERWACHEN · STUFE %d"
+            "value": "PHASE %d"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "AWAKENING · STAGE %d"
+            "value": "PHASE %d"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "DESPERTAR · NIVEL %d"
+            "value": "FASE %d"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "ÉVEIL · NIVEAU %d"
+            "value": "PHASE %d"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "覚醒 第%d段階"
+            "value": "第%d段階"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "각성 %d단계"
+            "value": "페이즈 %d"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "DESPERTAR · NÍVEL %d"
+            "value": "FASE %d"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "ПРОБУЖДЕНИЕ · СТУПЕНЬ %d"
+            "value": "ФАЗА %d"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "觉醒 第%d阶段"
+            "value": "第%d阶段"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "覺醒 第%d階段"
+            "value": "第%d階段"
           }
         }
       }
@@ -74177,61 +74177,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der Drachenkönig setzt jeweils nur eine Technik ein (sein Körper bewegt sich). Läuft gerade eine andere, wartet er, bis sie endet. Das Intervall ist die kürzeste Zeit, bis dieselbe Technik wieder möglich ist."
+            "value": "Der Drachenkönig setzt jeweils nur eine große Technik ein (sein Körper bewegt sich). Läuft gerade eine andere, wartet er, bis sie endet. Das Intervall ist die kürzeste Zeit, bis dieselbe Technik wieder möglich ist."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The Dragon King uses one move at a time (its body moves). If another move is in progress, it waits until that ends. The interval is the shortest time before the same move can be used again."
+            "value": "The Dragon King uses one big move at a time (its body moves). If another move is in progress, it waits until that ends. The interval is the shortest time before the same move can be used again."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El Rey Dragón usa una técnica a la vez (su cuerpo se mueve). Si hay otra en curso, espera a que termine. El intervalo es el tiempo mínimo hasta poder repetir la misma técnica."
+            "value": "El Rey Dragón usa una gran técnica a la vez (su cuerpo se mueve). Si hay otra en curso, espera a que termine. El intervalo es el tiempo mínimo hasta poder repetir la misma técnica."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le Roi Dragon utilise une technique à la fois (son corps se déplace). Si une autre est en cours, il attend qu'elle se termine. L'intervalle est le délai minimal avant de pouvoir réutiliser la même technique."
+            "value": "Le Roi Dragon utilise une grande technique à la fois (son corps se déplace). Si une autre est en cours, il attend qu'elle se termine. L'intervalle est le délai minimal avant de pouvoir réutiliser la même technique."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "竜王の技は1つずつ出ます(本体が動くため)。ほかの技の途中なら、終わるまで待ちます。間隔は、同じ技を次に出せるまでの最短の時間です。"
+            "value": "竜王の大技は1つずつ出ます(本体が動くため)。ほかの技の途中なら、終わるまで待ちます。間隔は、同じ技を次に出せるまでの最短の時間です。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "용왕의 기술은 한 번에 하나씩 나와요(몸이 움직이기 때문). 다른 기술이 진행 중이면 끝날 때까지 기다려요. 간격은 같은 기술을 다시 쓸 수 있을 때까지의 최소 시간이에요."
+            "value": "용왕의 큰 기술은 한 번에 하나씩 나와요(몸이 움직이기 때문). 다른 기술이 진행 중이면 끝날 때까지 기다려요. 간격은 같은 기술을 다시 쓸 수 있을 때까지의 최소 시간이에요."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "O Rei Dragão usa um golpe por vez (o corpo se move). Se outro estiver em andamento, ele espera terminar. O intervalo é o tempo mínimo até poder usar o mesmo golpe de novo."
+            "value": "O Rei Dragão usa um golpe grande por vez (o corpo se move). Se outro estiver em andamento, ele espera terminar. O intervalo é o tempo mínimo até poder usar o mesmo golpe de novo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Король драконов использует приёмы по одному (его тело движется). Если идёт другой приём, он ждёт его окончания. Интервал — минимальное время до повторного использования того же приёма."
+            "value": "Король драконов использует большие приёмы по одному (его тело движется). Если идёт другой приём, он ждёт его окончания. Интервал — минимальное время до повторного использования того же приёма."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "龙王一次只使用一个招式（因为本体会移动）。如果其他招式正在进行，会等到结束。间隔是同一招式再次使用前的最短时间。"
+            "value": "龙王一次只使用一个大招（因为本体会移动）。如果其他招式正在进行，会等到结束。间隔是同一招式再次使用前的最短时间。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "龍王一次只使用一個招式（因為本體會移動）。如果其他招式正在進行，會等到結束。間隔是同一招式再次使用前的最短時間。"
+            "value": "龍王一次只使用一個大招（因為本體會移動）。如果其他招式正在進行，會等到結束。間隔是同一招式再次使用前的最短時間。"
           }
         }
       }

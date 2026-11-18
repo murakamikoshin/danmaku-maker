@@ -441,6 +441,11 @@ struct SwipeRankingView: View {
     @State private var monthly = true
     @State private var loading = true
     @State private var failed = false
+    /// 「もっと見る」の読み込み中(最初の読み込みとは分ける。二度押し・タブの切り替えで混ざらないように)
+    @State private var loadingMore = false
+    @State private var moreFailed = false
+    /// 読み直しの番号(読み直したら、前の「もっと見る」の結果は捨てる)
+    @State private var rankGeneration = 0
     @State private var editingName = false
     @State private var showTitles = false
     @State private var showPrizes = false
@@ -478,13 +483,20 @@ struct SwipeRankingView: View {
                         .accessibilityIdentifier("swipe.titles")
                     }
                     if let r = data.myRank, let s = data.myScore { mine(rank: r, score: s) }
-                    VStack(spacing: 6) {
+                    LazyVStack(spacing: 6) {
                         ForEach(data.rows) { row in rankRow(row) }
                     }
-                    if data.hasMore && !loading {
-                        // 次の 100 件(1000 位まで)
-                        GameActionButton(title: "ranking.more", systemImage: "chevron.down", fill: GameStyle.cyan) { Task { await loadMore() } }
-                            .accessibilityIdentifier("swipe.rank.more")
+                    if moreFailed && !loadingMore { Text("swipe.error.network").font(.footnote).foregroundStyle(.secondary) }
+                    if loadingMore {
+                        ProgressView().tint(GameStyle.pinkColor).padding(.vertical, 8)
+                    } else if data.hasMore && !loading {
+                        // 次の 100 件(1000 位まで)。押した瞬間に読み込み中にして、二度押しで同じ行が並ばないようにする
+                        GameActionButton(title: "ranking.more", systemImage: "chevron.down", fill: GameStyle.cyan) {
+                            guard !loadingMore else { return }
+                            loadingMore = true
+                            Task { await loadMore() }
+                        }
+                        .accessibilityIdentifier("swipe.rank.more")
                     }
                     Text(monthly ? "swipe.rank.footer.month" : "swipe.rank.footer")
                         .font(.system(size: 11, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.55)).multilineTextAlignment(.center)
@@ -579,24 +591,39 @@ struct SwipeRankingView: View {
     }
 
     private func load() async {
-        loading = true; failed = false
-        do { data = try await service.ranking(monthly: monthly) } catch { failed = true }
+        rankGeneration += 1
+        let gen = rankGeneration
+        loading = true; failed = false; loadingMore = false; moreFailed = false
+        do {
+            let d = try await service.ranking(monthly: monthly)
+            guard gen == rankGeneration else { return }
+            data = d
+        } catch {
+            guard gen == rankGeneration else { return }
+            failed = true
+        }
         loading = false
     }
 
     /// 「もっと見る」: 次の 100 件を後ろに足す(自分の順位・参加人数は、最初に読んだものを使う)
     private func loadMore() async {
-        let wasMonthly = monthly
-        loading = true; failed = false
+        let gen = rankGeneration, start = data.rows.count
+        loadingMore = true; moreFailed = false
         do {
-            let next = try await service.ranking(monthly: wasMonthly, start: data.rows.count)
-            // 読んでいる間にタブを切り替えたら、捨てる
-            if wasMonthly == monthly {
+            let next = try await service.ranking(monthly: monthly, start: start)
+            // 読んでいる間にタブを切り替えた・読み直したら、捨てる(読み直した側が状態を戻す)
+            guard gen == rankGeneration else { return }
+            // 読んでいる間に月が変わったら、続きではなく今月を最初から読み直す
+            if monthly, let m = next.month, m != data.month { loadingMore = false; await load(); return }
+            if start == data.rows.count {
                 data.rows += next.rows
                 data.hasMore = next.hasMore
             }
-        } catch { failed = true }
-        loading = false
+        } catch {
+            guard gen == rankGeneration else { return }
+            moreFailed = true
+        }
+        loadingMore = false
     }
 
     private func monthLabel(_ id: String) -> String {

@@ -49,7 +49,11 @@ struct BossPhaseControls: View {
                          idPrefix: "\(idPrefix).fx.\(i)", minimum: 96)
                 Text("editor.phases.se").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary).padding(.top, 2)
                 ChipGrid(items: (0...7).map { ($0, L("editor.phases.se.\($0)")) },
-                         selection: Binding(get: { item(i).se ?? 0 }, set: { v in update(i) { $0.se = v == 0 ? nil : v } }),
+                         selection: Binding(get: { item(i).se ?? 0 }, set: { v in
+                             update(i) { $0.se = v == 0 ? nil : v }
+                             // 選んだ音をその場で聞けるように
+                             if let e = AudioManager.Effect.special(v) { Task { @MainActor in AudioManager.shared.se(e) } }
+                         }),
                          idPrefix: "\(idPrefix).se.\(i)", minimum: 80)
             }
         }

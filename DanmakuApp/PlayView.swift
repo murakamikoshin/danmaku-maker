@@ -193,7 +193,12 @@ struct PlayView: View {
         .onAppear {
             if !startedOnce { startedOnce = true; onStart?() }
             AudioManager.shared.play(.forNumber(model.stage.effectiveBGM))
-            model.canRevive = { !isTest && (purchases.isPremium || (ads.isReady && model.adReviveAvailable)) }
+            // PlayView を丸ごと捕まえると PlayModel → この処理 → PlayView → PlayModel の輪になり、ゲーム画面が片付かない
+            let test = isTest, purchases = purchases, ads = ads
+            model.canRevive = { [weak model] in
+                guard let model else { return false }
+                return !test && (purchases.isPremium || (ads.isReady && model.adReviveAvailable))
+            }
         }
         .sheet(isPresented: $showStore) { StoreView() }
         .onChange(of: model.result?.outcome) { outcome in

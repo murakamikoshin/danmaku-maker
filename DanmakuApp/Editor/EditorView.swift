@@ -468,18 +468,20 @@ private struct EnemyControls: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(String(format: L("play.phase"), p)).font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.8))
                             ChipGrid(items: (0...3).map { ($0, L("dragon.form.\($0)")) },
-                                     selection: Binding(get: { (forms.wrappedValue ?? []).indices.contains(p - 1) ? forms.wrappedValue![p - 1] : 0 },
+                                     selection: Binding(get: { let a = forms.wrappedValue ?? []; return a.indices.contains(p - 1) ? a[p - 1] : (a.last ?? 0) },
                                                         set: { v in
+                                                            // 段階を増やしたときは、直前の段階の姿を引き継ぐ(急に通常へ戻らない)
                                                             var a = forms.wrappedValue ?? []
-                                                            while a.count < phaseCount { a.append(0) }
+                                                            while a.count < phaseCount { a.append(a.last ?? 0) }
                                                             a[p - 1] = v
                                                             forms.wrappedValue = a.allSatisfy { $0 == 0 } ? nil : Array(a.prefix(phaseCount))
                                                         }),
-                                     idPrefix: "editor.dragon.form.\(p)", minimum: 64)
+                                     idPrefix: "editor.dragon.form.\(p)", minimum: 120)
                         }
                     }
                     Text("editor.dragon.forms.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    if let dragonCutIn {
+                    if let dragonCutIn, forms.wrappedValue != nil {
+                        // 姿を変える段階があるときだけ(全部「通常」なら、カットインは出ない)
                         // 姿が変わるときのカットイン(帯に、顔と姿の名前)。見た目だけ
                         HStack(spacing: 10) {
                             Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 15, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 22)
@@ -726,7 +728,7 @@ private struct BGMPanel: View {
                         HStack(spacing: 12) {
                             ZStack {
                                 Circle().fill(tints[i].opacity(on ? 0.35 : 0.15))
-                                Image(systemName: on || lockedTapped == i ? "speaker.wave.2.fill" : "music.note").font(.system(size: 14, weight: .bold)).foregroundStyle(tints[i])
+                                Image(systemName: lockedTapped == i || (on && lockedTapped == nil) ? "speaker.wave.2.fill" : "music.note").font(.system(size: 14, weight: .bold)).foregroundStyle(tints[i])
                             }
                             .frame(width: 34, height: 34)
                             VStack(alignment: .leading, spacing: 1) {

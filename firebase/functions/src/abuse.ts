@@ -117,7 +117,7 @@ export function isDuplicatePost(statuses: unknown[], tombstoned: boolean, unlist
  */
 const COSMETIC_KEYS = new Set([
   "name", "authorName", "desc", "phaseInfo", "themeBullets", "themeBackground", "themeShip", "bgm", "rewardFx",
-  "previewStart", "noPreview", "shipSkin", "mookLook", "bossWarning", "bossDefeat", "hideMarkers", "formatVersion", "needs",
+  "previewStart", "noPreview", "shipSkin", "mookLook", "bossWarning", "bossDefeat", "hideMarkers", "formatVersion", "needs", "noCutIn",
 ]);
 
 function canonical(v: unknown): unknown {

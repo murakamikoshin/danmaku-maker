@@ -73,7 +73,7 @@ public struct Bullet: Equatable, Sendable {
         case Bullet.foldScript: u1 = -u1
         case Bullet.swayScript: if u3 != 1 { u2 = -u2 }
         case Bullet.holdScript: if u2 == 1 { u1 = -u1 } else { u1 = Double.pi - u1 }
-        case Bullet.windScript, Bullet.curveScript: u0 = -u0
+        case Bullet.windScript, Bullet.curveScript, Bullet.dragonCurveScript: u0 = -u0
         case Bullet.orbitScript: u0 = w - u0; u2 = Double.pi - u2; u3 = -u3
         case Bullet.lateralScript: u0 = Double.pi - u0; u2 = -u2
         case Bullet.warpScript: u0 = Double.pi - u0
@@ -1232,7 +1232,8 @@ public struct Simulation {
                 bullets[w] = b; w += 1
                 continue
             }
-            if !b.isRing && (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) { continue }
+            let cull = b.offscreenMargin
+            if !b.isRing && (b.x < -cull || b.x > W + cull || b.y < -cull || b.y > H + cull) { continue }
             let dx = b.x - player.x, dy = b.y - player.y
             let d2 = dx * dx + dy * dy
             if d2 < b.hitDistanceSquared {

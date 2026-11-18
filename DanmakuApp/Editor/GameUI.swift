@@ -496,7 +496,7 @@ struct PatternTiles: View {
                         PatternIcon(pattern: p, selected: selected).frame(width: 40, height: 40)
                         Text(LocalizedStringKey(keys[p] ?? "pattern.\(p.rawValue)")).font(.system(size: 10, weight: .heavy))
                             .foregroundStyle(selected ? GameStyle.yellow : GameStyle.text.opacity(0.75))
-                            .lineLimit(1).minimumScaleFactor(0.7)
+                            .lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
                     .background(selected ? AnyShapeStyle(GameStyle.yellow.opacity(0.16)) : AnyShapeStyle(GameStyle.panelHi), in: PixelRect(cornerRadius: 12))

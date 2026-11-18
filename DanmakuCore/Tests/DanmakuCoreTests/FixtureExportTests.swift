@@ -454,6 +454,14 @@ final class FixtureExportTests: XCTestCase {
             st.emitters += fAll.enumerated().map { idx, t in free(t, i: 0.8 + Double(idx) * 0.3, c: 3 + idx * 2, v: 1.5 + Double(idx) * 0.4, a: idx * 5, mir: idx % 2 == 1, k: idx) }
             stages.append(("dragon-free-mixed", st.sanitized()))
         }
+        // 1.4.0: ボス専用の技に弾の形(くの字・丸)を選んだとき。出た弾の見た目が変わり、当たる距離も見た目で決まる(サーバーも同じ)
+        for c in BossCharacter.allCases where c != .dragon {
+            let ms = Array(DanmakuCore.Pattern.moves(of: c).prefix(4))
+            guard !ms.isEmpty else { continue }
+            let ems = ms.enumerated().map { idx, t in Emitter(t: t, x: 0.5, y: 0.2, s: Double(idx) * 0.4, e: 40, i: 1.2, c: 5, v: 1.4, r: 0, k: idx % 5, sh: idx % 2 + 1) }
+            stages.append(("boss-shape-\(c.rawValue)", Stage(name: "bs", mode: .boss, durationSec: 40, bossHp: 400, bossMove: 0, emitters: ems,
+                                                         lifeMode: .hp, lifeCount: 30, bossLook: c.rawValue).sanitized()))
+        }
 
         var cases: [Case] = []
         var seed: UInt64 = 1

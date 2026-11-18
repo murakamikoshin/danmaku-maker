@@ -168,6 +168,8 @@ extension Bullet {
     public static let dragonWaitScript = 37
 
     public var isDragon: Bool { script >= Bullet.dragonPlainScript && script <= Bullet.dragonWaitScript }
+    /// 画面の外に出た弾を消す距離。竜王の自由な技の弾は、画面の外(翼の先・飛び去った本体・自機から離れた爪あと)から入ってくるので広く取る(サーバーの offscreenMargin と同じ)
+    var offscreenMargin: Double { script == Bullet.dragonCurveScript || script == Bullet.dragonWaitScript ? 400 : 20 }
     /// 当たっても消えない竜王の弾(本体・竜巻・大火球)
     public var dragonPersistent: Bool {
         script == Bullet.dragonBodyScript || script == Bullet.dragonTornadoScript || script == Bullet.dragonSunScript

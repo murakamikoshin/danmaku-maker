@@ -168,7 +168,7 @@ struct StageRepository {
         for key in ["name", "mode", "durationSec", "bossHp", "bossMove", "emitters", "lifeMode", "lifeCount", "bgm",
                     "themeBullets", "themeBackground", "themeShip", "hideMarkers", "waves", "bossWarning", "bossDefeat",
                     "bossSize", "mooks", "bossLook", "mookLook", "awaken", "shot", "rewardFx", "previewStart", "noPreview", "bossX", "bossY",
-                    "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "phases", "phaseInfo"] {
+                    "mooksBreakable", "mookHits", "mooksClear", "shipSkin", "bodyHit", "phases", "phaseInfo", "forms", "noCutIn"] {
             if let v = d[key], !(v is NSNull) { json[key] = v }
         }
         json["formatVersion"] = 1

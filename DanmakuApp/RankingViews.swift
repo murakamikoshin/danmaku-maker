@@ -149,6 +149,10 @@ struct RankingSection: View {
     @State private var last: DocumentSnapshot?
     @State private var hasMore = false
     @State private var loadingMore = false
+    /// 「もっと見る」が失敗した(通信など)
+    @State private var moreFailed = false
+    /// 読み直しの番号(読み直したら、前の「もっと見る」の結果は捨てる)
+    @State private var generation = 0
 
     var body: some View {
         GamePanel(title: "ranking.title", tint: GameStyle.yellow) {
@@ -160,8 +164,11 @@ struct RankingSection: View {
             } else if entries.isEmpty {
                 Text("ranking.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 6)
             } else {
-                VStack(spacing: 6) {
+                LazyVStack(spacing: 6) {
                     ForEach(Array(entries.enumerated()), id: \.element.id) { idx, e in row(rank: idx + 1, e) }
+                }
+                if moreFailed && !loadingMore {
+                    Text("error.network").font(.footnote).foregroundStyle(.secondary)
                 }
                 if loadingMore {
                     HStack { Spacer(); ProgressView().tint(GameStyle.yellow); Spacer() }.padding(.vertical, 6)
@@ -183,7 +190,7 @@ struct RankingSection: View {
                     Image(systemName: "medal.fill").font(.system(size: 20))
                         .foregroundStyle([GameStyle.yellow, Color(white: 0.8), Color(UIColor(hex: 0xCD7F32))][rank - 1])
                 } else {
-                    Text("\(rank)").font(.system(size: 14, weight: .heavy)).foregroundStyle(.secondary)
+                    Text("\(rank)").font(.system(size: rank >= 100 ? 12 : 14, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.6).foregroundStyle(.secondary)
                 }
             }
             .frame(width: 28)
@@ -197,7 +204,8 @@ struct RankingSection: View {
     }
 
     private func load() async {
-        loading = true; failed = false
+        generation += 1
+        loading = true; failed = false; loadingMore = false; moreFailed = false
         do {
             let p = try await RankingService.page(stageID: stageID, mode: mode, after: nil, limit: RankingService.listSize)
             entries = p.entries; last = p.last; hasMore = p.full
@@ -208,15 +216,20 @@ struct RankingSection: View {
     /// 「もっと見る」: 次の 100 件を後ろに足す(1000 位まで)
     private func loadMore() async {
         guard !loadingMore, let after = last else { return }
-        loadingMore = true
+        let gen = generation
+        loadingMore = true; moreFailed = false
         do {
             let room = RankingService.maxListed - entries.count
             let p = try await RankingService.page(stageID: stageID, mode: mode, after: after, limit: min(RankingService.morePage, room))
+            guard gen == generation else { return }
             let seen = Set(entries.map(\.id))
             entries += p.entries.filter { !seen.contains($0.id) }
             last = p.last
             hasMore = p.full && entries.count < RankingService.maxListed
-        } catch { hasMore = true }
+        } catch {
+            guard gen == generation else { return }
+            hasMore = true; moreFailed = true
+        }
         loadingMore = false
     }
 }

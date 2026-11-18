@@ -201,4 +201,12 @@ final class DragonTests: XCTestCase {
         b.u3 = 1
         XCTAssertTrue(b.dragonPersistent)
     }
+
+    /// 段階を増やして姿が足りないときは、直前の段階の姿を引き継ぐ(急に通常へ戻らない)
+    func testFormsPadWithLastForm() {
+        XCTAssertEqual(Wave.sanitizedForms([1, 3], phases: 4, look: BossCharacter.dragon.rawValue), [1, 3, 3, 3])
+        XCTAssertEqual(Wave.sanitizedForms([2, 9, -1], phases: 2, look: BossCharacter.dragon.rawValue), [2, 3])
+        XCTAssertNil(Wave.sanitizedForms([0], phases: 3, look: BossCharacter.dragon.rawValue))
+        XCTAssertNil(Wave.sanitizedForms([1, 2], phases: 3, look: BossCharacter.kitsune.rawValue))
+    }
 }

@@ -120,8 +120,12 @@ final class GameScene: SKScene {
     /// エディタの見本(竜王の技)として、小さな枠の中で動かす。自機は当たらず、効果音を鳴らさず、指で動かさない。
     /// 本物のゲームが動いている間は止まる(重くしないため)
     let isPreview: Bool
-    /// いま動いている本物のゲームの数(見本はこれが 0 のときだけ進める)
-    private(set) static var liveGames = 0
+    /// 本物のゲーム(弱い参照。数を数えると、片付け漏れや止めたままの対戦で見本が止まり続けたので、実際に動いているかで決める)
+    private static let liveScenes = NSHashTable<GameScene>.weakObjects()
+    /// 本物のゲームが画面に出て動いているか(見本は、動いていないときだけ進める)
+    /// 動かす見本は1つだけ(いちばん最後に作り直したもの)。連戦で竜王の見本がいくつも並んでも、同時に動かして重くしない
+    private static weak var activePreview: GameScene?
+    static var liveGameRunning: Bool { liveScenes.allObjects.contains { $0.view != nil && !$0.isPaused && !$0.finished } }
     /// 竜王の絵を使っている場面の数(0 になったら、塗った絵を捨てる。見本と本物が同時にあるときに、相手の絵を消さない)
     private static var dragonScenes = 0
 
@@ -160,7 +164,8 @@ final class GameScene: SKScene {
             dragonLayer = DragonLayer()
             // 選ばれた姿(選んでいなければ、通常と覚醒の蒼炎)
             let picked = (stage.forms ?? []) + (stage.waves ?? []).flatMap { $0.forms ?? [] }
-            dragonForms = Set((picked.isEmpty ? [0, 1] : picked).map { min(max($0, 0), 3) })
+            // 見本は姿が変わらないので、通常だけ(使わない蒼炎の絵を塗らない)
+            dragonForms = Set((picked.isEmpty ? (preview ? [0] : [0, 1]) : picked).map { min(max($0, 0), 3) })
         }
         #if DEBUG
         sim.invincible = ProcessInfo.processInfo.arguments.contains("-uitest-invincible")
@@ -168,7 +173,7 @@ final class GameScene: SKScene {
         if preview { sim.invincible = true }
         super.init(size: CGSize(width: GameScene.W, height: GameScene.H))
         isUserInteractionEnabled = !preview
-        if !preview { GameScene.liveGames += 1 }
+        if !preview { GameScene.liveScenes.add(self) } else { GameScene.activePreview = self }
         if dragonLayer != nil { GameScene.dragonScenes += 1 }
         scaleMode = .aspectFit
         backgroundColor = skin.background
@@ -178,10 +183,12 @@ final class GameScene: SKScene {
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is not used") }
 
     deinit {
-        if !isPreview { GameScene.liveGames -= 1 }
         if dragonLayer != nil {
             GameScene.dragonScenes -= 1
-            if GameScene.dragonScenes == 0 { DragonArt.purge() }
+            // すぐ捨てると、エディタでスクロールして見本が出入りするたびに塗り直して重いので、少し待つ
+            if GameScene.dragonScenes == 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) { if GameScene.dragonScenes == 0 { DragonArt.purge() } }
+            }
         }
     }
 
@@ -705,7 +712,7 @@ final class GameScene: SKScene {
     // MARK: ループ
 
     override func update(_ currentTime: TimeInterval) {
-        if isPreview && GameScene.liveGames > 0 { lastTime = nil; accumulator = 0; return }
+        if isPreview && (GameScene.liveGameRunning || GameScene.activePreview !== self) { lastTime = nil; accumulator = 0; return }
         if holding {
             lastTime = nil; accumulator = 0; pending = .zero
             render(currentTime)

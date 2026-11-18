@@ -139,7 +139,8 @@ struct EmitterCard: View {
             }
             if collapsed {
                 // 畳んだときは、1行の要約だけ
-                Text("\(L("pattern.\(emitter.t.rawValue)")) · \(String(format: "%.2fs", emitter.i)) · \(emitter.c)")
+                // 竜王の大技は数を使わないので、数は出さない
+                Text("\(L("pattern.\(emitter.t.rawValue)")) · \(String(format: "%.2fs", emitter.i))" + (isDragonMove ? "" : " · \(emitter.c)"))
                     .font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
             }
             if !collapsed {
