@@ -16,7 +16,7 @@
     },
     "update_latest_version": {
       "defaultValue": {
-        "value": ""
+        "value": "1.4.0"
       },
       "description": "これより古い版に「新しいバージョンがあります」(あとで閉じられる)。空なら出さない。1.2.0 から",
       "valueType": "STRING"
