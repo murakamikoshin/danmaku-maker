@@ -10,6 +10,16 @@ struct EditorView: View {
     @State private var confirmRevert = false
     @State private var collapsedCards: Set<Int> = []
 
+    /// 発射台のカードに渡す値。削除した直後は、消える途中のカードが「もう無い番号」を読みに来て落ちていた(要望: 削除ボタンで強制終了)。
+    /// 番号が無いときは最後に読んだ値を返し、書き込みは捨てる
+    private func safeEmitter(_ i: Int) -> Binding<Emitter> {
+        let m = model
+        var last = m.draft.emitters.indices.contains(i) ? m.draft.emitters[i] : Emitter.make(.ring, end: 20)
+        return Binding(get: {
+            if m.draft.emitters.indices.contains(i) { last = m.draft.emitters[i] }
+            return last
+        }, set: { if m.draft.emitters.indices.contains(i) { m.draft.emitters[i] = $0 } })
+    }
     private func collapsedBinding(_ i: Int) -> Binding<Bool> {
         Binding(get: { collapsedCards.contains(i) },
                 set: { if $0 { collapsedCards.insert(i) } else { collapsedCards.remove(i) } })
@@ -108,7 +118,7 @@ struct EditorView: View {
                         ForEach(Array(model.draft.emitters.indices), id: \.self) { i in
                             // プレビューは、カードの設定を動かしている間も画面の上に残す(下の項目を設定しながら見える)
                             Section {
-                                EmitterCard(index: i, emitter: $model.draft.emitters[i], isBoss: model.draft.mode != .survive,
+                                EmitterCard(index: i, emitter: safeEmitter(i), isBoss: model.draft.mode != .survive,
                                             phaseCount: model.draft.phases ?? 3,
                                             look: PreviewLook(draft: model.draft), advanced: advanced,
                                             duration: model.draft.duration == 0 ? 180 : model.draft.duration, canDelete: model.draft.emitters.count > 1,
@@ -116,7 +126,7 @@ struct EditorView: View {
                                             externalCollapsed: collapsedBinding(i), showPreview: false)
                             } header: {
                                 if !collapsedCards.contains(i) {
-                                    EmitterPreview(emitter: model.draft.emitters[i], isBoss: model.draft.mode != .survive, look: PreviewLook(draft: model.draft))
+                                    EmitterPreview(emitter: safeEmitter(i).wrappedValue, isBoss: model.draft.mode != .survive, look: PreviewLook(draft: model.draft))
                                         .frame(maxHeight: 200)
                                         .frame(maxWidth: .infinity)
                                         .padding(6)
@@ -1175,6 +1185,23 @@ private struct WaveCard: View {
     private var i: Int { model.draft.waves.firstIndex { $0.id == waveID } ?? 0 }
     private var wave: DraftWave { model.draft.waves[i] }
 
+    /// 場面の中の発射台のカードに渡す値。場面や発射台を消した直後に、無い番号を読んで落ちないようにする(ふつうのステージの safeEmitter と同じ)
+    private func safeWaveEmitter(_ e: Int) -> Binding<Emitter> {
+        let m = model, id = waveID
+        func current() -> Emitter? {
+            guard let w = m.draft.waves.firstIndex(where: { $0.id == id }), m.draft.waves[w].emitters.indices.contains(e) else { return nil }
+            return m.draft.waves[w].emitters[e]
+        }
+        var last = current() ?? Emitter.make(.ring, end: 20)
+        return Binding(get: {
+            if let v = current() { last = v }
+            return last
+        }, set: { v in
+            guard let w = m.draft.waves.firstIndex(where: { $0.id == id }), m.draft.waves[w].emitters.indices.contains(e) else { return }
+            m.draft.waves[w].emitters[e] = v
+        })
+    }
+
     var body: some View {
         if model.draft.waves.indices.contains(i) {
             content
@@ -1203,7 +1230,7 @@ private struct WaveCard: View {
                      selection: Binding(get: { wave.duration }, set: { model.draft.waves[i].setDuration($0) }), idPrefix: "editor.wave.duration.\(i)")
             if wave.kind == .boss { bossControls } else { mookControls }
             ForEach(Array(wave.emitters.indices), id: \.self) { e in
-                EmitterCard(index: e, emitter: Binding(get: { model.draft.waves[i].emitters[e] }, set: { model.draft.waves[i].emitters[e] = $0 }),
+                EmitterCard(index: e, emitter: safeWaveEmitter(e),
                             isBoss: wave.kind == .boss, phaseCount: wave.phases ?? 3, look: look, advanced: advanced, duration: wave.duration,
                             canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
             }

@@ -100,7 +100,7 @@ struct HomeView: View {
             return [GameDialogAction(title: "mystage.delete", role: .destructive) { saved.delete(id: e.id) }, .cancel()]
         }
         .gameDialog("mystage.delete.failed", isPresented: $worldDeleteFailed) { [.ok()] }
-        .sheet(item: $detail) { s in StageDetailView(remote: s, onShowAuthor: { showAuthor($0) }) }
+        .sheet(item: $detail, onDismiss: { if world.likedBy != nil { Task { await world.reload() } } }) { s in StageDetailView(remote: s, onShowAuthor: { showAuthor($0) }) }
         #if DEBUG
         .sheet(isPresented: $showStoreDebug) { StoreView() }
         #endif
@@ -112,6 +112,9 @@ struct HomeView: View {
         .onChange(of: world.sort) { _ in Task { await world.reload() } }
         .onChange(of: world.mode) { _ in Task { await world.reload() } }
         .onChange(of: world.difficulty) { _ in Task { await world.reload() } }
+        .onChange(of: auth.uid) { uid in
+            if world.likedBy != nil && (world.likedBy != uid || !auth.isMember) { world.likedBy = nil; Task { await world.reload() } }
+        }
         // 弾幕バトルの対戦中に通知・リンクから開いたステージは、対戦が終わってから開く(対戦の上に重なって、見えないまま負けないように)
         .onChange(of: ads.playingTabs) { tabs in
             if !tabs.contains("battle"), let id = deepLink.stageID { deepLink.stageID = nil; Task { await open(id: id) } }
@@ -220,11 +223,43 @@ struct HomeView: View {
         detail = nil
         query = ""; world.query = ""
         world.author = AuthorFilter(uid: s.authorUid, name: s.authorName)
+        world.likedBy = nil
         tab = .world
         Task { await world.reload() }
     }
 
+    /// 自分がいいねしたステージだけを出す(サインイン済みの人だけ。いいねはサインインが要るため)
+    private func showLiked() {
+        guard let uid = auth.uid, auth.isMember else { return }
+        query = ""; world.query = ""
+        world.author = nil
+        world.likedBy = uid
+        Task { await world.reload() }
+    }
+
     @ViewBuilder private var worldList: some View {
+        if world.likedBy != nil {
+            // いいねした一覧を表示中(解除すると、ふつうの一覧に戻る)
+            HStack {
+                Label("world.liked.show", systemImage: "heart.fill")
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.yellow).lineLimit(1)
+                Spacer()
+                Button { gameTap(); world.likedBy = nil; Task { await world.reload() } } label: { Chip(title: L("world.author.clear"), selected: false) }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("home.liked.clear")
+            }
+        } else if auth.isMember && world.author == nil {
+            Button { gameTap(); showLiked() } label: {
+                Label("world.liked.show", systemImage: "heart")
+                    .font(.system(size: 13, weight: .bold)).foregroundStyle(GameStyle.text)
+                    .padding(.vertical, 8).padding(.horizontal, 14)
+                    .frame(minHeight: 44)
+                    .background(GameStyle.panel, in: PixelRect(cornerRadius: 16))
+                    .overlay(PixelRect(cornerRadius: 16).stroke(GameStyle.edge))
+            }
+            .buttonStyle(BounceButtonStyle())
+            .accessibilityIdentifier("home.liked.show")
+        }
         if let a = world.author {
             // 作者で絞り込み中(解除すると、ふつうの一覧に戻る)
             HStack {
@@ -246,12 +281,14 @@ struct HomeView: View {
             }
         }
         // クリア条件(モード)の絞り込みは、並び順のチップとは見た目も場所も分ける(同じチップが2段続くと、どちらが何か分かりにくかった)
-        filters
-        VStack(alignment: .leading, spacing: 8) {
-            sectionLabel("world.sort.title", "arrow.up.arrow.down")
-            ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 96)
+        if world.likedBy == nil {
+            filters
+            VStack(alignment: .leading, spacing: 8) {
+                sectionLabel("world.sort.title", "arrow.up.arrow.down")
+                ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 96)
+            }
+            .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
         }
-        .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
         // 画面に映った行だけを作る(行のプレビューとタイトルを、映ったときに動かし、外れたら止めるため)
         LazyVStack(spacing: 10) {
             if !Backend.isAvailable {
@@ -290,7 +327,7 @@ struct HomeView: View {
                 }
             }
             if world.stages.isEmpty && !world.isLoading && !world.failed && Backend.isAvailable {
-                Text(world.searching ? "world.search.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
+                Text(world.searching ? "world.search.empty" : world.likedBy != nil ? "world.liked.empty" : "world.empty").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 20)
             }
         }
     }
@@ -408,6 +445,7 @@ struct HomeView: View {
             return
         }
         tab = .world
+        world.likedBy = nil   // 名前で探すときは、いいね一覧をやめる
         world.query = raw
         await world.reload()
     }

@@ -107,6 +107,28 @@ struct StageRepository {
                          reachedEnd: snap.documents.count < Self.pageSize)
     }
 
+    /// 自分がいいねしたステージ(いいねした新しい順、20件ずつ)。toggleLike が書く控え users/{uid}/likes を読み、ステージを1件ずつ取りに行く。
+    /// 消えた・隠れたステージは読めないので飛ばす(続きは、そのページの最後の次から)
+    func fetchLiked(uid: String, after cursor: DocumentSnapshot?) async throws -> StagePage {
+        var q: Query = Firestore.firestore().collection("users/\(uid)/likes").order(by: "createdAt", descending: true)
+        if let cursor { q = q.start(afterDocument: cursor) }
+        let snap = try await q.limit(to: Self.pageSize).getDocuments()
+        let ids = snap.documents.map(\.documentID)
+        let found = await withTaskGroup(of: (Int, RemoteStage?).self) { group -> [Int: RemoteStage] in
+            for (i, id) in ids.enumerated() {
+                group.addTask {
+                    let doc = try? await Firestore.firestore().document("stages/\(id)").getDocument()
+                    return (i, doc.flatMap(Self.parse))
+                }
+            }
+            var out: [Int: RemoteStage] = [:]
+            for await (i, s) in group { if let s { out[i] = s } }
+            return out
+        }
+        return StagePage(stages: ids.indices.compactMap { found[$0] }, cursor: snap.documents.last ?? cursor,
+                         reachedEnd: snap.documents.count < Self.pageSize)
+    }
+
     func find(id: String) async throws -> RemoteStage? {
         let snap = try await Firestore.firestore().document("stages/\(id)").getDocument()
         return Self.parse(snap)

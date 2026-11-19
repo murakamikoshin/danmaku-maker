@@ -32,7 +32,7 @@ describe("validatePublish", () => {
     ["モード不正", { mode: "hard" }, "mode"],
     ["時間が選択肢外", { durationSec: 25 }, "duration"],
     ["発射台なし", { emitters: [] }, "emitter-count"],
-    ["発射台9個", { emitters: Array.from({ length: 9 }, () => em()) }, "emitter-count"],
+    ["発射台17個", { emitters: Array.from({ length: 17 }, () => em()) }, "emitter-count"],
     ["パターン不正", { emitters: [em({ t: "laser" })] }, "emitter-pattern"],
     ["弾数37", { emitters: [em({ c: 37 })] }, "emitter-range"],
     ["弾数が小数", { emitters: [em({ c: 3.5 })] }, "emitter-range"],
@@ -368,6 +368,15 @@ describe("validatePublish: 連戦(場面)", () => {
   });
   const total = (n: number, d: number) => d + 2 * (n - 1);
 
+  it("場面の発射台も16個まで。9個以上の場面があれば needs: 6(1.4.1 以降が必要)", () => {
+    const ems = (n: number) => Array.from({ length: n }, () => em({ e: 20 }));
+    const r = validatePublish(seq([waveSurvive({ emitters: ems(16) }), waveBoss()], { durationSec: total(2, 20 + 60) }));
+    expect(r.ok && [r.stage.waves![0]!.emitters.length, r.stage.needs]).toEqual([16, 6]);
+    const eight = validatePublish(seq([waveSurvive({ emitters: ems(8) }), waveBoss()], { durationSec: total(2, 20 + 60) }));
+    expect(eight.ok && "needs" in eight.stage).toBe(false);
+    expect(validatePublish(seq([waveSurvive({ emitters: ems(17) })], { durationSec: 20 }))).toEqual({ ok: false, error: "emitter-count" });
+  });
+
   it("ボスに触れるとダメージは、ボスの場面だけ付けられ、そのステージは needs: 3", () => {
     const r = validatePublish(seq([waveSurvive(), waveBoss({ bodyHit: true })], { durationSec: total(2, 20 + 60) }));
     expect(r.ok && [r.stage.waves![1]!.bodyHit, r.stage.needs]).toEqual([true, 3]);
@@ -662,6 +671,18 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       for (const look of [2, 5, 11, 12]) expect(validatePublish(boss({ ...pat(t), bossLook: look, bossMove: look >= 5 ? 0 : 1 }))).toEqual({ ok: false, error: "emitter-pattern" });
     }
     expect(validatePublish(boss({ ...pat("hireSukui"), bossLook: 13, bossMove: 0 }))).toEqual({ ok: false, error: "emitter-pattern" });
+  });
+
+  it("発射台は16個まで。9個以上は needs: 6(1.4.0 までは9個目から捨てるため)。8個までは needs が上がらない。竜王でも 6", () => {
+    const ems = (n: number) => Array.from({ length: n }, () => em());
+    const r16 = validatePublish(good({ emitters: ems(16) }));
+    expect(r16.ok && [r16.stage.emitters.length, r16.stage.needs]).toEqual([16, 6]);
+    const r9 = validatePublish(good({ emitters: ems(9) }));
+    expect(r9.ok && r9.stage.needs).toBe(6);
+    const r8 = validatePublish(good({ emitters: ems(8) }));
+    expect(r8.ok && "needs" in r8.stage).toBe(false);
+    const dragon = validatePublish(boss({ emitters: Array.from({ length: 9 }, () => em({ t: "dragonRoar" })), bossLook: 13, bossMove: 0 }));
+    expect(dragon.ok && dragon.stage.needs).toBe(6);
   });
 
   it("竜王の自由な技(1.4.0)も、竜王(bossLook 13)のボスにだけ置け、数・速さ・向き・左右反転はそのまま残る", () => {

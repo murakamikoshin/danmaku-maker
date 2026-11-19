@@ -4,15 +4,18 @@ import Foundation
 public enum DanmakuConfig {
     public static let formatVersion = 1
     /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP、
-    /// 5=1.4.0〜の竜王)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 5
+    /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
+    public static let contentLevel = 6
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
     public static let step = 1.0 / 120.0
     public static let readySeconds = 1.2
     public static let maxBullets = 1600
-    public static let maxEmitters = 8
+    /// 1つのステージ(連戦は1つの場面)の発射台の上限。1.4.0 までは 8(9個目からは古い版では捨てられるので、サーバーが needs: 6 を付ける)
+    public static let maxEmitters = 16
+    /// 1.4.0 までの発射台の上限(これを超えると needs: 6)
+    public static let legacyMaxEmitters = 8
     /// 追尾弾が曲がり続ける時間(秒)
     public static let homingSeconds = 2.5
     /// ボスの大きさ(0=小 1=中 2=大)ごとの、プレイヤーの弾が当たる半径(論理px)。見た目の大きさも同じ比率で変わる

@@ -21,6 +21,8 @@ final class WorldViewModel: ObservableObject {
     @Published private(set) var searching = false
     /// 作者で絞り込んでいるとき(その人の公開ステージだけを出す)
     @Published var author: AuthorFilter?
+    /// 自分がいいねしたステージだけを出しているとき(いいねした新しい順。並び順・絞り込み・検索は使わない)。値はサインイン済みの uid
+    @Published var likedBy: String?
 
     private var cursor: DocumentSnapshot?
     private let repo = StageRepository()
@@ -33,7 +35,7 @@ final class WorldViewModel: ObservableObject {
         cursor = nil; reachedEnd = false; stages = []; failed = false
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         // 作者で絞り込んでいるときは、そちらを優先する(ステージ名の検索は使わない)
-        searching = author == nil && !q.isEmpty
+        searching = author == nil && likedBy == nil && !q.isEmpty
         if searching { await runSearch(q) } else { await loadMore() }
     }
 
@@ -64,7 +66,8 @@ final class WorldViewModel: ObservableObject {
         do {
             for _ in 0..<10 {
                 let page: StagePage
-                if let a = author { page = try await repo.fetchByAuthor(uid: a.uid, mode: mode, after: cursor) }
+                if let uid = likedBy { page = try await repo.fetchLiked(uid: uid, after: cursor) }
+                else if let a = author { page = try await repo.fetchByAuthor(uid: a.uid, mode: mode, after: cursor) }
                 else { page = try await repo.fetch(sort, mode: mode, difficulty: difficulty, after: cursor) }
                 guard gen == generation else { return }
                 let added = page.stages.filter { s in !stages.contains { $0.id == s.id } }

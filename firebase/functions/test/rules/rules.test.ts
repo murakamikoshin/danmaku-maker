@@ -180,6 +180,23 @@ describe("comments(コメント)", () => {
   });
 });
 
+describe("いいねしたステージの控え(users/{uid}/likes)", () => {
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), "users/u1/likes/AAAAA"), { createdAt: new Date() }); });
+  });
+  it("本人(サインイン済み)は、いいねした新しい順に件数を決めて読める", async () => {
+    await assertSucceeds(getDoc(doc(member("u1"), "users/u1/likes/AAAAA")));
+    await assertSucceeds(getDocs(query(collection(member("u1"), "users/u1/likes"), limit(20))));
+  });
+  it("他人・匿名は読めない。だれも書けない(書くのは toggleLike だけ)", async () => {
+    await assertFails(getDoc(doc(member("u2"), "users/u1/likes/AAAAA")));
+    await assertFails(getDocs(collection(member("u2"), "users/u1/likes")));
+    await assertFails(getDoc(doc(anon("u1"), "users/u1/likes/AAAAA")));
+    await assertFails(setDoc(doc(member("u1"), "users/u1/likes/BBBBB"), { createdAt: new Date() }));
+    await assertFails(deleteDoc(doc(member("u1"), "users/u1/likes/AAAAA")));
+  });
+});
+
 describe("マイステージのバックアップ", () => {
   const ok = { data: "{}", updatedAt: new Date() };
   const S1 = "3F2504E0-4F89-11D3-9A0C-0305E82C3301", S2 = "3F2504E0-4F89-11D3-9A0C-0305E82C3302";

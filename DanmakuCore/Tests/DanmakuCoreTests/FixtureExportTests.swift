@@ -412,10 +412,12 @@ final class FixtureExportTests: XCTestCase {
             return st.sanitized()
         }
         let dAll = DanmakuCore.Pattern.dragon
-        stages.append(("dragon-all-normal", dragon(dAll, i: 0.5, forms: nil)))
-        stages.append(("dragon-all-forms-0123", dragon(dAll, i: 0.5, forms: [0, 1, 2, 3], phases: 4, hp: 150)))
-        stages.append(("dragon-damage-forms", dragon(dAll, i: 0.5, forms: [1, 2, 3], mode: .damage)))
-        stages.append(("dragon-lives-white", dragon(dAll, i: 0.5, forms: [3, 3, 3], life: .lives, count: 3)))
+        // 「all」は 1.4.0 のころの上限(8個)で切っていたので、上限を 16 に上げても同じ中身にする
+        let dAll8 = Array(dAll.prefix(DanmakuConfig.legacyMaxEmitters))
+        stages.append(("dragon-all-normal", dragon(dAll8, i: 0.5, forms: nil)))
+        stages.append(("dragon-all-forms-0123", dragon(dAll8, i: 0.5, forms: [0, 1, 2, 3], phases: 4, hp: 150)))
+        stages.append(("dragon-damage-forms", dragon(dAll8, i: 0.5, forms: [1, 2, 3], mode: .damage)))
+        stages.append(("dragon-lives-white", dragon(dAll8, i: 0.5, forms: [3, 3, 3], life: .lives, count: 3)))
         stages.append(("dragon-moved-big", dragon(Array(dAll.prefix(5)), i: 1.0, forms: [0, 2, 3], move: 4, size: 60)))
         stages.append(("dragon-raid-glide-rampage", dragon([.dragonRaid, .dragonGlide, .dragonRampage], i: 0.3, forms: [2, 2, 3])))
         stages.append(("dragon-inhale-roar-end", dragon([.dragonInhale, .dragonRoar, .dragonEnd], i: 0.3, forms: [1, 3, 3])))
@@ -462,6 +464,17 @@ final class FixtureExportTests: XCTestCase {
             stages.append(("boss-shape-\(c.rawValue)", Stage(name: "bs", mode: .boss, durationSec: 40, bossHp: 400, bossMove: 0, emitters: ems,
                                                          lifeMode: .hp, lifeCount: 30, bossLook: c.rawValue).sanitized()))
         }
+
+        // 1.4.1: 発射台 9〜16 個(1.4.0 までは 8 個まで)。ここより前の並びは変えない
+        let many = all.filter { $0.bossCharacter == nil && $0.dragonMove == nil }
+        stages.append(("survive-16", Stage(name: "s", mode: .survive, durationSec: 30, emitters: emitters(Array(many.prefix(16)), boss: false),
+                                           lifeMode: .hp, lifeCount: 12).sanitized()))
+        stages.append(("boss-16", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 300, bossMove: 1,
+                                        emitters: emitters(Array(many.suffix(16)), boss: true), lifeMode: .hp, lifeCount: 15).sanitized()))
+        stages.append(("seq-16", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 15, waves: [
+            Wave(kind: .survive, durationSec: 10, emitters: emitters(Array(many.prefix(12)), boss: false)),
+            Wave(kind: .boss, durationSec: 60, bossHp: 200, bossMove: 2, emitters: emitters(Array(many.prefix(16)), boss: true))]).sanitized()))
+        stages.append(("dragon-all-10", dragon(dAll, i: 0.5, forms: [0, 1, 2, 3], phases: 4, hp: 150)))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

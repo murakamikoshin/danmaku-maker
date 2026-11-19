@@ -60,6 +60,12 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
 
+    // 自分がいいねしたステージの控え(toggleLike が書く。いいねした時刻 createdAt だけ)。本人だけが読める(「いいねしたステージ」の一覧。1.4.1 から)
+    match /users/{uid}/likes/{stageId} {
+      allow read: if isMember() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // 通知を受け取る端末(トークン・言語・種類ごとのオン/オフ)。本人だけが読み書きできる。送るのは Cloud Functions
     match /users/{uid}/pushDevices/{deviceId} {
       allow read, delete: if signedIn() && request.auth.uid == uid;

@@ -4,7 +4,7 @@ import XCTest
 final class SanitizeTests: XCTestCase {
     func testClampsAndRounds() {
         let wild = Stage(name: String(repeating: "あ", count: 40), mode: .boss, durationSec: 77, bossHp: 9999, bossMove: 99,
-            emitters: (0..<12).map { _ in em(.ring, x: 3, y: 2, s: -5, e: 999, i: 0, c: 99, v: 99, r: 500, k: 9, ph: 9) })
+            emitters: (0..<20).map { _ in em(.ring, x: 3, y: 2, s: -5, e: 999, i: 0, c: 99, v: 99, r: 500, k: 9, ph: 9) })
         let s = wild.sanitized()
         XCTAssertEqual(s.name.count, 20)
         XCTAssertEqual(s.durationSec, 60)
@@ -13,7 +13,8 @@ final class SanitizeTests: XCTestCase {
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 6, emitters: []).sanitized().bossMove, 6)
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: 3, emitters: []).sanitized().bossMove, 3)
         XCTAssertEqual(Stage(name: "m", mode: .boss, durationSec: 60, bossHp: 400, bossMove: -4, emitters: []).sanitized().bossMove, 0)
-        XCTAssertEqual(s.emitters.count, 8)
+        XCTAssertEqual(s.emitters.count, DanmakuConfig.maxEmitters)   // 17個目からは捨てる(1.4.1 から 16 個まで)
+        XCTAssertEqual(DanmakuConfig.maxEmitters, 16)
         let m = s.emitters[0]
         XCTAssertEqual([m.x, m.y, m.s, m.e, m.i, m.v, m.r], [1, 0.6, 0, 180, 0.05, 5, 90])
         XCTAssertEqual([m.c, m.k, m.ph], [36, 4, 3])

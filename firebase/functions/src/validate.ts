@@ -321,7 +321,10 @@ export const BGM_COUNT = 7;
 
 export const MAX_NAME = 20;
 export const MAX_AUTHOR = 12;
-export const MAX_EMITTERS = 8;
+/** 発射台の上限(アプリの DanmakuConfig.maxEmitters と同じ)。1.4.0 までは 8 で、9個目からは古い版で捨てられるので needs: 6 にする */
+export const MAX_EMITTERS = 16;
+/** 1.4.0 までの発射台の上限(アプリの DanmakuConfig.legacyMaxEmitters と同じ) */
+export const LEGACY_MAX_EMITTERS = 8;
 /** 段階の名前の長さの上限(アプリの PhaseInfo.maxName と同じ) */
 export const MAX_PHASE_NAME = 16;
 /** 必殺技の効果音の番号の上限(アプリの PhaseInfo.seRange と同じ) */
@@ -617,7 +620,9 @@ export function validatePublish(input: unknown): Validated {
     || (waves ?? []).some((w) => w.phases !== undefined || w.oneUp !== undefined);
   // 竜王(1.4.0〜)は 5
   const usesDragon = bBossLook.v === DRAGON_LOOK || (waves ?? []).some((w) => w.bossLook === DRAGON_LOOK);
-  const needs = usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 発射台を9個以上(1.4.1〜)使うものは 6(1.4.0 までは9個目から捨てるので、同じに動かない)
+  const manyEmitters = emitters.length > LEGACY_MAX_EMITTERS || (waves ?? []).some((w) => w.emitters.length > LEGACY_MAX_EMITTERS);
+  const needs = manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;

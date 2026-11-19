@@ -47,7 +47,7 @@ App Store Connect に入力した内容(1.0.5 提出時点)。変更したいと
 ■ 作る
 ・放射・渦巻き・自機狙い・雨・首ふり扇など、たくさんの弾幕パターン。広告を見ると1日1つ、新しい弾幕パターン（全30種類）が手に入ります。ショップで追加の弾幕（追尾・花・星・ハート・一列弾などの「弾幕パック」と、地雷・隕石・格子レーザー・重力弾・スネークなどの「弾幕パック2」）も使えます
 ・「弾幕作成モード」（買い切り）: 指で線を描くだけで、弾がその線の上を、描いた速さで進む、自分だけの弾幕が作れます
-・発射台を最大8個まで配置、色・速さ・間隔・角度・パターンの向きを自由に調整
+・発射台を最大16個まで配置、色・速さ・間隔・角度・パターンの向きを自由に調整
 ・ボスの大きさと見た目、雑魚の姿、撃ち方、BGM、弾や背景の見た目、自機の演出まで、ステージごとに決められます
 ・連戦モードでは、中ボス → 雑魚だけ → 大ボスのように、場面を順番に組めます
 ・ループ再生のプレビューで、作りながら弾の動きをその場で確認
@@ -113,7 +113,7 @@ Weave through the bullets and survive until time runs out. In boss fights, your 
 CREATE
 • Lots of bullet patterns: ring, spiral, aimed, rain, sweeping fan and more. Watch an ad to unlock one new pattern a day (30 in total). Extra patterns in the shop too: Pattern Pack (homing, flower, star, heart, bullet line and more) and Pattern Pack 2 (mines, meteors, grid lasers, gravity shots, snakes and more)
 • Pattern Maker (one-time purchase): draw a line with your finger and bullets follow it at the speed you drew, making a pattern all your own
-• Place up to 8 emitters and tune color, speed, interval, angle and pattern direction
+• Place up to 16 emitters and tune color, speed, interval, angle and pattern direction
 • Choose the boss size and look, minion looks, shot style, music, bullet and background looks, and ship effects for each stage
 • Boss rush mode lets you chain scenes: mid-boss, minions only, final boss…
 • Looping previews show your bullets in action while you edit

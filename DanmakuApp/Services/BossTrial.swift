@@ -41,8 +41,8 @@ enum BossTrial {
                        emitters: emitters, lifeMode: .lives, lifeCount: 5, bossWarning: true, bossLook: BossCharacter.dragon.rawValue)
         st.phases = 4
         st.forms = [0, 1, 2, 3]
-        // 作者が置ける技は 8 個まで(sanitized が 9 個目から捨てる)。お試しは技 15 個を全部見せたいので、8 個ずつ整えてつなぐ
-        // (これまでは、紅蓮の大旋回・メギドの火が捨てられて出ていなかった)
+        // 作者が置ける技は maxEmitters 個まで(sanitized がそれより後を捨てる)。お試しは技を全部見せたいので、上限ずつ整えてつなぐ
+        // (上限が 8 だったころは、紅蓮の大旋回・メギドの火が捨てられて出ていなかった)
         var out = st.sanitized()
         var all: [Emitter] = []
         for c in stride(from: 0, to: emitters.count, by: DanmakuConfig.maxEmitters) {
