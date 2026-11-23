@@ -102,20 +102,48 @@ enum SpriteFactory {
     static func equalsImages(_ theme: Theme) -> [UIImage] {
         if let c = equalsCache[theme] { return c }
         let list = Skin.of(theme).bulletColors.map { color in
-            image(size: CGSize(width: 14, height: 12)) { c in
-                for y in [2.0, 7.0] {
-                    let r = CGRect(x: 1.5, y: y, width: 11, height: 3)
-                    c.setFillColor(color.cgColor)
-                    c.fill(r)
-                    c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
-                    c.setLineWidth(1)
-                    c.stroke(r)
-                }
+            image(size: CGSize(width: 16, height: 10)) { c in
+                // 1つの角丸の枠の中に、色の線が2本(あいだは白)。弾1発に見える「＝」
+                let outer = UIBezierPath(roundedRect: CGRect(x: 1.5, y: 1.5, width: 13, height: 7), cornerRadius: 3)
+                c.setFillColor(color.cgColor)
+                c.addPath(outer.cgPath); c.fillPath()
+                c.setFillColor(UIColor.white.withAlphaComponent(0.95).cgColor)
+                c.fill(CGRect(x: 3, y: 4.3, width: 10, height: 1.4))
+                c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
+                c.setLineWidth(1)
+                c.addPath(outer.cgPath); c.strokePath()
             }
         }
         equalsCache[theme] = list
         return list
     }
+    /// 弾の形「棒」(細長いカプセル。見た目だけ)。右向きに進む弾の絵。描くときに進む向きへ回す
+    private static var barCache: [Theme: [UIImage]] = [:]
+    private static var barTextureCache: [Theme: [SKTexture]] = [:]
+    static func barImages(_ theme: Theme) -> [UIImage] {
+        if let c = barCache[theme] { return c }
+        let list = Skin.of(theme).bulletColors.map { color in
+            image(size: CGSize(width: 17, height: 8)) { c in
+                let outer = UIBezierPath(roundedRect: CGRect(x: 1.5, y: 1.5, width: 14, height: 5), cornerRadius: 2.5)
+                c.setFillColor(color.cgColor)
+                c.addPath(outer.cgPath); c.fillPath()
+                c.setFillColor(UIColor.white.withAlphaComponent(0.95).cgColor)
+                c.addPath(UIBezierPath(roundedRect: CGRect(x: 4, y: 3.3, width: 9, height: 1.4), cornerRadius: 0.7).cgPath); c.fillPath()
+                c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
+                c.setLineWidth(1)
+                c.addPath(outer.cgPath); c.strokePath()
+            }
+        }
+        barCache[theme] = list
+        return list
+    }
+    static func bars(_ theme: Theme) -> [SKTexture] {
+        if let c = barTextureCache[theme] { return c }
+        let list = barImages(theme).map(texture)
+        barTextureCache[theme] = list
+        return list
+    }
+
     static func equals(_ theme: Theme) -> [SKTexture] {
         if let c = equalsTextureCache[theme] { return c }
         let list = equalsImages(theme).map(texture)

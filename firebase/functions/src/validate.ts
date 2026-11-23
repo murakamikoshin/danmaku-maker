@@ -33,7 +33,7 @@ export interface Emitter {
   /** 弾幕作成モードで描いた軌道(t が custom のときだけ) */
   path?: number[];
   /** 弾の見た目(1=くの字 2=丸。未指定=パターンの標準)。見た目だけ */
-  sh?: 1 | 2 | 3;
+  sh?: 1 | 2 | 3 | 4;
   /** 左右反転(線対称)。1 のときだけ入れる */
   mir?: 1;
   /** 狙い方(1.3.0 から): 1 = 固定(真下)、2 = ランダム(月ごとに変わる)。未指定 = 自機狙い */
@@ -361,7 +361,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (ph !== null && !isPhaseCode(ph, opts.phases ?? 3)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
-    const sh = int(item.sh ?? 0, 0, 3);   // 0 は標準。3(＝)は 1.4.2 から(見た目だけなので、古い版では標準の形になるだけ)
+    const sh = int(item.sh ?? 0, 0, 4);   // 0 は標準。3(＝)・4(棒)は 1.4.2 から(見た目だけなので、古い版では標準の形になるだけ)
     const mir = int(item.mir ?? 0, 0, 1);
     // 狙い方: 1 か 2 だけ残す(アプリの Emitter.sanitizedAim と同じ。ほかの値は自機狙い)
     const aim = item.aim === 1 || item.aim === 2 ? item.aim : 0;
@@ -378,7 +378,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 | 3 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}), ...(aim ? { aim: aim as 1 | 2 } : {}), ...(yr ? { yr: yr as 1 | 2 } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 | 3 | 4 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}), ...(aim ? { aim: aim as 1 | 2 } : {}), ...(yr ? { yr: yr as 1 | 2 } : {}) });
   }
   return { ok: true, list };
 }

@@ -130,7 +130,8 @@ final class Pack3Tests: XCTestCase {
         b.look = 3
         XCTAssertTrue(b.drawsAsEquals)
         XCTAssertEqual(b.hitDistanceSquared, DanmakuConfig.hitRadiusSquared)
-        XCTAssertNil(Emitter.sanitizedShape(4))
+        XCTAssertEqual(Emitter.sanitizedShape(4), 4)
+        XCTAssertNil(Emitter.sanitizedShape(5))
     }
 
     func testBossWithOnePhaseNeverChangesPhase() {

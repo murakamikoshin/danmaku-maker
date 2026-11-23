@@ -134,7 +134,7 @@ struct EmitterPreview: View {
                 // 弾
                 for b in engine.bullets {
                     ctx.drawBullet(b, images: bulletImages, boomerangs: boomerangImages, colors: skin.bulletColors,
-                                   time: timeline.date.timeIntervalSinceReferenceDate, custom: customBullet)
+                                   time: timeline.date.timeIntervalSinceReferenceDate, custom: customBullet, theme: look.bullets)
                 }
             }
         }
@@ -287,7 +287,7 @@ extension GraphicsContext {
 extension GraphicsContext {
     /// 弾を1つ描く(エディタの見本・ショップの見本で同じ)。種類ごとに形を変える:
     /// ビームは光線、爆風は予告の円→衝撃、ブーメランは回る🪃、地雷は止まると点滅、巨大弾・膨らむ泡は当たる広さに合わせた大きさ
-    func drawBullet(_ b: Bullet, images: [UIImage], boomerangs: [UIImage], colors: [UIColor], scale s: CGFloat = 1, time: Double, custom: UIImage? = nil, sizeBoost: CGFloat = 1) {
+    func drawBullet(_ b: Bullet, images: [UIImage], boomerangs: [UIImage], colors: [UIColor], scale s: CGFloat = 1, time: Double, custom: UIImage? = nil, sizeBoost: CGFloat = 1, theme: Theme = .classic) {
         let i = min(max(b.color, 0), colors.count - 1)
         let color = Color(colors[i])
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
@@ -305,16 +305,14 @@ extension GraphicsContext {
             g.draw(Image(uiImage: art).interpolation(.none), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
             return
         }
-        if b.drawsAsEquals {
-            // 「＝」: 2本の棒を、進む向きに沿って並べる(下へ落ちる弾は縦の2本線。ゲームの絵と同じ大きさ)
+        if b.drawsAsEquals || b.drawsAsBar {
+            // 「＝」(くっついた二本線)・「棒」(細長いカプセル): ゲームと同じ絵を、進む向きへ回して描く
+            let imgs = b.drawsAsBar ? SpriteFactory.barImages(theme) : SpriteFactory.equalsImages(theme)
+            let w: CGFloat = (b.drawsAsBar ? 17 : 16) * s * sizeBoost, h: CGFloat = (b.drawsAsBar ? 8 : 10) * s * sizeBoost
             var g = self
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(atan2(b.vy, b.vx)))
-            for y in [-4.0, 1.0] {
-                let r = CGRect(x: -5.5 * s * sizeBoost, y: y * s * sizeBoost, width: 11 * s * sizeBoost, height: 3 * s * sizeBoost)
-                g.fill(Path(r), with: .color(color))
-                g.stroke(Path(r), with: .color(.white.opacity(0.9)), lineWidth: max(0.6, s))
-            }
+            g.draw(Image(uiImage: imgs[min(i, imgs.count - 1)]), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
             return
         }
         if b.drawsAsBoomerang {
@@ -586,7 +584,7 @@ struct StageMiniPreview: View {
         // ゲーム本体と同じ弾の絵(白い芯・テーマごとの形)を使う。小さい枠でもつぶれないよう、少し大きめに描く
         let images = SpriteFactory.bulletImages(theme), boomerangs = SpriteFactory.boomerangImages(theme)
         for b in sim.bullets {
-            ctx.drawBullet(b, images: images, boomerangs: boomerangs, colors: colors, scale: s, time: time, sizeBoost: boost)
+            ctx.drawBullet(b, images: images, boomerangs: boomerangs, colors: colors, scale: s, time: time, sizeBoost: boost, theme: theme)
         }
     }
 }

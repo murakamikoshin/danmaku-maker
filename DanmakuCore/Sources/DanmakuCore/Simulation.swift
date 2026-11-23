@@ -86,8 +86,10 @@ public struct Bullet: Equatable, Sendable {
     }
     /// 「くの字」で描くか。標準はどのパターンも丸。発射台で、くの字を選べる
     public var drawsAsBoomerang: Bool { look == 1 }
-    /// 「＝」(二本線)で描くか(発射台の sh == 3。1.4.2 から。見た目だけ)
+    /// 「＝」(くっついた二本線)で描くか(発射台の sh == 3。1.4.2 から。見た目だけ)
     public var drawsAsEquals: Bool { look == 3 }
+    /// 「棒」(細長いカプセル)で描くか(発射台の sh == 4。1.4.2 から。見た目だけ)
+    public var drawsAsBar: Bool { look == 4 }
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。

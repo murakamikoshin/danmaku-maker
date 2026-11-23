@@ -196,7 +196,7 @@ struct EmitterCard: View {
                 // 発射台ごとに見た目を変えられるよう、「かんたん」でも出す
                 VStack(alignment: .leading, spacing: 6) {
                     Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round")), (3, L("editor.shape.equals"))],
+                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round")), (3, L("editor.shape.equals")), (4, L("editor.shape.bar"))],
                              selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
                              idPrefix: "emitter.shape.\(index)", minimum: 72)
                 }
