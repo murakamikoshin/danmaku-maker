@@ -8,6 +8,17 @@ final class Release142UITests: XCTestCase {
     private var app: XCUIApplication!
     private var lang: String { ProcessInfo.processInfo.environment["UI_LANG"] ?? "ja" }
     private var step = 0
+    /// 画面の文字(言語ごと)。メニューの項目・ショップの見出し・テーマ名
+    private func text(_ key: String) -> String {
+        let t: [String: [String: String]] = [
+            "copy": ["ja": "コピー", "en": "Copy", "de": "Kopieren"],
+            "resetAll": ["ja": "初期値に戻す", "en": "Reset to defaults", "de": "Auf Standard zurücksetzen"],
+            "pack3": ["ja": "弾幕パック3", "en": "Bullet patterns 3", "de": "Kugelmuster 3"],
+            "fantasy": ["ja": "ファンタジー", "en": "Fantasia", "de": "Fantasie"],
+            "nudgeUp": ["ja": "少し上げる", "en": "", "de": ""],
+        ]
+        return t[key]?[lang] ?? t[key]?["en"] ?? key
+    }
     private let pack3 = ["radialLaser", "lightning", "carpetBomb", "dashShot", "implode", "pincer", "whirlwind", "bounceBall", "needle", "trackLaser", "blinkShot"]
 
     override func setUpWithError() throws {
@@ -44,6 +55,7 @@ final class Release142UITests: XCTestCase {
     @discardableResult
     private func tap(_ id: String, timeout: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
         let e = el(id)
+        if !e.waitForExistence(timeout: min(timeout, 4)) { _ = find(id) }
         if !e.waitForExistence(timeout: timeout) {
             snap("missing-\(id)")
             XCTFail("「\(id)」が見つからない", file: file, line: line)
@@ -56,14 +68,24 @@ final class Release142UITests: XCTestCase {
 
     private func exists(_ id: String, timeout: TimeInterval = 8) -> Bool { el(id).waitForExistence(timeout: timeout) }
 
-    private func scrollTo(_ e: XCUIElement, up: Bool = true) {
-        for _ in 0..<15 where !e.isHittable { up ? app.swipeUp(velocity: .slow) : app.swipeDown(velocity: .slow) }
+    /// 押せる位置まで送る(上か下か、近いほうへ。画面の外なら、まず下へ、だめなら上へ)
+    private func scrollTo(_ e: XCUIElement) {
+        if e.isHittable { return }
+        let frame = app.windows.firstMatch.frame
+        for _ in 0..<12 where !e.isHittable {
+            if e.exists && e.frame.minY < frame.minY + 80 { app.swipeDown(velocity: .slow) } else { app.swipeUp(velocity: .slow) }
+        }
     }
 
-    /// 下へ送りながら探す(エディタは、画面の近くのカードだけを作る)
+    /// 探す(エディタは、画面の近くのカードだけを作る)。今の位置 → 下へ送りながら → いちばん上から下へ
     private func find(_ id: String) -> XCUIElement {
         let e = el(id)
-        for _ in 0..<15 where !e.exists { app.swipeUp(velocity: .slow) }
+        if e.waitForExistence(timeout: 2) { scrollTo(e); return e }
+        for _ in 0..<12 where !e.exists { app.swipeUp(velocity: .slow) }
+        if !e.exists {
+            scrollToTop()
+            for _ in 0..<24 where !e.exists { app.swipeUp(velocity: .slow) }
+        }
         if e.exists { scrollTo(e) }
         return e
     }
@@ -98,7 +120,7 @@ final class Release142UITests: XCTestCase {
         XCTAssertTrue(exists("editor.close", timeout: 15), "\(name): テストプレイからエディタへ戻れない(落ちた?)")
     }
 
-    private func scrollToTop() { for _ in 0..<15 { app.swipeDown(velocity: .fast) } }
+    private func scrollToTop() { for _ in 0..<10 { app.swipeDown(velocity: .fast) } }
 
     // MARK: - テスト
 
@@ -168,7 +190,7 @@ final class Release142UITests: XCTestCase {
         XCTAssertTrue(menu.exists, "発射台のメニューがない")
         menu.tap()
         snap("emitter-menu")
-        app.buttons["コピー"].firstMatch.tap()
+        app.buttons[text("copy")].firstMatch.tap()
         let paste = find("editor.paste")
         XCTAssertTrue(paste.exists, "コピーしたのに貼り付けボタンが出ない")
         snap("paste-button")
@@ -179,7 +201,7 @@ final class Release142UITests: XCTestCase {
         // 初期値に戻す(まとめて): 棒の形が標準に戻る
         scrollToTop()
         find("emitter.menu.0").tap()
-        app.buttons["初期値に戻す"].firstMatch.tap()
+        app.buttons[text("resetAll")].firstMatch.tap()
         XCTAssertTrue(exists("dialog.action", timeout: 5), "初期値に戻すの確認が出ない")
         snap("reset-dialog")
         tap("dialog.action")
@@ -189,7 +211,9 @@ final class Release142UITests: XCTestCase {
         // 項目ごとの「戻す」: 向きを 1° 動かすと出て、押すと消える
         tap("editor.level.true")
         scrollToTop()
-        let up = app.buttons.matching(NSPredicate(format: "label == '少し上げる'"))
+        // 「少し上げる」(− / + の +)。英語などでは名前が違うので、日本語のときだけ確かめる
+        guard lang == "ja" else { return }
+        let up = app.buttons.matching(NSPredicate(format: "label == %@", text("nudgeUp")))
         XCTAssertGreaterThan(up.count, 0, "− / + のボタンがない")
         let rotateUp = up.element(boundBy: min(1, up.count - 1))
         scrollTo(rotateUp)
@@ -209,6 +233,7 @@ final class Release142UITests: XCTestCase {
         XCTAssertTrue(none.exists, "段階の数に「なし」がない")
         none.tap()
         snap("phases-none")
+        scrollToTop()
         tap("editor.level.true")
         snap("phases-none-advanced")
         testPlay("boss-phases-none", seconds: 6)
@@ -235,7 +260,7 @@ final class Release142UITests: XCTestCase {
         scrollToTop()
         // 最初の場面の発射台をコピーして、ほかの場面へ貼り付ける
         find("emitter.menu.0").tap()
-        app.buttons["コピー"].firstMatch.tap()
+        app.buttons[text("copy")].firstMatch.tap()
         let pastes = app.descendants(matching: .any).matching(identifier: "editor.paste")
         XCTAssertGreaterThan(pastes.count, 0, "連戦で貼り付けボタンが出ない")
         var shots = 0
@@ -243,8 +268,8 @@ final class Release142UITests: XCTestCase {
             app.swipeUp(velocity: .default)
             if shots < 6 { snap("sequence-scroll-\(shots)"); shots += 1 }
         }
-        let last = pastes.element(boundBy: max(0, pastes.count - 1))
-        if last.exists { scrollTo(last); last.tap(); snap("sequence-pasted") }
+        // 画面に出ている貼り付けボタンのうち、いちばん下のものを押す(一覧は画面の近くだけを作るので、数は変わる)
+        if let last = pastes.allElementsBoundByIndex.last(where: { $0.exists && $0.isHittable }) { last.tap(); snap("sequence-pasted") }
         testPlay("sequence", seconds: 5)
     }
 
@@ -271,7 +296,7 @@ final class Release142UITests: XCTestCase {
     func testShopAndSettings() {
         tap("tab.shop", timeout: 20)
         tap("shop.tab.patterns")
-        let title = app.staticTexts[lang == "ja" ? "弾幕パック3" : "Bullet patterns 3"].firstMatch
+        let title = app.staticTexts[text("pack3")].firstMatch
         for _ in 0..<20 where !title.exists { app.swipeUp(velocity: .slow) }
         XCTAssertTrue(title.exists, "ショップに弾幕パック3がない")
         scrollTo(title)
@@ -282,6 +307,6 @@ final class Release142UITests: XCTestCase {
         let theme = find("settings.theme.gensou")
         XCTAssertTrue(theme.exists, "テーマの選択がない")
         snap("settings-theme")
-        if lang == "ja" { XCTAssertTrue(app.staticTexts["ファンタジー"].exists, "テーマ名が「ファンタジー」になっていない") }
+        XCTAssertTrue(theme.label.contains(text("fantasy")), "テーマ名が「\(text("fantasy"))」になっていない(\(theme.label))")
     }
 }
