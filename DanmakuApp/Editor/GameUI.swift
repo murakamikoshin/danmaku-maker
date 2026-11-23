@@ -406,6 +406,7 @@ struct PatternTiles: View {
     static func shopCard(for p: DanmakuCore.Pattern) -> String {
         if DanmakuCore.Pattern.ad.contains(p) { return "adpatterns" }
         if DanmakuCore.Pattern.pack2.contains(p) { return "patterns2" }
+        if DanmakuCore.Pattern.pack3.contains(p) { return "patterns3" }
         if p == .custom { return "maker" }
         if let b = p.bossCharacter { return "boss.\(b.productKey)" }
         return "patterns"
@@ -429,6 +430,8 @@ struct PatternTiles: View {
             grid(DanmakuCore.Pattern.ad)
             Text("editor.pattern.pack2section").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
             grid(DanmakuCore.Pattern.pack2)
+            Text("editor.pattern.pack3section").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary).padding(.top, 4)
+            grid(DanmakuCore.Pattern.pack3)
             customSection
         }
     }
@@ -437,7 +440,7 @@ struct PatternTiles: View {
     /// (古いステージで旧渦巻きを選んでいるときだけ、そのまま見えるように残す)
     private var freePatterns: [DanmakuCore.Pattern] {
         var list: [DanmakuCore.Pattern] = []
-        for p in DanmakuCore.Pattern.allCases where !p.isAd && !p.isPack2 && p != .custom && p != .swirl && p.bossCharacter == nil {
+        for p in DanmakuCore.Pattern.allCases where !p.isAd && !p.isPack2 && !p.isPack3 && p != .custom && p != .swirl && p.bossCharacter == nil {
             if p == .spiral {
                 list.append(.swirl)
                 if selection == .spiral { list.append(.spiral) }
@@ -532,7 +535,7 @@ struct PatternIcon: View {
     static func sample(_ p: DanmakuCore.Pattern) -> [CGPoint] {
         samples.lock.lock(); defer { samples.lock.unlock() }
         if let c = samples.points[p] { return c }
-        guard let d = p.recipeDefaults else { return [] }
+        guard let d = p.tableDefaults else { return [] }
         let m = Emitter(t: p, x: 0.5, y: 0.15, s: 0, e: 20, i: d.i, c: d.c, v: d.v, r: d.r, k: 0)
         var rng = Mulberry32(seed: 11)
         var bullets: [Bullet] = []
@@ -734,6 +737,37 @@ struct PatternIcon: View {
             case .angelParadise:
                 // 閉じてくる輪(抜け道が1か所)
                 for i in 0..<14 where i != 3 && i != 4 { let a = Double(i) * 2 * .pi / 14; dot(c.x + cos(a) * 15, c.y + sin(a) * 15, 2.2) }
+            case .radialLaser:
+                // 全方位レーザー: 中心から全方向へ光線
+                for k in 0..<8 {
+                    let a = Double(k) * .pi / 4 + 0.2
+                    var p = Path(); p.move(to: c); p.addLine(to: CGPoint(x: c.x + cos(a) * 19, y: c.y + sin(a) * 19))
+                    ctx.stroke(p, with: .color(col), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                }
+                dot(c.x, c.y, 3.4)
+            case .lightning:
+                // 落雷: 上から下へ、ぎざぎざの雷
+                for x in [w * 0.25, w * 0.62] {
+                    var p = Path(); p.move(to: CGPoint(x: x, y: 2))
+                    for (i, y) in stride(from: 8.0, through: h - 2, by: 7).enumerated() { p.addLine(to: CGPoint(x: x + (i % 2 == 0 ? 4 : -3), y: y)) }
+                    ctx.stroke(p, with: .color(col), style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                }
+            case .carpetBomb:
+                // 爆撃ライン: 斜めに連なる爆発の円(先ほど大きい)
+                dot(5, 5, 3)
+                for k in 0..<4 {
+                    let t = Double(k + 1) / 4, r = 3 + Double(k) * 1.6
+                    ctx.stroke(Path(ellipseIn: CGRect(x: 5 + t * (w - 14) - r, y: 5 + t * (h - 14) - r, width: r * 2, height: r * 2)), with: .color(col.opacity(0.5 + 0.12 * Double(k))), style: StrokeStyle(lineWidth: 1.4, dash: [2, 2]))
+                }
+            case .trackLaser:
+                // 追跡レーザー: 自機を追う予告線と、固定された光線
+                dot(c.x, 5, 3.4)
+                var thin = Path(); thin.move(to: CGPoint(x: c.x, y: 6)); thin.addLine(to: CGPoint(x: c.x - 14, y: h - 4))
+                ctx.stroke(thin, with: .color(col.opacity(0.45)), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+                var line = Path(); line.move(to: CGPoint(x: c.x, y: 6)); line.addLine(to: CGPoint(x: c.x + 9, y: h - 4))
+                ctx.stroke(line, with: .color(col), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                ctx.stroke(line, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 1.8, lineCap: .round))
+                dot(c.x + 9, h - 4, 2.6)
             case .giantOrb:
                 dot(c.x, 5, 3.4)
                 ctx.fill(Path(ellipseIn: CGRect(x: c.x - 11, y: c.y - 6, width: 22, height: 22)), with: .color(col))

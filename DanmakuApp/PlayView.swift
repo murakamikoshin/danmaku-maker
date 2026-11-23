@@ -488,28 +488,38 @@ struct ResultView: View {
                 .background(GeometryReader { g in Color.clear.onAppear { panelHeight = g.size.height }.onChange(of: g.size.height) { panelHeight = $0 } })
                 .padding(24)
                 if let unit = mrecUnitID, mrecShown {
-                    // ボタンから離して、パネルの下に置く(押し間違いを防ぐ)。「広告」の印つき
+                    // ボタンから離して、パネルの下に置く(押し間違いを防ぐ。1.4.2 から間を 24pt にし、結果が出て 1 秒たってから出す)。「広告」の印つき
                     VStack(spacing: 4) {
                         Text("ad.badge").font(.system(size: 10, weight: .heavy)).foregroundStyle(.secondary)
                         MrecAdView(unitID: unit)
                             .frame(width: MrecAdView.size.width, height: MrecAdView.size.height)
                     }
-                    .padding(.top, 8).padding(.bottom, 16)
+                    .padding(.top, 24).padding(.bottom, 16)
+                    .transition(.opacity)
                     .accessibilityIdentifier("result.mrec")
                 }
             }
             .compatBounceBasedOnSize()
         }
         .background(GeometryReader { g in Color.clear.onAppear { areaHeight = g.size.height }.onChange(of: g.size.height) { areaHeight = $0 } })
-        .onChange(of: mrecFits) { if $0 { mrecShown = true } }
-        .onAppear { if mrecFits { mrecShown = true } }
+        .onChange(of: mrecFits) { if $0 { showMrecSoon() } }
+        .onAppear { if mrecFits { showMrecSoon() } }
         .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
     }
 
     /// パネルの下に、レクタングル(印と余白を含めて約 290pt)が収まるか。小さい画面や、パネルが長いときは出さない
     private var mrecFits: Bool {
         guard mrecUnitID != nil, areaHeight > 0, panelHeight > 0, MrecAdView.size.width + 16 <= UIScreen.main.bounds.width else { return false }
-        return areaHeight - (panelHeight + 48) >= MrecAdView.size.height + 44
+        return areaHeight - (panelHeight + 48) >= MrecAdView.size.height + 60
+    }
+
+    /// 結果が出てすぐの指の動き(ボタンを押そうとした指)が広告に当たらないよう、1 秒待ってから出す
+    private func showMrecSoon() {
+        guard !mrecShown else { return }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            withAnimation(.easeIn(duration: 0.25)) { mrecShown = true }
+        }
     }
 
     private func claimReward() async {

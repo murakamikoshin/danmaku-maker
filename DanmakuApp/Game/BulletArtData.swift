@@ -33,6 +33,8 @@ enum BulletArtData {
         ["oWWWWWWWWWo", ".oLLLLLLLo.", ".oWWWWWWWo.", "..oLLLLLo..", "..oWWWWWo..", "...oLLLo...", "...oWWWo...", "....oLo....", "....oWo....", ".....o....."],
         ["..o..", ".oYo.", "oYWYo", ".oYo.", "..o.."],
         [".W.", "oWo", "oCo", "oCo", "oCo", ".o."],
+        // 弾幕パック3の針(ニードル)。3 つを 6px おきに並べて、1 本の長い針に見せる
+        [".W.", "oWo", "oWo", "oNo", "oNo", "oNo", "oNo", ".o."],
     ]
     /// [種類][0=通常 1=覚醒(竜王の弾は 0〜3 = 姿)] → 文字 → 色(#rrggbb)
     static let palettes: [[[Character: String]]] = [
@@ -67,5 +69,6 @@ enum BulletArtData {
         [["o": "#b43c14", "L": "#ff8c28", "W": "#ffdc8c"], ["o": "#143c96", "L": "#3c96ff", "W": "#b4e6ff"], ["o": "#641478", "L": "#c83cc8", "W": "#ffb4fa"], ["o": "#c88c28", "L": "#ffdc64", "W": "#ffffff"]],
         [["o": "#e0541e", "Y": "#ffb428", "W": "#fff0b4"], ["o": "#1e78f0", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#aa28a0", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#ffc83c", "Y": "#fff0aa", "W": "#ffffff"]],
         [["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"]],
+        [["o": "#2a3a5a", "N": "#b4c8e6", "W": "#ffffff"], ["o": "#2a3a5a", "N": "#b4c8e6", "W": "#ffffff"]],
     ]
 }

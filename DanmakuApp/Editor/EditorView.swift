@@ -139,6 +139,7 @@ struct EditorView: View {
                         }
                         AddButton(enabled: model.canAdd) { model.addEmitter() }
                             .accessibilityIdentifier("editor.add")
+                        PasteButton(enabled: model.canAdd) { model.pasteEmitter($0) }
                     }
 
                     StatusBox(verified: model.isVerified)
@@ -501,7 +502,7 @@ private struct EnemyControls: View {
                         }
                         .accessibilityIdentifier("editor.dragon.cutin")
                     }
-                } else if isCharacter {
+                } else if isCharacter && phaseCount >= 2 {
                     Text("editor.awaken.title").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ChipGrid(items: [(0, L("editor.enemy.none"))] + (2...max(2, phaseCount)).map { ($0, String(format: L("play.phase"), $0)) },
                              selection: Binding(get: { awaken ?? 0 }, set: { awaken = $0 == 0 ? nil : $0 }), idPrefix: "editor.awaken")
@@ -634,14 +635,26 @@ struct SliderRow: View {
     var disabled = false
     /// あれば、値の左右に − / + を出して、細かく動かせるようにする(-1 か +1 を渡す)
     var nudge: ((Int) -> Void)? = nil
+    /// あれば、名前の下に「初期値に戻す」の小さなボタンを出す(初期値から変えたときだけ渡す)
+    var onReset: (() -> Void)? = nil
     let format: (Double) -> String
 
     var body: some View {
         // − / + のある行とない行で、スライダーの左右の端と値の枠の位置をそろえる(ない行は、ボタンの場所を空けておく)
         HStack(spacing: 6) {
-            Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
-                .frame(width: 72, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    .lineLimit(2).minimumScaleFactor(0.8).fixedSize(horizontal: false, vertical: true)
+                if let onReset, !disabled {
+                    Button { gameTap(); withAnimation(.easeInOut(duration: 0.15)) { onReset() } } label: {
+                        Label("editor.reset.one", systemImage: "arrow.uturn.backward").font(.system(size: 9, weight: .heavy))
+                            .foregroundStyle(GameStyle.cyanColor).labelStyle(.titleAndIcon).lineLimit(1).minimumScaleFactor(0.7)
+                            .padding(.vertical, 4).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(width: 72, alignment: .leading)
             GameSlider(value: $value, range: range, step: step).allowsHitTesting(!disabled)
             HStack(spacing: 2) {
                 if let nudge { nudgeButton("minus", -1, nudge) } else { Color.clear.frame(width: 24, height: 26) }
@@ -1092,6 +1105,31 @@ private struct AddButton: View {
     }
 }
 
+/// コピーした発射台の貼り付け(コピーしてあるときだけ出す)
+private struct PasteButton: View {
+    let enabled: Bool
+    let action: (Emitter) -> Void
+    @ObservedObject private var clipboard = EmitterClipboard.shared
+
+    var body: some View {
+        if let m = clipboard.emitter {
+            Button { gameTap(); action(m) } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "doc.on.clipboard.fill").font(.system(size: 17))
+                    Text(String(format: L("editor.paste"), L("pattern.\(m.t.rawValue)"))).font(.display(13)).lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .foregroundStyle(GameStyle.cyanColor)
+                .frame(maxWidth: .infinity).padding(.vertical, 12)
+                .overlay(PixelRect(cornerRadius: 16).strokeBorder(GameStyle.cyanColor.opacity(0.7), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+            }
+            .buttonStyle(BounceButtonStyle())
+            .opacity(enabled ? 1 : 0.4)
+            .disabled(!enabled)
+            .accessibilityIdentifier("editor.paste")
+        }
+    }
+}
+
 /// ボス戦・ダメージ勝負の演出: 開始前の警告と、撃破の演出(見た目だけ)
 private struct EffectsPanel: View {
     @ObservedObject var model: EditorModel
@@ -1139,7 +1177,8 @@ private struct WavesSection: View {
     let onTestFrom: (Int) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        // VStack でまとめず、外の LazyVStack に1枚ずつ並べる(画面から遠い場面のカードは作らない。連戦で下へ行くほど重くなっていた)
+        Group {
             GamePanel(title: "editor.waves", tint: GameStyle.violet) {
                 HStack {
                     Text(String(format: L("editor.waves.count"), model.draft.waves.count)).font(.system(size: 14, weight: .heavy))
@@ -1235,6 +1274,7 @@ private struct WaveCard: View {
                             canDelete: wave.emitters.count > 1, onDelete: { model.removeEmitter(e, fromWave: waveID) })
             }
             AddButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.addEmitter(toWave: waveID) }
+            PasteButton(enabled: wave.emitters.count < DanmakuConfig.maxEmitters) { model.pasteEmitter($0, toWave: waveID) }
             if i > 0 {
                 // 2場面目より後: その場面からすぐ試せる(連戦のテストプレイは、ふつう1場面目から始まる)
                 Button { gameTap(); onTestFrom(i) } label: {

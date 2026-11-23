@@ -21,9 +21,10 @@ struct BossPhaseControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("editor.phases.count").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-            ChipGrid(items: Emitter.phaseCountRange.map { ($0, String(format: L("editor.phases.count.value"), $0)) },
+            // 1 は「段階なし」(1回倒せば終わり。1.4.2)
+            ChipGrid(items: Emitter.phaseCountRange.map { ($0, $0 == 1 ? L("editor.phases.count.none") : String(format: L("editor.phases.count.value"), $0)) },
                      selection: Binding(get: { count }, set: { n in if let onCountChange { onCountChange(n) } else { phases = n == 3 ? nil : n } }), idPrefix: idPrefix, minimum: 72)
-            Text(byTime ? "editor.phases.note.time" : "editor.phases.note.hp")
+            Text(count == 1 ? (byTime ? "editor.phases.note.none.time" : "editor.phases.note.none") : (byTime ? "editor.phases.note.time" : "editor.phases.note.hp"))
                 .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
 
             if !showNames, info != nil {

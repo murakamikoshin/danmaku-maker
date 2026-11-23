@@ -75,9 +75,16 @@ extension Emitter {
             return Emitter(t: t, e: end, i: 5.0, c: 1, v: 1.0, r: 0)
         default:
             // 広告で解放するパターン: 表の初期値
-            let d = t.recipeDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
+            let d = t.tableDefaults ?? (i: 1.0, c: 8, v: 2.0, r: 0)
             return Emitter(t: t, e: end, i: d.i, c: d.c, v: d.v, r: d.r)
         }
+    }
+
+    /// 「初期値に戻す」: パターン・位置・タイミング・段階・撃つ場所は残して、弾の設定(間隔・数・速さ・角度・向き・色・形・狙い方・反転・高さ)を初期値に戻す
+    mutating func resetSettings() {
+        let d = Emitter.make(t, end: e)
+        i = d.i; c = d.c; v = d.v; r = d.r
+        a = 0; k = 0; sh = nil; aim = nil; mir = nil; yr = nil
     }
 
     /// パターンを変えたとき、位置・タイミング・色は残して、弾の設定だけ初期値に戻す
@@ -86,6 +93,7 @@ extension Emitter {
         t = p; i = d.i; c = d.c; v = d.v; r = d.r
         if p != .custom { path = nil }
         if !canRotate { a = 0 }
+        if p != .sideL && p != .sideR { yr = nil }
         // 狙い方が効かないパターンでは外す(雨のように、ランダムだけ効くものは固定を外す)
         switch aimSupport {
         case .none: aim = nil
@@ -160,7 +168,7 @@ struct DraftWave: Codable, Equatable, Identifiable {
     /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
     mutating func setPhaseCount(_ n: Int) {
         phases = n == 3 ? nil : n
-        if let a = awaken, a > n { awaken = n }
+        if let a = awaken, a > n { awaken = n >= 2 ? n : nil }
         emitters = emitters.map { var e = $0; e.ph = Emitter.sanitizedPhase(e.ph, count: n); return e }
     }
 
@@ -296,7 +304,7 @@ struct Draft: Codable, Equatable {
     /// ボスの段階の数を変える。覚醒の段階と、発射台の撃つ段階も、新しい数に収める(段階を減らしたとき、気づかないうちに覚醒が消えないように)
     mutating func setPhaseCount(_ n: Int) {
         phases = n == 3 ? nil : n
-        if let a = awaken, a > n { awaken = n }
+        if let a = awaken, a > n { awaken = n >= 2 ? n : nil }
         emitters = emitters.map { var e = $0; e.ph = Emitter.sanitizedPhase(e.ph, count: n); return e }
     }
 
@@ -443,6 +451,18 @@ final class EditorModel: ObservableObject {
         for i in draft.waves[w].emitters.indices where draft.waves[w].emitters[i].t.bossCharacter != nil { draft.waves[w].emitters[i].changePattern(to: .ring) }
     }
 
+    /// コピーした発射台を、ふつうのステージに貼り付ける(上限まで)。生き残りでは段階・撃つ場所を外す(保存のときと同じ丸め方)
+    func pasteEmitter(_ m: Emitter) {
+        guard canAdd else { return }
+        draft.emitters.append(m.fitted(boss: draft.mode != .survive, end: Double(min(draft.duration == 0 ? 180 : draft.duration, 180))))
+    }
+
+    /// コピーした発射台を、連戦の場面に貼り付ける
+    func pasteEmitter(_ m: Emitter, toWave id: UUID) {
+        guard let i = draft.waves.firstIndex(where: { $0.id == id }), draft.waves[i].emitters.count < DanmakuConfig.maxEmitters else { return }
+        draft.waves[i].emitters.append(m.fitted(boss: draft.waves[i].kind == .boss, end: Double(draft.waves[i].duration)))
+    }
+
     func addEmitter(toWave id: UUID) {
         guard let i = draft.waves.firstIndex(where: { $0.id == id }), draft.waves[i].emitters.count < DanmakuConfig.maxEmitters else { return }
         draft.waves[i].emitters.append(Emitter.make(.ring, end: Double(draft.waves[i].duration)))
@@ -496,5 +516,23 @@ extension Emitter {
     /// (プレビューはすぐ撃つので「テストプレイだけ弾が出ない」と見えた)。ボス戦では、開始を 0 秒にそろえる
     static func withoutHiddenStart(_ list: [Emitter]) -> [Emitter] {
         list.map { var m = $0; m.s = 0; return m }
+    }
+}
+
+
+/// 発射台のコピー(貼り付けるまで、アプリを開いている間だけ覚えておく。ほかのステージ・場面にも貼り付けられる)
+@MainActor final class EmitterClipboard: ObservableObject {
+    static let shared = EmitterClipboard()
+    @Published var emitter: Emitter?
+}
+
+extension Emitter {
+    /// 貼り付け先に合わせる。生き残りは段階・撃つ場所を使わない。時間は貼り付け先の長さに収める
+    func fitted(boss: Bool, end: Double) -> Emitter {
+        var m = self
+        if !boss { m.ph = 0; m.p = 0 }
+        m.s = min(m.s, max(0, end - 0.5))
+        m.e = min(max(m.e, m.s + 0.5), max(end, m.s + 0.5))
+        return m
     }
 }

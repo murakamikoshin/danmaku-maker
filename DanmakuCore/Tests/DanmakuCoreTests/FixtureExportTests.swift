@@ -80,7 +80,8 @@ final class FixtureExportTests: XCTestCase {
 
     func testExportFixtures() throws {
         guard let path = ProcessInfo.processInfo.environment["EXPORT_SIM_FIXTURES"] else { throw XCTSkip("書き出し先が未指定") }
-        let all: [DanmakuCore.Pattern] = DanmakuCore.Pattern.allCases
+        // パック3(1.4.2)より前のパターンだけ(あとから足したパターンで、これまでのケースの中身が変わらないように)
+        let all: [DanmakuCore.Pattern] = DanmakuCore.Pattern.allCases.filter { !$0.isPack3 }
         var stages: [(String, Stage)] = []
         for (i, p) in all.enumerated() {
             stages.append(("survive-\(p.rawValue)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([p, all[(i + 3) % all.count]], boss: false)).sanitized()))
@@ -475,6 +476,47 @@ final class FixtureExportTests: XCTestCase {
             Wave(kind: .survive, durationSec: 10, emitters: emitters(Array(many.prefix(12)), boss: false)),
             Wave(kind: .boss, durationSec: 60, bossHp: 200, bossMove: 2, emitters: emitters(Array(many.prefix(16)), boss: true))]).sanitized()))
         stages.append(("dragon-all-10", dragon(dAll, i: 0.5, forms: [0, 1, 2, 3], phases: 4, hp: 150)))
+
+        // 1.4.2: 弾幕パック3・左右からの弾の高さ・弾の形「＝」・段階なし/2段階のボス。ここより前の並びは変えない
+        let p3 = DanmakuCore.Pattern.pack3
+        for (i, p) in p3.enumerated() {
+            stages.append(("survive-p3-\(p.rawValue)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: emitters([p, p3[(i + 4) % p3.count]], boss: false),
+                                                           lifeMode: .hp, lifeCount: 8).sanitized()))
+            stages.append(("boss-p3-\(p.rawValue)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 200, bossMove: i % 5,
+                                                        emitters: emitters([p, .ring, p3[(i + 2) % p3.count]], boss: true), lifeMode: .lives, lifeCount: 3).sanitized()))
+        }
+        func tuned(_ list: [Emitter], mir: Bool = false, aim: Int? = nil, sh: Int? = nil) -> [Emitter] {
+            list.map { var m = $0; if mir { m.mir = 1 }; m.aim = aim; m.sh = sh; return m }
+        }
+        stages.append(("survive-p3-mirror", Stage(name: "s", mode: .survive, durationSec: 20, emitters: tuned(emitters([.whirlwind, .implode, .blinkShot, .trackLaser], boss: false), mir: true),
+                                                  lifeMode: .hp, lifeCount: 10).sanitized()))
+        stages.append(("survive-p3-random", Stage(name: "s", mode: .survive, durationSec: 20, emitters: tuned(emitters([.lightning, .dashShot, .needle, .bounceBall], boss: false), aim: 2),
+                                                  lifeMode: .hp, lifeCount: 10).sanitized()))
+        stages.append(("survive-p3-fixed-eq", Stage(name: "s", mode: .survive, durationSec: 20, emitters: tuned(emitters([.pincer, .carpetBomb, .radialLaser, .dashShot], boss: false), aim: 1, sh: 3),
+                                                    lifeMode: .hp, lifeCount: 10).sanitized()))
+        stages.append(("survive-p3-all", Stage(name: "s", mode: .survive, durationSec: 30, emitters: emitters(p3, boss: false), lifeMode: .hp, lifeCount: 20).sanitized()))
+        for (yr, tag) in [(1, "full"), (2, "lower")] {
+            var side = emitters([.sideL, .sideR, .sideL], boss: false)
+            for j in side.indices { side[j].yr = yr }
+            stages.append(("survive-side-\(tag)", Stage(name: "s", mode: .survive, durationSec: 20, emitters: side, lifeMode: .hp, lifeCount: 8).sanitized()))
+            var bside = emitters([.sideR, .ring], boss: true)
+            bside[0].yr = yr
+            stages.append(("boss-side-\(tag)", Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 150, bossMove: 1, emitters: bside, lifeMode: .lives, lifeCount: 3).sanitized()))
+        }
+        for n in [1, 2] {
+            var b = Stage(name: "b", mode: .boss, durationSec: 60, bossHp: 150, bossMove: 2, emitters: emitters([.ring, .aim, .spiral, .radialLaser], boss: true), lifeMode: .lives, lifeCount: 3)
+            b.phases = n
+            stages.append(("boss-phases-\(n)", b.sanitized()))
+            var d = Stage(name: "d", mode: .damage, durationSec: 30, bossMove: 3, emitters: emitters([.ring, .aim, .needle], boss: true))
+            d.phases = n
+            stages.append(("damage-phases-\(n)", d.sanitized()))
+        }
+        var w1 = Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 1, emitters: emitters([.ring, .carpetBomb], boss: true))
+        w1.phases = 1
+        var w2 = Wave(kind: .boss, durationSec: 60, bossHp: 150, bossMove: 4, emitters: emitters([.aim, .whirlwind, .ring], boss: true))
+        w2.phases = 2
+        stages.append(("seq-phases-1-2", Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], lifeMode: .hp, lifeCount: 12, waves: [
+            Wave(kind: .survive, durationSec: 10, emitters: emitters([.pincer, .lightning], boss: false)), w1, w2]).sanitized()))
 
         var cases: [Case] = []
         var seed: UInt64 = 1

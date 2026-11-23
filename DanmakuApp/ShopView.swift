@@ -165,6 +165,8 @@ struct ShopView: View {
             PatternShop().id("patterns")
             PatternShop(patterns: Pattern.pack2, pack: .patternPack2, title: "shop.pattern2.title", footer: "shop.pattern2.footer",
                         packTitle: "shop.pattern2.pack").id("patterns2")
+            PatternShop(patterns: Pattern.pack3, pack: .patternPack3, title: "shop.pattern3.title", footer: "shop.pattern3.footer",
+                        packTitle: "shop.pattern3.pack").id("patterns3")
             MakerCard().id("maker")
         case .shots:
             ShotSection().id("shots")

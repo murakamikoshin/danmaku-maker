@@ -21,6 +21,9 @@ final class PreviewEngine {
     /// ボスの、いまの位置(ステージで決めた動き・位置の指定どおり。ゲームと同じ式)
     private(set) var bossAt = Point(x: 180, y: DanmakuConfig.height * 0.18)
 
+    /// 映っていない間は止める(次に映ったとき、離れていた時間を一度に進めない)
+    func pause() { last = nil }
+
     func advance(to now: Date, emitter m: Emitter, boss: Bool, look: PreviewLook) {
         let character = BossCharacter.of(look: look.bossLook)
         // パターンを変えたら、前のパターンの撃つ時刻・弾を捨てて、すぐ撃ち始める(前の間隔が長いと、数秒なにも出なかった)
@@ -71,6 +74,11 @@ final class PreviewEngine {
 }
 
 struct EmitterPreview: View {
+    /// 画面の大きさ(見本が映っているかの判定に使う。少し外まで含めて、出てくる直前から動かす)
+    @MainActor static var screenBounds: CGRect {
+        let b = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.screen.bounds ?? CGRect(x: 0, y: 0, width: 430, height: 932)
+        return b.insetBy(dx: 0, dy: -80)
+    }
     let emitter: Emitter
     let isBoss: Bool
     let look: PreviewLook
@@ -98,8 +106,18 @@ struct EmitterPreview: View {
         let customShip = (own && look.customs.ship) ? CustomImageStore.load(.ship) : nil
         let shipImage = customShip ?? SpriteFactory.shipImage(look.ship)
         let bossImage = (own && look.customs.boss) ? CustomImageStore.load(.boss) : nil
+        // 画面に映っていない見本は、計算も描画もしない(連戦で発射台が多いと、画面の外の見本まで動いて重くなっていた)
+        Color.clear
+        .aspectRatio(DanmakuConfig.width / PreviewEngine.height, contentMode: .fit)
+        .overlay(GeometryReader { geo in
         TimelineView(.animation) { timeline in
+            let onScreen = geo.frame(in: .global).intersects(EmitterPreview.screenBounds)
             Canvas { ctx, size in
+                guard onScreen else {
+                    ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
+                    engine.pause()
+                    return
+                }
                 engine.advance(to: timeline.date, emitter: emitter, boss: isBoss, look: look)
                 let s = size.width / DanmakuConfig.width
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(bg.background)))
@@ -119,7 +137,7 @@ struct EmitterPreview: View {
                 }
             }
         }
-        .aspectRatio(DanmakuConfig.width / PreviewEngine.height, contentMode: .fit)
+        })
         .clipShape(PixelRect(cornerRadius: 10))
         .accessibilityHidden(true)
     }
@@ -141,12 +159,12 @@ struct EmitterPreview: View {
                 else { ctx.draw(Image(uiImage: EnemyArt.bossImage(look: look.bossLook, size: look.bossSize, flash: false)), in: rect) }
             }
         }
-        if let mooks = look.mooks, (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
+        if let mooks = look.mooks, (!isBoss || emitter.firesFromPoint) && !emitter.isPositionless {
             let side = EnemyArt.mookPoints(size: mooks)
             let c = CGPoint(x: emitter.x * DanmakuConfig.width, y: emitter.y * DanmakuConfig.height)
             ctx.draw(Image(uiImage: EnemyArt.mookImage(look: look.mookLook, size: mooks)), in: CGRect(x: c.x - side / 2, y: c.y - side / 2, width: side, height: side))
         }
-        if (!isBoss || emitter.firesFromPoint) && ![.rain, .sideL, .sideR, .corner].contains(emitter.t) {
+        if (!isBoss || emitter.firesFromPoint) && !emitter.isPositionless {
             let c = CGPoint(x: emitter.x * DanmakuConfig.width, y: emitter.y * DanmakuConfig.height)
             var p = Path()
             p.move(to: CGPoint(x: c.x, y: c.y - 8)); p.addLine(to: CGPoint(x: c.x + 8, y: c.y))
@@ -164,17 +182,21 @@ private struct DragonMovePreview: View {
     let look: PreviewLook
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var scene: GameScene?
-    @State private var builtKey = ""
+    @State private var built: Spec?
 
-    /// この技を出すいちばん早い段階の姿(作者が段階ごとに選んだもの。選んでいなければ、ゲームと同じく通常。竜王は覚醒を使わない)
-    private var form: Int {
-        let p = Emitter.phases(of: emitter.ph).min() ?? 1
-        if let f = look.forms, p - 1 < f.count { return min(max(f[p - 1], 0), 3) }
-        return 0
+    /// 見本を作るのに使う値の組。変わったら、この値そのものから作り直す。
+    /// (onChange の中から self.emitter を読むと、1つ前の画面の値になることがあり、選んだ技の1つ前の技が見本に出ていた)
+    struct Spec: Equatable {
+        var emitter: Emitter
+        var look: PreviewLook
+        /// この技を出すいちばん早い段階の姿(作者が段階ごとに選んだもの。選んでいなければ、ゲームと同じく通常。竜王は覚醒を使わない)
+        var form: Int {
+            let p = Emitter.phases(of: emitter.ph).min() ?? 1
+            if let f = look.forms, p - 1 < f.count { return min(max(f[p - 1], 0), 3) }
+            return 0
+        }
     }
-    private var key: String {
-        "\(String(describing: emitter))|\(form)|\(look.bossMove)|\(look.bossX ?? -1)|\(look.bossY ?? -1)|\(look.bossSize)|\(look.bullets)|\(look.background)|\(look.ship)"
-    }
+    private var spec: Spec { Spec(emitter: emitter, look: look) }
 
     var body: some View {
         ZStack {
@@ -191,29 +213,30 @@ private struct DragonMovePreview: View {
         .clipShape(PixelRect(cornerRadius: 10))
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .onAppear { if scene == nil || builtKey != key { rebuild() } }
-        .onChange(of: key) { _ in rebuild() }
-        .onDisappear { scene = nil; builtKey = "" }
+        .onAppear { if scene == nil || built != spec { rebuild(spec) } }
+        .onChange(of: spec) { rebuild($0) }
+        .onDisappear { scene = nil; built = nil }
     }
 
-    private func rebuild() {
-        var e = emitter
+    private func rebuild(_ sp: Spec) {
+        var e = sp.emitter
         e.s = 0; e.e = 60; e.ph = 0
+        let look = sp.look
         var st = Stage(name: "", mode: .boss, durationSec: 60, bossHp: 9999, bossMove: look.bossMove, emitters: [e], lifeMode: .lives, lifeCount: 9,
                        bossSize: look.bossSize, bossLook: BossCharacter.dragon.rawValue)
         st.bossX = look.bossX; st.bossY = look.bossY
-        st.forms = [form, form, form]
+        st.forms = [sp.form, sp.form, sp.form]
         var lo = Loadout()
         lo.bullets = look.bullets; lo.background = look.background; lo.ship = look.ship
         let own = cosmetics.ownership.hasCustomImages
         lo.customBullet = own && look.customs.bullet
         lo.customShip = own && look.customs.ship
         let s = GameScene(stage: st.sanitized(), loadout: lo, preview: true)
-        let k = key
-        // 時間が来た・ボスを倒したら、同じ見本を最初から
-        s.onFinish = { _, _ in DispatchQueue.main.async { if builtKey == k { rebuild() } } }
+        // 時間が来た・ボスを倒したら、同じ見本を最初から(そのあいだに設定が変わっていたら、何もしない)
+        let current = $built
+        s.onFinish = { _, _ in DispatchQueue.main.async { if current.wrappedValue == sp { rebuild(sp) } } }
         scene = s
-        builtKey = k
+        built = sp
     }
 }
 
@@ -269,7 +292,7 @@ extension GraphicsContext {
         if b.isBeam { drawBeam(b, color: color, scale: s); return }
         if b.isBlast { drawBlast(b, color: color, scale: s, time: time); return }
         let c = CGPoint(x: b.x * s, y: b.y * s)
-        if b.isDormant && !b.dormantGlow { return }   // 待機中の弾・暗転の印は見えない
+        if (b.isDormant && !b.dormantGlow) || b.blinkHidden { return }   // 待機中の弾・暗転の印・瞬間移動弾が飛ぶ直前は見えない
         if let art = BulletArt.image(look: b.look) {
             // ボス専用の弾: ドット絵を、進む向きへ回して描く(最近傍補間)
             var g = self
@@ -279,6 +302,18 @@ extension GraphicsContext {
             let drawSize = BulletArt.drawSize(b)
             let w = drawSize.width * s * sizeBoost, h = drawSize.height * s * sizeBoost
             g.draw(Image(uiImage: art).interpolation(.none), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
+            return
+        }
+        if b.drawsAsEquals {
+            // 「＝」: 2本の棒を、進む向きに直角に並べる(ゲームの絵と同じ大きさ)
+            var g = self
+            g.translateBy(x: c.x, y: c.y)
+            g.rotate(by: .radians(atan2(b.vy, b.vx) + .pi / 2))
+            for y in [-4.0, 1.0] {
+                let r = CGRect(x: -5.5 * s * sizeBoost, y: y * s * sizeBoost, width: 11 * s * sizeBoost, height: 3 * s * sizeBoost)
+                g.fill(Path(r), with: .color(color))
+                g.stroke(Path(r), with: .color(.white.opacity(0.9)), lineWidth: max(0.6, s))
+            }
             return
         }
         if b.drawsAsBoomerang {

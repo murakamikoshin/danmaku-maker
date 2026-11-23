@@ -12,6 +12,7 @@ import { emitReaper, isReaperPattern } from "./reaper.js";
 import { emitIceQueen, isIceQueenPattern } from "./icequeen.js";
 import { FOLD_SCRIPT, SWAY_SCRIPT, emitKitsune, isKitsunePattern } from "./kitsune.js";
 import { DRAGON_BODY, DRAGON_CURVE, DRAGON_INV, DRAGON_WAIT, DRAGON_LOOK, DRAGON_RADIUS, DRAGON_TORNADO, Stage as DStage, abortDragon, cloneDragon, dragonAbsorb, dragonFrame, dragonMoveIndex, dragonPushPlayer, dragonStart, isDragonPersistent, newDragon, stepDragonBullet, zoneHits, type DragonEnv } from "./dragon.js";
+import { IMPLODE_RADIUS, IMPLODE_SCRIPT, WHIRL_SCRIPT, emitPack3, isPack3Pattern, stepPack3 } from "./pack3.js";
 import { BOSS_MOVE_COUNT, PATTERNS, firesInPhase, timeLimitSec, type Emitter, type LifeMode, type Mode, type Wave } from "./validate.js";
 
 /**
@@ -37,10 +38,13 @@ const GIANT_HIT_R2 = 400;
 /** ふつうの弾の当たる半径、爆風の当たる時間、地雷の爆風の半径と散る弾の数。アプリの DanmakuConfig と同じ */
 /** ボス専用の弾の、弾そのものの半径(種類の順はアプリの BulletLook.Kind と同じ)と、自機の半径、専用の弾の最初の look */
 const BULLET_BODY_R = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5,
-  3, 4, 4, 5, 4, 2.5, 5, 2, 2];
+  3, 4, 4, 5, 4, 2.5, 5, 2, 2, 2.5];
 /** 画面の外に出た弾を消す距離。竜王の自由な技の弾は、画面の外(翼の先・飛び去った本体・自機から離れた爪あと)から入ってくるので広く取る(アプリの Bullet.offscreenMargin と同じ) */
 export function offscreenMargin(b: { script: number }): number {
-  return b.script === DRAGON_CURVE || b.script === DRAGON_WAIT ? 400 : 20;
+  if (b.script === DRAGON_CURVE || b.script === DRAGON_WAIT) return 400;
+  // 吸い込み弾は、画面の外の大きな輪から入ってくる(アプリと同じ)
+  if (b.script === IMPLODE_SCRIPT) return IMPLODE_RADIUS + 0.5;   // 境目に弾がぴったり乗らないよう半端な値に(アプリと同じ)
+  return 20;
 }
 const PLAYER_R = 2.5, FIRST_SPECIAL_LOOK = 16;
 export function lookHitDistance(look: number | undefined): number | undefined {
@@ -166,7 +170,7 @@ const MOOK_HP = 20;
 const mookHitsOf = (v: number | null | undefined): number => (typeof v === "number" && Number.isFinite(v) ? Math.min(Math.max(Math.trunc(v), 1), 50) : MOOK_HP);
 const MOOK_RADII = [9, 13, 18];
 /** 雑魚が出る発射台か(アプリの Simulation.hasMook と同じ) */
-const hasMook = (m: Emitter, boss: boolean): boolean => !["rain", "sideL", "sideR", "corner"].includes(m.t) && (!boss || m.p === 1);
+const hasMook = (m: Emitter, boss: boolean): boolean => !["rain", "sideL", "sideR", "corner", "lightning", "pincer"].includes(m.t) && (!boss || m.p === 1);
 const INTERMISSION = 1.5;
 /** 1UP(アプリの Simulation.oneUpHeal / oneUpFallSpeed / oneUpPickRadius と同じ) */
 const ONE_UP_HEAL = 3, ONE_UP_FALL = 90, ONE_UP_RADIUS = 18;
@@ -260,6 +264,7 @@ function mirrorBullet(b: Bullet) {
     case WARP_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); break;
     case WOBBLE_SCRIPT: b.u0 = -(b.u0 ?? 0); break;
     case KAIYU_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
+    case WHIRL_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
     default: break;
   }
   if (b.follow) b.follow.ox = W - b.follow.ox;
@@ -372,8 +377,10 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       const toRight = m.t === "sideL";
       const x0 = toRight ? -8 : W + 8;
       const spread = Math.abs(m.r) * deg;
+      // 高さの範囲(1.4.2 から。アプリの Emitter.heightBand と同じ): 無し = 上から 78%、1 = 画面全体、2 = 下半分
+      const lo = m.yr === 2 ? 0.5 : 0, span = m.yr === 1 ? 1 : m.yr === 2 ? 0.5 : 0.78;
       for (let j = 0; j < n; j++) {
-        const y = rng() * H * 0.78;
+        const y = m.yr === undefined ? rng() * H * 0.78 : H * (lo + rng() * span);
         const a = (toRight ? 0 : Math.PI) + (rng() - 0.5) * 2 * spread;
         add(x0, y, a);
       }
@@ -404,6 +411,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
     default: {
       // 竜王の技は、弾を出すだけではない(本体の動き・範囲攻撃)。createSim が dragon.ts で動かす
       if (dragonMoveIndex(m.t) >= 0) break;
+      if (isPack3Pattern(m.t)) { emitPack3(m, k, cx, cy, px, py, rng, out, MAX_BULLETS); break; }
       if (isDragonFreePattern(m.t)) { emitDragonFree(m, k, cx, cy, px, py, rng, out, MAX_BULLETS); break; }
       if (isHirePattern(m.t)) { emitHire(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isPuniPattern(m.t)) { emitPuni(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
@@ -800,7 +808,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
         bullets[w++] = b;
         continue;
       }
-      const bm = dm2 ?? stepBossScript(b, dt, px, py);
+      const bm = dm2 ?? stepBossScript(b, dt, px, py) ?? stepPack3(b, dt);
       if (bm === "gone") continue;
       if (bm === "burst") {
         for (const c of branchChildren(b)) {

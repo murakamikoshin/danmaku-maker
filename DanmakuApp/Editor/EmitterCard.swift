@@ -81,6 +81,9 @@ struct EmitterCard: View {
         nonmutating set { if let b = externalCollapsed { b.wrappedValue = newValue } else { localCollapsed = newValue } }
     }
 
+    @ObservedObject private var clipboard = EmitterClipboard.shared
+    @State private var confirmReset = false
+
     /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
     @State private var patternOpen = false
     /// 持っていないパターンを押したときに開くショップ(開く先の商品のカード)。一覧の外のカード全体で持つ
@@ -88,7 +91,7 @@ struct EmitterCard: View {
     struct ShopFocus: Identifiable { let id: String }
 
     /// 位置を選ばないパターン(画面の端や四隅などから出る)
-    private var positionless: Bool { [.rain, .sideL, .sideR, .corner].contains(emitter.t) }
+    private var positionless: Bool { emitter.isPositionless }
 
     /// 狙い方(1.3.0): 自機狙い・固定(真下)・ランダム(月ごとに変わる)。自機を見ないパターン(雨など)は「毎回同じ / ランダム」
     private var aimPicker: some View {
@@ -126,6 +129,17 @@ struct EmitterCard: View {
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityLabel(Text(collapsed ? "a11y.expand" : "a11y.collapse"))
                 .accessibilityIdentifier("emitter.collapse.\(index)")
+                // コピー(ほかの発射台・場面・ステージへ貼り付けられる)と、初期値に戻す
+                Menu {
+                    Button { gameTap(); clipboard.emitter = emitter } label: { Label("editor.copy", systemImage: "doc.on.doc") }
+                    Button(role: .destructive) { confirmReset = true } label: { Label("editor.reset.all", systemImage: "arrow.counterclockwise") }
+                } label: {
+                    Image(systemName: "ellipsis.circle.fill")
+                        .font(.system(size: 22)).foregroundStyle(GameStyle.text.opacity(0.6))
+                        .frame(width: 44, height: 44).contentShape(Rectangle())
+                }
+                .accessibilityLabel(Text("editor.emitter.menu"))
+                .accessibilityIdentifier("emitter.menu.\(index)")
                 if canDelete {
                     Button { gameTap(); onDelete() } label: {
                         Label("editor.delete", systemImage: "trash.fill").font(.system(size: 12, weight: .heavy))
@@ -177,6 +191,27 @@ struct EmitterCard: View {
 
             if emitter.aimSupport != .none { aimPicker }
 
+            if !isDragonMove {
+                // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸 / ＝(二本線)。見た目だけ(当たる範囲は同じ)。
+                // 発射台ごとに見た目を変えられるよう、「かんたん」でも出す
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round")), (3, L("editor.shape.equals"))],
+                             selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
+                             idPrefix: "emitter.shape.\(index)", minimum: 72)
+                }
+            }
+
+            if emitter.t == .sideL || emitter.t == .sideR {
+                // 左から・右からの、弾が出る高さ(1.4.2)。標準は画面の上から 78% まで(画面の下までは届かない)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("editor.height.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                    ChipGrid(items: [(0, L("editor.height.standard")), (1, L("editor.height.full")), (2, L("editor.height.lower"))],
+                             selection: Binding(get: { emitter.yr ?? 0 }, set: { emitter.yr = $0 == 0 ? nil : $0 }),
+                             idPrefix: "emitter.height.\(index)", minimum: 96)
+                }
+            }
+
             if isDragonMove {
                 // 竜王の技: 弾の形・撃つ場所・向きは決まっている。選べるのは、出す段階と間隔だけ。
                 // ほかに選ぶものが無いので、段階は「かんたん」でも出す(「くわしく」の奥にあって、見つからなかった)
@@ -186,13 +221,6 @@ struct EmitterCard: View {
                     Text("editor.phase.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             } else if advanced {
-                // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸。見た目だけ(当たる範囲は同じ)
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round"))],
-                             selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
-                             idPrefix: "emitter.shape.\(index)", minimum: 80)
-                }
                 if isBoss {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("editor.origin").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
@@ -227,16 +255,20 @@ struct EmitterCard: View {
             // − / + で 0.01 秒ずつ細かく決められる(スライダーの目盛りの間の値も使える)
             SliderRow(label: "editor.interval", value: Binding(get: { Double(IntervalScale.index(emitter.i)) }, set: { emitter.i = IntervalScale.seconds(Int($0)) }),
                       range: 0...Double(IntervalScale.maxIndex), step: 1,
-                      nudge: { emitter.i = IntervalScale.nudged(emitter.i, by: $0) }) { _ in IntervalScale.label(emitter.i) }
+                      nudge: { emitter.i = IntervalScale.nudged(emitter.i, by: $0) },
+                      onReset: resetter(abs(emitter.i - defaults.i) > 0.001) { emitter.i = defaults.i }) { _ in IntervalScale.label(emitter.i) }
             if isDragonMove {
                 Text("editor.dragon.interval.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             } else {
-            SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1) { String(Int($0)) }
-            SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25) { String(format: "%.2f", $0) }
+            SliderRow(label: "editor.count", value: Binding(get: { Double(emitter.c) }, set: { emitter.c = Int($0) }), range: 1...36, step: 1,
+                      onReset: resetter(emitter.c != defaults.c) { emitter.c = defaults.c }) { String(Int($0)) }
+            SliderRow(label: "editor.speed", value: $emitter.v, range: 1...5, step: 0.25,
+                      onReset: resetter(abs(emitter.v - defaults.v) > 0.001) { emitter.v = defaults.v }) { String(format: "%.2f", $0) }
             // 向き: スライダーは 15° きざみ、− / + で 1° ずつ
             SliderRow(label: "editor.rotate", value: Binding(get: { Double(emitter.a) }, set: { emitter.a = Int($0) }),
                       range: -180...180, step: 15, disabled: !emitter.canRotate,
-                      nudge: { emitter.a = min(180, max(-180, emitter.a + $0)) }) { "\(Int($0))°" }
+                      nudge: { emitter.a = min(180, max(-180, emitter.a + $0)) },
+                      onReset: resetter(emitter.a != 0) { emitter.a = 0 }) { "\(Int($0))°" }
             // 左右反転(線対称): 発射位置・向き・回る向きを、画面の左右で反転して撃つ。
             // 向きの設定のすぐ下に置く(「くわしく」の奥の、弾の形と撃つ場所のあいだにあって、見つけにくかった)
             HStack {
@@ -247,8 +279,9 @@ struct EmitterCard: View {
             }
             .accessibilityIdentifier("emitter.mirror.\(index)")
             if advanced {
-                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: emitter.t == .rain || emitter.t == .heart,
-                          nudge: { emitter.r = min(90, max(-90, emitter.r.rounded() + Double($0))) }) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }
+                SliderRow(label: angleLabel, value: $emitter.r, range: -90...90, step: 1, disabled: [.rain, .heart, .lightning, .carpetBomb, .pincer, .whirlwind, .trackLaser].contains(emitter.t),
+                          nudge: { emitter.r = min(90, max(-90, emitter.r.rounded() + Double($0))) },
+                          onReset: resetter(abs(emitter.r - defaults.r) > 0.001) { emitter.r = defaults.r }) { "\(Int($0))" + (emitter.t == .kitsuneTorii || emitter.t == .reaperDeadline ? "px" : "°") }
             }
             }   // if !isDragonMove
             }   // if !collapsed
@@ -259,7 +292,15 @@ struct EmitterCard: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("emitter.card.\(index)")
         .sheet(item: $shopFocus) { ShopView(focus: $0.id) }
+        .gameDialog("editor.reset.title", isPresented: $confirmReset, message: "editor.reset.message") {
+            [GameDialogAction(title: "editor.reset.do", role: .destructive) { withAnimation(.easeInOut(duration: 0.2)) { emitter.resetSettings() } }, .cancel()]
+        }
     }
+
+    /// このパターンの初期値(間隔・数・速さ・角度)。「初期値に戻す」に使う
+    private var defaults: Emitter { Emitter.make(emitter.t, end: emitter.e) }
+    /// 値が初期値と違えば、戻すボタンの動作を返す
+    private func resetter(_ changed: Bool, _ action: @escaping () -> Void) -> (() -> Void)? { changed ? action : nil }
 
     /// 竜王の技(本体が動く・範囲攻撃。数・速さ・向きなどは使わない)
     private var isDragonMove: Bool { emitter.t.dragonMove != nil }
@@ -283,6 +324,9 @@ struct EmitterCard: View {
     private var angleLabel: LocalizedStringKey {
         switch emitter.t {
         case .ring, .spiral: return "angle.rotate"
+        case .radialLaser, .implode: return "angle.rotate"
+        case .dashShot, .bounceBall, .needle, .blinkShot: return "angle.spread"
+        case .lightning, .carpetBomb, .pincer, .whirlwind, .trackLaser: return "angle.none"
         case .aim, .corner: return "angle.spread"
         case .rain: return "angle.none"
         case .sweep: return "angle.swing"

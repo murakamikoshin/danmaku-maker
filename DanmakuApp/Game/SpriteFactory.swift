@@ -96,6 +96,33 @@ enum SpriteFactory {
         return list
     }
 
+    /// 弾の形「＝」(二本線。見た目だけ)。上向きに進む弾を描いた絵(横向きの2本の棒)。描くときに進む向きへ回す
+    private static var equalsCache: [Theme: [UIImage]] = [:]
+    private static var equalsTextureCache: [Theme: [SKTexture]] = [:]
+    static func equalsImages(_ theme: Theme) -> [UIImage] {
+        if let c = equalsCache[theme] { return c }
+        let list = Skin.of(theme).bulletColors.map { color in
+            image(size: CGSize(width: 14, height: 12)) { c in
+                for y in [2.0, 7.0] {
+                    let r = CGRect(x: 1.5, y: y, width: 11, height: 3)
+                    c.setFillColor(color.cgColor)
+                    c.fill(r)
+                    c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
+                    c.setLineWidth(1)
+                    c.stroke(r)
+                }
+            }
+        }
+        equalsCache[theme] = list
+        return list
+    }
+    static func equals(_ theme: Theme) -> [SKTexture] {
+        if let c = equalsTextureCache[theme] { return c }
+        let list = equalsImages(theme).map(texture)
+        equalsTextureCache[theme] = list
+        return list
+    }
+
     static func boomerangs(_ theme: Theme) -> [SKTexture] {
         if let c = boomerangTextureCache[theme] { return c }
         let list = boomerangImages(theme).map(texture)

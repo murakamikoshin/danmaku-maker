@@ -463,7 +463,10 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       const r = at({ sh: none });
       expect(r.ok && "sh" in r.stage.emitters[0]!).toBe(false);
     }
-    for (const bad of [3, -1, 1.5, "1"]) expect(at({ sh: bad })).toEqual({ ok: false, error: "emitter-range" });
+    // 3(＝)は 1.4.2 から正しい値
+    const eq = at({ sh: 3 });
+    expect(eq.ok && eq.stage.emitters[0]!.sh).toBe(3);
+    for (const bad of [4, -1, 1.5, "1"]) expect(at({ sh: bad })).toEqual({ ok: false, error: "emitter-range" });
   });
 
   it("毎日のごほうびの演出は、種類ごとに1つまで受け付け、種類の順に並べる。称号・範囲外・重複は拒否", () => {
@@ -1363,5 +1366,45 @@ describe("URL の検査で、笑いの表現を URL と間違えない(3回目�
   });
   it("本物の URL は、これまでどおり見つける", () => {
     for (const t of ["www.example.com", "www.my-site.shop", "ｗｗｗ．ｅｘａｍｐｌｅ．ｃｏｍ", "https://x", "discord․gg", "example．com"]) expect(hasLink(t), t).toBe(true);
+  });
+});
+
+describe("1.4.2: 弾幕パック3・段階なし/2段階・左右からの弾の高さ・弾の形「＝」", () => {
+  const boss = (o: object = {}) => good({ mode: "boss", durationSec: 60, bossHp: 400, bossMove: 0, emitters: [em()], ...o });
+  it("パック3のパターンを使うと needs 7。生き残り・ボス戦のどちらでも置ける", () => {
+    for (const t of ["radialLaser", "lightning", "carpetBomb", "dashShot", "implode", "pincer", "whirlwind", "bounceBall", "needle", "trackLaser", "blinkShot"]) {
+      const r = validatePublish(good({ emitters: [em({ t, r: 0 })] }));
+      expect(r.ok && r.stage.needs).toBe(7);
+      const b = validatePublish(boss({ emitters: [em({ t, r: 0 })] }));
+      expect(b.ok && b.stage.needs).toBe(7);
+    }
+  });
+  it("落雷・挟み撃ちは向きを回せない", () => {
+    expect(validatePublish(good({ emitters: [em({ t: "lightning", a: 30 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ t: "pincer", a: 30 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ t: "radialLaser", a: 30 })] })).ok).toBe(true);
+  });
+  it("段階の数 1・2 が選べて needs 7。1 のときは撃つ段階は 0 だけ、覚醒は付けられない", () => {
+    for (const n of [1, 2]) {
+      const r = validatePublish(boss({ phases: n }));
+      expect(r.ok && [r.stage.phases, r.stage.needs]).toEqual([n, 7]);
+    }
+    expect(validatePublish(boss({ phases: 1, emitters: [em({ ph: 1 })] })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 2, emitters: [em({ ph: 2 })] })).ok).toBe(true);
+    expect(validatePublish(boss({ phases: 1, awaken: 2 })).ok).toBe(false);
+    expect(validatePublish(boss({ phases: 0 })).ok).toBe(false);
+    const seq = validatePublish(good({ mode: "sequence", durationSec: 60, emitters: [], waves: [{ kind: "boss", durationSec: 60, bossHp: 300, bossMove: 0, emitters: [em()], phases: 1 }] }));
+    expect(seq.ok && [seq.stage.waves![0]!.phases, seq.stage.needs]).toEqual([1, 7]);
+  });
+  it("左右からの弾の高さ(yr)は sideL・sideR だけ、1 か 2。付けると needs 7", () => {
+    const r = validatePublish(good({ emitters: [em({ t: "sideL", r: 10, yr: 1 }), em({ t: "sideR", r: 10, yr: 2 })] }));
+    expect(r.ok && [r.stage.emitters[0]!.yr, r.stage.emitters[1]!.yr, r.stage.needs]).toEqual([1, 2, 7]);
+    expect(validatePublish(good({ emitters: [em({ t: "ring", yr: 1 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ t: "sideL", yr: 3 })] }))).toEqual({ ok: false, error: "emitter-range" });
+  });
+  it("弾の形 3(＝)は見た目だけなので、needs は上がらない", () => {
+    const r = validatePublish(good({ emitters: [em({ sh: 3 })] }));
+    expect(r.ok && [r.stage.emitters[0]!.sh, "needs" in r.stage]).toEqual([3, false]);
+    expect(validatePublish(good({ emitters: [em({ sh: 4 })] }))).toEqual({ ok: false, error: "emitter-range" });
   });
 });

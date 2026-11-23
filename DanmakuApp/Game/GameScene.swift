@@ -37,6 +37,7 @@ final class GameScene: SKScene {
     private let bulletTextures: [SKTexture]
     /// ブーメランの弾の絵(🪃の形。弾の色ごと)
     private let boomerangTextures: [SKTexture]
+    private let equalsTextures: [SKTexture]
     private let shipNode: SKSpriteNode
     private let shipSkinFrames: [SKTexture]
     private let bossNode: SKSpriteNode
@@ -149,6 +150,7 @@ final class GameScene: SKScene {
             bulletTextures = SpriteFactory.bullets(loadout.bullets)
         }
         boomerangTextures = SpriteFactory.boomerangs(loadout.bullets)
+        equalsTextures = SpriteFactory.equals(loadout.bullets)
         // ドット絵の自機(招待のごほうび)。自分の画像を使うときは、そちらを優先する
         let skinFrames = (loadout.customShip && SpriteFactory.custom(.ship) != nil) ? [] : (loadout.shipSkin.map(ShipSkin.textures) ?? [])
         shipSkinFrames = skinFrames
@@ -640,7 +642,7 @@ final class GameScene: SKScene {
         markers.removeAll()
         if !sim.isBoss && sim.stage.showsMarkers {
             let W = GameScene.W, H = GameScene.H
-            for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {
+            for m in sim.currentEmitters where !m.isPositionless {
                 let p = CGMutablePath()
                 p.move(to: CGPoint(x: 0, y: 7)); p.addLine(to: CGPoint(x: 7, y: 0))
                 p.addLine(to: CGPoint(x: 0, y: -7)); p.addLine(to: CGPoint(x: -7, y: 0)); p.closeSubpath()
@@ -798,8 +800,8 @@ final class GameScene: SKScene {
                     n.isHidden = true
                     continue
                 }
-                if b.isDormant && !b.dormantGlow {
-                    // 待機中の弾・暗転の印: 見えない
+                if (b.isDormant && !b.dormantGlow) || b.blinkHidden {
+                    // 待機中の弾・暗転の印・瞬間移動弾が飛ぶ直前: 見えない
                     n.isHidden = true
                     continue
                 }
@@ -813,6 +815,15 @@ final class GameScene: SKScene {
                     n.zRotation = -BulletArt.rotation(b)
                     let alpha: CGFloat = b.dormantGlow ? 0.25 : 1   // 鎖が伸びる前の、薄い予告線
                     if n.alpha != alpha { n.alpha = alpha }
+                    continue
+                }
+                if b.drawsAsEquals {
+                    // 「＝」: 2本の棒を、進む向きに直角に並べる(見た目だけ)
+                    n.texture = equalsTextures[min(max(b.color, 0), equalsTextures.count - 1)]
+                    let sz = CGSize(width: 14, height: 12)
+                    if n.size != sz { n.size = sz }
+                    n.zRotation = -(CGFloat(atan2(b.vy, b.vx)) + .pi / 2)
+                    if n.alpha != 1 { n.alpha = 1 }
                     continue
                 }
                 let boomerang = b.drawsAsBoomerang
@@ -920,7 +931,7 @@ final class GameScene: SKScene {
         } else {
             // 発射台の印：撃ち始める0.6秒前から点滅し、撃ち終わったら消す
             var idx = 0
-            for m in sim.currentEmitters where ![.rain, .sideL, .sideR, .corner].contains(m.t) {
+            for m in sim.currentEmitters where !m.isPositionless {
                 guard idx < markers.count else { break }
                 let n = markers[idx]; idx += 1
                 let lead = m.s - sim.waveT

@@ -169,7 +169,13 @@ extension Bullet {
 
     public var isDragon: Bool { script >= Bullet.dragonPlainScript && script <= Bullet.dragonWaitScript }
     /// 画面の外に出た弾を消す距離。竜王の自由な技の弾は、画面の外(翼の先・飛び去った本体・自機から離れた爪あと)から入ってくるので広く取る(サーバーの offscreenMargin と同じ)
-    var offscreenMargin: Double { script == Bullet.dragonCurveScript || script == Bullet.dragonWaitScript ? 400 : 20 }
+    var offscreenMargin: Double {
+        if script == Bullet.dragonCurveScript || script == Bullet.dragonWaitScript { return 400 }
+        // 吸い込み弾は、画面の外の大きな輪から入ってくる(サーバーの offscreenMargin と同じ)
+        // 境目は半端な値(+0.5)にする: 弾は 1 ステップでちょうど整数 px 進むことが多く、境目に乗ると、端末とサーバーの cos の最後の桁の差で消える/消えないが分かれる
+        if script == Bullet.implodeScript { return Bullet.implodeRadius + 0.5 }
+        return 20
+    }
     /// 当たっても消えない竜王の弾(本体・竜巻・大火球)
     public var dragonPersistent: Bool {
         script == Bullet.dragonBodyScript || script == Bullet.dragonTornadoScript || script == Bullet.dragonSunScript

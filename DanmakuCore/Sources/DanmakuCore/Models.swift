@@ -4,8 +4,9 @@ import Foundation
 public enum DanmakuConfig {
     public static let formatVersion = 1
     /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP、
-    /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個)。サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 6
+    /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個、7=1.4.2〜の弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ)。
+    /// サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
+    public static let contentLevel = 7
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -231,14 +232,19 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case dragonBreath, dragonRaid, dragonGale, dragonInhale, dragonGlide, dragonRoar, dragonQuake, dragonTail, dragonRampage, dragonEnd
     // 竜王の、数・速さ・向きなどを自由に決められる技(1.4.0。DragonFreePatterns.swift)
     case dragonWings, dragonGeyser, dragonClaw, dragonTwister, dragonJaws
+    // 弾幕パック3(課金。1.4.2 で追加。弾の出し方は Pack3Patterns.swift、サーバーは pack3.ts。並びは変えない)
+    case radialLaser, lightning, carpetBomb, dashShot, implode, pincer, whirlwind, bounceBall, needle, trackLaser, blinkShot
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
     /// 買わないと、ステージ作りで選べないパターン(遊ぶのは誰でもできる)
-    public var isPaid: Bool { Pattern.paid.contains(self) || Pattern.pack2.contains(self) }
+    public var isPaid: Bool { Pattern.paid.contains(self) || Pattern.pack2.contains(self) || Pattern.pack3.contains(self) }
     public static let paid: [Pattern] = [.homing, .flower, .star, .heart, .beam, .cross, .accel, .bounce, .stopgo, .split, .timed]
     /// 弾幕パック2のパターンか(買わないと、ステージ作りで選べない)
     public var isPack2: Bool { Pattern.pack2.contains(self) }
+    /// 弾幕パック3(1.4.2)のパターン(ショップに出す順)。買わないと、ステージ作りで選べない
+    public static let pack3: [Pattern] = [.radialLaser, .lightning, .carpetBomb, .dashShot, .implode, .pincer, .whirlwind, .bounceBall, .needle, .trackLaser, .blinkShot]
+    public var isPack3: Bool { Pattern.pack3.contains(self) }
 
     /// 堕天使だけが使える技(並びは、出す順)
     public static let fallenAngel: [Pattern] = [.angelFeather, .angelHalo, .angelTwin, .angelCross, .angelParadise]
@@ -350,7 +356,7 @@ public struct Wave: Codable, Equatable, Sendable {
     /// このボスを倒したときの1UP(1 = 落ちてくるのを拾う、2 = 倒したら自動で)。nil は出さない。最後の場面には付けない。1.3.0 から
     public var oneUp: Int?
 
-    /// ボスの段階の数(3〜5)
+    /// ボスの段階の数(1〜5)
     public var phaseCount: Int { phases ?? 3 }
 
     public init(kind: WaveKind, durationSec: Int, bossHp: Int? = nil, bossMove: Int? = nil, emitters: [Emitter], warning: Bool? = nil, defeat: Int? = nil,
@@ -414,7 +420,7 @@ public struct Wave: Codable, Equatable, Sendable {
     }
 
     static func sanitizedAwaken(_ v: Int?, phases: Int = 3) -> Int? {
-        guard let v, (2...phases).contains(v) else { return nil }
+        guard let v, phases >= 2, (2...phases).contains(v) else { return nil }
         return v
     }
 
@@ -495,7 +501,8 @@ public struct Wave: Codable, Equatable, Sendable {
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)))
+                    sh: Emitter.sanitizedShape(m.sh), mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)),
+                    yr: Emitter.sanitizedHeightRange(m.yr, pattern: Wave.allowedPattern(m.t, look: look)))
         }
         var out = Wave(kind: kind, durationSec: d, bossHp: hp, bossMove: mv, emitters: isBoss ? Array(ems) : Wave.fixedTiming(Array(ems), limit: d), warning: (isBoss && warning == true) ? true : nil,
                     defeat: isBoss ? Wave.sanitizedDefeat(defeat) : nil,
@@ -601,15 +608,36 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// 狙い方(1.3.0 から): nil = 自機狙い(これまでと同じ)、1 = 固定(自機を見ずに、真下へ向けて撃つ。向きは a で回す)、
     /// 2 = ランダム(撃つたびに、ばらばらの場所を狙う。雨などの散らばりも変わる)。ランダムの並びは、同じ月のあいだは毎回同じで、月ごとに変わる
     public var aim: Int?
+    /// 左から・右から(sideL / sideR)の、弾が出る高さの範囲(1.4.2 から): nil = 標準(画面の上から 78% まで)、1 = 画面全体、2 = 下半分。
+    /// 1・2 のステージは needs: 7(古い版では標準の高さになってしまう)
+    public var yr: Int?
 
     public init(t: Pattern, x: Double = 0.5, y: Double = 0.2, s: Double = 0, e: Double = 30,
-                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil, mir: Int? = nil, aim: Int? = nil) {
+                i: Double = 1, c: Int = 16, v: Double = 2, r: Double = 0, k: Int = 0, ph: Int = 0, p: Int = 0, a: Int = 0, path: [Double]? = nil, sh: Int? = nil, mir: Int? = nil, aim: Int? = nil, yr: Int? = nil) {
         self.t = t; self.x = x; self.y = y; self.s = s; self.e = e
         self.i = i; self.c = c; self.v = v; self.r = r; self.k = k; self.ph = ph; self.p = p; self.a = a
         self.path = path
         self.sh = sh
         self.mir = mir
         self.aim = aim
+        self.yr = yr
+    }
+
+    /// 弾の形の値(1 = くの字、2 = 丸、3 = ＝(二本線。1.4.2 から))。ほかは標準(nil)。見た目だけ
+    public static let shapeRange = 1...3
+    public static func sanitizedShape(_ v: Int?) -> Int? { v.flatMap { shapeRange.contains($0) ? $0 : nil } }
+    /// 高さの範囲の値を整える。左から・右からのパターンで、1 か 2 だけ残す
+    public static func sanitizedHeightRange(_ v: Int?, pattern: Pattern) -> Int? {
+        guard pattern == .sideL || pattern == .sideR, let v, v == 1 || v == 2 else { return nil }
+        return v
+    }
+    /// 高さの範囲(画面の高さに対する割合の、下の端と幅)
+    public var heightBand: (lo: Double, span: Double) {
+        switch yr {
+        case 1: return (0, 1)
+        case 2: return (0.5, 0.5)
+        default: return (0, 0.78)
+        }
     }
 
     /// 狙い方の値を整える(1 か 2 だけ残す。ほかは自機狙い = nil)
@@ -628,7 +656,8 @@ public struct Emitter: Codable, Equatable, Sendable {
     public static let maxInterval = 15.0
 
     /// ボスの段階の数(3〜5)。nil・3 は、これまでと同じ3段階(1.3.0 から 4・5 も選べる)
-    public static let phaseCountRange = 3...5
+    /// 1・2(1.4.2 から)は、段階なし(1回倒せば終わり)と2段階。1・2 のステージは needs: 7(古い版では3段階になってしまう)
+    public static let phaseCountRange = 1...5
     /// 撃つ段階(ボスだけ)の値: 0 = 全部、1〜5 = その段階だけ、2つ以上は段階の番号を小さい順に並べた数(例: 23 は第2と第3、135 は第1・3・5)
     /// (3段階のときに作れる値は、これまでと同じ [0, 1, 2, 3, 12, 13, 23])
     public static let phaseCodes = [0, 1, 2, 3, 12, 13, 23]
@@ -651,7 +680,8 @@ public struct Emitter: Codable, Equatable, Sendable {
     /// 範囲外の値を直す。段階の数より後の段階は外し、残らなければ最後の段階にする。全部そろえば 0。
     /// 形の正しくない値は、これまでどおり 0〜段階の数 に収める(3段階のときの結果は、これまでと同じ)
     public static func sanitizedPhase(_ v: Int, count: Int = 3) -> Int {
-        if v <= 0 { return 0 }
+        // 段階が1つ(段階なし。1.4.2)なら、いつも撃つので「全部」(0)。サーバーも 0 しか受け付けない
+        if v <= 0 || count <= 1 { return 0 }
         let set = phases(of: v)
         if set.isEmpty { return min(count, v) }
         let kept = set.filter { $0 <= count }
@@ -663,12 +693,16 @@ public struct Emitter: Codable, Equatable, Sendable {
     public func fires(inPhase phase: Int) -> Bool { ph == 0 || Emitter.phases(of: ph).contains(phase) }
 
     /// 向きを回せるパターンか(雨・横切り・隅・掃射は、向きが決まっているので回せない)
-    public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner].contains(t) }
+    public var canRotate: Bool { ![.rain, .sweep, .sideL, .sideR, .corner, .lightning, .pincer].contains(t) }
+
+    /// 発射台の位置を使わないパターン(画面の端・四隅・上から出る)。雑魚も出ない
+    public static let positionless: Set<Pattern> = [.rain, .sideL, .sideR, .corner, .lightning, .pincer]
+    public var isPositionless: Bool { Emitter.positionless.contains(t) }
 
     /// ボス戦で、好きな場所から出すか
     public var firesFromPoint: Bool { p == 1 }
 
-    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh, mir, aim }
+    private enum CodingKeys: String, CodingKey { case t, x, y, s, e, i, c, v, r, k, ph, p, a, path, sh, mir, aim, yr }
 
     /// 出す場所が標準(ボス)のときは、データに入れない(これまでの投稿と同じ形のまま)
     public func encode(to encoder: Encoder) throws {
@@ -680,9 +714,10 @@ public struct Emitter: Codable, Equatable, Sendable {
         if p != 0 { try c.encode(p, forKey: .p) }
         if a != 0 { try c.encode(a, forKey: .a) }
         if let path { try c.encode(path, forKey: .path) }
-        if let sh, sh == 1 || sh == 2 { try c.encode(sh, forKey: .sh) }
+        if let sh = Emitter.sanitizedShape(sh) { try c.encode(sh, forKey: .sh) }
         if mir == 1 { try c.encode(1, forKey: .mir) }
         if let aim = Emitter.sanitizedAim(aim) { try c.encode(aim, forKey: .aim) }
+        if let yr = Emitter.sanitizedHeightRange(yr, pattern: t) { try c.encode(yr, forKey: .yr) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -701,9 +736,10 @@ public struct Emitter: Codable, Equatable, Sendable {
         p = try d.decodeIfPresent(Int.self, forKey: .p) ?? 0
         a = try d.decodeIfPresent(Int.self, forKey: .a) ?? 0
         path = (try? d.decodeIfPresent([Double].self, forKey: .path)) ?? nil
-        sh = (try? d.decodeIfPresent(Int.self, forKey: .sh)).flatMap { $0 == 1 || $0 == 2 ? $0 : nil }
+        sh = Emitter.sanitizedShape((try? d.decodeIfPresent(Int.self, forKey: .sh)) ?? nil)
         mir = (try? d.decodeIfPresent(Int.self, forKey: .mir)).flatMap { $0 == 1 ? 1 : nil }
         aim = Emitter.sanitizedAim((try? d.decodeIfPresent(Int.self, forKey: .aim)) ?? nil)
+        yr = Emitter.sanitizedHeightRange((try? d.decodeIfPresent(Int.self, forKey: .yr)) ?? nil, pattern: t)
     }
 }
 
@@ -1092,7 +1128,8 @@ public struct Stage: Codable, Equatable, Sendable {
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
-                    sh: (m.sh == 1 || m.sh == 2) ? m.sh : nil, mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)))
+                    sh: Emitter.sanitizedShape(m.sh), mir: m.mir == 1 ? 1 : nil, aim: Emitter.sanitizedAim(m.aim, pattern: Wave.allowedPattern(m.t, look: look)),
+                    yr: Emitter.sanitizedHeightRange(m.yr, pattern: Wave.allowedPattern(m.t, look: look)))
         }
         // 耐久: 標準(ライフ1)は未指定に揃える。サーバーの検証と同じ丸め方
         let lm = effectiveLifeMode, lc = effectiveLifeCount

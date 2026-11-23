@@ -79,12 +79,15 @@ public struct Bullet: Equatable, Sendable {
         case Bullet.warpScript: u0 = Double.pi - u0
         case Bullet.wobbleScript: u0 = -u0
         case Bullet.kaiyuScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
+        case Bullet.whirlScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
         default: break
         }
         if follow != nil { follow!.ox = w - follow!.ox }
     }
     /// 「くの字」で描くか。標準はどのパターンも丸。発射台で、くの字を選べる
     public var drawsAsBoomerang: Bool { look == 1 }
+    /// 「＝」(二本線)で描くか(発射台の sh == 3。1.4.2 から。見た目だけ)
+    public var drawsAsEquals: Bool { look == 3 }
 
     /// チャージビームの印(script)。ビームは動かず、x, y が出る場所、vx, vy が向き(長さ1)、
     /// bounces が「まだ当たれるか」(1本のビームで当たるのは1回だけ)、age が出てからの経過秒。
@@ -273,6 +276,7 @@ extension Bullet {
             y = u1 + sin(ang) * maxSpeed * e * 0.8
             return .alive
         }
+        if script >= Bullet.dashScript, let m = advancePack3Script(dt: dt) { return m }
         if script >= Bullet.dragonPlainScript, let m = advanceDragonScript(dt: dt) { return m }
         if let m = advanceBossScript(dt: dt, playerX: playerX, playerY: playerY) { return m }
         if script == Bullet.foldScript {
@@ -562,8 +566,10 @@ public enum Emit {
             let toRight = m.t == .sideL
             let x0 = toRight ? -8.0 : DanmakuConfig.width + 8
             let spread = abs(m.r) * deg
+            let band = m.heightBand
             for _ in 0..<n {
-                let y = rng.next() * DanmakuConfig.height * 0.78
+                // 高さの範囲(標準は上から 78% まで。1.4.2 から、画面全体・下半分も選べる)
+                let y = m.yr == nil ? rng.next() * DanmakuConfig.height * 0.78 : DanmakuConfig.height * (band.lo + rng.next() * band.span)
                 let a = (toRight ? 0.0 : Double.pi) + (rng.next() - 0.5) * 2 * spread
                 add(x0, y, a)
             }
@@ -612,6 +618,8 @@ public enum Emit {
             emitIceQueen(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .kitsuneLanterns, .kitsuneBarrier, .kitsuneSunshower, .kitsuneTorii, .kitsuneDance:
             emitKitsune(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
+        case .radialLaser, .lightning, .carpetBomb, .dashShot, .implode, .pincer, .whirlwind, .bounceBall, .needle, .trackLaser, .blinkShot:
+            emitPack3(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out)
         case .angelTwin, .angelFeather, .angelHalo, .angelCross, .angelParadise:
             emitFallenAngel(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         default:
@@ -813,7 +821,7 @@ public struct Simulation {
 
     /// 雑魚が出る発射台か(画面の端から撃つ種類と、ボス戦でボスから撃つ発射台には、雑魚は出ない)。ゲームの絵も、この判定を使う
     public static func hasMook(_ m: Emitter, boss: Bool) -> Bool {
-        ![.rain, .sideL, .sideR, .corner].contains(m.t) && (!boss || m.firesFromPoint)
+        !m.isPositionless && (!boss || m.firesFromPoint)
     }
     /// 雑魚が当たる半径(論理px)。大きさ(小・中・大)ごと。絵の大きさの半分
     public static func mookRadius(size: Int) -> Double { [9.0, 13, 18][min(max(size, 0), 2)] }

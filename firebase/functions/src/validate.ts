@@ -1,3 +1,4 @@
+import { isPack3Pattern } from "./pack3.js";
 import { validatePath } from "./custompath.js";
 import { containsNgWord, stripInvisible } from "./ngwords/index.js";
 
@@ -10,7 +11,9 @@ export const INTERMISSION_BUDGET = 2;
 
 export const DURATIONS = { survive: [10, 20, 30, 45, 60, 90, 120], boss: [0, 30, 60, 90, 120, 180], damage: [30, 60, 90, 120, 180], sequence: [] } as const;
 // 並びを変えない(乱数シードに順番を使っている)。新しいものは必ず後ろに足す
-export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake", "hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu", "dragonBreath", "dragonRaid", "dragonGale", "dragonInhale", "dragonGlide", "dragonRoar", "dragonQuake", "dragonTail", "dragonRampage", "dragonEnd", "dragonWings", "dragonGeyser", "dragonClaw", "dragonTwister", "dragonJaws"] as const;
+export const PATTERNS = ["ring", "spiral", "aim", "rain", "sweep", "sideL", "sideR", "corner", "homing", "flower", "star", "heart", "beam", "cross", "accel", "bounce", "stopgo", "split", "timed", "twinRing", "tripleRing", "pinwheel", "ripple", "whirl", "slither", "curtain", "swayFan", "drizzle", "comet", "shotgun", "sniper", "twinAim", "zigzagAim", "accelRing", "homingRing", "bounceRing", "freezeRing", "shatterRing", "pulseRing", "freezeCurtain", "splitCurtain", "wavyRing", "petalFan", "waveSpiral", "tide", "ladder", "helix", "rapidFan", "lightRain", "custom", "chargeBeam", "boomerang", "giantOrb", "sweepLaser", "mine", "meteor", "gridLaser", "gravity", "orbit", "snake", "bubble", "swirl", "angelTwin", "angelFeather", "angelHalo", "angelCross", "angelParadise", "kitsuneLanterns", "kitsuneBarrier", "kitsuneSunshower", "kitsuneTorii", "kitsuneDance", "iceCage", "iceIcicles", "iceBlizzard", "iceFreeze", "iceMirror", "reaperScythe", "reaperSouls", "reaperChains", "reaperDeadline", "reaperRiver", "witchAbyss", "witchBubbles", "witchTentacles", "witchMaelstrom", "witchInk", "mechLockOn", "mechMissiles", "mechGatling", "mechGrid", "mechOverload", "puniPoyon", "puniShower", "puniKorokoro", "puniPurupuru", "puniOsusowake", "hireSukui", "hireYoyo", "hireHanabi", "hireRipple", "hireKaiyu", "dragonBreath", "dragonRaid", "dragonGale", "dragonInhale", "dragonGlide", "dragonRoar", "dragonQuake", "dragonTail", "dragonRampage", "dragonEnd", "dragonWings", "dragonGeyser", "dragonClaw", "dragonTwister", "dragonJaws",
+  // 弾幕パック3(1.4.2)
+  "radialLaser", "lightning", "carpetBomb", "dashShot", "implode", "pincer", "whirlwind", "bounceBall", "needle", "trackLaser", "blinkShot"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
@@ -30,11 +33,13 @@ export interface Emitter {
   /** 弾幕作成モードで描いた軌道(t が custom のときだけ) */
   path?: number[];
   /** 弾の見た目(1=くの字 2=丸。未指定=パターンの標準)。見た目だけ */
-  sh?: 1 | 2;
+  sh?: 1 | 2 | 3;
   /** 左右反転(線対称)。1 のときだけ入れる */
   mir?: 1;
   /** 狙い方(1.3.0 から): 1 = 固定(真下)、2 = ランダム(月ごとに変わる)。未指定 = 自機狙い */
   aim?: 1 | 2;
+  /** 左から・右からの弾が出る高さ(1.4.2 から): 1 = 画面全体、2 = 下半分。未指定 = 標準(上から 78%)。sideL / sideR だけ */
+  yr?: 1 | 2;
 }
 
 /** ボスの段階の名前と必殺技(見た目だけ。アプリの PhaseInfo と同じ) */
@@ -235,11 +240,11 @@ function mookHitsVal(v: unknown, breakable: boolean): { ok: boolean; v?: number 
 /** 雑魚を全部倒したら次へ: true / false / 無し。true は、耐える場面で倒せる雑魚が1体以上いるときだけ(画面の端から撃つ種類には雑魚が出ない) */
 function mooksClearVal(v: unknown, allowed: boolean, ems: readonly Emitter[]): { ok: boolean; v?: true } {
   if (v === undefined || v === null || v === false) return { ok: true };
-  if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner"].includes(m.t))) return { ok: false };
+  if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner", "lightning", "pincer"].includes(m.t))) return { ok: false };
   return { ok: true, v: true };
 }
-/** ボスの段階の数の範囲(3 が標準。1.3.0 から 4・5) */
-export const PHASE_COUNT_MIN = 3, PHASE_COUNT_MAX = 5;
+/** ボスの段階の数の標準(3)と上限。1.3.0 から 4・5、1.4.2 から 1(段階なし)・2(needs: 7) */
+export const PHASE_COUNT_MIN = 3, PHASE_COUNT_MAX = 5, PHASE_COUNT_LOW = 1;
 /** 撃つ段階の値を、段階の番号の一覧にする(アプリの Emitter.phases(of:) と同じ)。0 や形の正しくない値は [] */
 export function phasesOf(code: number): number[] {
   if (!Number.isInteger(code) || code <= 0) return [];
@@ -356,13 +361,16 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (ph !== null && !isPhaseCode(ph, opts.phases ?? 3)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
-    const sh = int(item.sh ?? 0, 0, 2);   // 0 は標準
+    const sh = int(item.sh ?? 0, 0, 3);   // 0 は標準。3(＝)は 1.4.2 から(見た目だけなので、古い版では標準の形になるだけ)
     const mir = int(item.mir ?? 0, 0, 1);
     // 狙い方: 1 か 2 だけ残す(アプリの Emitter.sanitizedAim と同じ。ほかの値は自機狙い)
     const aim = item.aim === 1 || item.aim === 2 ? item.aim : 0;
     if ([x, y, s, e, i, c, v, r, k, ph, fp, ang, sh, mir].some((n) => n === null)) return { ok: false, error: "emitter-range" };
     // 回せないパターン(雨・横切り・隅・掃射)に角度は付けられない
-    if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
+    if (ang !== 0 && ["rain", "sweep", "sideL", "sideR", "corner", "lightning", "pincer"].includes(item.t as string)) return { ok: false, error: "emitter-range" };
+    // 高さの範囲: 左から・右からだけ、1 か 2(アプリの Emitter.sanitizedHeightRange と同じ)
+    const yr = item.yr === undefined || item.yr === null ? 0 : item.yr;
+    if (yr !== 0 && !((yr === 1 || yr === 2) && (item.t === "sideL" || item.t === "sideR"))) return { ok: false, error: "emitter-range" };
     // 描いた軌道は、custom のときだけ付き、custom には必ず付く
     const isCustom = item.t === "custom";
     const path = isCustom ? validatePath(item.path) : null;
@@ -370,7 +378,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     if (opts.survive && fp === 1) return { ok: false, error: "emitter-point" };
     if (opts.survive && ph !== 0) return { ok: false, error: "emitter-range" };
     if (opts.survive && (s! >= opts.limit || e! <= s!)) return { ok: false, error: "emitter-timing" };
-    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}), ...(aim ? { aim: aim as 1 | 2 } : {}) });
+    list.push({ t: item.t as Pattern, x: r2(x!), y: r2(y!), s: r2(s!), e: r2(e!), i: r2(i!), c: c!, v: r2(v!), r: Math.round(r!), k: k!, ph: ph!, ...(fp === 1 ? { p: 1 as const } : {}), ...(ang !== 0 ? { a: ang! } : {}), ...(path ? { path } : {}), ...(sh ? { sh: sh as 1 | 2 | 3 } : {}), ...(mir === 1 ? { mir: 1 as const } : {}), ...(aim ? { aim: aim as 1 | 2 } : {}), ...(yr ? { yr: yr as 1 | 2 } : {}) });
   }
   return { ok: true, list };
 }
@@ -402,7 +410,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     } else if ((w.bossHp ?? null) !== null || (w.bossMove ?? null) !== null) {
       return { ok: false, error: "wave-boss-hp" };
     }
-    const wPhases = optInt(w.phases, PHASE_COUNT_MIN, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
+    const wPhases = optInt(w.phases, PHASE_COUNT_LOW, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
     if (!wPhases.ok || (wPhases.v !== undefined && kind !== "boss")) return { ok: false, error: "wave-look" };
     const wN = wPhases.v ?? PHASE_COUNT_MIN;
     const em = validateEmitters(w.emitters, { survive: kind === "survive", limit: d, boss: kind === "boss", phases: wN });
@@ -529,7 +537,7 @@ export function validatePublish(input: unknown): Validated {
   }
 
   // ボスの段階の数(ボス戦・ダメージ勝負だけ。3 は標準なので入れない)
-  const bPhases = optInt(input.phases, PHASE_COUNT_MIN, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
+  const bPhases = optInt(input.phases, PHASE_COUNT_LOW, PHASE_COUNT_MAX, PHASE_COUNT_MIN);
   if (!bPhases.ok || (bPhases.v !== undefined && mode !== "boss" && mode !== "damage")) return { ok: false, error: "look" };
   const bN = bPhases.v ?? PHASE_COUNT_MIN;
   const bInfo = phaseInfoVal(input.phaseInfo, bN, mode === "boss" || mode === "damage");
@@ -622,7 +630,10 @@ export function validatePublish(input: unknown): Validated {
   const usesDragon = bBossLook.v === DRAGON_LOOK || (waves ?? []).some((w) => w.bossLook === DRAGON_LOOK);
   // 発射台を9個以上(1.4.1〜)使うものは 6(1.4.0 までは9個目から捨てるので、同じに動かない)
   const manyEmitters = emitters.length > LEGACY_MAX_EMITTERS || (waves ?? []).some((w) => w.emitters.length > LEGACY_MAX_EMITTERS);
-  const needs = manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ(1.4.2〜)は 7(古い版は知らないパターンを読めない・3段階になる・高さが標準になる)
+  const uses142 = allEms.some((m) => isPack3Pattern(m.t) || m.yr !== undefined)
+    || (bPhases.v !== undefined && bPhases.v < PHASE_COUNT_MIN) || (waves ?? []).some((w) => w.phases !== undefined && w.phases !== null && w.phases < PHASE_COUNT_MIN);
+  const needs = uses142 ? 7 : manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;

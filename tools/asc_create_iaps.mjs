@@ -65,6 +65,24 @@ for (const [id, en, ja, jaDesc, enDesc, yen] of [
   products.push({ id, yen, ref: `${en} Pattern`, ja: [`${ja}の弾幕`, jaDesc], en: [`${en} Pattern`, enDesc], notes: pattern2Notes });
 }
 products.push({ id: 'patternpack2', yen: 600, ref: 'Pattern Pack 2', ja: ['弾幕パック2(全部入り)', '弾幕パック2の11種類が、すべて使えるようになります。'], en: ['Patterns Pack 2', 'Unlocks all 11 patterns in Pack 2.'], notes: pattern2Notes });
+// 弾幕パック3(2026-11-23 追加。1.4.2): バラ11個と全部入り。ショップの「弾幕パック3」のカードで買える
+const pattern3Notes = patternNotes.replace('scroll to "Bullet patterns"', 'scroll to "Bullet patterns 3"');
+for (const [id, en, ja, jaDesc, enDesc, yen] of [
+  ['pattern.radialLaser', 'Omni Laser', '全方位レーザー', '全方向に光線を撃ち、ゆっくり回る弾幕です。', 'Beams in every direction that slowly turn.', 300],
+  ['pattern.lightning', 'Lightning Strike', '落雷', '画面の上から雷が落ちる弾幕です。', 'Bolts strike down from the top.', 300],
+  ['pattern.carpetBomb', 'Carpet Bomb', '爆撃ライン', '爆発が自機へ向かって連なる弾幕です。', 'A chain of explosions rolls toward you.', 300],
+  ['pattern.dashShot', 'Dash Shot', '急加速弾', 'ゆっくり出て急に加速する弾幕です。', 'Slow bullets that suddenly dash.', 100],
+  ['pattern.implode', 'Implosion', '吸い込み弾', '大きな輪から中心へ集まる弾幕です。', 'Bullets rush in from a wide ring.', 100],
+  ['pattern.pincer', 'Pincer Attack', '挟み撃ち', '画面の左右から同時に飛んでくる弾幕です。', 'Shots from both sides at once.', 100],
+  ['pattern.whirlwind', 'Whirlwind', 'つむじ風', '回る弾のかたまりが流れてくる弾幕です。', 'A spinning cluster drifts toward you.', 100],
+  ['pattern.bounceBall', 'Bouncing Ball', 'バウンドボール', '放物線で落ちて床ではねる弾幕です。', 'Balls that arc down and bounce.', 100],
+  ['pattern.needle', 'Needles', 'ニードル', '細長い針を扇状に撃つ弾幕です。', 'A fan of long, thin needles.', 100],
+  ['pattern.trackLaser', 'Tracking Laser', '追跡レーザー', '自機を追ってから撃つ光線の弾幕です。', 'A laser that tracks you, then fires.', 100],
+  ['pattern.blinkShot', 'Blink Shot', '瞬間移動弾', '消えては先に現れる弾幕です。', 'Bullets that vanish and reappear ahead.', 100],
+]) {
+  products.push({ id, yen, ref: `${en} Pattern`, ja: [`${ja}の弾幕`, jaDesc], en: [`${en} Pattern`, enDesc], notes: pattern3Notes });
+}
+products.push({ id: 'patternpack3', yen: 600, ref: 'Pattern Pack 3', ja: ['弾幕パック3(全部入り)', '弾幕パック3の11種類が、すべて使えるようになります。'], en: ['Patterns Pack 3', 'Unlocks all 11 patterns in Pack 3.'], notes: pattern3Notes });
 products.push(
   { id: 'customimages', yen: 500, ref: 'Custom Images', ja: ['じぶんの画像', 'ボス・弾・自機を、自分で選んだ画像に変えます。'], en: ['Your Own Images', 'Use your own pictures for the boss, bullets and ship.'],
     notes: 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy "Your own images" near the top of the list. After purchase, tap "Choose" next to Boss, Bullets or Your ship and pick any photo. Images are only stored on the device and are never uploaded. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.' },
