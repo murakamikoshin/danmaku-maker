@@ -1,3 +1,4 @@
+import UIKit
 import DanmakuCore
 import Foundation
 
@@ -65,6 +66,11 @@ final class LocalStageStore: ObservableObject {
         load()
         migrateOldDraftIfNeeded()
         AuthorName.migrate(from: stages)
+        // 編集中は書き込みをまとめて遅らせるので、アプリが裏へ回る前に書き出す
+        LocalStageStore.all.append(WeakStore(store: self))
+        NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { _ in
+            Task { @MainActor in LocalStageStore.flushAll() }
+        }
     }
 
     var canCreate: Bool { stages.count < Self.maxStages }
@@ -88,6 +94,29 @@ final class LocalStageStore: ObservableObject {
         var v = s
         if stages[i].draft != s.draft { v.updatedAt = Date() }
         stages[i] = v
+        // エディタは、スライダーを動かすたびに呼ぶ。毎回ファイルへ全部書くと重い(エディタ全体がもたついていた)ので、
+        // 動きが止まって少したってから1回だけ書く
+        persistSoon()
+    }
+
+    private var pendingSave: Task<Void, Never>?
+    private func persistSoon() {
+        pendingSave?.cancel()
+        pendingSave = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 800_000_000)
+            guard !Task.isCancelled else { return }
+            self?.persist()
+        }
+    }
+
+    /// 作られたストア(ふつうは shared の1つ)。アプリが裏へ回るとき、まとめて書き出す
+    private static var all: [WeakStore] = []
+    private struct WeakStore { weak var store: LocalStageStore? }
+    static func flushAll() { for w in all { w.store?.flush() } }
+
+    /// 遅らせている書き込みがあれば、すぐ書く(エディタを閉じるとき・アプリが裏へ回るとき)
+    func flush() {
+        guard pendingSave != nil else { return }
         persist()
     }
 
@@ -147,6 +176,8 @@ final class LocalStageStore: ObservableObject {
     }
 
     private func persist() {
+        pendingSave?.cancel()
+        pendingSave = nil
         let sorted = stages.sorted { $0.updatedAt > $1.updatedAt }
         stages = sorted
         if let data = try? JSONEncoder().encode(sorted) { try? data.write(to: url, options: [.atomic, .completeFileProtection]) }

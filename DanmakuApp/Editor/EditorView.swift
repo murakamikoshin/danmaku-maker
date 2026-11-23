@@ -167,6 +167,7 @@ struct EditorView: View {
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onChange(of: model.draft) { _ in model.save() }
+        .onDisappear { model.flushSave() }
         .gameDialog("editor.revert.title", isPresented: $confirmRevert, message: "editor.revert.message") {
             [GameDialogAction(title: "editor.revert.do", role: .destructive) { model.revert() }, .cancel()]
         }

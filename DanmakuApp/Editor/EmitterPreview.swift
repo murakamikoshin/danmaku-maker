@@ -110,7 +110,8 @@ struct EmitterPreview: View {
         Color.clear
         .aspectRatio(DanmakuConfig.width / PreviewEngine.height, contentMode: .fit)
         .overlay(GeometryReader { geo in
-        TimelineView(.animation) { timeline in
+        // 60 コマまで(120Hz の画面で倍の回数を描かない)。画面から外れたカードは止める
+        VisibleTimeline(interval: 1.0 / 60) { timeline in
             let onScreen = geo.frame(in: .global).intersects(EmitterPreview.screenBounds)
             Canvas { ctx, size in
                 guard onScreen else {
@@ -540,15 +541,19 @@ struct StageMiniPreview: View {
 
     private final class Holder { var engine: MiniStageEngine? }
     @State private var holder = Holder()
+    /// 同時に動かす数を絞る(一覧に映っている行が全部、ゲームと同じ計算を毎秒 120 回していて重かった)。枠をもらえない行は止まった絵
+    @ObservedObject private var gate = MiniPreviewGate.shared
+    @State private var token = UUID()
+    private var running: Bool { playing && gate.allows(token) }
 
     var body: some View {
         let skin = Skin.of(stage.lookBullets)
         let bg = Skin.of(stage.lookBackground).background
-        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !playing)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !running)) { timeline in
             Canvas { ctx, sz in
                 if holder.engine?.stage != stage { holder.engine = MiniStageEngine(stage: stage) }
                 guard let engine = holder.engine else { return }
-                if playing { engine.advance(to: timeline.date) } else { engine.pause() }
+                if running { engine.advance(to: timeline.date) } else { engine.pause() }
                 let s = sz.width / DanmakuConfig.width
                 Self.draw(&ctx, sim: engine.sim, skin: skin, theme: stage.lookBullets, scale: s, boost: boost, time: timeline.date.timeIntervalSinceReferenceDate)
             }
@@ -558,6 +563,9 @@ struct StageMiniPreview: View {
         .clipShape(PixelRect(cornerRadius: size * 0.21))
         .overlay(PixelRect(cornerRadius: size * 0.21).stroke(GameStyle.edge, lineWidth: 1))
         .onChange(of: visible) { v in if !v { holder.engine?.restart() } }
+        .onAppear { gate.set(token, active: playing) }
+        .onChange(of: playing) { gate.set(token, active: $0) }
+        .onDisappear { gate.set(token, active: false) }
         .accessibilityHidden(true)
     }
 
@@ -672,5 +680,17 @@ struct MarqueeTitle: View {
         let e = elapsed.truncatingRemainder(dividingBy: cycle)
         if e < holdStart { return 0 }
         return min(overflow, CGFloat(e - holdStart) * speed)
+    }
+}
+
+
+/// 一覧の動く見本を、同時にいくつまで動かすか(先に頼んだ順)。抜けたら、次に待っている見本が動き出す
+@MainActor final class MiniPreviewGate: ObservableObject {
+    static let shared = MiniPreviewGate()
+    static let limit = 3
+    @Published private var order: [UUID] = []
+    func allows(_ id: UUID) -> Bool { order.prefix(Self.limit).contains(id) }
+    func set(_ id: UUID, active: Bool) {
+        if active { if !order.contains(id) { order.append(id) } } else { order.removeAll { $0 == id } }
     }
 }

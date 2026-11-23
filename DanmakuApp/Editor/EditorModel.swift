@@ -396,6 +396,9 @@ final class EditorModel: ObservableObject {
         store.update(entry)
     }
 
+    /// 遅らせている保存を、すぐ書き出す(エディタを閉じたとき)
+    func flushSave() { store.flush() }
+
     func setMode(_ m: Mode) {
         guard m != draft.mode else { return }
         draft.mode = m
