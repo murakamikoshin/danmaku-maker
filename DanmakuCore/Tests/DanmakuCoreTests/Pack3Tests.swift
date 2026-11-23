@@ -160,4 +160,82 @@ final class Pack3Tests: XCTestCase {
         }
         XCTAssertEqual(seen, [1, 2])
     }
+
+    // MARK: - 揺さぶり(すべての組み合わせで、落ちない・おかしな数にならない・保存し直しても同じ)
+
+    private func check(_ st: Stage, seconds: Double, label: String) {
+        var sim = Simulation(stage: st)
+        sim.invincible = true
+        var rng = Mulberry32(seed: 99)
+        var maxCount = 0
+        while sim.outcome == .playing && sim.t < seconds {
+            let dx = Int8(Int(rng.next() * 9) - 4), dy = Int8(Int(rng.next() * 9) - 4)
+            sim.step(Move(dx: dx, dy: dy))
+            maxCount = max(maxCount, sim.bullets.count)
+            for b in sim.bullets where !(b.x.isFinite && b.y.isFinite && b.vx.isFinite && b.vy.isFinite) {
+                XCTFail("\(label): 弾の位置か速さが数でない(script \(b.script))"); return
+            }
+        }
+        XCTAssertLessThanOrEqual(maxCount, DanmakuConfig.maxBullets, label)
+        XCTAssertTrue(sim.player.x.isFinite && sim.player.y.isFinite, label)
+        // 保存して読み込み直しても、同じステージ(同じ結果)になる
+        let back = try! JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(st))
+        XCTAssertEqual(back, st, "\(label): 保存し直すと中身が変わる")
+        XCTAssertEqual(back.sanitized(), st, "\(label): 丸め直すと中身が変わる")
+    }
+
+    func testFuzzEveryPack3Combination() {
+        for p in DanmakuCore.Pattern.pack3 {
+            let d = p.pack3Defaults!
+            for aim in [nil, 1, 2] as [Int?] {
+                for mir in [nil, 1] as [Int?] {
+                    for boss in [false, true] {
+                        for count in [1, d.c, 36] {
+                            var m = Emitter(t: p, x: 0.1, y: 0.55, s: 0, e: 20, i: max(0.05, d.i / 2), c: count, v: 5, r: 90, k: 4, p: boss ? 1 : 0, a: 135)
+                            m.aim = Emitter.sanitizedAim(aim, pattern: p); m.mir = mir; m.sh = 3
+                            let st = Stage(name: "f", mode: boss ? .boss : .survive, durationSec: boss ? 60 : 20, bossHp: boss ? 1000 : nil, bossMove: boss ? 5 : nil,
+                                           emitters: [m, Emitter(t: p, x: 0.9, y: 0, s: 0, e: 20, i: 0.05, c: count, v: 1, r: -90, k: 0)]).sanitized()
+                            check(st, seconds: 8, label: "\(p) aim=\(String(describing: aim)) mir=\(String(describing: mir)) boss=\(boss) c=\(count)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    func testFuzzHeightRangeAndPhases() {
+        for t in [DanmakuCore.Pattern.sideL, .sideR] {
+            for yr in [nil, 1, 2] as [Int?] {
+                for mir in [nil, 1] as [Int?] {
+                    var m = Emitter(t: t, x: 0.5, y: 0.2, s: 0, e: 20, i: 0.1, c: 36, v: 5, r: 90, k: 2)
+                    m.yr = yr; m.mir = mir
+                    let st = Stage(name: "h", mode: .survive, durationSec: 20, emitters: [m]).sanitized()
+                    XCTAssertEqual(st.emitters[0].yr, yr)
+                    check(st, seconds: 6, label: "\(t) yr=\(String(describing: yr)) mir=\(String(describing: mir))")
+                }
+            }
+        }
+        // 段階 1・2 と、撃つ段階・覚醒・段階の名前の組み合わせ(ボス戦・ダメージ勝負・連戦)
+        for n in [1, 2] {
+            for ph in [0, 1, 2, 12, 23] {
+                for mode in [Mode.boss, .damage] {
+                    var st = Stage(name: "p", mode: mode, durationSec: 30, bossHp: mode == .boss ? 100 : nil, bossMove: 2,
+                                   emitters: [Emitter(t: .needle, i: 0.2, c: 5, v: 3, r: 30, ph: ph), Emitter(t: .ring, i: 0.3, c: 12, v: 2, ph: 0)])
+                    st.phases = n; st.awaken = 2
+                    st.phaseInfo = [PhaseInfo(n: "A"), PhaseInfo(n: "B")]
+                    let s = st.sanitized()
+                    XCTAssertEqual(s.phases, n)
+                    XCTAssertTrue(s.emitters.allSatisfy { n == 1 ? $0.ph == 0 : Emitter.phases(of: $0.ph).allSatisfy { $0 <= n } }, "撃つ段階が段階の数を超える")
+                    if n == 1 { XCTAssertNil(s.awaken) }
+                    XCTAssertEqual(s.phaseInfo?.count ?? n, n)
+                    check(s, seconds: 30, label: "phases=\(n) ph=\(ph) \(mode)")
+                }
+            }
+            var w = Wave(kind: .boss, durationSec: 60, bossHp: 100, bossMove: 0, emitters: [Emitter(t: .whirlwind, i: 0.3, c: 6, v: 2, ph: 2)])
+            w.phases = n; w.awaken = 2
+            let seq = Stage(name: "q", mode: .sequence, durationSec: 0, emitters: [], waves: [Wave(kind: .survive, durationSec: 10, emitters: [Emitter(t: .pincer, i: 0.5, c: 3, v: 2)]), w]).sanitized()
+            XCTAssertEqual(seq.waves?[1].phases, n)
+            check(seq, seconds: 40, label: "seq phases=\(n)")
+        }
+    }
 }
