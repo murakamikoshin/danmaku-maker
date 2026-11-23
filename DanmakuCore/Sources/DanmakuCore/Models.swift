@@ -623,8 +623,9 @@ public struct Emitter: Codable, Equatable, Sendable {
         self.yr = yr
     }
 
-    /// 弾の形の値(1 = くの字、2 = 丸、3 = ＝(くっついた二本線)、4 = 棒(細長いカプセル)。3・4 は 1.4.2 から)。ほかは標準(nil)。見た目だけ
-    public static let shapeRange = 1...4
+    /// 弾の形の値(1 = くの字、2 = 丸、3 = 棒(細長いカプセル。1.4.2 から。1.4.2 の審査版では「＝」という名前の離れた2本線だった))。
+    /// ほかは標準(nil)。見た目だけ
+    public static let shapeRange = 1...3
     public static func sanitizedShape(_ v: Int?) -> Int? { v.flatMap { shapeRange.contains($0) ? $0 : nil } }
     /// 高さの範囲の値を整える。左から・右からのパターンで、1 か 2 だけ残す
     public static func sanitizedHeightRange(_ v: Int?, pattern: Pattern) -> Int? {

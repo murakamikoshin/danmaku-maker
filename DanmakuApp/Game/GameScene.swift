@@ -37,7 +37,6 @@ final class GameScene: SKScene {
     private let bulletTextures: [SKTexture]
     /// ブーメランの弾の絵(🪃の形。弾の色ごと)
     private let boomerangTextures: [SKTexture]
-    private let equalsTextures: [SKTexture]
     private let barTextures: [SKTexture]
     private let shipNode: SKSpriteNode
     private let shipSkinFrames: [SKTexture]
@@ -151,7 +150,6 @@ final class GameScene: SKScene {
             bulletTextures = SpriteFactory.bullets(loadout.bullets)
         }
         boomerangTextures = SpriteFactory.boomerangs(loadout.bullets)
-        equalsTextures = SpriteFactory.equals(loadout.bullets)
         barTextures = SpriteFactory.bars(loadout.bullets)
         // ドット絵の自機(招待のごほうび)。自分の画像を使うときは、そちらを優先する
         let skinFrames = (loadout.customShip && SpriteFactory.custom(.ship) != nil) ? [] : (loadout.shipSkin.map(ShipSkin.textures) ?? [])
@@ -819,11 +817,10 @@ final class GameScene: SKScene {
                     if n.alpha != alpha { n.alpha = alpha }
                     continue
                 }
-                if b.drawsAsEquals || b.drawsAsBar {
-                    // 「＝」(くっついた二本線)・「棒」(細長いカプセル): 進む向きに沿って描く(下へ落ちる弾は縦長。見た目だけ)
-                    let texs = b.drawsAsBar ? barTextures : equalsTextures
-                    n.texture = texs[min(max(b.color, 0), texs.count - 1)]
-                    let sz = b.drawsAsBar ? CGSize(width: 17, height: 8) : CGSize(width: 16, height: 10)
+                if b.drawsAsBar {
+                    // 「棒」(細長いカプセル): 進む向きに沿って描く(下へ落ちる弾は縦長。見た目だけ)
+                    n.texture = barTextures[min(max(b.color, 0), barTextures.count - 1)]
+                    let sz = CGSize(width: 17, height: 8)
                     if n.size != sz { n.size = sz }
                     n.zRotation = -CGFloat(atan2(b.vy, b.vx))
                     if n.alpha != 1 { n.alpha = 1 }

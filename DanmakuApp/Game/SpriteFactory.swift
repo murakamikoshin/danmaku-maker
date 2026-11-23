@@ -96,27 +96,6 @@ enum SpriteFactory {
         return list
     }
 
-    /// 弾の形「＝」(二本線。見た目だけ)。右向きに進む弾を描いた絵(進む向きに沿った2本の棒)。描くときに進む向きへ回す
-    private static var equalsCache: [Theme: [UIImage]] = [:]
-    private static var equalsTextureCache: [Theme: [SKTexture]] = [:]
-    static func equalsImages(_ theme: Theme) -> [UIImage] {
-        if let c = equalsCache[theme] { return c }
-        let list = Skin.of(theme).bulletColors.map { color in
-            image(size: CGSize(width: 16, height: 10)) { c in
-                // 1つの角丸の枠の中に、色の線が2本(あいだは白)。弾1発に見える「＝」
-                let outer = UIBezierPath(roundedRect: CGRect(x: 1.5, y: 1.5, width: 13, height: 7), cornerRadius: 3)
-                c.setFillColor(color.cgColor)
-                c.addPath(outer.cgPath); c.fillPath()
-                c.setFillColor(UIColor.white.withAlphaComponent(0.95).cgColor)
-                c.fill(CGRect(x: 3, y: 4.3, width: 10, height: 1.4))
-                c.setStrokeColor(UIColor.white.withAlphaComponent(0.9).cgColor)
-                c.setLineWidth(1)
-                c.addPath(outer.cgPath); c.strokePath()
-            }
-        }
-        equalsCache[theme] = list
-        return list
-    }
     /// 弾の形「棒」(細長いカプセル。見た目だけ)。右向きに進む弾の絵。描くときに進む向きへ回す
     private static var barCache: [Theme: [UIImage]] = [:]
     private static var barTextureCache: [Theme: [SKTexture]] = [:]
@@ -141,13 +120,6 @@ enum SpriteFactory {
         if let c = barTextureCache[theme] { return c }
         let list = barImages(theme).map(texture)
         barTextureCache[theme] = list
-        return list
-    }
-
-    static func equals(_ theme: Theme) -> [SKTexture] {
-        if let c = equalsTextureCache[theme] { return c }
-        let list = equalsImages(theme).map(texture)
-        equalsTextureCache[theme] = list
         return list
     }
 

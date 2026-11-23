@@ -305,10 +305,10 @@ extension GraphicsContext {
             g.draw(Image(uiImage: art).interpolation(.none), in: CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
             return
         }
-        if b.drawsAsEquals || b.drawsAsBar {
-            // 「＝」(くっついた二本線)・「棒」(細長いカプセル): ゲームと同じ絵を、進む向きへ回して描く
-            let imgs = b.drawsAsBar ? SpriteFactory.barImages(theme) : SpriteFactory.equalsImages(theme)
-            let w: CGFloat = (b.drawsAsBar ? 17 : 16) * s * sizeBoost, h: CGFloat = (b.drawsAsBar ? 8 : 10) * s * sizeBoost
+        if b.drawsAsBar {
+            // 「棒」(細長いカプセル): ゲームと同じ絵を、進む向きへ回して描く
+            let imgs = SpriteFactory.barImages(theme)
+            let w: CGFloat = 17 * s * sizeBoost, h: CGFloat = 8 * s * sizeBoost
             var g = self
             g.translateBy(x: c.x, y: c.y)
             g.rotate(by: .radians(atan2(b.vy, b.vx)))

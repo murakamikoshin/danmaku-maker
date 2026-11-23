@@ -463,12 +463,10 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
       const r = at({ sh: none });
       expect(r.ok && "sh" in r.stage.emitters[0]!).toBe(false);
     }
-    // 3(＝)・4(棒)は 1.4.2 から正しい値
-    const eq = at({ sh: 3 });
-    expect(eq.ok && eq.stage.emitters[0]!.sh).toBe(3);
-    const bar = at({ sh: 4 });
-    expect(bar.ok && bar.stage.emitters[0]!.sh).toBe(4);
-    for (const bad of [5, -1, 1.5, "1"]) expect(at({ sh: bad })).toEqual({ ok: false, error: "emitter-range" });
+    // 3(棒)は 1.4.2 から正しい値
+    const bar = at({ sh: 3 });
+    expect(bar.ok && bar.stage.emitters[0]!.sh).toBe(3);
+    for (const bad of [4, -1, 1.5, "1"]) expect(at({ sh: bad })).toEqual({ ok: false, error: "emitter-range" });
   });
 
   it("毎日のごほうびの演出は、種類ごとに1つまで受け付け、種類の順に並べる。称号・範囲外・重複は拒否", () => {
@@ -1404,11 +1402,9 @@ describe("1.4.2: 弾幕パック3・段階なし/2段階・左右からの弾の
     expect(validatePublish(good({ emitters: [em({ t: "ring", yr: 1 })] }))).toEqual({ ok: false, error: "emitter-range" });
     expect(validatePublish(good({ emitters: [em({ t: "sideL", yr: 3 })] }))).toEqual({ ok: false, error: "emitter-range" });
   });
-  it("弾の形 3(＝)・4(棒)は見た目だけなので、needs は上がらない", () => {
+  it("弾の形 3(棒)は見た目だけなので、needs は上がらない", () => {
     const r = validatePublish(good({ emitters: [em({ sh: 3 })] }));
     expect(r.ok && [r.stage.emitters[0]!.sh, "needs" in r.stage]).toEqual([3, false]);
-    const b = validatePublish(good({ emitters: [em({ sh: 4 })] }));
-    expect(b.ok && [b.stage.emitters[0]!.sh, "needs" in b.stage]).toEqual([4, false]);
-    expect(validatePublish(good({ emitters: [em({ sh: 5 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    expect(validatePublish(good({ emitters: [em({ sh: 4 })] }))).toEqual({ ok: false, error: "emitter-range" });
   });
 });

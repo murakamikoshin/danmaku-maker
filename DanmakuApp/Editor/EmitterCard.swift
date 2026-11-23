@@ -192,11 +192,11 @@ struct EmitterCard: View {
             if emitter.aimSupport != .none { aimPicker }
 
             if !isDragonMove {
-                // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸 / ＝(二本線)。見た目だけ(当たる範囲は同じ)。
+                // 弾の形: 標準(パターンごとの形) / くの字(ブーメラン) / 丸 / 棒(細長いカプセル)。見た目だけ(当たる範囲は同じ)。
                 // 発射台ごとに見た目を変えられるよう、「かんたん」でも出す
                 VStack(alignment: .leading, spacing: 6) {
                     Text("editor.shape.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round")), (3, L("editor.shape.equals")), (4, L("editor.shape.bar"))],
+                    ChipGrid(items: [(0, L("editor.shape.auto")), (1, L("editor.shape.hook")), (2, L("editor.shape.round")), (3, L("editor.shape.bar"))],
                              selection: Binding(get: { emitter.sh ?? 0 }, set: { emitter.sh = $0 == 0 ? nil : $0 }),
                              idPrefix: "emitter.shape.\(index)", minimum: 72)
                 }
