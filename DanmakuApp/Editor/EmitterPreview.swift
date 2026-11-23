@@ -306,10 +306,10 @@ extension GraphicsContext {
             return
         }
         if b.drawsAsEquals {
-            // 「＝」: 2本の棒を、進む向きに直角に並べる(ゲームの絵と同じ大きさ)
+            // 「＝」: 2本の棒を、進む向きに沿って並べる(下へ落ちる弾は縦の2本線。ゲームの絵と同じ大きさ)
             var g = self
             g.translateBy(x: c.x, y: c.y)
-            g.rotate(by: .radians(atan2(b.vy, b.vx) + .pi / 2))
+            g.rotate(by: .radians(atan2(b.vy, b.vx)))
             for y in [-4.0, 1.0] {
                 let r = CGRect(x: -5.5 * s * sizeBoost, y: y * s * sizeBoost, width: 11 * s * sizeBoost, height: 3 * s * sizeBoost)
                 g.fill(Path(r), with: .color(color))

@@ -96,7 +96,7 @@ enum SpriteFactory {
         return list
     }
 
-    /// 弾の形「＝」(二本線。見た目だけ)。上向きに進む弾を描いた絵(横向きの2本の棒)。描くときに進む向きへ回す
+    /// 弾の形「＝」(二本線。見た目だけ)。右向きに進む弾を描いた絵(進む向きに沿った2本の棒)。描くときに進む向きへ回す
     private static var equalsCache: [Theme: [UIImage]] = [:]
     private static var equalsTextureCache: [Theme: [SKTexture]] = [:]
     static func equalsImages(_ theme: Theme) -> [UIImage] {

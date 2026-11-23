@@ -818,11 +818,11 @@ final class GameScene: SKScene {
                     continue
                 }
                 if b.drawsAsEquals {
-                    // 「＝」: 2本の棒を、進む向きに直角に並べる(見た目だけ)
+                    // 「＝」: 2本の棒を、進む向きに沿って並べる(下へ落ちる弾は縦の2本線になる。見た目だけ)
                     n.texture = equalsTextures[min(max(b.color, 0), equalsTextures.count - 1)]
                     let sz = CGSize(width: 14, height: 12)
                     if n.size != sz { n.size = sz }
-                    n.zRotation = -(CGFloat(atan2(b.vy, b.vx)) + .pi / 2)
+                    n.zRotation = -CGFloat(atan2(b.vy, b.vx))
                     if n.alpha != 1 { n.alpha = 1 }
                     continue
                 }
