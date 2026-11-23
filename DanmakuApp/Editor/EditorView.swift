@@ -653,6 +653,7 @@ struct SliderRow: View {
                             .padding(.vertical, 4).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("slider.reset")
                 }
             }
             .frame(width: 72, alignment: .leading)
