@@ -86,6 +86,19 @@ jobs:
           cp flow/*.log flow-shots/ 2>/dev/null || true
           # 画像は小さくして送る(そのままだと大きすぎて、手元に落とせなかった)
           find flow-shots -name "*.png" | while read f; do sips -s format jpeg -s formatOptions 55 -Z 900 "$f" --out "${f%.png}.jpg" >/dev/null 2>&1 && rm "$f"; done
+          # 画面の録画(mp4。数GBになる)と、名前のない添付は送らない。画像は撮ったときの名前に付け替える
+          find flow-shots -name "*.mp4" -delete
+          python3 - <<'PY'
+          import json, glob, os
+          for m in glob.glob("flow-shots/*/manifest.json"):
+              d = os.path.dirname(m)
+              for t in json.load(open(m)):
+                  test = t.get("testIdentifier", "").split("/")[-1].rstrip("()")
+                  for a in t.get("attachments", []):
+                      src = os.path.join(d, a.get("exportedFileName", "")[:-4] + ".jpg")
+                      name = a.get("suggestedHumanReadableName", "").split("_0_")[0].replace("/", "_")
+                      if os.path.exists(src): os.rename(src, os.path.join(d, f"{test}__{name}.jpg"))
+          PY
           find flow-shots -name "*.jpg" | wc -l; du -sh flow-shots
       - uses: actions/upload-artifact@v4
         if: always()

@@ -5254,61 +5254,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Emitters attach to the boss. As its HP drops it moves through the phases you set (3–5), and each switch clears the screen."
+            "value": "Emitters attach to the boss. With phases set, it moves to the next phase as its HP drops, and each switch clears the screen (with \"None\" it never switches)."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ボス戦では発射台はボスにくっつきます。HPが減るごとに、決めた段階の数(3〜5段階)だけ次の段階に切り替わり、切り替わりで画面の弾が消えます。"
+            "value": "ボス戦では発射台はボスにくっつきます。段階の数を決めると、HPが減るごとに次の段階に切り替わり、切り替わりで画面の弾が消えます(「なし」なら切り替わりません)。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "发射器附着在 BOSS 身上。HP 减少时会依次进入你设定的阶段(3~5个),每次切换都会清屏。"
+            "value": "发射器附着在 BOSS 身上。设定阶段数后,HP 减少时会进入下一阶段,每次切换都会清屏(选「无」则不切换)。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "發射器附著在 BOSS 身上。HP 減少時會依序進入你設定的階段(3~5個),每次切換都會清屏。"
+            "value": "發射器附著在 BOSS 身上。設定階段數後,HP 減少時會進入下一階段,每次切換都會清屏(選「無」則不切換)。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "발사기는 보스에 붙어요. HP가 줄어들면 정한 페이즈 수(3~5)만큼 차례로 진행되며, 전환될 때마다 화면의 탄이 모두 사라져요."
+            "value": "발사기는 보스에 붙어요. 페이즈 수를 정하면 HP가 줄 때마다 다음 페이즈로 넘어가고, 전환될 때마다 화면의 탄이 사라져요(「없음」이면 전환되지 않아요)."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los emisores se fijan al jefe. Al bajar su HP pasa por las fases que elijas (3–5), y cada cambio limpia la pantalla."
+            "value": "Los emisores se fijan al jefe. Con fases, pasa a la siguiente al bajar su HP, y cada cambio limpia la pantalla (con «Ninguna» no cambia)."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les émetteurs sont attachés au boss. Quand ses PV baissent, il passe par les phases choisies (3 à 5), et chaque changement efface l'écran."
+            "value": "Les émetteurs sont attachés au boss. Avec des phases, il passe à la suivante quand ses PV baissent, et chaque changement efface l'écran (avec « Aucune », il ne change pas)."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Emitter sind am Boss befestigt. Sinkt seine HP, durchläuft er die gewählten Phasen (3–5), und jeder Wechsel räumt den Bildschirm."
+            "value": "Emitter sind am Boss befestigt. Mit Phasen wechselt er bei sinkender HP zur nächsten, und jeder Wechsel räumt den Bildschirm („Keine“: kein Wechsel)."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os emissores ficam presos ao chefe. Conforme o HP cai, ele passa pelas fases que você definir (3–5), e cada troca limpa a tela."
+            "value": "Os emissores ficam presos ao chefe. Com fases, ele passa para a próxima conforme o HP cai, e cada troca limpa a tela (com \"Nenhuma\", não troca)."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Излучатели крепятся к боссу. По мере снижения HP он проходит заданные фазы (3–5), и при каждой смене экран очищается."
+            "value": "Излучатели крепятся к боссу. С фазами он переходит к следующей по мере снижения HP, и при каждой смене экран очищается (при «Нет» смены нет)."
           }
         }
       }

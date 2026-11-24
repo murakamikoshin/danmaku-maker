@@ -768,6 +768,49 @@ struct PatternIcon: View {
                 ctx.stroke(line, with: .color(col), style: StrokeStyle(lineWidth: 5, lineCap: .round))
                 ctx.stroke(line, with: .color(.white.opacity(0.85)), style: StrokeStyle(lineWidth: 1.8, lineCap: .round))
                 dot(c.x + 9, h - 4, 2.6)
+            case .dashShot:
+                // 急加速弾: ゆっくり出て、急に速くなる(点の間が広がり、最後は流れる線)
+                dot(c.x, 5, 3.4)
+                for (k, y) in [11.0, 15, 20].enumerated() { dot(c.x, y, 2.2 - Double(k) * 0.2) }
+                var streak = Path(); streak.move(to: CGPoint(x: c.x, y: 25)); streak.addLine(to: CGPoint(x: c.x, y: h - 3))
+                ctx.stroke(streak, with: .color(col), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                for dx in [-6.0, 6] {
+                    var s = Path(); s.move(to: CGPoint(x: c.x + dx, y: 27)); s.addLine(to: CGPoint(x: c.x + dx, y: h - 8))
+                    ctx.stroke(s, with: .color(col.opacity(0.45)), style: StrokeStyle(lineWidth: 1.2, lineCap: .round))
+                }
+            case .pincer:
+                // 挟み撃ち: 左右の壁から、真ん中へ向かって寄ってくる
+                for (i, y) in [7.0, 16, 25, 34].enumerated() {
+                    let off = Double(i % 2) * 4
+                    dot(4 + off, y, 2.2); dot(11 + off, y, 1.8)
+                    dot(w - 4 - off, y, 2.2); dot(w - 11 - off, y, 1.8)
+                }
+                for dir in [-1.0, 1] {
+                    var a = Path(); a.move(to: CGPoint(x: c.x + dir * 7, y: c.y - 4)); a.addLine(to: CGPoint(x: c.x + dir * 3, y: c.y)); a.addLine(to: CGPoint(x: c.x + dir * 7, y: c.y + 4))
+                    ctx.stroke(a, with: .color(col), style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
+                }
+            case .whirlwind:
+                // つむじ風: うずを巻きながら降りてくる(上が広く、下ほど細い)
+                for i in 0..<16 {
+                    let a = Double(i) * 1.1, y = 5 + Double(i) * 2.1, r = 15 - Double(i) * 0.75
+                    dot(c.x + cos(a) * r, y + sin(a) * 2.5, 2.0)
+                }
+            case .bounceBall:
+                // バウンドボール: 落ちて、下で跳ねる
+                var floor = Path(); floor.move(to: CGPoint(x: 2, y: h - 3)); floor.addLine(to: CGPoint(x: w - 2, y: h - 3))
+                ctx.stroke(floor, with: .color(col.opacity(0.5)), lineWidth: 1.2)
+                for i in 0..<9 {
+                    let t = Double(i) / 8
+                    let x = 6 + t * (w - 12)
+                    let y = t < 0.5 ? 5 + (h - 13) * pow(t / 0.5, 2) : (h - 8) - (h - 22) * (1 - pow((t - 0.75) / 0.25, 2))
+                    dot(x, y, i == 8 ? 3.2 : 1.8)
+                }
+            case .blinkShot:
+                // 瞬間移動弾: 進む途中で消えて、先に現れる
+                dot(c.x, 5, 3.4)
+                for y in [12.0, 18] { dot(c.x, y, 2.2) }
+                for y in [24.0, 29] { ctx.stroke(Path(ellipseIn: CGRect(x: c.x - 2.2, y: y - 2.2, width: 4.4, height: 4.4)), with: .color(col.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [1.5, 1.5])) }
+                dot(c.x, 35, 2.8)
             case .giantOrb:
                 dot(c.x, 5, 3.4)
                 ctx.fill(Path(ellipseIn: CGRect(x: c.x - 11, y: c.y - 6, width: 22, height: 22)), with: .color(col))

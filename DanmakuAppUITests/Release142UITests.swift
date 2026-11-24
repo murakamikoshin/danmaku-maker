@@ -68,12 +68,20 @@ final class Release142UITests: XCTestCase {
 
     private func exists(_ id: String, timeout: TimeInterval = 8) -> Bool { el(id).waitForExistence(timeout: timeout) }
 
+    /// 画面を送る。真ん中をなぞると、スライダーの値が動いて送れない(スライダーは縦の指の動きも拾う)ので、何もない左の端をなぞる
+    private func swipe(up: Bool, fast: Bool = false) {
+        let x = 0.025
+        let a = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: up ? 0.78 : 0.3))
+        let b = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: up ? 0.3 : 0.78))
+        a.press(forDuration: 0.05, thenDragTo: b, withVelocity: fast ? .fast : .slow, thenHoldForDuration: 0.05)
+    }
+
     /// 押せる位置まで送る(上か下か、近いほうへ。画面の外なら、まず下へ、だめなら上へ)
     private func scrollTo(_ e: XCUIElement) {
         if e.isHittable { return }
         let frame = app.windows.firstMatch.frame
         for _ in 0..<12 where !e.isHittable {
-            if e.exists && e.frame.minY < frame.minY + 80 { app.swipeDown(velocity: .slow) } else { app.swipeUp(velocity: .slow) }
+            if e.exists && e.frame.minY < frame.minY + 80 { swipe(up: false) } else { swipe(up: true) }
         }
     }
 
@@ -81,10 +89,10 @@ final class Release142UITests: XCTestCase {
     private func find(_ id: String) -> XCUIElement {
         let e = el(id)
         if e.waitForExistence(timeout: 2) { scrollTo(e); return e }
-        for _ in 0..<12 where !e.exists { app.swipeUp(velocity: .slow) }
+        for _ in 0..<12 where !e.exists { swipe(up: true) }
         if !e.exists {
             scrollToTop()
-            for _ in 0..<24 where !e.exists { app.swipeUp(velocity: .slow) }
+            for _ in 0..<24 where !e.exists { swipe(up: true) }
         }
         if e.exists { scrollTo(e) }
         return e
@@ -120,7 +128,7 @@ final class Release142UITests: XCTestCase {
         XCTAssertTrue(exists("editor.close", timeout: 15), "\(name): テストプレイからエディタへ戻れない(落ちた?)")
     }
 
-    private func scrollToTop() { for _ in 0..<10 { app.swipeDown(velocity: .fast) } }
+    private func scrollToTop() { for _ in 0..<10 { swipe(up: false, fast: true) } }
 
     // MARK: - テスト
 
@@ -265,7 +273,7 @@ final class Release142UITests: XCTestCase {
         XCTAssertGreaterThan(pastes.count, 0, "連戦で貼り付けボタンが出ない")
         var shots = 0
         for _ in 0..<14 {
-            app.swipeUp(velocity: .default)
+            swipe(up: true)
             if shots < 6 { snap("sequence-scroll-\(shots)"); shots += 1 }
         }
         // 画面に出ている貼り付けボタンのうち、いちばん下のものを押す(一覧は画面の近くだけを作るので、数は変わる)
@@ -297,12 +305,12 @@ final class Release142UITests: XCTestCase {
         tap("tab.shop", timeout: 20)
         tap("shop.tab.patterns")
         let title = app.staticTexts[text("pack3")].firstMatch
-        for _ in 0..<20 where !title.exists { app.swipeUp(velocity: .slow) }
+        for _ in 0..<20 where !title.exists { swipe(up: true) }
         XCTAssertTrue(title.exists, "ショップに弾幕パック3がない")
         scrollTo(title)
         snap("shop-pack3")
-        app.swipeUp(velocity: .slow); snap("shop-pack3-items")
-        app.swipeUp(velocity: .slow); snap("shop-pack3-items2")
+        swipe(up: true); snap("shop-pack3-items")
+        swipe(up: true); snap("shop-pack3-items2")
         tap("tab.settings")
         let theme = find("settings.theme.gensou")
         XCTAssertTrue(theme.exists, "テーマの選択がない")
