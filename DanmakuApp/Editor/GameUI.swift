@@ -71,12 +71,15 @@ struct GamePanel<Content: View>: View {
 struct Chip: View {
     let title: String
     let selected: Bool
+    /// 並べたときの列の幅いっぱいに広げる(幅と間隔がそろって、見やすい)
+    var fill = false
 
     var body: some View {
         Text(title)
             .font(.system(size: 13, weight: .heavy))
             // 長い言葉(ドイツ語・ロシア語など)が単語の途中で折れないように、1行のまま縮める
             .lineLimit(1).minimumScaleFactor(0.6)
+            .frame(maxWidth: fill ? .infinity : nil)
             .foregroundStyle(selected ? GameStyle.ink : GameStyle.text.opacity(0.85))
             .padding(.vertical, 8).padding(.horizontal, 13)
             .background(selected ? GameStyle.yellow : GameStyle.panelHi, in: PixelRect(cornerRadius: 8))
@@ -96,7 +99,7 @@ struct ChipGrid<T: Hashable>: View {
                     gameTap()
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { selection = item.0 }
                 } label: {
-                    Chip(title: item.1, selected: selection == item.0)
+                    Chip(title: item.1, selected: selection == item.0, fill: true)
                 }
                 .buttonStyle(BounceButtonStyle())
                 .accessibilityAddTraits(selection == item.0 ? .isSelected : [])
