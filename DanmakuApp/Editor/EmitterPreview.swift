@@ -12,9 +12,8 @@ final class PreviewEngine {
     private var last: Date?
     private(set) var bullets: [Bullet] = []
     private(set) var player = Point(x: 180, y: PreviewEngine.height - 40)
-    /// いま流しているパターン・狙い方(変わったら、最初からやり直す)
-    private var pattern: Pattern?
-    private var aim: Int?
+    /// いま流している発射台の設定(どれか1つでも変わったら、最初からやり直す)
+    private var current: Emitter?
     /// ランダムの狙い方の乱数(ゲームと同じく、狙う場所をここから引く)
     private var aimRng = Mulberry32(seed: 7)
 
@@ -26,14 +25,12 @@ final class PreviewEngine {
 
     func advance(to now: Date, emitter m: Emitter, boss: Bool, look: PreviewLook) {
         let character = BossCharacter.of(look: look.bossLook)
-        // パターンを変えたら、前のパターンの撃つ時刻・弾を捨てて、すぐ撃ち始める(前の間隔が長いと、数秒なにも出なかった)
-        // 狙い方(自機狙い・固定・ランダム)を変えたときも、最初からやり直す(見本が変わらなかった)
-        if pattern != m.t || aim != m.aim {
-            pattern = m.t; aim = m.aim
+        // 設定(パターン・狙い方・数・速さ・向き・色・形など)を変えたら、前の弾と撃つ時刻を捨てて、すぐ新しい設定で撃ち始める。
+        // 前は、パターンと狙い方を変えたときだけやり直していたので、数や速さを変えても、古い弾が飛び終わるまで見本が変わらなかった
+        if current != m {
+            current = m
             t = 0; next = 0; shot = 0; bullets = []; rng = Mulberry32(seed: 1); aimRng = Mulberry32(seed: 7)
         }
-        // 間隔を短くしたときも、待たずに次を撃つ
-        if next - t > max(0.05, m.i) { next = t }
         let dt = min(0.05, last.map { now.timeIntervalSince($0) } ?? 0)
         last = now
         t += dt

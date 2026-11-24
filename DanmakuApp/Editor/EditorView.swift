@@ -57,6 +57,7 @@ struct EditorView: View {
                     .foregroundStyle(GameStyle.green).labelStyle(.titleAndIcon)
                     .lineLimit(2).minimumScaleFactor(0.7).frame(maxWidth: 88)
             }
+            ScrollViewReader { scroller in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
                     GameTabs(items: [(false, "editor.simple"), (true, "editor.advanced")], selection: $advanced, idPrefix: "editor.level")
@@ -163,6 +164,9 @@ struct EditorView: View {
                 .padding(16).padding(.bottom, 80)
             }
             .compatDismissKeyboardOnScroll()
+            // パターンを選んで一覧が畳まれたとき、そのカードの位置へ戻すのに使う
+            .environment(\.editorScroller, scroller)
+            }
         }
         .background(GameStyle.night.ignoresSafeArea())
         .preferredColorScheme(.dark)

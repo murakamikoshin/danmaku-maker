@@ -82,6 +82,9 @@ struct EmitterCard: View {
     }
 
     @ObservedObject private var clipboard = EmitterClipboard.shared
+    @Environment(\.editorScroller) private var scroller
+    /// パターン欄の目印(選んだあと、ここへスクロールし直す)
+    @State private var patternAnchor = UUID()
     @State private var confirmReset = false
 
     /// カード全体を畳む(位置の設定などを探しやすくする)と、パターンの一覧を開いているか
@@ -176,8 +179,9 @@ struct EmitterCard: View {
                     .buttonStyle(BounceButtonStyle())
                     .accessibilityIdentifier("emitter.pattern.toggle.\(index)")
                 }
+                .id(patternAnchor)
                 if patternOpen {
-                    PatternTiles(selection: Binding(get: { emitter.t }, set: { emitter.changePattern(to: $0); withAnimation(.easeInOut(duration: 0.2)) { patternOpen = false } }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil,
+                    PatternTiles(selection: Binding(get: { emitter.t }, set: { choosePattern($0) }), index: index, character: isBoss ? BossCharacter.of(look: look.bossLook) : nil,
                                  onLocked: { shopFocus = ShopFocus(id: $0) }, emitter: $emitter)
                 }
             }
@@ -297,6 +301,16 @@ struct EmitterCard: View {
         }
     }
 
+    /// パターンを選ぶ。縦に長い一覧が畳まれる(竜王の技なら下の設定も消える)ので、そのままだとページが短くなって、
+    /// 画面がずっと下へ飛んでいた。畳むのと同時に、このカードのパターン欄が画面の上のほう(固定のプレビューの下)に来るよう戻す
+    private func choosePattern(_ t: Pattern) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            emitter.changePattern(to: t)
+            patternOpen = false
+            scroller?.scrollTo(patternAnchor, anchor: UnitPoint(x: 0.5, y: 0.4))
+        }
+    }
+
     /// このパターンの初期値(間隔・数・速さ・角度)。「初期値に戻す」に使う
     private var defaults: Emitter { Emitter.make(emitter.t, end: emitter.e) }
     /// 値が初期値と違えば、戻すボタンの動作を返す
@@ -360,6 +374,15 @@ struct EmitterCard: View {
             default: return r.sweepAmp > 0 ? "angle.swing" : (r.fan == 0 ? "angle.spread" : "angle.none")
             }
         }
+    }
+}
+
+/// エディタの縦スクロール(パターンを選んだあと、カードの位置へ戻すのに使う)
+private struct EditorScrollerKey: EnvironmentKey { static let defaultValue: ScrollViewProxy? = nil }
+extension EnvironmentValues {
+    var editorScroller: ScrollViewProxy? {
+        get { self[EditorScrollerKey.self] }
+        set { self[EditorScrollerKey.self] = newValue }
     }
 }
 
