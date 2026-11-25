@@ -17,6 +17,35 @@ SHIPS = [
 # 尾の光: コマごとの (dx, 段, 明るいか)。段 0 が本体のすぐ下
 TRAIL = [[(0, 0, 1)], [(0, 0, 1), (0, 1, 0)], [(0, 0, 1), (0, 1, 1), (0, 2, 0), (-1, 1, 0), (1, 1, 0)]]
 
+# そりとトナカイは、元絵をそのまま縮めると 32 ドットでは形が読めないので、元絵を見ながら手で打った絵にする。
+# 左半分(16 列)だけ書いて、左右に写す。'.' は透明
+PAL = {'b': (170, 93, 42), 'd': (112, 60, 30), 'l': (214, 150, 86), 'a': (240, 208, 140), 'A': (188, 148, 84),
+       'r': (222, 40, 36), 'R': (156, 18, 28), 'w': (250, 252, 252), 'g': (206, 214, 228), 'n': (255, 84, 70),
+       'h': (66, 40, 28), 'e': (40, 30, 44), 's': (72, 172, 98), 'S': (40, 116, 68), 'y': (255, 212, 84),
+       'Y': (196, 140, 40), 'k': (84, 30, 44)}
+HAND = {
+'reindeer_xmas': [
+ "..........hh..nn", "..........hh.bnn", "..........bb.bbb", "....a.....bb.lbb", "..a.a..a..bb.ebb", "..a.aa.a..bbdbbb",
+ "..aaaaaaa.bbbbbb", "...AaaaaaaaaAbbb", ".....AA...bbbbbb", "..........dbbbbb", ".........ww.bbbb", "..........r.bbbb",
+ ".........rrrrwww", ".........rrrwrrr", ".........rrrwrrr", "..........rrrwww", "..........RRrrRw", "..........gwwwRw",
+ "...........bSsss", "..........bbSsys", "..........bbSsss", "..........bbdSSS", "..........bbbddd", "..........bbbbbb",
+ "..........bb.blw", "..........bb..ww", "..........bb....", "..........hh...."],
+'sleigh_xmas': [
+ "................", ".....yy.........", "....y..y......ww", "....y.yy....wwww", "....yY.....wwrrr", "....yY....wwrrrr",
+ "....yY...wwrrrrr", "....yY...wrrrrRR", "....yY..wwrrrRRR", "....yYYYwrrrRRkk", "....yY..wrrrRkkk", "....yY..wrrrRkkk",
+ "....yY..wrrrRkkk", "....yY..wrrrRRRR", "....yY..wwwwwwww", "....yY..wrrrrrrr", "....yY..wrrsssss", "....yY..wrsssSss",
+ "....yY..wrssSyys", "....yY..wrsssSss", "....yYYYwrrsssss", "....yY..wrrrrrrr", "....yY..wwrrrrrr", "....yY...wwwwwww",
+ "....yY..........", ".....y.........."],
+}
+
+def hand_body(rows):
+    im = Image.new('RGBA', (32, len(rows)), (0, 0, 0, 0)); px = im.load()
+    for y, row in enumerate(rows):
+        assert len(row) == 16, (y, row)
+        for x, c in enumerate(row):
+            if c != '.': px[x, y] = PAL[c] + (255,); px[31 - x, y] = PAL[c] + (255,)
+    return im
+
 def body(src, x0, x1, stretch):
     # 縦に長い絵(トナカイ)は、横に少し広げてからドットにする: 32 ドットでは細すぎて角も顔も消えるので
     mm.SIZE = BODY; mm.COLORS = 16
@@ -28,8 +57,8 @@ def main():
     rows = []
     for name, fn, (x0, x1), (c_dark, c_light), stretch in SHIPS:
         src = Image.open(os.path.join(HERE, 'source', fn)).convert('RGB')
-        b = body(src, x0, x1, stretch)
-        bb = b.getbbox(); b = b.crop(bb)
+        b = hand_body(HAND[name]) if name in HAND else body(src, x0, x1, stretch)
+        bb = b.getbbox(); b = b.crop((0, bb[1], 32, bb[3])) if name in HAND else b.crop(bb)
         os.makedirs(os.path.join(HERE, name), exist_ok=True); frames = []
         for f in range(3):
             im = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
