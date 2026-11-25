@@ -732,9 +732,14 @@ struct SeasonPromoBanner: View {
                         Text("shop.boss.seasonal").font(.system(size: 10, weight: .black)).foregroundStyle(Color(UIColor(hex: 0x0A0818)))
                             .padding(.horizontal, 7).padding(.vertical, 2)
                             .background(Color(UIColor(hex: 0xFFD23F)), in: PixelRect(cornerRadius: 5))
-                        Text(L("home.season.\(season.rawValue).title")).font(.display(18)).foregroundStyle(.white)
-                            .shadow(color: Self.shade, radius: 0, x: 0, y: 2)
-                            .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                        // 見出しは、肩書き(小さく)と名前(大きく)の2段。1つの文にすると、幅が足りずに変な所で折れる
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(L("home.season.\(season.rawValue).kicker")).font(.display(12)).foregroundStyle(Color.white.opacity(0.92))
+                                .lineLimit(1).minimumScaleFactor(0.7)
+                            Text(L("home.season.\(season.rawValue).title")).font(.display(19)).foregroundStyle(.white)
+                                .shadow(color: Self.shade, radius: 0, x: 0, y: 2)
+                                .lineLimit(1).minimumScaleFactor(0.6)
+                        }
                         Text(L("home.season.\(season.rawValue).body")).font(.system(size: 11.5, weight: .bold)).foregroundStyle(Color.white.opacity(0.9))
                             .lineLimit(2).minimumScaleFactor(0.85).fixedSize(horizontal: false, vertical: true)
                     }

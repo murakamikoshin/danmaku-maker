@@ -9,10 +9,9 @@ L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 
 TEXT = {
     # ---- ホームのお知らせ(期間中だけ。押すとショップのクリスマスパックへ)
+    'home.season.xmas.kicker': ['Santa-Mädchen', 'Santa Girl', 'La chica Santa', 'La fille Santa', 'サンタ娘', '산타 소녀', 'A garota Santa', 'Санта-девочка', '圣诞少女', '聖誕少女'],
     'home.season.xmas.title': [
-        'Santa-Mädchen Noel ist da!', 'Santa Girl Noel is here!', '¡Llega Noel, la chica Santa!', 'Noël, la fille Santa, est là !',
-        'サンタ娘 ノエル、登場！', '산타 소녀 노엘 등장!', 'Chegou Noel, a garota Santa!', 'Санта-девочка Ноэль уже здесь!',
-        '圣诞少女 诺艾尔登场!', '聖誕少女 諾艾爾登場!',
+        'Noel ist da!', 'Noel is here!', '¡Llega Noel!', 'Noël est là !', 'ノエル、登場！', '노엘 등장!', 'Noel chegou!', 'Ноэль уже здесь!', '诺艾尔登场!', '諾艾爾登場!',
     ],
     'home.season.xmas.body': [
         'Dazu Minions, Schiffe und ein Thema', 'Plus Christmas minions, ships and a theme', 'Y esbirros, naves y tema navideños', 'Et des sbires, vaisseaux et un thème',

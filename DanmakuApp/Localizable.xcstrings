@@ -82172,61 +82172,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Santa-Mädchen Noel ist da!"
+            "value": "Noel ist da!"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Santa Girl Noel is here!"
+            "value": "Noel is here!"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "¡Llega Noel, la chica Santa!"
+            "value": "¡Llega Noel!"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Noël, la fille Santa, est là !"
+            "value": "Noël est là !"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "サンタ娘 ノエル、登場！"
+            "value": "ノエル、登場！"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "산타 소녀 노엘 등장!"
+            "value": "노엘 등장!"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chegou Noel, a garota Santa!"
+            "value": "Noel chegou!"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Санта-девочка Ноэль уже здесь!"
+            "value": "Ноэль уже здесь!"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "圣诞少女 诺艾尔登场!"
+            "value": "诺艾尔登场!"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "聖誕少女 諾艾爾登場!"
+            "value": "諾艾爾登場!"
           }
         }
       }
@@ -82357,6 +82357,71 @@
           "stringUnit": {
             "state": "translated",
             "value": "前往商店"
+          }
+        }
+      }
+    },
+    "home.season.xmas.kicker": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Santa-Mädchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Santa Girl"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La chica Santa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La fille Santa"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サンタ娘"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "산타 소녀"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A garota Santa"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Санта-девочка"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圣诞少女"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖誕少女"
           }
         }
       }
