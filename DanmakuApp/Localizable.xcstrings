@@ -82172,61 +82172,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weihnachten: nur für kurze Zeit"
+            "value": "Noel ist da!"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Christmas: limited time only"
+            "value": "Noel is here!"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Navidad: solo por tiempo limitado"
+            "value": "¡Llega Noel!"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Noël : durée limitée"
+            "value": "Noël est là !"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "クリスマス限定、販売中"
+            "value": "ノエル、登場！"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "크리스마스 한정 판매 중"
+            "value": "노엘 등장!"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Natal: por tempo limitado"
+            "value": "Noel chegou!"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рождество: ограниченное время"
+            "value": "Ноэль уже здесь!"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "圣诞限定,销售中"
+            "value": "诺艾尔登场!"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "聖誕限定,販售中"
+            "value": "諾艾爾登場!"
           }
         }
       }
@@ -82237,61 +82237,126 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boss Noel, Minions, Schiffe und Thema – jetzt im Shop"
+            "value": "Dazu Minions, Schiffe und ein Thema"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boss Noel, minions, ships and a theme – now in the shop"
+            "value": "Plus Christmas minions, ships and a theme"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jefa Noel, esbirros, naves y tema: ya en la tienda"
+            "value": "Y esbirros, naves y tema navideños"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boss Noël, sbires, vaisseaux et thème : en boutique"
+            "value": "Et des sbires, vaisseaux et un thème"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ボス「ノエル」と、雑魚・自機・テーマ"
+            "value": "雑魚・自機・テーマも登場"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "보스 \"노엘\"과 졸개·기체·테마. 상점으로"
+            "value": "졸개·기체·테마도 등장"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chefe Noel, lacaios, naves e tema: já na loja"
+            "value": "E lacaios, naves e tema de Natal"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Босс Ноэль, миньоны, корабли и тема — в магазине"
+            "value": "А ещё миньоны, корабли и тема"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boss“诺艾尔”与小怪、自机、主题。前往商店"
+            "value": "还有小怪、自机和主题"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boss「諾艾爾」與小怪、自機、主題。前往商店"
+            "value": "還有小怪、自機和主題"
+          }
+        }
+      }
+    },
+    "home.season.cta": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Shop"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shop"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tienda"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boutique"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショップへ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상점으로"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loja"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В магазин"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前往商店"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前往商店"
           }
         }
       }

@@ -693,7 +693,7 @@ private struct HeroBullets: View {
     }
 }
 
-/// 期間限定の販売のお知らせ(クリスマスなど)。「あそぶ」画面の上に、細い札を1枚だけ出す。
+/// 期間限定の販売のお知らせ(クリスマスなど)。「あそぶ」画面の上に、目立つ赤い札を1枚だけ出す。
 /// 出すのは、その期間が販売中(SeasonConfig。売り場と同じスイッチ)で、まだ買えるものが残っている人にだけ。
 /// 期間が終わるか、全部入り・永久買い切りパックを持っていれば、何も出ない(場所も取らない)。
 /// 広告(世界の一覧の中のネイティブ広告)とは離れた場所なので、広告と並ぶことはない
@@ -702,6 +702,10 @@ struct SeasonPromoBanner: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @State private var showShop = false
     @State private var focus = "bosses"
+
+    /// クリスマスの赤と、文字・ボタンの下に敷く濃い赤(アプリのテーマに関係なく、この札はこの色)
+    private static let red = Color(UIColor(hex: 0xC8263A))
+    private static let shade = Color(UIColor(hex: 0x7A1020))
 
     /// いま案内する期間(販売中で、全部入りをまだ買える人)。複数あれば最初の1つ
     private var season: SaleSeason? {
@@ -715,37 +719,76 @@ struct SeasonPromoBanner: View {
                 focus = "pack." + season.rawValue
                 showShop = true
             } label: {
-                HStack(spacing: 12) {
-                    // その期間のボスの絵(1コマ目)。絵が無ければ、雪の印
+                HStack(spacing: 6) {
+                    // その期間のボスの絵(1コマ目)を大きく。絵のコマは余白が広い(浮いて動く分)ので、1.6 倍にして札で切る
                     if let boss = BossCharacter.allCases.first(where: { $0.season == season }), let art = BossSprites.shopArt(boss, awakened: false) {
-                        // ボスの絵は、コマのまわりに余白が広い(浮いて動く分)。そのまま入れると小さすぎるので、1.7 倍にして枠で切る
                         Image(decorative: art.frames[0], scale: 1).interpolation(.none).resizable().scaledToFit()
-                            .scaleEffect(1.7)
-                            .frame(width: 52, height: 52)
-                            .background(GameStyle.night)
-                            .clipShape(PixelRect(cornerRadius: 10))
+                            .scaleEffect(1.6)
+                            .frame(width: 84, height: 80)
                     } else {
-                        Image(systemName: "snowflake").font(.system(size: 20, weight: .heavy)).foregroundStyle(GameStyle.cyanColor).frame(width: 52, height: 52)
+                        Image(systemName: "snowflake").font(.system(size: 30, weight: .heavy)).foregroundStyle(.white).frame(width: 84, height: 80)
                     }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(L("home.season.\(season.rawValue).title")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("shop.boss.seasonal").font(.system(size: 10, weight: .black)).foregroundStyle(Color(UIColor(hex: 0x0A0818)))
+                            .padding(.horizontal, 7).padding(.vertical, 2)
+                            .background(Color(UIColor(hex: 0xFFD23F)), in: PixelRect(cornerRadius: 5))
+                        Text(L("home.season.\(season.rawValue).title")).font(.display(18)).foregroundStyle(.white)
+                            .shadow(color: Self.shade, radius: 0, x: 0, y: 2)
+                            .lineLimit(2).minimumScaleFactor(0.75).fixedSize(horizontal: false, vertical: true)
+                        Text(L("home.season.\(season.rawValue).body")).font(.system(size: 11.5, weight: .bold)).foregroundStyle(Color.white.opacity(0.9))
                             .lineLimit(2).minimumScaleFactor(0.85).fixedSize(horizontal: false, vertical: true)
-                        Text(L("home.season.\(season.rawValue).body")).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
-                            .lineLimit(2).minimumScaleFactor(0.9).fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.5))
+                    Spacer(minLength: 4)
+                    // 押せる場所だと分かるように、白いボタンの形にする(札のどこを押しても同じ)
+                    Text("home.season.cta").font(.display(13)).foregroundStyle(Self.red).lineLimit(1).minimumScaleFactor(0.7)
+                        .padding(.vertical, 8).padding(.horizontal, 10)
+                        .background(Color.white, in: PixelRect(cornerRadius: 10))
+                        .background(PixelRect(cornerRadius: 10).fill(Self.shade).offset(y: 3))
+                        .padding(.bottom, 3)
                 }
-                .padding(10)
+                .padding(.top, 13).padding(.bottom, 8).padding(.leading, 4).padding(.trailing, 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(GameStyle.panel, in: PixelRect(cornerRadius: 12))
-                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.pinkColor.opacity(0.6)))
+                .background { SeasonBannerBackdrop() }
+                .background(Self.red)
+                .clipShape(PixelRect(cornerRadius: 16))
+                .overlay(PixelRect(cornerRadius: 16).strokeBorder(Color.white.opacity(0.92), lineWidth: 2))
+                .hardShadow(radius: 16)
+                .padding(.bottom, 4)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("home.season.\(season.rawValue)")
             .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: focus) }
         }
+    }
+}
+
+/// 期間限定のお知らせの札の飾り: 上のふちに白と緑のしま(キャンディケイン風)、全体に雪の点。動かさない(軽くするため)
+private struct SeasonBannerBackdrop: View {
+    var body: some View {
+        Canvas { ctx, size in
+            // 雪の点(場所は決め打ち。毎回同じ絵になる)
+            var seed: UInt64 = 20261225
+            func next() -> Double { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Double(seed >> 33) / Double(1 << 31) }
+            for _ in 0..<46 {
+                let x = next() * Double(size.width), y = next() * Double(size.height), r = 0.8 + next() * 1.0
+                ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(.white.opacity(0.25 + next() * 0.3)))
+            }
+            // 上のふちのしま(幅 7)。斜めの平行四辺形を、白と緑で交互に並べる
+            let h: Double = 7, w: Double = 11
+            ctx.fill(Path(CGRect(x: 0, y: 0, width: Double(size.width), height: h)), with: .color(.white))
+            var x = -h, k = 0
+            while x < Double(size.width) + h {
+                if k % 2 == 0 {
+                    var p = Path()
+                    p.move(to: CGPoint(x: x, y: h)); p.addLine(to: CGPoint(x: x + h, y: 0))
+                    p.addLine(to: CGPoint(x: x + h + w, y: 0)); p.addLine(to: CGPoint(x: x + w, y: h)); p.closeSubpath()
+                    ctx.fill(p, with: .color(Color(UIColor(hex: 0x2FA35A))))
+                }
+                x += w; k += 1
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
