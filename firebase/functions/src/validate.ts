@@ -1,3 +1,4 @@
+import { MOOK_LOOK_MAX } from "./ownership.js";
 import { isPack3Pattern } from "./pack3.js";
 import { validatePath } from "./custompath.js";
 import { containsNgWord, stripInvisible } from "./ngwords/index.js";
@@ -439,7 +440,7 @@ function validateWaves(raw: unknown): { ok: true; list: Wave[]; total: number } 
     const wMooks = optInt(w.mooks, 0, 2, null);
     const wBossLook = optInt(w.bossLook, 0, BOSS_LOOK_MAX, 0);
     const wSize = sizeValFor(wBossLook.ok ? wBossLook.v : undefined, w.bossSize);
-    const wMookLook = optInt(w.mookLook, 0, 4, 0);
+    const wMookLook = optInt(w.mookLook, 0, MOOK_LOOK_MAX, 0);
     const wAwaken = optInt(w.awaken, 2, wN, null);
     const wHx = homeVal(w.bossX, 0.2, 0.8, 0.5), wHy = homeVal(w.bossY, 0.1, 0.3, 0.2);
     if (!wHx.ok || !wHy.ok || ((wHx.v !== undefined || wHy.v !== undefined) && kind !== "boss")) return { ok: false, error: "wave-look" };
@@ -598,7 +599,7 @@ export function validatePublish(input: unknown): Validated {
   const bMooks = optInt(input.mooks, 0, 2, null);
   const bBossLook = optInt(input.bossLook, 0, BOSS_LOOK_MAX, 0);
   const bSize = sizeValFor(bBossLook.ok ? bBossLook.v : undefined, input.bossSize);
-  const bMookLook = optInt(input.mookLook, 0, 4, 0);
+  const bMookLook = optInt(input.mookLook, 0, MOOK_LOOK_MAX, 0);
   const bAwaken = optInt(input.awaken, 2, bN, null);
   const bHx = homeVal(input.bossX, 0.2, 0.8, 0.5), bHy = homeVal(input.bossY, 0.1, 0.3, 0.2);
   if (!bHx.ok || !bHy.ok || ((bHx.v !== undefined || bHy.v !== undefined) && mode !== "boss" && mode !== "damage")) return { ok: false, error: "look" };

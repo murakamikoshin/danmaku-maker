@@ -514,6 +514,10 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossLook: 15 }))).toEqual({ ok: false, error: "look" });   // 14 はサンタ娘(1.5.0)
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
+    // 買うセットの雑魚の見た目(5〜8。1.5.0)は通す。9 以上は通さない。needs は付けない(古い版は標準の見た目で遊べる)
+    const x = validatePublish(boss({ mooks: 1, mookLook: 8 }));
+    expect(x.ok && [x.stage.mookLook, x.stage.needs]).toEqual([8, undefined]);
+    expect(validatePublish(boss({ mooks: 1, mookLook: 9 }))).toEqual({ ok: false, error: "look" });
   });
 
   it("雑魚を倒せる設定(1.2.0)は、雑魚を出すときだけ受け付ける。そのステージは 1.2.0 以降が必要", () => {

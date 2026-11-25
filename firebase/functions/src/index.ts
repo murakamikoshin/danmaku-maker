@@ -17,7 +17,7 @@ import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
 import { prepareWeek, RANKED_STAGE_VERSION, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { syncLatestVersion } from "./appversion.js";
-import { BOSS_KEYS, PAID_ONLY_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, providerMarks } from "./ownership.js";
+import { BOSS_KEYS, PAID_ONLY_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, missingMookPacks, mookPacksOf, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
@@ -145,11 +145,14 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60, secre
   if (Date.now() - last < POST_INTERVAL_MS) throw new HttpsError("resource-exhausted", "too-fast");
   await assertNotBanned(uid, req);
   // 専用の絵のボスは、作者が持っているものだけ(チケット・招待でもらったものは users.freeBosses、買ったものは RevenueCat に聞く)
+  // 買うセットの雑魚の見た目(クリスマスなど)も同じ(こちらは買ったものだけ。RevenueCat に聞く)
   const needBosses = bossKeysOf(v.stage).filter((k) => !((user.get("freeBosses") as string[] | undefined) ?? []).includes(k));
-  if (needBosses.length > 0) {
+  const needMooks = mookPacksOf(v.stage);
+  if (needBosses.length > 0 || needMooks.length > 0) {
     const bought = await fetchPurchasedIds(uid, revenuecatApiKey.value() || undefined);
-    if (bought === null) logger.warn("boss-ownership-unverified", { uid, bosses: needBosses });
+    if (bought === null) logger.warn("boss-ownership-unverified", { uid, bosses: needBosses, mooks: needMooks });
     else if (missingBosses(v.stage, (user.get("freeBosses") as string[] | undefined) ?? [], bought).length > 0) throw new HttpsError("permission-denied", "boss-not-owned");
+    else if (missingMookPacks(v.stage, bought).length > 0) throw new HttpsError("permission-denied", "mooks-not-owned");
   }
   // 1日に公開できる数の上限(「URLを知っている人だけ」の投稿は数えない)
   // 購入者かどうかは、アプリの申告か、購入の通知(RevenueCat)で残した記録(users.entitlements)。申告だけでも、1日 HARD_DAILY_POSTS 本まで

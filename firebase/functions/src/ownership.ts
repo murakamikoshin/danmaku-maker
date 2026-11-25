@@ -23,7 +23,19 @@ export const BOSS_KEYS: readonly string[] = Object.values(BOSS_BY_LOOK);
 export const PAID_ONLY_BOSSES: readonly string[] = ["puni", "santa"];
 export const PRODUCT_PREFIX = "com.koshin.danmakumaker.";
 
-type LookPart = { bossLook?: number };
+/**
+ * 買って手に入れる、雑魚の見た目のセット(アプリの MookPack と同じ)。looks は、ステージの mookLook の番号の範囲(両端を含む)。
+ * season は、期間限定で売るセットの期間の名前。ボスと同じで、**サーバーは販売期間を見ない**(買った記録だけで決める)
+ */
+export const MOOK_PACKS: Readonly<Record<string, { from: number; to: number; season?: string }>> = {
+  xmas: { from: 5, to: 8, season: "xmas" },
+};
+/** mookLook に入れられる最大の番号(アプリの DanmakuConfig.mookLooks - 1) */
+export const MOOK_LOOK_MAX = Math.max(4, ...Object.values(MOOK_PACKS).map((p) => p.to));
+/** 期間限定のボスの、期間の名前(アプリの BossCharacter.season)。その期間の全部入り(pack.<期間>)でも手に入る */
+export const BOSS_SEASON: Readonly<Record<string, string>> = { santa: "xmas" };
+
+type LookPart = { bossLook?: number; mooks?: number; mookLook?: number };
 /** 竜王を持っている人だけが選べる BGM の番号(アプリの Stage.dragonBGMs と同じ) */
 export const DRAGON_BGMS: readonly number[] = [5, 6];
 /** ステージを公開するのに持っている必要がある、専用の絵のボスの商品名(重複なし)。竜王の曲を選んでいれば竜王も */
@@ -41,6 +53,8 @@ export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[]; bgm?
 /** 買った商品の ID の一覧から、そのボスを持っているか(ボス単品か、永久買い切りパック) */
 export function ownsBossByPurchase(key: string, purchased: ReadonlySet<string>): boolean {
   if (purchased.has(`${PRODUCT_PREFIX}boss.${key}`)) return true;
+  const season = BOSS_SEASON[key];
+  if (season && purchased.has(`${PRODUCT_PREFIX}pack.${season}`)) return true;
   return !NOT_IN_LIFETIME.includes(key) && purchased.has(`${PRODUCT_PREFIX}lifetime`);
 }
 
@@ -50,6 +64,28 @@ export function ownsBossByPurchase(key: string, purchased: ReadonlySet<string>):
  */
 export function missingBosses(stage: Parameters<typeof bossKeysOf>[0], free: readonly string[], purchased: ReadonlySet<string>): string[] {
   return bossKeysOf(stage).filter((k) => !free.includes(k) && !ownsBossByPurchase(k, purchased));
+}
+
+/** ステージを公開するのに持っている必要がある、雑魚の見た目のセットの名前(重複なし)。雑魚を出さない場面の指定は数えない */
+export function mookPacksOf(stage: LookPart & { waves?: readonly LookPart[] }): string[] {
+  const keys = new Set<string>();
+  for (const part of [stage, ...(stage.waves ?? [])]) {
+    if (part.mooks === undefined || part.mookLook === undefined) continue;
+    for (const [k, p] of Object.entries(MOOK_PACKS)) if (part.mookLook >= p.from && part.mookLook <= p.to) keys.add(k);
+  }
+  return [...keys];
+}
+
+/** 買った商品の ID の一覧から、その雑魚の見た目のセットを持っているか(セット単品・その期間の全部入り・永久買い切りパック) */
+export function ownsMookPackByPurchase(key: string, purchased: ReadonlySet<string>): boolean {
+  if (purchased.has(`${PRODUCT_PREFIX}mooks.${key}`) || purchased.has(`${PRODUCT_PREFIX}lifetime`)) return true;
+  const season = MOOK_PACKS[key]?.season;
+  return season !== undefined && purchased.has(`${PRODUCT_PREFIX}pack.${season}`);
+}
+
+/** 公開しようとしているステージで、作者が持っていない雑魚の見た目のセット(空なら公開してよい) */
+export function missingMookPacks(stage: Parameters<typeof mookPacksOf>[0], purchased: ReadonlySet<string>): string[] {
+  return mookPacksOf(stage).filter((k) => !ownsMookPackByPurchase(k, purchased));
 }
 
 type FetchLike = (url: string, init: { headers: Record<string, string>; signal?: AbortSignal }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;

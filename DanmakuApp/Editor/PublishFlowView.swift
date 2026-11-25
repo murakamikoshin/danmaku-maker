@@ -139,6 +139,16 @@ struct PublishFlowView: View {
                     }
                     GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { shopFocus = seasons.shopFocus(for: boss); showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")
+                } else if let pack = missingMooks {
+                    // 買うセットの雑魚の見た目: 置いて試すのは持っていなくてもできるが、公開には持っている必要がある
+                    GamePanel(title: "publish.mooks.title") {
+                        Text(String(format: L("publish.mooks.body"), L("shop.mooks.\(pack.productKey).title"))).font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
+                    }
+                    if !seasons.onShelf(pack) {
+                        Text("publish.mooks.seasonal").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    }
+                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { shopFocus = seasons.shopFocus(for: pack); showShop = true }
+                        .accessibilityIdentifier("publish.mooks.shop")
                 } else if limitReached {
                     GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.reward) { Task { await watchForExtra() } }
                         .disabled(!ads.isReady || granting).opacity(ads.isReady && !granting ? 1 : 0.5)
@@ -175,6 +185,9 @@ struct PublishFlowView: View {
 
     /// 使っているのに持っていないボス(あれば公開できない)
     private var missingBoss: BossCharacter? { stage.bossesNeededToPublish.first { !cosmetics.ownership.has($0) } }
+
+    /// 使っているのに持っていない、雑魚の見た目のセット(あれば公開できない)
+    private var missingMooks: MookPack? { stage.usedMookPacks.first { !cosmetics.ownership.has($0) } }
 
     /// 今日あと何本公開できるか(「URLを知っている人だけ」の投稿は数えないので、出さない)
     private var remaining: Int? { quota?.remaining(premium: purchases.isPremium) }

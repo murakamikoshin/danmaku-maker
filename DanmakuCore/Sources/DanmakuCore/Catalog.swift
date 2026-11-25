@@ -45,6 +45,10 @@ public enum Product: Hashable, Sendable {
     case patternMaker
     /// キャラクターのボスを、ステージ作りで公開できるようにする(遊ぶのは誰でもできる。置いて試すのも買う前からできる)
     case boss(BossCharacter)
+    /// 雑魚の見た目のセット(公開するステージで使える。遊ぶのは誰でもできる)
+    case mooks(MookPack)
+    /// 期間限定のものの全部入り(その期間のボス・雑魚の見た目など。単品で全部買うよりお得)。期間中だけ売り場に出す
+    case seasonPack(SaleSeason)
     /// 永久買い切りパック: いまある課金コンテンツと広告削除を全部、これから増える課金コンテンツも全部、一度の購入で使える
     case lifetime
 
@@ -62,6 +66,8 @@ public enum Product: Hashable, Sendable {
         case .patternPack3: return Product.idPrefix + "patternpack3"
         case .patternMaker: return Product.idPrefix + "patternmaker"
         case .boss(let b): return Product.idPrefix + "boss." + b.productKey
+        case .mooks(let m): return Product.idPrefix + "mooks." + m.productKey
+        case .seasonPack(let s): return Product.idPrefix + "pack." + s.rawValue
         case .lifetime: return Product.idPrefix + "lifetime"
         }
     }
@@ -77,6 +83,12 @@ public enum Product: Hashable, Sendable {
         if id == Product.idPrefix + "lifetime" { self = .lifetime; return }
         if id.hasPrefix(Product.idPrefix + "boss."), let b = BossCharacter.allCases.first(where: { $0.productKey == String(id.dropFirst((Product.idPrefix + "boss.").count)) }) {
             self = .boss(b); return
+        }
+        if id.hasPrefix(Product.idPrefix + "mooks."), let m = MookPack.allCases.first(where: { $0.productKey == String(id.dropFirst((Product.idPrefix + "mooks.").count)) }) {
+            self = .mooks(m); return
+        }
+        if id.hasPrefix(Product.idPrefix + "pack."), let s = SaleSeason(rawValue: String(id.dropFirst((Product.idPrefix + "pack.").count))) {
+            self = .seasonPack(s); return
         }
         if id.hasPrefix(Product.idPrefix + "pattern."), let p = Pattern(rawValue: String(id.dropFirst((Product.idPrefix + "pattern.").count))), p.isPaid, p != .homing {
             self = .pattern(p); return
@@ -104,6 +116,8 @@ public enum Product: Hashable, Sendable {
         case .patternPack3: return 600
         case .patternMaker: return 1000
         case .boss(let b): return b == .dragon ? 1200 : 400
+        case .mooks: return 200
+        case .seasonPack: return 600
         case .lifetime: return 3000
         }
     }
@@ -126,6 +140,9 @@ public enum Product: Hashable, Sendable {
         list.append(.patternMaker)
         // 期間限定のボスも、期間に関係なく入れる(買った人の復元と、商品 ID の読み取りに要る)。売り場に出すかは BossCharacter.onShelf
         for b in BossCharacter.allCases where b.purchasable { list.append(.boss(b)) }
+        // 期間限定のセット・全部入りも、期間に関係なく入れる(同じ理由)
+        for m in MookPack.allCases { list.append(.mooks(m)) }
+        for s in SaleSeason.allCases { list.append(.seasonPack(s)) }
         list.append(.lifetime)
         return list
     }
@@ -181,7 +198,28 @@ public struct Ownership: Equatable, Sendable {
     /// そのボスを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)
     /// 永久買い切りで使えるのは、商品として存在するボスだけ(招待限定のぷにまるは、招待の特典でしか手に入らない)。
     /// 期間限定のボスは、売り場に出ていない期間も、永久買い切りの人・買った人は使える(販売中かどうかは、ここでは見ない)
-    public func has(_ boss: BossCharacter) -> Bool { (hasLifetime && boss.purchasable) || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
+    /// 期間限定のボスは、その期間の全部入り(seasonPack)でも手に入る
+    public func has(_ boss: BossCharacter) -> Bool {
+        (hasLifetime && boss.purchasable) || owned.contains(.boss(boss)) || freeBosses.contains(boss) || hasSeasonPack(boss.season)
+    }
+
+    /// その期間の全部入りを持っているか(season が nil = 期間限定でないものは false)
+    private func hasSeasonPack(_ season: SaleSeason?) -> Bool {
+        guard let season else { return false }
+        return owned.contains(.seasonPack(season))
+    }
+
+    /// その雑魚の見た目のセットを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)。
+    /// 期間限定のセットも、売り場に出ていない期間に、永久買い切りの人・買った人は使える(販売中かどうかは、ここでは見ない)
+    public func has(_ pack: MookPack) -> Bool { hasLifetime || owned.contains(.mooks(pack)) || hasSeasonPack(pack.season) }
+
+    /// その雑魚の見た目の番号を、公開するステージで使えるか(0〜4 は誰でも)
+    public func has(mookLook: Int) -> Bool { MookPack.of(look: mookLook).map { has($0) } ?? true }
+
+    /// その期間の全部入りの中身を、もう全部持っているか
+    public func hasAll(of season: SaleSeason) -> Bool {
+        BossCharacter.allCases.filter { $0.season == season }.allSatisfy { has($0) } && MookPack.allCases.filter { $0.season == season }.allSatisfy { has($0) }
+    }
 
     /// 弾幕パターン作成モードを使えるか
     public var hasPatternMaker: Bool { hasLifetime || owned.contains(.patternMaker) }
@@ -202,6 +240,8 @@ public struct Ownership: Equatable, Sendable {
         case .patternPack3: return !Pattern.pack3.allSatisfy { has($0) }
         case .patternMaker: return !hasPatternMaker
         case .boss(let b): return !has(b)
+        case .mooks(let m): return !has(m)
+        case .seasonPack(let s): return !hasAll(of: s)
         case .lifetime: return !hasLifetime
         }
     }

@@ -91,6 +91,15 @@ enum EnemyArt {
     static func mookImage(look: Int, size: Int) -> UIImage {
         let key = "m\(look).\(size)"
         if let c = cache[key] { return c }
+        // 買うセットの雑魚(5 以降。MookPack)は、ドット絵(Resources/Mooks/mook_<番号>.png、24×24)。絵が無ければ、下の標準の絵になる
+        if look >= MookPack.freeLooks, let url = Bundle.main.url(forResource: "mook_\(look)", withExtension: "png"), let src = UIImage(contentsOfFile: url.path) {
+            let img = render(points: mookPoints(size: size)) { c, s in
+                c.interpolationQuality = .none   // ドットをぼかさない
+                src.draw(in: CGRect(x: 0, y: 0, width: s, height: s))
+            }
+            cache[key] = img
+            return img
+        }
         let body = Palette.bullets[1]
         let dark = Palette.background
         let img = render(points: mookPoints(size: size)) { c, s in

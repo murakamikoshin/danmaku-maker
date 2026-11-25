@@ -42,6 +42,7 @@ struct ShopView: View {
             case _ where id.hasPrefix("theme."): return .looks
             case "bosses": return .bosses
             case _ where id.hasPrefix("boss."): return .bosses
+            case _ where id.hasPrefix("mooks.") || id.hasPrefix("pack."): return .bosses
             default: return nil
             }
         }
@@ -173,7 +174,11 @@ struct ShopView: View {
             ShotSection().id("shots")
         case .bosses:
             // 売り場に出すのは、いま販売中のボスだけ。期間限定のボスは、期間外は出さない(持っている人には「購入済み」として残す)
+            // 期間の全部入り(その期間のボス・雑魚の見た目をまとめたもの)は、販売中の期間だけ、いちばん上に出す
+            ForEach(SaleSeason.allCases.filter { seasons.open.contains($0) }, id: \.self) { SeasonPackCard(season: $0).id("pack." + $0.rawValue) }
             ForEach(BossCharacter.allCases.filter { seasons.onShelf($0) || ($0.season != nil && cosmetics.ownership.has($0)) }, id: \.self) { BossShopCard(boss: $0).id("boss." + $0.productKey) }
+            // 雑魚の見た目のセットも同じ(販売中か、持っている人にだけ)
+            ForEach(MookPack.allCases.filter { seasons.onShelf($0) || ($0.season != nil && cosmetics.ownership.has($0)) }, id: \.self) { MookShopCard(pack: $0).id("mooks." + $0.productKey) }
         case .looks:
             RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
@@ -965,6 +970,78 @@ final class PatternDemoEngine {
 
 
 /// ボスの販売カード。待機アニメと覚醒した姿を見せる。買うと、公開するステージで使える(置いて試すのは、買う前からできる)
+/// 期間の全部入り(例: クリスマスパック)。その期間のボスと雑魚の見た目を、単品で全部買うより安く
+private struct SeasonPackCard: View {
+    let season: SaleSeason
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        ShopCard(title: LocalizedStringKey(L("shop.pack.\(season.rawValue).title")), footer: "shop.pack.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(LocalizedStringKey(L("shop.pack.\(season.rawValue).desc"))).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                    ForEach(BossCharacter.allCases.filter { $0.season == season }, id: \.self) { b in
+                        Label(L("enemy.boss.\(b.rawValue)"), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text)
+                    }
+                    ForEach(MookPack.allCases.filter { $0.season == season }, id: \.self) { m in
+                        Label(L("shop.mooks.\(m.productKey).title"), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text)
+                    }
+                    Label("shop.boss.seasonal", systemImage: "snowflake").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.canBuy(.seasonPack(season)) { PriceButton(product: .seasonPack(season)) }
+                        else { Label("shop.owned", systemImage: "checkmark.seal.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green) }
+                    }
+                }
+                .padding(14)
+                .background(GameStyle.yellow.opacity(0.10))
+            }
+        }
+        .accessibilityIdentifier("shop.pack.\(season.rawValue)")
+    }
+}
+
+/// 雑魚の見た目のセット(ステージ作りで、雑魚の見た目に選べる。公開するのに持っている必要がある)
+private struct MookShopCard: View {
+    let pack: MookPack
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+
+    var body: some View {
+        ShopCard(title: LocalizedStringKey(L("shop.mooks.\(pack.productKey).title")), footer: "shop.mooks.footer") {
+            CardBody {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(LocalizedStringKey(L("shop.mooks.\(pack.productKey).desc"))).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.yellow)
+                    HStack(spacing: 14) {
+                        ForEach(Array(pack.looks), id: \.self) { n in
+                            VStack(spacing: 4) {
+                                Image(uiImage: EnemyArt.mookImage(look: n, size: 2)).resizable().interpolation(.none).frame(width: 48, height: 48)
+                                Text(L("enemy.mook.\(n)")).font(.system(size: 10, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.75)).lineLimit(1).minimumScaleFactor(0.6)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                    .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
+                    if pack.season != nil {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Label("shop.boss.seasonal", systemImage: "snowflake").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                            Text("shop.mooks.seasonal.note").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    HStack {
+                        Spacer()
+                        if cosmetics.ownership.has(pack) { Label("shop.owned", systemImage: "checkmark.circle.fill").font(.footnote.bold()).foregroundStyle(GameStyle.green) }
+                        else { PriceButton(product: .mooks(pack)) }
+                    }
+                }
+                .padding(14)
+            }
+        }
+        .accessibilityIdentifier("shop.mooks.\(pack.productKey)")
+    }
+}
+
 private struct BossShopCard: View {
     let boss: BossCharacter
     @EnvironmentObject private var cosmetics: CosmeticsStore

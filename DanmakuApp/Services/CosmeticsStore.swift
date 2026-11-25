@@ -49,6 +49,7 @@ final class CosmeticsStore: ObservableObject {
         ownership = Ownership(productIDs: defaults.stringArray(forKey: Self.ownedKey) ?? [], posts: posted)
         showStageLook = defaults.object(forKey: "cosmetics.showStageLook") as? Bool ?? true
         effectsOn = defaults.object(forKey: "cosmetics.effectsOn") as? Bool ?? true
+        hitDotOn = defaults.bool(forKey: "cosmetics.hitDotOn")
         ownership.adPatterns = AdPatternStore.load(defaults).unlocked
         ownership.freeBosses = Set((defaults.stringArray(forKey: Self.freeBossesKey) ?? []).compactMap { k in BossCharacter.allCases.first { $0.productKey == k } })
         ownedSkins = (defaults.stringArray(forKey: Self.skinsOwnedKey) ?? []).filter(ShipSkin.isValid)
@@ -83,6 +84,9 @@ final class CosmeticsStore: ObservableObject {
 
     /// 警告と撃破の演出(赤い点滅・爆発など)を出すか。点滅が苦手な人のために、遊ぶ人がオフにできる
     @Published var effectsOn: Bool { didSet { defaults.set(effectsOn, forKey: "cosmetics.effectsOn") } }
+    /// どの自機にも、弾が当たる場所(中心)の白い点を重ねて出すか。最初はオフ(ドット絵の自機は、点がないと当たる場所が分かりにくいので、好みでオンにできる)。
+    /// 見た目だけで、当たり判定そのものは変わらない
+    @Published var hitDotOn: Bool { didSet { defaults.set(hitDotOn, forKey: "cosmetics.hitDotOn") } }
 
     /// ステージの見た目を表示するか(見づらいときに、標準に戻せる)。遊ぶ人の設定
     @Published var showStageLook: Bool { didSet { defaults.set(showStageLook, forKey: "cosmetics.showStageLook") } }

@@ -560,7 +560,13 @@ private struct EnemyControls: View {
                 }
                 Text("editor.mooks.breakable.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 Text("editor.enemy.mooklook").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks), idPrefix: "editor.mook.look", trial: { _ in false }, locked: { _ in false }) { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
+                // 5 以降は買うセットの絵(クリスマスなど)。持っていなくても置いて試せる(「お試し」の印)。公開には持っている必要がある。
+                // 期間限定のセットは、売り場に出ている期間か、持っている人にだけ並べる
+                looks(selection: $mookLook, choices: Array(0..<EnemyArt.looks) + MookPack.allCases.filter { seasons.onShelf($0) || cosmetics.ownership.has($0) || $0.looks.contains(mookLook) }.flatMap { Array($0.looks) },
+                      idPrefix: "editor.mook.look", trial: { !cosmetics.ownership.has(mookLook: $0) }, locked: { _ in false }) { EnemyArt.mookImage(look: $0, size: 1) } name: { L("enemy.mook.\($0)") }
+                if !cosmetics.ownership.has(mookLook: mookLook) {
+                    Text("editor.mook.trial.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
         .gameDialog("editor.boss.locked.title", isPresented: $lockedInfo, message: "editor.boss.locked.message") { [.ok()] }

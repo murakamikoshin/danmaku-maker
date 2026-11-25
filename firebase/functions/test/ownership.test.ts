@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BOSS_BY_LOOK, BOSS_KEYS, NOT_IN_LIFETIME, PAID_ONLY_BOSSES, SEASONAL_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, ownsBossByPurchase, providerMarks } from "../src/ownership.js";
+import { BOSS_BY_LOOK, BOSS_KEYS, NOT_IN_LIFETIME, PAID_ONLY_BOSSES, SEASONAL_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, missingMookPacks, mookPacksOf, MOOK_LOOK_MAX, MOOK_PACKS, ownsBossByPurchase, ownsMookPackByPurchase, providerMarks } from "../src/ownership.js";
 import { simulate, type SimStage } from "../src/fullsim.js";
 import { validatePublish } from "../src/validate.js";
 
@@ -112,6 +112,50 @@ describe("期間限定のボス(サンタ娘)", () => {
     const r = validatePublish({ name: "x", authorName: "Koshin", clearReplay: "AQIDBAUGBwg=", mode: "boss", durationSec: 60, bossHp: 300, bossMove: 0, bossLook: 15,
       emitters: [{ t: "ring", x: 0.5, y: 0.2, s: 0, e: 20, i: 1, c: 16, v: 2, r: 6, k: 0, ph: 0 }] });
     expect(r).toEqual({ ok: false, error: "look" });
+  });
+});
+
+describe("雑魚の見た目のセット(クリスマス)と、期間の全部入り", () => {
+  const p = "com.koshin.danmakumaker.";
+  const lifetime = new Set([p + "lifetime"]);
+  const set = new Set([p + "mooks.xmas"]);
+  const pack = new Set([p + "pack.xmas"]);
+  const other = new Set([p + "boss.santa", p + "patternpack"]);
+
+  it("番号 5〜8 が xmas。最初から使える 0〜4 は、どのセットでもない", () => {
+    expect(MOOK_PACKS.xmas).toEqual({ from: 5, to: 8, season: "xmas" });
+    expect(MOOK_LOOK_MAX).toBe(8);
+    for (let l = 0; l <= 4; l++) expect(mookPacksOf({ mooks: 1, mookLook: l })).toEqual([]);
+    for (let l = 5; l <= 8; l++) expect(mookPacksOf({ mooks: 1, mookLook: l })).toEqual(["xmas"]);
+  });
+
+  it("雑魚を出さない場面の指定は数えない。連戦は場面ごとに見る", () => {
+    expect(mookPacksOf({ mookLook: 6 })).toEqual([]);
+    expect(mookPacksOf({ waves: [{ mooks: 0, mookLook: 2 }, { mooks: 2, mookLook: 8 }, { mooks: 1, mookLook: 5 }] })).toEqual(["xmas"]);
+    expect(mookPacksOf({ waves: [{ mooks: 0, mookLook: 2 }, { mookLook: 8 }] })).toEqual([]);
+  });
+
+  it("セットを買った人・全部入りの人・永久買い切りパックの人は公開できる(販売期間は見ない)", () => {
+    for (const own of [set, pack, lifetime]) {
+      expect(ownsMookPackByPurchase("xmas", own)).toBe(true);
+      expect(missingMookPacks({ mooks: 1, mookLook: 7 }, own)).toEqual([]);
+    }
+  });
+
+  it("持っていない人は公開できない(ボスだけ買っても、雑魚の見た目は付かない)", () => {
+    for (const own of [other, new Set<string>()]) {
+      expect(ownsMookPackByPurchase("xmas", own)).toBe(false);
+      expect(missingMookPacks({ mooks: 1, mookLook: 7 }, own)).toEqual(["xmas"]);
+      expect(missingMookPacks({ mooks: 1, mookLook: 3 }, own)).toEqual([]);
+    }
+  });
+
+  it("全部入りは、その期間のボスも付く。期間限定でないボスは付かない", () => {
+    expect(ownsBossByPurchase("santa", pack)).toBe(true);
+    expect(missingBosses({ bossLook: 14, mooks: 1, mookLook: 5 }, [], pack)).toEqual([]);
+    expect(ownsBossByPurchase("kitsune", pack)).toBe(false);
+    expect(ownsBossByPurchase("puni", pack)).toBe(false);
+    expect(ownsBossByPurchase("dragon", pack)).toBe(false);
   });
 });
 

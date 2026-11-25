@@ -366,6 +366,14 @@ final class GameScene: SKScene {
         if shipSkinFrames.count > 1 {
             shipNode.run(.repeatForever(.animate(with: shipSkinFrames, timePerFrame: 0.12, resize: false, restore: false)))
         }
+        // 設定「当たり判定の点」がオンなら、どの自機にも中心に白い点を重ねる(絵に点がないドット絵の自機でも、当たる場所が分かる)。
+        // 自機の子にするので、位置・点滅(無敵中)は自機と一緒に動く。見本(エディタの小さな枠)には出さない
+        if !isPreview && CosmeticsStore.shared.hitDotOn {
+            let dot = SKShapeNode(circleOfRadius: 2.5)
+            dot.fillColor = .white; dot.strokeColor = UIColor.black.withAlphaComponent(0.55); dot.lineWidth = 1.1
+            dot.zPosition = 1
+            shipNode.addChild(dot)
+        }
         if effectsOn, let r = fx.aura { buildAura(r) }
 
         let back = SKSpriteNode(color: Palette.barBack, size: CGSize(width: W, height: 5))

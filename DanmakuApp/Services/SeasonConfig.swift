@@ -22,6 +22,12 @@ final class SeasonConfig: ObservableObject {
     /// そのボスを、いま売り場に出すか
     func onShelf(_ boss: BossCharacter) -> Bool { boss.onShelf(open) }
 
+    /// その雑魚の見た目のセットを、いま売り場に出すか
+    func onShelf(_ pack: MookPack) -> Bool { pack.onShelf(open) }
+
+    /// ショップで、その雑魚の見た目のセットへ案内するときの行き先。売り場に出ていない期間は、永久買い切りパックのカードへ
+    func shopFocus(for pack: MookPack) -> String { onShelf(pack) ? "mooks.\(pack.productKey)" : "lifetime" }
+
     /// ショップで、そのボスへ案内するときの行き先。売り場に出ていない期間限定のボスは、永久買い切りパックのカードへ
     func shopFocus(for boss: BossCharacter) -> String { onShelf(boss) ? "boss.\(boss.productKey)" : "lifetime" }
 

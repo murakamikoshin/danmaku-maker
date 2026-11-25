@@ -43,7 +43,9 @@ public enum DanmakuConfig {
     }
     /// ボス・雑魚の見た目の種類の数(0 は標準)。見た目だけで、計算には関わらない
     public static let enemyLooks = 5
-    /// ボスの見た目の番号の数(0〜4 が図形、5 以降が BossCharacter)。雑魚の見た目は enemyLooks のまま
+    /// 雑魚の見た目の番号の数(0〜4 は最初から使える図形、5 以降は買うセットの絵。MookPack)
+    public static var mookLooks: Int { MookPack.lookCount }
+    /// ボスの見た目の番号の数(0〜4 が図形、5 以降が BossCharacter)
     public static var bossLooks: Int { BossCharacter.maxLook + 1 }
     /// 停止弾: 進む秒数 / 止まっている秒数 / 飛び出すときの速さの倍率
     public static let stopGoMove = 0.55
@@ -407,7 +409,7 @@ public struct Wave: Codable, Equatable, Sendable {
 
     /// 雑魚の見た目。標準(0)は保存しない。範囲外は標準に戻す
     static func sanitizedLook(_ v: Int?) -> Int? {
-        guard let v, (1..<DanmakuConfig.enemyLooks).contains(v) else { return nil }
+        guard let v, (1..<DanmakuConfig.mookLooks).contains(v) else { return nil }
         return v
     }
 
@@ -904,6 +906,16 @@ public struct Stage: Codable, Equatable, Sendable {
     public var bossesNeededToPublish: [BossCharacter] {
         var list = usedBosses
         if let b = bgm, Stage.dragonBGMs.contains(b), !list.contains(.dragon) { list.append(.dragon) }
+        return list
+    }
+
+    /// このステージで使っている、買うセットの雑魚の見た目(連戦なら、場面ごとの全部)。公開には、持っている必要がある
+    public var usedMookPacks: [MookPack] {
+        var list: [MookPack] = []
+        let looks = mode == .sequence ? (waves ?? []).filter { $0.mooks != nil }.map(\.mookLook) : (mooks != nil ? [mookLook] : [])
+        for look in looks {
+            if let p = MookPack.of(look: look ?? 0), !list.contains(p) { list.append(p) }
+        }
         return list
     }
 

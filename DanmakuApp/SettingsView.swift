@@ -86,6 +86,8 @@ struct SettingsView: View {
                         Text("settings.stagelook.note").font(.caption).foregroundStyle(.secondary)
                         toggleRow("settings.effects", "sparkles", $cosmetics.effectsOn)
                         Text("settings.effects.note").font(.caption).foregroundStyle(.secondary)
+                        toggleRow("settings.hitdot", "smallcircle.filled.circle", $cosmetics.hitDotOn)
+                        Text("settings.hitdot.note").font(.caption).foregroundStyle(.secondary)
                         // メニューの見た目のテーマ
                         HStack(spacing: 10) {
                             Image(systemName: "paintbrush.fill").font(.system(size: 16, weight: .bold)).foregroundStyle(GameStyle.text.opacity(0.8)).frame(width: 24)

@@ -56,3 +56,17 @@ Apple のいまの説明では、販売から削除しても、買った人は�
 - `SaleSeason` に期間を足す(Remote Config のキーは `<名前>_boss_on_sale`)、`BossCharacter.season` で結びつける。
 - サーバー: `ownership.ts` の `BOSS_BY_LOOK`・`SEASONAL_BOSSES`・`PAID_ONLY_BOSSES`(チケットでもらえないなら)。`NOT_IN_LIFETIME` には入れない。
 - 永久買い切りパックの説明(`lifetime.item.5`)は季節を書いていないので、直さなくてよい。
+
+## 同じ期間で売る、ボス以外の商品(1.5.0、2026-11-25)
+クリスマスの期間(`SaleSeason.xmas`、Remote Config の `xmas_boss_on_sale`)は、ボスのほかに次の商品も同じスイッチで売り場に出す。**始めるとき・終わるときの ASC の手順は、下の商品も全部いっしょにやる**。
+
+| 商品 ID(`com.koshin.danmakumaker.` のあと) | 中身 | 目安の値段 | コード |
+|---|---|---|---|
+| `boss.santa` | ボス「クリスマス娘 ノエル」 | ¥400 | `Product.boss(.santa)` |
+| `mooks.xmas` | 雑魚の見た目 4種(番号 5〜8: 雪だるま・プレゼント箱・ジンジャーマン・鈴) | ¥200 | `Product.mooks(.xmas)`、`MookPack.xmas` |
+| `pack.xmas` | クリスマスパック(上の全部入り) | ¥600 | `Product.seasonPack(.xmas)` |
+
+- 雑魚の見た目もボスと同じ考え方: **遊ぶのは誰でもできる**。公開するのに持っている必要がある(アプリは `Ownership.has(mookLook:)`、サーバーは `ownership.ts` の `missingMookPacks`。エラーは `mooks-not-owned`)。
+- 永久買い切りパックの人は、期間に関係なく使える。クリスマスパックを買った人は、その期間のボスと雑魚の見た目を全部使える(サーバーは `pack.xmas` の購入を見る)。
+- 雑魚の見た目は計算に関わらない。古い版(1.4.2 まで)は 5 以降を知らないので、標準の見た目で出る(遊べる。`needs` は付けない)。
+- 自機・テーマを足すときは、パックの中身(`Ownership.hasAll(of:)` と、サーバーの判定)にも足すこと。
