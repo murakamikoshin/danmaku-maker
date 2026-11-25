@@ -14,10 +14,13 @@ public enum BulletLook {
         case flame, slash, gust, sun, rock, spine, tornado, ember, pshot
         // 弾幕パック3の針(ニードル。1.4.2)
         case needle
+        // ノエルの弾(1.5.0): プレゼント箱・キャンディ・鈴・星の飾り
+        case gift, candy, bell, star
     }
     /// 各種類の、弾そのものの半径(px)
     static let bodyRadius: [Double] = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5,
-                                        3, 4, 4, 5, 4, 2.5, 5, 2, 2, 2.5]
+                                        3, 4, 4, 5, 4, 2.5, 5, 2, 2, 2.5,
+                                        4, 2.5, 3, 2.5]
     /// 自機の当たり判定の半径(px)
     static let playerRadius = 2.5
 

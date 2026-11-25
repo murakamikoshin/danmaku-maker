@@ -33,11 +33,13 @@ extension Bullet {
     public static let yoyoScript = 28
     /// 金魚の輪(回遊)。(u0, u1) を中心に、角度 u2 から turn (ラジアン/秒) で回りながら、半径 maxSpeed から accel まで fuse 秒で縮み、そのあと外へ散る
     public static let kaiyuScript = 29
+    /// ノエルのキャンディケイン: u1 秒まっすぐ飛び、そこから u2 秒のあいだ毎秒 u0 ラジアン曲がり、あとはまっすぐ(杖の先の形)
+    public static let hookScript = 38
 
     /// 見えず、当たらない(待機中の弾・暗転の印)
     public var isDormant: Bool { ((script == Bullet.holdScript || script == Bullet.missileScript || script == Bullet.yoyoScript) && age < fuse) || script == Bullet.darkScript }
     /// 待機中でも、うっすら見せる弾か(鎖の予告線)
-    public var dormantGlow: Bool { script == Bullet.holdScript && age < fuse && (BulletLook.kind(of: look) == .chain || BulletLook.kind(of: look) == .awa) }
+    public var dormantGlow: Bool { script == Bullet.holdScript && age < fuse && (BulletLook.kind(of: look) == .chain || BulletLook.kind(of: look) == .awa || BulletLook.kind(of: look) == .candy) }
 
     /// 1ステップごとの速さの倍率(1/60 秒あたりの倍率を、1/120 秒の刻みに直したもの)
     static let missileDecay = (0.95 as Double).squareRoot()
@@ -113,6 +115,15 @@ extension Bullet {
             let sp = (vx * vx + vy * vy).squareRoot()
             let na = atan2(vy, vx) + u0 * dt
             vx = cos(na) * sp; vy = sin(na) * sp
+            x += vx * dt; y += vy * dt
+            return .alive
+        case Bullet.hookScript:
+            age += dt
+            if age >= u1 && age < u1 + u2 {
+                let sp = (vx * vx + vy * vy).squareRoot()
+                let na = atan2(vy, vx) + u0 * dt
+                vx = cos(na) * sp; vy = sin(na) * sp
+            }
             x += vx * dt; y += vy * dt
             return .alive
         case Bullet.missileScript:

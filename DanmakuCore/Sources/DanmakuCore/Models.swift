@@ -235,6 +235,18 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     case dragonWings, dragonGeyser, dragonClaw, dragonTwister, dragonJaws
     // 弾幕パック3(課金。1.4.2 で追加。弾の出し方は Pack3Patterns.swift、サーバーは pack3.ts。並びは変えない)
     case radialLaser, lightning, carpetBomb, dashShot, implode, pincer, whirlwind, bounceBall, needle, trackLaser, blinkShot
+    // ノエル(クリスマスの期間限定のボス)だけが使える技(1.5.0)。
+    // **技は必ずいちばん後ろに足す**: 並び順の番号(index)がステージのシードの計算に入っているので、途中に足すと、後ろの技を使う既存のステージの弾の出方が変わってしまう(サーバーの PATTERNS と同じ並び)
+    /// ひらけ、プレゼント(覚醒: 箱とキャンディが増え、星が残る)
+    case santaGift
+    /// ジングル・リング(覚醒: 輪が増えて速い)
+    case santaBell
+    /// キャンディケイン(覚醒: 左右同時)
+    case santaCane
+    /// ツリーの灯(覚醒: もう1本)
+    case santaTree
+    /// 真夜中の配達(覚醒: 箱とキャンディが増える)
+    case santaDelivery
 
     var index: Int32 { Int32(Pattern.allCases.firstIndex(of: self)!) }
 
@@ -263,8 +275,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public static let puni: [Pattern] = [.puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake]
     /// 金魚姫だけが使える技(並びは、出す順)
     public static let hire: [Pattern] = [.hireSukui, .hireYoyo, .hireHanabi, .hireRipple, .hireKaiyu]
-    /// サンタ娘だけが使える技(並びは、出す順)。絵と技ができたら入れる(いまは空)
-    public static let santa: [Pattern] = []
+    /// ノエルだけが使える技(並びは、出す順)
+    public static let santa: [Pattern] = [.santaGift, .santaBell, .santaCane, .santaTree, .santaDelivery]
     /// そのボスの専用の技
     public static func moves(of c: BossCharacter) -> [Pattern] {
         switch c {

@@ -77,7 +77,7 @@ public struct Bullet: Equatable, Sendable {
         case Bullet.orbitScript: u0 = w - u0; u2 = Double.pi - u2; u3 = -u3
         case Bullet.lateralScript: u0 = Double.pi - u0; u2 = -u2
         case Bullet.warpScript: u0 = Double.pi - u0
-        case Bullet.wobbleScript: u0 = -u0
+        case Bullet.wobbleScript, Bullet.hookScript: u0 = -u0
         case Bullet.kaiyuScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
         case Bullet.whirlScript: u0 = w - u0; u2 = Double.pi - u2; turn = -turn
         default: break
@@ -604,6 +604,8 @@ public enum Emit {
             break
         case .dragonWings, .dragonGeyser, .dragonClaw, .dragonTwister, .dragonJaws:
             emitDragonFree(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out)
+        case .santaGift, .santaBell, .santaCane, .santaTree, .santaDelivery:
+            emitSanta(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .hireSukui, .hireYoyo, .hireHanabi, .hireRipple, .hireKaiyu:
             emitHire(m, shot: k, cx: cx, cy: cy, px: px, py: py, rng: &rng, into: &out, awakened: awakened, salt: salt)
         case .puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake:

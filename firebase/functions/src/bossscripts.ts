@@ -15,9 +15,11 @@ export const characterScaleOf = (size: number): number =>
 export const HOLD_SCRIPT = 16, BRANCH_SCRIPT = 17, FREEZE_SCRIPT = 18, WIND_SCRIPT = 19, ORBIT_SCRIPT = 20, DRAG_SCRIPT = 21,
   LATERAL_SCRIPT = 22, CURVE_SCRIPT = 23, MISSILE_SCRIPT = 24, DARK_SCRIPT = 25, WARP = 26,
   WOBBLE_SCRIPT = 27, YOYO_SCRIPT = 28, KAIYU_SCRIPT = 29;
+/** ノエルのキャンディケイン: u1 秒まっすぐ飛び、そこから u2 秒のあいだ毎秒 u0 ラジアン曲がり、あとはまっすぐ(アプリの Bullet.hookScript) */
+export const HOOK_SCRIPT = 38;
 
 /** 専用の弾の番号(アプリの BulletLook.code と同じ: 16 + 種類 × 2 + 覚醒) */
-export const KIND = { fox: 0, ofuda: 1, plankton: 2, bubble: 3, ink: 4, missile: 5, hex: 6, shell: 7, flake: 8, icicle: 9, shard: 10, soul: 11, blade: 12, chain: 13, jelly: 14, eye: 15, tooth: 16, goo: 17, kingyo: 18, yoyo: 19, spark: 20, awa: 21 } as const;
+export const KIND = { fox: 0, ofuda: 1, plankton: 2, bubble: 3, ink: 4, missile: 5, hex: 6, shell: 7, flake: 8, icicle: 9, shard: 10, soul: 11, blade: 12, chain: 13, jelly: 14, eye: 15, tooth: 16, goo: 17, kingyo: 18, yoyo: 19, spark: 20, awa: 21, gift: 32, candy: 33, bell: 34, star: 35 } as const;
 export const lookCode = (kind: number, awakened: boolean): number => 16 + kind * 2 + (awakened ? 1 : 0);
 export const lookKind = (look: number | undefined): number | undefined => (look === undefined || look < 16 ? undefined : Math.floor((look - 16) / 2));
 export const lookAwakened = (look: number | undefined): boolean => look !== undefined && look >= 16 && (look - 16) % 2 === 1;
@@ -124,6 +126,17 @@ export function stepBossScript(b: BossBullet, dt: number, px: number, py: number
       const lat = Math.cos(6 * b.age + (b.u1 ?? 0)) * (b.u2 ?? 0);
       b.vx = Math.cos(u0) * (b.u3 ?? 0) - Math.sin(u0) * lat;
       b.vy = Math.sin(u0) * (b.u3 ?? 0) + Math.cos(u0) * lat;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      return "alive";
+    }
+    case HOOK_SCRIPT: {
+      b.age += dt;
+      const u1 = b.u1 ?? 0;
+      if (b.age >= u1 && b.age < u1 + (b.u2 ?? 0)) {
+        const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        const na = Math.atan2(b.vy, b.vx) + (b.u0 ?? 0) * dt;
+        b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+      }
       b.x += b.vx * dt; b.y += b.vy * dt;
       return "alive";
     }

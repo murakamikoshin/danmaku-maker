@@ -12,7 +12,7 @@ final class SpecialBulletLookTests: XCTestCase {
             }
         }
         XCTAssertNil(BulletLook.kind(of: 0)); XCTAssertNil(BulletLook.kind(of: 1)); XCTAssertNil(BulletLook.kind(of: 2))
-        XCTAssertNil(BulletLook.kind(of: 16 + 2 * 32))   // 竜王の弾(9種類)と、弾幕パック3の針(1.4.2)まで
+        XCTAssertNil(BulletLook.kind(of: 16 + 2 * 36))   // 竜王の弾(9種類)、弾幕パック3の針(1.4.2)、ノエルの弾4種(1.5.0)まで
         XCTAssertEqual(BulletLook.Kind.allCases.count, BulletLook.bodyRadius.count)
     }
 

@@ -2,9 +2,10 @@ import { inflateRawSync } from "node:zlib";
 import { BEAM_SCRIPT, BLAST_SCRIPT, BOOMERANG_SCRIPT, GIANT_SCRIPT, MINE_SCRIPT, RECIPES, WEAVE_SCRIPT, ZIGZAG_SCRIPT, emitRecipe } from "./adpatterns.js";
 import { pathPosition } from "./custompath.js";
 import { FEATHER_DECAY, FEATHER_DECEL_SECONDS, FEATHER_SCRIPT, RING_SCRIPT, RING_START_RADIUS, SHARD_SCRIPT, emitFallenAngel, isFallenAngelPattern } from "./fallenangel.js";
-import { CHARACTER_MOVE_Y_OFFSET, CURVE_SCRIPT, HOLD_SCRIPT, KAIYU_SCRIPT, characterScaleOf, setAnchorScale, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, WOBBLE_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
+import { CHARACTER_MOVE_Y_OFFSET, CURVE_SCRIPT, HOLD_SCRIPT, HOOK_SCRIPT, KAIYU_SCRIPT, characterScaleOf, setAnchorScale, LATERAL_SCRIPT, ORBIT_SCRIPT, WIND_SCRIPT, WOBBLE_SCRIPT, branchChildren, isDormant, lockBeam, stepBossScript } from "./bossscripts.js";
 import { WARP_SCRIPT, emitPuni, isPuniPattern } from "./puni.js";
 import { emitHire, isHirePattern } from "./hire.js";
+import { emitSanta, isSantaPattern } from "./santa.js";
 import { emitDragonFree, isDragonFreePattern, setDragonLv } from "./dragonfree.js";
 import { emitMech, isMechPattern } from "./mech.js";
 import { emitWitch, isWitchPattern } from "./witch.js";
@@ -38,7 +39,8 @@ const GIANT_HIT_R2 = 400;
 /** ふつうの弾の当たる半径、爆風の当たる時間、地雷の爆風の半径と散る弾の数。アプリの DanmakuConfig と同じ */
 /** ボス専用の弾の、弾そのものの半径(種類の順はアプリの BulletLook.Kind と同じ)と、自機の半径、専用の弾の最初の look */
 const BULLET_BODY_R = [3, 3, 2.5, 4, 6, 3, 3, 2, 3, 3, 2.5, 3, 3, 2.5, 3.5, 4, 2.5, 2.5, 3, 4, 2.5, 2.5,
-  3, 4, 4, 5, 4, 2.5, 5, 2, 2, 2.5];
+  3, 4, 4, 5, 4, 2.5, 5, 2, 2, 2.5,
+  4, 2.5, 3, 2.5];
 /** 画面の外に出た弾を消す距離。竜王の自由な技の弾は、画面の外(翼の先・飛び去った本体・自機から離れた爪あと)から入ってくるので広く取る(アプリの Bullet.offscreenMargin と同じ) */
 export function offscreenMargin(b: { script: number }): number {
   if (b.script === DRAGON_CURVE || b.script === DRAGON_WAIT) return 400;
@@ -262,7 +264,7 @@ function mirrorBullet(b: Bullet) {
     case ORBIT_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.u3 = -(b.u3 ?? 0); break;
     case LATERAL_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); b.u2 = -(b.u2 ?? 0); break;
     case WARP_SCRIPT: b.u0 = Math.PI - (b.u0 ?? 0); break;
-    case WOBBLE_SCRIPT: b.u0 = -(b.u0 ?? 0); break;
+    case WOBBLE_SCRIPT: case HOOK_SCRIPT: b.u0 = -(b.u0 ?? 0); break;
     case KAIYU_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
     case WHIRL_SCRIPT: b.u0 = W - (b.u0 ?? 0); b.u2 = Math.PI - (b.u2 ?? 0); b.turn = -b.turn; break;
     default: break;
@@ -413,6 +415,7 @@ function emitCore(m: Emitter, k: number, cx: number, cy: number, px: number, py:
       if (dragonMoveIndex(m.t) >= 0) break;
       if (isPack3Pattern(m.t)) { emitPack3(m, k, cx, cy, px, py, rng, out, MAX_BULLETS); break; }
       if (isDragonFreePattern(m.t)) { emitDragonFree(m, k, cx, cy, px, py, rng, out, MAX_BULLETS); break; }
+      if (isSantaPattern(m.t)) { emitSanta(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isHirePattern(m.t)) { emitHire(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isPuniPattern(m.t)) { emitPuni(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
       if (isMechPattern(m.t)) { emitMech(m, k, cx, cy, px, py, rng, out, awakened, salt, MAX_BULLETS); break; }
