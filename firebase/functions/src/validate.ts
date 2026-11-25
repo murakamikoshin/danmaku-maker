@@ -196,7 +196,9 @@ function homeVal(v: unknown, lo: number, hi: number, std: number): { ok: boolean
 }
 
 /** ボスの見た目の最大の番号(0〜4 は図形、5 は堕天使、6 は九尾の巫女、7 は雪の女王)。アプリの BossCharacter.maxLook と同じ */
-export const BOSS_LOOK_MAX = 13;
+export const BOSS_LOOK_MAX = 14;
+/** サンタ娘(期間限定で売るボス)の見た目の番号。1.5.0 から */
+export const SANTA_LOOK = 14;
 /** 竜王の見た目の番号(技で本体が動く・段階ごとに姿を選ぶ)。1.4.0 から */
 export const DRAGON_LOOK = 13;
 /** 専用の絵を持つボスの番号の最小値(これ以上は、大きさ・動きの設定を使わない) */
@@ -633,7 +635,9 @@ export function validatePublish(input: unknown): Validated {
   // 弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ(1.4.2〜)は 7(古い版は知らないパターンを読めない・3段階になる・高さが標準になる)
   const uses142 = allEms.some((m) => isPack3Pattern(m.t) || m.yr !== undefined)
     || (bPhases.v !== undefined && bPhases.v < PHASE_COUNT_MIN) || (waves ?? []).some((w) => w.phases !== undefined && w.phases !== null && w.phases < PHASE_COUNT_MIN);
-  const needs = uses142 ? 7 : manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // サンタ娘(1.5.0〜)は 8(古い版は、この番号のボスを知らない)
+  const usesSanta = bBossLook.v === SANTA_LOOK || (waves ?? []).some((w) => w.bossLook === SANTA_LOOK);
+  const needs = usesSanta ? 8 : uses142 ? 7 : manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;

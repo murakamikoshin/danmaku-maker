@@ -1,5 +1,12 @@
 import Foundation
 
+/// 期間限定の販売の名前。販売中かどうかは端末の時計では決めず、Remote Config の `<rawValue>_boss_on_sale` をサーバー側で切り替える
+public enum SaleSeason: String, CaseIterable, Sendable {
+    case xmas
+    /// Remote Config のキー
+    public var configKey: String { rawValue + "_boss_on_sale" }
+}
+
 /// 専用の絵と動き・当たり判定を持つボス(ドット絵のキャラクター)。
 /// ステージの `bossLook` の番号で選ぶ(0〜4 は図形のボス、5 以上がキャラクター)。
 /// 位置と当たり判定は計算に関わる(サーバーと同じ値)。絵は DanmakuApp 側にある。
@@ -22,6 +29,8 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     case hire = 12
     /// 竜王(技で本体が動く・範囲攻撃・段階ごとに姿を選ぶ。Dragon.swift)
     case dragon = 13
+    /// サンタ娘(クリスマスの期間限定で売るボス。1.5.0)。売り場に出すのは期間中だけ。持っている人・永久買い切りパックの人は、いつでも使える
+    case santa = 14
 
     /// 図形のボスの数(0〜4)。bossLook がこれ以上ならキャラクター
     public static let firstCharacterLook = 5
@@ -43,6 +52,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
         case .puni: return "puni"
         case .hire: return "hire"
         case .dragon: return "dragon"
+        case .santa: return "santa"
         }
     }
 
@@ -50,7 +60,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public var ticketEligible: Bool {
         switch self {
         case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .hire, .dragon: return true
-        case .puni: return false
+        case .puni, .santa: return false
         }
     }
 
@@ -59,15 +69,28 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
 
     /// 招待限定のボスか(買えず、チケットでも手に入らない。招待の特典としてだけ手に入る)。サーバーの INVITE_ONLY_BOSSES と同じにする
     public var inviteLimited: Bool { self == .puni }
-    /// 商品として買えるか
+    /// 商品として存在するか(= 永久買い切りパックに含むか)。**「いま売り場に出すか」ではない**。
+    /// 期間限定のボスも、期間に関係なく true(false にすると、永久買い切りパックの人が使えなくなり、買った人の復元もできなくなる)。
+    /// いま売り場に出すかは onShelf(_:) で決める
     public var purchasable: Bool { !inviteLimited }
+
+    /// 期間限定で売るボスの、販売期間の名前(Remote Config の `<これ>_boss_on_sale` で切り替える)。nil は、いつでも売っているボス
+    public var season: SaleSeason? { self == .santa ? .xmas : nil }
+
+    /// いま売り場(ショップ)に出すか。期間限定のボスは、その期間の販売がオンのときだけ。
+    /// 所持の判定(Ownership.has)には使わない: 売り場から消えても、買った人・永久買い切りパックの人は使える
+    public func onShelf(_ open: Set<SaleSeason>) -> Bool {
+        guard purchasable else { return false }
+        guard let season else { return true }
+        return open.contains(season)
+    }
 
     public static func of(look: Int) -> BossCharacter? { BossCharacter(rawValue: look) }
 
     /// 弾(自機のショット)が当たる半径(論理px)。大きさの設定(小・中・大)は、キャラクターでは使わない
     public var hitRadius: Double {
         switch self {
-        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire: return 40
+        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire, .santa: return 40
         case .dragon: return 56
         }
     }
@@ -77,7 +100,7 @@ public enum BossCharacter: Int, CaseIterable, Sendable {
     public func position(waveT: Double) -> Point {
         let t = max(0, waveT)
         switch self {
-        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire:
+        case .fallenAngel, .kitsune, .iceQueen, .reaper, .witch, .mech, .puni, .hire, .santa:
             return Point(x: DanmakuConfig.width / 2 + sin(t * 60 * 0.012) * 30,
                          y: 128 + sin(t * 60 * 0.02) * 5)
         case .dragon:

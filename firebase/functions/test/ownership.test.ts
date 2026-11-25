@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { bossKeysOf, fetchPurchasedIds, ownsBossByPurchase, providerMarks } from "../src/ownership.js";
+import { BOSS_BY_LOOK, BOSS_KEYS, NOT_IN_LIFETIME, PAID_ONLY_BOSSES, SEASONAL_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, ownsBossByPurchase, providerMarks } from "../src/ownership.js";
+import { simulate, type SimStage } from "../src/fullsim.js";
+import { validatePublish } from "../src/validate.js";
 
 describe("ボスを持っているか", () => {
   it("ステージで使っている専用の絵のボスを集める(図形のボスは数えない)", () => {
@@ -29,6 +32,86 @@ describe("ボスを持っているか", () => {
     let url = "";
     await fetchPurchasedIds("a/b", "sk", async (u) => { url = u; return { ok: true, status: 200, json: async () => ({ subscriber: {} }) }; });
     expect(url).toBe("https://api.revenuecat.com/v1/subscribers/a%2Fb");
+  });
+});
+
+describe("期間限定のボス(サンタ娘)", () => {
+  const p = "com.koshin.danmakumaker.";
+  const lifetime = new Set([p + "lifetime"]);
+  const bought = new Set([p + "boss.santa"]);
+  const nothing = new Set([p + "boss.kitsune", p + "patternpack"]);
+  const santaStage = { bossLook: 14 };
+  const santaInWave = { bossLook: 3, waves: [{ bossLook: 6 }, { bossLook: 14 }] };
+
+  it("番号 14 が santa。永久買い切りパックに含み、無料チケットではもらえない", () => {
+    expect(BOSS_BY_LOOK[14]).toBe("santa");
+    expect(BOSS_KEYS).toContain("santa");
+    expect(SEASONAL_BOSSES).toEqual(["santa"]);
+    expect(NOT_IN_LIFETIME).not.toContain("santa");
+    expect(PAID_ONLY_BOSSES).toContain("santa");
+    expect(PAID_ONLY_BOSSES).toContain("puni");
+    // 期間限定のボスは、どれも永久買い切りパックに含む(約束: これから追加される課金コンテンツも全部)
+    for (const k of SEASONAL_BOSSES) expect(NOT_IN_LIFETIME).not.toContain(k);
+  });
+
+  it("投稿: 永久買い切りパックの人は通る(サーバーは販売期間を見ないので、期間のあとに買った人も同じ)", () => {
+    expect(ownsBossByPurchase("santa", lifetime)).toBe(true);
+    expect(missingBosses(santaStage, [], lifetime)).toEqual([]);
+    expect(missingBosses(santaInWave, [], lifetime)).toEqual([]);
+  });
+
+  it("投稿: 期間中に単品で買った人は通る(期間が終わっても、買った記録は残る)", () => {
+    expect(ownsBossByPurchase("santa", bought)).toBe(true);
+    expect(missingBosses(santaStage, [], bought)).toEqual([]);
+    // 連戦で他のボスも使っていれば、そちらは別に要る
+    expect(missingBosses(santaInWave, [], bought)).toEqual(["kitsune"]);
+    expect(missingBosses(santaInWave, ["kitsune"], bought)).toEqual([]);
+  });
+
+  it("投稿: 持っていない人は断られる(他の商品を買っていても)", () => {
+    expect(ownsBossByPurchase("santa", nothing)).toBe(false);
+    expect(ownsBossByPurchase("santa", new Set())).toBe(false);
+    expect(missingBosses(santaStage, [], nothing)).toEqual(["santa"]);
+    expect(missingBosses(santaStage, [], new Set())).toEqual(["santa"]);
+    expect(missingBosses(santaInWave, ["kitsune"], nothing)).toEqual(["santa"]);
+    // 無料チケットのボスを持っていても、サンタ娘の代わりにはならない
+    expect(missingBosses(santaStage, ["fallen_angel", "dragon"], new Set())).toEqual(["santa"]);
+  });
+
+  it("プレイ・ランキング: 持っているかに関わらず、誰の記録でも同じに計算できる(遊ぶのは誰でも)", () => {
+    const input = { name: "xmas", authorName: "Koshin", clearReplay: "AQIDBAUGBwg=", mode: "boss", durationSec: 60, bossHp: 300, bossMove: 0, bossLook: 14,
+      emitters: [{ t: "ring", x: 0.5, y: 0.2, s: 0, e: 20, i: 1, c: 16, v: 2, r: 6, k: 0, ph: 0 }] };
+    const v = validatePublish(input);
+    expect(v.ok).toBe(true);
+    if (!v.ok) return;
+    expect(v.stage.bossLook).toBe(14);
+    expect(v.stage.needs).toBe(8);   // 1.4.2 までのアプリには「アップデートが必要」と案内する
+    // 記録の検証(プレイ・ランキング)は、ステージと操作だけで決まる。所持は引数にない
+    const a = simulate(v.stage as unknown as SimStage, new Int8Array(0), 0, "standard");
+    const b = simulate(v.stage as unknown as SimStage, new Int8Array(0), 0, "standard");
+    expect(a.outcome).toBe(b.outcome);
+    expect(a).toEqual(b);
+  });
+
+  it("Remote Config のひな形: 売り場に出すかの値は、既定がオフで、日時の条件のときだけオン", () => {
+    const t = JSON.parse(readFileSync(new URL("../../remoteconfig.template.json", import.meta.url), "utf8")) as {
+      conditions: { name: string; expression: string }[];
+      parameters: Record<string, { defaultValue: { value: string }; conditionalValues?: Record<string, { value: string }>; valueType: string }>;
+    };
+    const p = t.parameters["xmas_boss_on_sale"]!;
+    expect(p.valueType).toBe("BOOLEAN");
+    expect(p.defaultValue.value).toBe("false");   // 取れなかった人・期間外は、売り場に出さない
+    const on = Object.entries(p.conditionalValues ?? {}).filter(([, v]) => v.value === "true").map(([k]) => k);
+    expect(on).toHaveLength(1);
+    const cond = t.conditions.find((c) => c.name === on[0])!;
+    // 端末の時計ではなく、サーバーの日時の条件(始まりと終わりの両方、日本時間)
+    expect(cond.expression).toMatch(/^dateTime > dateTime\('\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d', 'Asia\/Tokyo'\) && dateTime <= dateTime\('\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d', 'Asia\/Tokyo'\)$/);
+  });
+
+  it("範囲外の番号(15)は、まだ受け付けない", () => {
+    const r = validatePublish({ name: "x", authorName: "Koshin", clearReplay: "AQIDBAUGBwg=", mode: "boss", durationSec: 60, bossHp: 300, bossMove: 0, bossLook: 15,
+      emitters: [{ t: "ring", x: 0.5, y: 0.2, s: 0, e: 20, i: 1, c: 16, v: 2, r: 6, k: 0, ph: 0 }] });
+    expect(r).toEqual({ ok: false, error: "look" });
   });
 });
 

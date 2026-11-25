@@ -1,4 +1,11 @@
 {
+  "conditions": [
+    {
+      "name": "xmas_sale_2026",
+      "expression": "dateTime > dateTime('2026-12-01T00:00:00', 'Asia/Tokyo') && dateTime <= dateTime('2026-12-26T17:00:00', 'Asia/Tokyo')",
+      "tagColor": "GREEN"
+    }
+  ],
   "parameters": {
     "swipe_enabled": {
       "defaultValue": {
@@ -27,6 +34,18 @@
       },
       "description": "これより古い版は「アップデートが必要です」(閉じられない)。古い版だと壊れるときだけ。空なら出さない。1.2.0 から",
       "valueType": "STRING"
+    },
+    "xmas_boss_on_sale": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "conditionalValues": {
+        "xmas_sale_2026": {
+          "value": "true"
+        }
+      },
+      "description": "クリスマス限定ボス(サンタ娘)を、ショップの売り場に出すか。期間(条件 xmas_sale_2026: 日本時間 12/26 17:00 まで)の間だけ true。端末の時計ではなく、取りに来た時刻でサーバーが決める。買った人・永久買い切りパックの人が使えるかには関係しない(docs/SEASONAL_BOSS.md)。1.5.0 から",
+      "valueType": "BOOLEAN"
     }
   }
 }

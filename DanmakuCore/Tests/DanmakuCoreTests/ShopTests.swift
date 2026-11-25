@@ -63,7 +63,7 @@ final class ShopTests: XCTestCase {
         o.posts = 10
         XCTAssertTrue(o.hasUnlocked(.rainbow))
         XCTAssertFalse(Ownership(owned: Set(Product.all)).hasUnlocked(.gold), "買っても、投稿数で解放されるものは解放されない")
-        XCTAssertEqual(Product.all.count, 61)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個、竜王で49個、弾幕パック3の12個で61個)
+        XCTAssertEqual(Product.all.count, 62)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個、竜王で49個、弾幕パック3の12個で61個)
     }
 
     func testLifetimeGrantsPurchasableBossesButNotInviteOnly() {
@@ -75,9 +75,64 @@ final class ShopTests: XCTestCase {
         XCTAssertTrue(invited.has(.puni), "招待の特典でもらえば使える")
     }
 
+    // MARK: 期間限定のボス(「商品として存在する」と「いま売り場に出す」は別)
+
+    func testSeasonalBossIsInLifetimeRegardlessOfSeason() {
+        let santa = BossCharacter.santa
+        XCTAssertEqual(santa.season, .xmas)
+        XCTAssertTrue(santa.purchasable, "商品として存在する(永久買い切りパックに含む)。期間外でも true")
+        // 所持の判定は、販売中かどうかを受け取らない。永久買い切りパックの人は、期間に関係なく使える(期間のあとに買った人も)
+        XCTAssertTrue(Ownership(owned: [.lifetime]).has(santa))
+        XCTAssertFalse(Ownership(owned: [.lifetime]).canBuy(.boss(santa)), "永久買い切りパックの人に、買うボタンは出さない")
+    }
+
+    func testSeasonalBossOwnedByPurchaseForever() {
+        // 期間中に買った人: 期間が終わっても使える。商品 ID は期間外でも読める(購入の復元)
+        let id = Product.idPrefix + "boss.santa"
+        XCTAssertEqual(Product(id: id), .boss(.santa))
+        XCTAssertTrue(Product.all.contains(.boss(.santa)), "期間外でも、商品の一覧(復元・価格の取得)に残す")
+        let restored = Ownership(productIDs: [id])
+        XCTAssertTrue(restored.has(.santa))
+        XCTAssertFalse(restored.has(.kitsune))
+        XCTAssertEqual(Product.boss(.santa).yen, 400)
+    }
+
+    func testSeasonalBossNotOwnedWithoutPurchase() {
+        XCTAssertFalse(Ownership().has(.santa))
+        XCTAssertFalse(Ownership(owned: [.boss(.kitsune), .patternPack, .set(.sakura)]).has(.santa))
+        // 無料チケットではもらえない(サーバーの PAID_ONLY_BOSSES と同じ)
+        XCTAssertFalse(BossCharacter.santa.ticketEligible)
+        XCTAssertFalse(BossCharacter.santa.inviteLimited)
+    }
+
+    func testShelfFollowsSeasonButOwnershipDoesNot() {
+        let santa = BossCharacter.santa
+        XCTAssertFalse(santa.onShelf([]), "期間外は売り場に出さない")
+        XCTAssertTrue(santa.onShelf([.xmas]), "期間中は売り場に出す")
+        // いつも売っているボスは、期間に関係なく売り場に出る。招待限定は出ない
+        for b in BossCharacter.allCases where b.season == nil && !b.inviteLimited {
+            XCTAssertTrue(b.onShelf([])); XCTAssertTrue(b.onShelf([.xmas]))
+        }
+        XCTAssertFalse(BossCharacter.puni.onShelf([.xmas]))
+        // 期間限定のボスは、どれも商品として存在する(= 永久買い切りパックに含む)
+        for b in BossCharacter.allCases where b.season != nil {
+            XCTAssertTrue(b.purchasable)
+            XCTAssertTrue(Ownership(owned: [.lifetime]).has(b))
+            XCTAssertTrue(Ownership(owned: [.boss(b)]).has(b))
+        }
+        XCTAssertEqual(SaleSeason.xmas.configKey, "xmas_boss_on_sale")
+    }
+
+    func testSeasonalBossStageSurvivesSanitizeAndNeedsNewApp() {
+        XCTAssertEqual(BossCharacter.maxLook, 14)
+        XCTAssertEqual(DanmakuConfig.contentLevel, 8)
+        let st = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: [], bossLook: 14).sanitized()
+        XCTAssertEqual(st.bossLook, 14)
+    }
+
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 61)   // 弾幕パック3(1.4.2)で12個増えた
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 61)
+        XCTAssertEqual(Product.all.count, 62)   // 弾幕パック3(1.4.2)で12個、期間限定のサンタ娘(1.5.0)で1個増えた
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 62)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))

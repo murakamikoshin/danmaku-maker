@@ -154,6 +154,7 @@ extension BossCharacter {
         case .mech: return "mech_idle_sheet"
         case .puni: return "puni_idle_sheet"
         case .hire: return "hire_idle_sheet"
+        case .santa: return "santa_idle_sheet"      // 絵は /danmaku-boss の手順で作ってから Resources/Bosses に入れる(まだ無い)
         case .dragon: return nil      // 竜王は DragonArt(色の番号の絵を姿ごとに塗る)
         }
     }
@@ -168,6 +169,7 @@ extension BossCharacter {
         case .mech: return "mech_awakened_idle_sheet"
         case .puni: return "puni_awakened_idle_sheet"
         case .hire: return "hire_awakened_idle_sheet"
+        case .santa: return "santa_awakened_idle_sheet"
         case .dragon: return nil
         }
     }

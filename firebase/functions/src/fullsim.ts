@@ -94,7 +94,7 @@ const BOSS_RADII = [17, 24, 34] as const;
 const bossRadiusOf = (size: number): number => (size >= 10 && size <= 44 ? size : BOSS_RADII[Math.min(Math.max(size, 0), 2)]!);
 /** 専用の絵を持つボス(堕天使)。bossLook がこの番号のとき、位置と当たり半径が図形のボスと違う。アプリの BossCharacter と同じ */
 /** 専用の絵を持つボス(堕天使 5・九尾 6)。位置と当たり判定はアプリの BossCharacter と同じ */
-const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7, REAPER_LOOK = 8, WITCH_LOOK = 9, MECH_LOOK = 10, PUNI_LOOK = 11, HIRE_LOOK = 12;
+const FALLEN_ANGEL_LOOK = 5, KITSUNE_LOOK = 6, ICE_QUEEN_LOOK = 7, REAPER_LOOK = 8, WITCH_LOOK = 9, MECH_LOOK = 10, PUNI_LOOK = 11, HIRE_LOOK = 12, SANTA_LOOK = 14;
 const FALLEN_ANGEL_RADIUS = 40;
 const BOSS_MOVES = [{ a: 0, w: 0 }, { a: 0.25, w: 0.6 }, { a: 0.32, w: 1.3 }] as const;
 /** ボスの動き(Swift の Simulation.bossPoint と同じ式) */
@@ -630,7 +630,7 @@ export function createSim(stage: SimStage, shotType: ShotType = "standard", obse
 
     const sp = spec();
     const waveT = t - waveStart;
-    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK || sp.look === REAPER_LOOK || sp.look === WITCH_LOOK || sp.look === MECH_LOOK || sp.look === PUNI_LOOK || sp.look === HIRE_LOOK || sp.look === DRAGON_LOOK;
+    const angel = sp.look === FALLEN_ANGEL_LOOK || sp.look === KITSUNE_LOOK || sp.look === ICE_QUEEN_LOOK || sp.look === REAPER_LOOK || sp.look === WITCH_LOOK || sp.look === MECH_LOOK || sp.look === PUNI_LOOK || sp.look === HIRE_LOOK || sp.look === DRAGON_LOOK || sp.look === SANTA_LOOK;
     const wt = Math.max(0, waveT);
     let bp = sp.boss && !angel ? bossPoint(sp.move, wt) : { x: 0, y: 0 };
     if (sp.boss && !angel && (sp.homeDX !== 0 || sp.homeDY !== 0)) {

@@ -20,7 +20,7 @@ final class HirePatternTests: XCTestCase {
         XCTAssertEqual(Pattern.hire.map(\.bossCharacter), Array(repeating: .hire, count: 5))
         XCTAssertTrue(BossCharacter.hire.purchasable && BossCharacter.hire.ticketEligible && !BossCharacter.hire.inviteLimited)
         // 竜王(13)が増えたので、選べる最大の番号は 13
-        XCTAssertEqual(BossCharacter.maxLook, 13)
+        XCTAssertEqual(BossCharacter.maxLook, 14)   // 14 はサンタ娘(1.5.0)
     }
 
     func testSukuiFansOutGoldfishThenRests() {

@@ -4,9 +4,10 @@ import Foundation
 public enum DanmakuConfig {
     public static let formatVersion = 1
     /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP、
-    /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個、7=1.4.2〜の弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ)。
+    /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個、7=1.4.2〜の弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ、
+    /// 8=1.5.0〜のサンタ娘(期間限定のボス))。
     /// サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 7
+    public static let contentLevel = 8
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -262,6 +263,8 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
     public static let puni: [Pattern] = [.puniPoyon, .puniShower, .puniKorokoro, .puniPurupuru, .puniOsusowake]
     /// 金魚姫だけが使える技(並びは、出す順)
     public static let hire: [Pattern] = [.hireSukui, .hireYoyo, .hireHanabi, .hireRipple, .hireKaiyu]
+    /// サンタ娘だけが使える技(並びは、出す順)。絵と技ができたら入れる(いまは空)
+    public static let santa: [Pattern] = []
     /// そのボスの専用の技
     public static func moves(of c: BossCharacter) -> [Pattern] {
         switch c {
@@ -274,6 +277,7 @@ public enum Pattern: String, Codable, CaseIterable, Sendable {
         case .puni: return puni
         case .hire: return hire
         case .dragon: return dragon + dragonFree
+        case .santa: return santa
         }
     }
     /// 九尾の巫女だけが使える技(並びは、出す順)

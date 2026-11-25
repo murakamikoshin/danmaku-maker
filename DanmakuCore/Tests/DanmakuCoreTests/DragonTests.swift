@@ -70,7 +70,7 @@ final class DragonTests: XCTestCase {
         d.forms = [0, 0, 0]
         XCTAssertNil(d.sanitized().forms, "全部通常なら保存しない")
         XCTAssertEqual(Pattern.dragon.map(\.bossCharacter), Array(repeating: .dragon, count: 10))
-        XCTAssertEqual(BossCharacter.maxLook, 13)
+        XCTAssertEqual(BossCharacter.maxLook, 14)   // 14 はサンタ娘(1.5.0)
         XCTAssertEqual(BossCharacter.dragon.productKey, "dragon")
         // 保存して読み直しても、姿は残る
         let data = try! JSONEncoder().encode(s)

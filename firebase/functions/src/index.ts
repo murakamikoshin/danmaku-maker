@@ -17,7 +17,7 @@ import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
 import { prepareWeek, RANKED_STAGE_VERSION, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { syncLatestVersion } from "./appversion.js";
-import { bossKeysOf, fetchPurchasedIds, ownsBossByPurchase, providerMarks } from "./ownership.js";
+import { BOSS_KEYS, PAID_ONLY_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
@@ -149,7 +149,7 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60, secre
   if (needBosses.length > 0) {
     const bought = await fetchPurchasedIds(uid, revenuecatApiKey.value() || undefined);
     if (bought === null) logger.warn("boss-ownership-unverified", { uid, bosses: needBosses });
-    else if (!needBosses.every((k) => ownsBossByPurchase(k, bought))) throw new HttpsError("permission-denied", "boss-not-owned");
+    else if (missingBosses(v.stage, (user.get("freeBosses") as string[] | undefined) ?? [], bought).length > 0) throw new HttpsError("permission-denied", "boss-not-owned");
   }
   // 1日に公開できる数の上限(「URLを知っている人だけ」の投稿は数えない)
   // 購入者かどうかは、アプリの申告か、購入の通知(RevenueCat)で残した記録(users.entitlements)。申告だけでも、1日 HARD_DAILY_POSTS 本まで
@@ -226,12 +226,8 @@ async function rewardInviter(r: { granted: boolean; inviter?: string } | undefin
   if (r?.granted && r.inviter) await notifyReward(db, r.inviter, "invite");
 }
 
-/** ボスの商品名(アプリの BossCharacter.productKey と同じ) */
-const BOSS_KEYS = ["fallen_angel", "kitsune", "ice_queen", "reaper", "witch", "mech", "puni", "hire", "dragon"];
 /** 1 体もらうのに使うチケットの枚数(書いていないボスは 1 枚)。竜王は 3 枚(アプリの BossCharacter.ticketCost と同じ) */
 export const TICKET_COST: Readonly<Record<string, number>> = { dragon: 3 };
-/** 無料チケットでは手に入らない、課金専用のボス(Swift の BossCharacter.ticketEligible が false のもの) */
-const PAID_ONLY_BOSSES: string[] = ["puni"];
 
 /**
  * 無料チケットで、ボスを1体もらう。チケットは初めて公開したときに1枚もらえる。

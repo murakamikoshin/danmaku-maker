@@ -25,7 +25,9 @@ final class PuniPatternTests: XCTestCase {
         XCTAssertFalse(Product.all.contains { $0.id.hasSuffix("boss.puni") })
         XCTAssertNil(Product(id: Product.idPrefix + "boss.puni").flatMap { Product.all.contains($0) ? $0 : nil })
         // 他のボスは、これまでどおり
-        for b in BossCharacter.allCases where b != .puni { XCTAssertTrue(b.purchasable && b.ticketEligible && !b.inviteLimited) }
+        // 他のボスは、これまでどおり(期間限定のサンタ娘は、買えるがチケットではもらえない)
+        for b in BossCharacter.allCases where b != .puni { XCTAssertTrue(b.purchasable && !b.inviteLimited) }
+        for b in BossCharacter.allCases where b != .puni && b.season == nil { XCTAssertTrue(b.ticketEligible) }
     }
 
     func testNormalFormJustDropsPuniBullets() {

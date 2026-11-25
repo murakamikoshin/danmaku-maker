@@ -11,6 +11,7 @@ struct DanmakuApp: App {
     @StateObject private var purchases = PurchaseService()
     @StateObject private var swipeConfig = SwipeConfig()
     @StateObject private var battleConfig = BattleConfig()
+    @StateObject private var seasonConfig = SeasonConfig()
     @ObservedObject private var uiTheme = UIThemeStore.shared
     @Environment(\.scenePhase) private var scenePhase
 
@@ -38,6 +39,7 @@ struct DanmakuApp: App {
                 .environmentObject(purchases)
                 .environmentObject(swipeConfig)
                 .environmentObject(battleConfig)
+                .environmentObject(seasonConfig)
                 .environmentObject(CosmeticsStore.shared)
                 .environmentObject(RewardStore.shared)
                 .environmentObject(AdPatternStore.shared)
@@ -52,7 +54,7 @@ struct DanmakuApp: App {
                 .animation(.easeOut(duration: 0.25), value: ads.showTrackingPrimer)
                 .task {
                     auth.start()
-                    Task { await swipeConfig.refresh(); await battleConfig.refresh() }
+                    Task { await swipeConfig.refresh(); await battleConfig.refresh(); await seasonConfig.refresh() }
                     // 自分のステージへの反応の通知。開いたら、そのステージを開く
                     NotificationService.shared.onOpenStage = { deepLink.stageID = $0.uppercased() }
                     // ステージの共有ページ(招待リンク経由)から入れた人: そのステージを開く

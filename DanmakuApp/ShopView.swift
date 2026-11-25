@@ -7,6 +7,7 @@ struct ShopView: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var rewards: RewardStore
+    @EnvironmentObject private var seasons: SeasonConfig
     @State private var showRemoveAds = false
     @State private var celebrate = false
     @State private var tab: ShopTab
@@ -171,7 +172,8 @@ struct ShopView: View {
         case .shots:
             ShotSection().id("shots")
         case .bosses:
-            ForEach(BossCharacter.allCases.filter(\.purchasable), id: \.self) { BossShopCard(boss: $0).id("boss." + $0.productKey) }
+            // 売り場に出すのは、いま販売中のボスだけ。期間限定のボスは、期間外は出さない(持っている人には「購入済み」として残す)
+            ForEach(BossCharacter.allCases.filter { seasons.onShelf($0) || ($0.season != nil && cosmetics.ownership.has($0)) }, id: \.self) { BossShopCard(boss: $0).id("boss." + $0.productKey) }
         case .looks:
             RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
@@ -559,7 +561,7 @@ private struct CustomSlotRow: View {
 /// 永久買い切りパック: いまある課金コンテンツ・広告削除・これから増える課金コンテンツが、全部使える
 private struct LifetimeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
-    private let items = ["lifetime.item.1", "lifetime.item.2", "lifetime.item.3", "lifetime.item.4"]
+    private let items = ["lifetime.item.1", "lifetime.item.2", "lifetime.item.3", "lifetime.item.5", "lifetime.item.4"]
 
     /// 値上げの日時(2026年12月1日 0:00 日本時間)。App Store Connect の値段の変更も、この日に予約してある
     static let priceUpDate: Date = {
@@ -986,6 +988,14 @@ private struct BossShopCard: View {
                     .frame(maxWidth: .infinity)
                     .background(GameStyle.night, in: PixelRect(cornerRadius: 12))
                     Text(L("shop.boss.\(boss.rawValue).moves")).font(.caption).foregroundStyle(.secondary)
+                    if boss.season != nil {
+                        // 期間限定: 買えるのは期間中だけ。買ったあとは、ずっと使える。永久買い切りパックにも入っている
+                        VStack(alignment: .leading, spacing: 4) {
+                            Label("shop.boss.seasonal", systemImage: "snowflake").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                            Text("shop.boss.seasonal.note").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        }
+                        .accessibilityIdentifier("shop.boss.seasonal")
+                    }
                     if boss == .dragon {
                         // おまけ: ステージの BGM に竜王の曲 2 つ
                         Label("shop.boss.dragon.bgm", systemImage: "music.note").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)

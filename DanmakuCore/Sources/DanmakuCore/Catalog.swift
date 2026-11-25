@@ -124,6 +124,7 @@ public enum Product: Hashable, Sendable {
         for p in Pattern.pack3 { list.append(.pattern(p)) }
         list.append(.patternPack3)
         list.append(.patternMaker)
+        // 期間限定のボスも、期間に関係なく入れる(買った人の復元と、商品 ID の読み取りに要る)。売り場に出すかは BossCharacter.onShelf
         for b in BossCharacter.allCases where b.purchasable { list.append(.boss(b)) }
         list.append(.lifetime)
         return list
@@ -178,7 +179,8 @@ public struct Ownership: Equatable, Sendable {
     }
 
     /// そのボスを、公開するステージで使えるか(エディタで置いて試すだけなら、持っていなくてもできる)
-    /// 永久買い切りで使えるのは、買えるボスだけ(招待限定のぷにまるは、招待の特典でしか手に入らない)
+    /// 永久買い切りで使えるのは、商品として存在するボスだけ(招待限定のぷにまるは、招待の特典でしか手に入らない)。
+    /// 期間限定のボスは、売り場に出ていない期間も、永久買い切りの人・買った人は使える(販売中かどうかは、ここでは見ない)
     public func has(_ boss: BossCharacter) -> Bool { (hasLifetime && boss.purchasable) || owned.contains(.boss(boss)) || freeBosses.contains(boss) }
 
     /// 弾幕パターン作成モードを使えるか

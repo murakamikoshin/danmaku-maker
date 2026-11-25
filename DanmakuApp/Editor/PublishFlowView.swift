@@ -15,6 +15,7 @@ struct PublishFlowView: View {
     @EnvironmentObject private var ads: AdsService
     @EnvironmentObject private var purchases: PurchaseService
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var seasons: SeasonConfig
     @State private var showShop = false
     @ObservedObject private var notifications = NotificationService.shared
     /// 投稿後の「通知を受け取る?」に答えたか(この端末で1回だけ聞く)
@@ -113,6 +114,9 @@ struct PublishFlowView: View {
                     }
                     if boss.inviteLimited {
                         Text("publish.boss.invite").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
+                    } else if !seasons.onShelf(boss) {
+                        // 期間限定のボスで、いまは単品で売っていない。永久買い切りパックなら使える
+                        Text("publish.boss.seasonal").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     } else if cosmetics.canClaim(boss) {
                         // 初めての公開は、無料チケットで好きなボスを1体もらえる
                         TicketCount()
@@ -133,7 +137,7 @@ struct PublishFlowView: View {
                         Text(String(format: L("shop.boss.ticket.short"), boss.ticketCost, cosmetics.availableBossClaims, boss.ticketCost - cosmetics.availableBossClaims))
                             .font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     }
-                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { shopFocus = "boss.\(boss.productKey)"; showShop = true }
+                    GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { shopFocus = seasons.shopFocus(for: boss); showShop = true }
                         .accessibilityIdentifier("publish.boss.shop")
                 } else if limitReached {
                     GameActionButton(title: "publish.quota.watch", systemImage: "play.rectangle.fill", fill: GameStyle.reward) { Task { await watchForExtra() } }

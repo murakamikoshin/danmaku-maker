@@ -6,10 +6,21 @@ import { createHash } from "node:crypto";
 
 /** ボスの見た目の番号 → 商品名(アプリの BossCharacter.productKey と同じ) */
 export const BOSS_BY_LOOK: Readonly<Record<number, string>> = {
-  5: "fallen_angel", 6: "kitsune", 7: "ice_queen", 8: "reaper", 9: "witch", 10: "mech", 11: "puni", 12: "hire", 13: "dragon",
+  5: "fallen_angel", 6: "kitsune", 7: "ice_queen", 8: "reaper", 9: "witch", 10: "mech", 11: "puni", 12: "hire", 13: "dragon", 14: "santa",
 };
 /** 永久買い切りパックでも手に入らないボス(招待限定。アプリの BossCharacter.purchasable が false のもの) */
 export const NOT_IN_LIFETIME: readonly string[] = ["puni"];
+/**
+ * 期間限定で売るボス(アプリの BossCharacter.season が nil でないもの)。
+ * **サーバーは販売期間を見ない**: 持っているかは、買った記録(単品か永久買い切りパック)だけで決める。
+ * 期間が終わって売り場から消えても、買った人・永久買い切りパックの人(期間のあとに買った人も)は公開できる。
+ * だから NOT_IN_LIFETIME には入れない(入れると、永久買い切りパックの「これから追加される課金コンテンツも全部」の約束を破る)
+ */
+export const SEASONAL_BOSSES: readonly string[] = ["santa"];
+/** ボスの商品名の一覧(アプリの BossCharacter.productKey と同じ) */
+export const BOSS_KEYS: readonly string[] = Object.values(BOSS_BY_LOOK);
+/** 無料チケットでは手に入らないボス(アプリの BossCharacter.ticketEligible が false のもの)。招待限定のぷにまると、期間限定のサンタ娘 */
+export const PAID_ONLY_BOSSES: readonly string[] = ["puni", "santa"];
 export const PRODUCT_PREFIX = "com.koshin.danmakumaker.";
 
 type LookPart = { bossLook?: number };
@@ -31,6 +42,14 @@ export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[]; bgm?
 export function ownsBossByPurchase(key: string, purchased: ReadonlySet<string>): boolean {
   if (purchased.has(`${PRODUCT_PREFIX}boss.${key}`)) return true;
   return !NOT_IN_LIFETIME.includes(key) && purchased.has(`${PRODUCT_PREFIX}lifetime`);
+}
+
+/**
+ * 公開しようとしているステージで、作者が持っていないボス(空なら公開してよい)。
+ * free は、チケット・招待でもらったボス(users.freeBosses)。purchased は RevenueCat に聞いた、買った商品の ID
+ */
+export function missingBosses(stage: Parameters<typeof bossKeysOf>[0], free: readonly string[], purchased: ReadonlySet<string>): string[] {
+  return bossKeysOf(stage).filter((k) => !free.includes(k) && !ownsBossByPurchase(k, purchased));
 }
 
 type FetchLike = (url: string, init: { headers: Record<string, string>; signal?: AbortSignal }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;

@@ -384,6 +384,7 @@ private struct EnemyControls: View {
     /// 連戦の場面か(説明の文を「次の場面へ」にする)
     var inSequence = false
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var seasons: SeasonConfig
     /// いま置いている発射台に、キャラクターのボス専用の技があるか。見た目を変えると使えなくなるので、確認してから「放射」に置き換える
     var usesCharacterPatterns = false
     var convertCharacterPatterns: () -> Void = {}
@@ -458,7 +459,8 @@ private struct EnemyControls: View {
                     // お試し中: テストプレイまでは使える。公開には購入かチケットが要る
                     VStack(alignment: .leading, spacing: 8) {
                         Label("editor.boss.trial", systemImage: "hourglass").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
-                        Text(b.inviteLimited ? "editor.boss.trial.invite" : "editor.boss.trial.note").font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.ink.opacity(0.85))
+                        // 期間限定のボスで、いま売り場に出ていないときは、永久買い切りパックへ案内する
+                        Text(b.inviteLimited ? "editor.boss.trial.invite" : seasons.onShelf(b) ? "editor.boss.trial.note" : "editor.boss.trial.seasonal").font(.system(size: 12, weight: .semibold)).foregroundStyle(GameStyle.ink.opacity(0.85))
                             .fixedSize(horizontal: false, vertical: true)
                         if b.purchasable {
                             Button { gameTap(); showBossShop = true } label: {
@@ -475,7 +477,7 @@ private struct EnemyControls: View {
                     .padding(12).frame(maxWidth: .infinity, alignment: .leading)
                     .background(GameStyle.yellow, in: PixelRect(cornerRadius: 12))
                     .accessibilityIdentifier("editor.boss.trial")
-                    .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: "boss.\(b.productKey)") }
+                    .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: seasons.shopFocus(for: b)) }
                 }
                 if BossCharacter.of(look: bossLook) == .dragon, let forms {
                     // 竜王: 段階ごとに姿を選ぶ(技の強さも姿で変わる)

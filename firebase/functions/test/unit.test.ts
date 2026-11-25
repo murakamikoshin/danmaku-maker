@@ -512,7 +512,7 @@ describe("撃ち方・ボスの大きさと見た目・雑魚・パターンの�
     expect(validatePublish(good({ bossSize: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(good({ bossLook: 2 }))).toEqual({ ok: false, error: "look" });
     expect(validatePublish(boss({ bossSize: 3 }))).toEqual({ ok: false, error: "look" });
-    expect(validatePublish(boss({ bossLook: 14 }))).toEqual({ ok: false, error: "look" });
+    expect(validatePublish(boss({ bossLook: 15 }))).toEqual({ ok: false, error: "look" });   // 14 はサンタ娘(1.5.0)
     expect(validatePublish(good({ mookLook: 2 }))).toEqual({ ok: false, error: "look" });   // 雑魚を出さないのに、見た目だけは付けられない
   });
 
