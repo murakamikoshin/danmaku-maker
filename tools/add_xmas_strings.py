@@ -8,6 +8,18 @@ P = pathlib.Path(__file__).resolve().parent.parent / 'DanmakuApp/Localizable.xcs
 L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 
 TEXT = {
+    # ---- ホームのお知らせ(期間中だけ。押すとショップのクリスマスパックへ)
+    'home.season.xmas.title': [
+        'Weihnachten: nur für kurze Zeit', 'Christmas: limited time only', 'Navidad: solo por tiempo limitado', 'Noël : durée limitée',
+        'クリスマス限定、販売中', '크리스마스 한정 판매 중', 'Natal: por tempo limitado', 'Рождество: ограниченное время', '圣诞限定,销售中', '聖誕限定,販售中',
+    ],
+    'home.season.xmas.body': [
+        'Boss Noel, Minions, Schiffe und Thema – jetzt im Shop', 'Boss Noel, minions, ships and a theme – now in the shop',
+        'Jefa Noel, esbirros, naves y tema: ya en la tienda', 'Boss Noël, sbires, vaisseaux et thème : en boutique',
+        'ボス「ノエル」と、雑魚・自機・テーマ。ショップへ', '보스 "노엘"과 졸개·기체·테마. 상점으로',
+        'Chefe Noel, lacaios, naves e tema: já na loja', 'Босс Ноэль, миньоны, корабли и тема — в магазине',
+        'Boss“诺艾尔”与小怪、自机、主题。前往商店', 'Boss「諾艾爾」與小怪、自機、主題。前往商店',
+    ],
     # ---- クリスマスの BGM(番号 7。ノエルを持っている人が選べる)
     'bgm.7': ['Weihnachten', 'Christmas', 'Navidad', 'Noël', 'クリスマス', '크리스마스', 'Natal', 'Рождество', '圣诞', '聖誕'],
     'bgm.7.sub': [

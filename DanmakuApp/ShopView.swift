@@ -1201,7 +1201,7 @@ private struct BossShopCard: View {
     }
 
     private func sprite(awakened: Bool) -> some View {
-        VisibleTimeline(interval: boss == .dragon ? DragonArt.frameSeconds : BossSprites.frameDuration) { tl in
+        VisibleTimeline(interval: boss == .dragon ? DragonArt.frameSeconds : (boss.smoothFrameDuration ?? BossSprites.frameDuration)) { tl in
             if let art = BossSprites.shopArt(boss, awakened: awakened) {
                 let i = art.frameIndex(at: tl.date.timeIntervalSinceReferenceDate)
                 Image(decorative: art.frames[i], scale: 1)

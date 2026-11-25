@@ -44,6 +44,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     CreateHero { newStage() }
+                    SeasonPromoBanner()
                     HomePromoCards()
                     GameSearchField(text: $query, prompt: "home.search.prompt") { Task { await search() } }
                     GameTabs(items: [(Tab.samples, "home.tab.samples"), (Tab.mine, "home.tab.mine"), (Tab.world, "home.tab.world")], selection: $tab, idPrefix: "home.tab")
@@ -689,6 +690,59 @@ private struct HeroBullets: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// 期間限定の販売のお知らせ(クリスマスなど)。「あそぶ」画面の上に、細い札を1枚だけ出す。
+/// 出すのは、その期間が販売中(SeasonConfig。売り場と同じスイッチ)で、まだ買えるものが残っている人にだけ。
+/// 期間が終わるか、全部入り・永久買い切りパックを持っていれば、何も出ない(場所も取らない)。
+/// 広告(世界の一覧の中のネイティブ広告)とは離れた場所なので、広告と並ぶことはない
+struct SeasonPromoBanner: View {
+    @EnvironmentObject private var seasons: SeasonConfig
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @State private var showShop = false
+    @State private var focus = "bosses"
+
+    /// いま案内する期間(販売中で、全部入りをまだ買える人)。複数あれば最初の1つ
+    private var season: SaleSeason? {
+        SaleSeason.allCases.first { seasons.open.contains($0) && cosmetics.ownership.canBuy(.seasonPack($0)) }
+    }
+
+    var body: some View {
+        if let season {
+            Button {
+                gameTap()
+                focus = "pack." + season.rawValue
+                showShop = true
+            } label: {
+                HStack(spacing: 12) {
+                    // その期間のボスの絵(1コマ目)。絵が無ければ、雪の印
+                    if let boss = BossCharacter.allCases.first(where: { $0.season == season }), let art = BossSprites.shopArt(boss, awakened: false) {
+                        Image(decorative: art.frames[0], scale: 1).interpolation(.none).resizable().scaledToFit()
+                            .frame(width: 52, height: 52)
+                            .background(GameStyle.night, in: PixelRect(cornerRadius: 10))
+                    } else {
+                        Image(systemName: "snowflake").font(.system(size: 20, weight: .heavy)).foregroundStyle(GameStyle.cyanColor).frame(width: 52, height: 52)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("home.season.\(season.rawValue).title")).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            .lineLimit(2).minimumScaleFactor(0.85).fixedSize(horizontal: false, vertical: true)
+                        Text(L("home.season.\(season.rawValue).body")).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                            .lineLimit(2).minimumScaleFactor(0.9).fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text.opacity(0.5))
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(GameStyle.panel, in: PixelRect(cornerRadius: 12))
+                .overlay(PixelRect(cornerRadius: 12).stroke(GameStyle.pinkColor.opacity(0.6)))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.season.\(season.rawValue)")
+            .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: focus) }
+        }
     }
 }
 
