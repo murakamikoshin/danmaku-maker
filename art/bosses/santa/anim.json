@@ -1,1 +1,1 @@
-{"frame_ms": 80, "counts": {"idle": 16, "windup": 8, "attack": 8, "recover": 4, "idle_awakened": 16, "windup_awakened": 8, "attack_awakened": 8, "recover_awakened": 4}}
+{"frame_ms": 80, "counts": {"idle": 16, "windup": 8, "attack": 16, "recover": 4, "idle_awakened": 16, "windup_awakened": 8, "attack_awakened": 16, "recover_awakened": 4}}

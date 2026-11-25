@@ -63,6 +63,17 @@ def load_pose(name):
                 for v in range(max(0, y0), min(h, y1)):
                     for u in range(max(0, x0), min(w, x1)): t += 1; n += M[v][u]
                 if t and n * 2 >= t: P[x, y] = (0, 0, 0, 0)
+    if name == 'recover':   # 顔は手で描き直す(自動だと、閉じた目が出ず、口が大きすぎた。Koshin の指摘 2026-11-25)。座標は、高さ84でドット化した絵のマス
+        SK, LID, IR, IRD, MO, SW = (255, 234, 220, 255), (28, 62, 56, 255), (246, 198, 70, 255), (190, 126, 38, 255), (214, 84, 96, 255), (150, 214, 250, 255)
+        SK2, MOD = (238, 196, 184, 255), (150, 40, 60, 255)
+        for y in range(19, 25):                      # 顔の幅を待機の絵と同じ(11ドット)に取り直す。前髪が顔にかぶりすぎて、顔が細く見えていた
+            for x in range(21, 32):
+                if P[x, y][3]: P[x, y] = SK2 if (x in (21, 31) or y == 24) else SK
+        for x in (22, 23): P[x, 19] = LID; P[x, 20] = IR; P[x, 21] = IR; P[x, 22] = IRD                # 開いている目(縦長 2×3、上にまぶたの線)
+        P[24, 19] = LID
+        for x, y in ((31, 20), (30, 20), (29, 21), (28, 21), (30, 22), (31, 22)): P[x, y] = (30, 24, 36, 255)   # ぎゅっとつぶった目。向かって右の目なので「<」の形(とがった先が鼻のほう)。はっきり見えるよう、濃い色で横に長く
+        for x in (25, 26, 27): P[x, 23] = MOD; P[x, 24] = MO                                            # 「いてっ」と開いた口
+        P[32, 18] = SW; P[32, 19] = SW                                                                  # こめかみの汗
     ox = BASE_BUCKLE_X - round((cfg['buckle'] - bx) * sc); oy = 112 - FOOT - im.height
     fr = Image.new('RGBA', (112, 112), (0, 0, 0, 0)); fr.alpha_composite(im, (ox, oy))
     tip = None if not cfg['tip'] else (ox + round((cfg['tip'][0] - bx) * sc), oy + round((cfg['tip'][1] - by) * sc))
@@ -81,7 +92,7 @@ def black_santa(im):
     return im
 
 def make_states(idle_fr, pose, c1, c2):
-    """構え 8 コマ(1回)・技中 8 コマ(ループ: 振りかぶる → 振り下ろす)・硬直 4 コマ(1回)。pose: {名前: (絵, 杖の先)}"""
+    """構え 8 コマ(1回)・技中 16 コマ(ループ: 1周に1回、振りかぶって振り下ろす)・硬直 4 コマ(1回)。pose: {名前: (絵, 杖の先)}"""
     (W, wt), (A, at), (R, _) = pose['windup'], pose['attack'], pose['recover']
     piv = bbox_bottom(idle_fr[0]); out = {}
     w = [squash(idle_fr[0], 1, piv), squash(idle_fr[0], 2, piv)]          # しずむ → 杖を振り上げる → 力をためて震える
@@ -92,34 +103,58 @@ def make_states(idle_fr, pose, c1, c2):
         if f >= 4: ring(im, x, y, [0, 0, 0, 0, 6, 4][f], c2)
         w.append(im)
     out['windup'] = w
+    # 技中(ループ、16 コマ = 約1.3秒で1周): 1周に1回だけ、振りかぶって(2コマ)→ 振り下ろす。当たった瞬間に小さな光の輪が2コマだけ出て、
+    # あとは振り下ろした姿でゆっくり上下しながら、杖の先の光がまたたく。
+    # (1回目は 0.64 秒ごとに振り続けて大きな輪も出し「やかましい」、2回目は振らずに上下だけで「大人しすぎ」。その中間。Koshin の指摘 2026-11-25)
     a = []
-    for f, (src, dx, dy) in enumerate([('W', 0, -1), ('W', 0, -2), ('A', 1, 2), ('A', 0, 1), ('A', 0, 0), ('A', 0, 0), ('A', 0, -1), ('W', 0, 1)]):
+    SEQ = [('W', 0, 0), ('W', 0, -1), ('A', 1, 2), ('A', 0, 1)] + [('A', 0, dy) for dy in (0, 0, -1, -1, -1, 0, 0, 1, 1, 0, 0, 0)]
+    for f, (src, dx, dy) in enumerate(SEQ):
         base_im, tip = (W, wt) if src == 'W' else (A, at)
         im = offset(base_im, dx, dy); x, y = tip[0] + dx, tip[1] + dy
-        if src == 'A':
-            k = f - 2
-            ring(im, x, y, [4, 9, 14, 18, 21][k], c1, gap=2 if k >= 2 else 0)
-            if k < 3: burst(im, x, y, 3, 7 + k * 2, 8, k * math.pi / 8, c2)
-            star(im, x, y, [4, 4, 3, 2, 2][k], c1, c2)
-        else:
-            star(im, x, y, 3, c1, c2)
+        if f == 2: ring(im, x, y, 5, c1); burst(im, x, y, 3, 7, 8, 0, c2); star(im, x, y, 4, c1, c2)
+        elif f == 3: ring(im, x, y, 10, c1, gap=2); star(im, x, y, 3, c1, c2)
+        elif src == 'W': star(im, x, y, 3, c1, c2)
+        else: star(im, x, y, [2, 3, 2, 1][f % 4], c1, c2)
         a.append(im)
     out['attack'] = a
     out['recover'] = [darken(offset(R, dx, dy), d) for dx, dy, d in [(1, 1, 0.12), (0, 2, 0.28), (0, 2, 0.3), (0, 1, 0.18)]]
     return out
 frames.update(make_states(idle, POSE, (255, 204, 80), (255, 250, 220)))
 CHEST = to_frame(ID, 640, 560, FOOT)
-def awaken_frame(im, i):
-    im = rays_behind(black_santa(im), CHEST[0], CHEST[1], 26, 50, 22, (i % 8) / 8, (150, 20, 40), (255, 90, 90))
-    return aura(im, (255, 80, 90), phase=i % 3, every=2)
-frames['idle_awakened'] = [awaken_frame(f, i) for i, f in enumerate(idle)]
+# 覚醒のうしろ: ほかのボスの「放射する線」は使わない(Koshin の判断、2026-11-25。棒が刺さっているように見えるため。既存のボスは変えない)。
+# ノエルは、深紅の三日月を背負い、火の粉がゆっくり舞い上がる。月は動かない(体だけがふわふわ浮くので、奥行きが出る)
+MOON_C, MOON_R = (58, 46), 31
+MOON_COL = [(96, 14, 38), (168, 26, 52), (232, 62, 78), (255, 150, 150)]     # 影 → 本体 → 明るい縁 → いちばん外の光
+EMBERS = [(14, 92, 0), (30, 104, 5), (47, 98, 11), (72, 106, 3), (90, 96, 8), (102, 88, 13), (22, 70, 9), (96, 66, 2), (60, 110, 14), (8, 50, 6)]
+def moon_layer():
+    im = Image.new('RGBA', (112, 112), (0, 0, 0, 0)); P = im.load(); (cx, cy), R = MOON_C, MOON_R
+    for y in range(112):
+        for x in range(112):
+            d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if d > R: continue
+            d2 = math.hypot(x + 0.5 - (cx + 11), y + 0.5 - (cy - 9))      # 右上をえぐって三日月に
+            if d2 < R - 5: continue
+            c = MOON_COL[3] if d > R - 1.2 else MOON_COL[2] if d > R - 3.2 else MOON_COL[1]
+            if d2 < R - 3: c = MOON_COL[0]                                 # 内側のふちは影
+            P[x, y] = c + (255,)
+    return im
+MOON = moon_layer()
+def behind_moon(im, i, n=16):
+    out = MOON.copy(); P = out.load()
+    for k, (x, y0, ph) in enumerate(EMBERS):                               # 火の粉: n コマで上へ 1 周。ゆらゆら横にずれ、消える前に暗くなる
+        t = (i + ph) % n; y = y0 - t * 2; x2 = x + round(math.sin((t + k) * 0.8) * 1.5)
+        if 0 <= x2 < 112 and 0 <= y < 112 and not P[x2, y][3]:
+            P[x2, y] = ((255, 190, 160) if t < 4 else (236, 70, 84) if t < 11 else (130, 22, 46)) + (255,)
+    out.alpha_composite(im)
+    return out
+frames['idle_awakened'] = [behind_moon(black_santa(f), i) for i, f in enumerate(idle)]
 aw_pose = {n: (black_santa(im), tip) for n, (im, tip) in POSE.items()}
 for k, v in make_states([black_santa(f) for f in idle], aw_pose, (255, 70, 80), (255, 220, 220)).items():
-    frames[k + '_awakened'] = [aura(f, (255, 80, 90), phase=i % 3, every=2) for i, f in enumerate(v)]
+    frames[k + '_awakened'] = [behind_moon(f, i) for i, f in enumerate(v)]
 NOTE = ('元の絵は Koshin が画像生成で作ったイラスト(source/santa_source.png)を、色の表を使う版でドット化したもの(高さ84)。'
         '杖は、元絵では脚を横切っていたのを、手の先で止めて脚を描き直した(source/polish_santa.py。Koshin の判断)。'
         '待機は16コマ(1コマ80ms): 体ごとふわふわ浮き、プレゼントの上下、横の髪・三つ編みの先・すそのゆれ。'
-        '構え・技中・硬直は専用ポーズの絵(poses/。待機の元絵を参考画像にして Canva で作った)。構え8コマ・技中8コマ(杖を振りかぶる→振り下ろす)・硬直4コマ。'
-        '覚醒は黒サンタ: 赤い服としま模様が黒に、目が赤に。うしろに深紅の光')
+        '構え・技中・硬直は専用ポーズの絵(poses/。待機の元絵を参考画像にして Canva で作った)。構え8コマ(杖を振りかぶる)・技中16コマ(1周に1回、振りかぶって振り下ろす。あとは振り下ろした姿でゆっくり上下)・硬直4コマ。'
+        '覚醒は黒サンタ: 赤い服としま模様が黒に、目が赤に。うしろに深紅の三日月と舞う火の粉(ほかのボスの放射する線は使わない)')
 if __name__ == '__main__':
-    size, nc = export(ID, 'ノエル(クリスマス娘)', frames, NOTE, counts={'idle': IDLE_N, 'windup': 8, 'attack': 8, 'recover': 4}, frame_ms=FRAME_MS); print(ID, size, nc, 'colors')
+    size, nc = export(ID, 'ノエル(クリスマス娘)', frames, NOTE, counts={'idle': IDLE_N, 'windup': 8, 'attack': 16, 'recover': 4}, frame_ms=FRAME_MS); print(ID, size, nc, 'colors')
