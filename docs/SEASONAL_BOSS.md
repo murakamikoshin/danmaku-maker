@@ -64,9 +64,19 @@ Apple のいまの説明では、販売から削除しても、買った人は�
 |---|---|---|---|
 | `boss.santa` | ボス「クリスマス娘 ノエル」 | ¥400 | `Product.boss(.santa)` |
 | `mooks.xmas` | 雑魚の見た目 4種(番号 5〜8: 雪だるま・プレゼント箱・ジンジャーマン・鈴) | ¥200 | `Product.mooks(.xmas)`、`MookPack.xmas` |
-| `pack.xmas` | クリスマスパック(上の全部入り) | ¥600 | `Product.seasonPack(.xmas)` |
+| `ship.sleigh_xmas` / `ship.reindeer_xmas` / `ship.snowflake_xmas` | ドット絵の自機 3種(そり・トナカイ・雪の結晶)。1機ずつ | 各 ¥100 | `Product.ship(_)`、`PaidShip` |
+| `xmas.bullets` / `xmas.background` / `xmas.ship` | テーマ「クリスマス」の部品 | 各 ¥100 | `Product.part(.xmas, _)` |
+| `xmas.set` | テーマ「クリスマス」の3部品セット | ¥200 | `Product.set(.xmas)` |
+| `pack.xmas` | クリスマスパック(上の全部入り。単品の合計 ¥1,100) | ¥600 | `Product.seasonPack(.xmas)` |
+
+**ASC と RevenueCat に登録する商品は、全部で 10 個**(非消耗型)。RevenueCat は、商品を足すだけでよい(エンタイトルメントには入れない。アプリは買った商品 ID で判定する)。
+
+- クリスマスの BGM(番号 7、`bgm_xmas.caf`)は商品ではない。ノエルを持っている人(単品・パック・永久買い切り)が、ステージの BGM に選べる(`Stage.bgmOwner`、サーバーは `BGM_OWNER`)。遊ぶ人は誰でも聴ける。
+- 公式ステージ o38「ノエルのクリスマス」は、誰でも遊べる見本(テーマと曲つき)。期間が終わっても残る。
 
 - 雑魚の見た目もボスと同じ考え方: **遊ぶのは誰でもできる**。公開するのに持っている必要がある(アプリは `Ownership.has(mookLook:)`、サーバーは `ownership.ts` の `missingMookPacks`。エラーは `mooks-not-owned`)。
 - 永久買い切りパックの人は、期間に関係なく使える。クリスマスパックを買った人は、その期間のボスと雑魚の見た目を全部使える(サーバーは `pack.xmas` の購入を見る)。
 - 雑魚の見た目は計算に関わらない。古い版(1.4.2 まで)は 5 以降を知らないので、標準の見た目で出る(遊べる。`needs` は付けない)。
-- 自機・テーマを足すときは、パックの中身(`Ownership.hasAll(of:)` と、サーバーの判定)にも足すこと。
+- 自機は、買うと「持っている自機」に足される(`CosmeticsStore.updateOwnership`)。ステージに付けて公開するときは、サーバーが購入を確かめる(`ownsShipByPurchase`。エラーは `ship-not-owned`)。
+- テーマは、ほかのテーマと同じで、サーバーは所持を確かめない(ステージに付いていても、遊ぶ人は誰でもその見た目で遊べる)。古い版は、知らないテーマを標準の見た目で読む。
+- 期間限定のものを足すときは、パックの中身(`Ownership.hasAll(of:)` と、サーバーの判定)にも足すこと。
