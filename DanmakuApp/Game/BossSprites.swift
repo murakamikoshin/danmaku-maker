@@ -18,6 +18,9 @@ enum BossSprites {
         var actions: [Action: (frames: [SKTexture], flash: [SKTexture])] = [:]
         /// 待機の 1 コマの長さ(秒)。竜王だけ短い(25 コマ/秒)
         var frameDuration = BossSprites.frameDuration
+        /// 構え・硬直の 1 コマの長さ(秒)と、技中(ループ)の 1 コマの長さ(秒)。コマ数の多いボス(ノエル)だけ短い
+        var actionFrameDuration = BossSprites.actionFrameDuration
+        var attackFrameDuration = 0.1
         func frameIndex(at t: Double) -> Int { Int(max(0, t) / frameDuration) % max(1, frames.count) }
     }
 
@@ -43,6 +46,7 @@ enum BossSprites {
         if let a = cache[name] { return a }
         guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
               let image = UIImage(contentsOfFile: url.path), let cg = image.cgImage else { return nil }
+        let frameCount = c.idleFrameCount
         let fw = cg.width / frameCount, fh = cg.height
         var frames: [SKTexture] = [], flashes: [SKTexture] = []
         var first: UIImage?
@@ -54,6 +58,7 @@ enum BossSprites {
             flashes.append(texture(whiteSilhouette(of: ui)))
         }
         var art = Art(frames: frames, flashFrames: flashes, still: first!, size: CGSize(width: CGFloat(fw) * scale, height: CGFloat(fh) * scale))
+        if let d = c.smoothFrameDuration { art.frameDuration = d; art.actionFrameDuration = d; art.attackFrameDuration = d }
         // 構え・技中・硬直の絵(<ボス>_<状態>[_awakened]_sheet.png。1コマの幅は待機と同じ)
         let base = name.replacingOccurrences(of: "_awakened_idle_sheet", with: "").replacingOccurrences(of: "_idle_sheet", with: "")
         for action in Action.allCases {
@@ -96,10 +101,12 @@ enum BossSprites {
         if let a = shopCache[name] { return a }
         guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
               let image = UIImage(contentsOfFile: url.path), let cg = image.cgImage else { return nil }
+        let frameCount = c.idleFrameCount
         let fw = cg.width / frameCount, fh = cg.height
         let frames = (0..<frameCount).compactMap { cg.cropping(to: CGRect(x: $0 * fw, y: 0, width: fw, height: fh)) }
         guard frames.count == frameCount else { return nil }
-        let art = ShopArt(frames: frames, size: CGSize(width: fw, height: fh))
+        var art = ShopArt(frames: frames, size: CGSize(width: fw, height: fh))
+        if let d = c.smoothFrameDuration { art.frameDuration = d }
         shopCache[name] = art
         return art
     }
@@ -143,6 +150,11 @@ enum BossSprites {
 }
 
 extension BossCharacter {
+    /// 待機の絵のコマ数。ふつうは 8。ノエルは、なめらかに動かすために 16(art/bosses/santa/anim.json)
+    var idleFrameCount: Int { self == .santa ? 16 : BossSprites.frameCount }
+    /// コマ数の多いボスの、1 コマの長さ(秒)。待機・構え・技中・硬直に同じ値を使う。nil は、ふつうの長さ
+    var smoothFrameDuration: Double? { self == .santa ? 0.08 : nil }
+
     /// 画像ファイル名(拡張子なし)
     var sheet: String? {
         switch self {
@@ -154,7 +166,7 @@ extension BossCharacter {
         case .mech: return "mech_idle_sheet"
         case .puni: return "puni_idle_sheet"
         case .hire: return "hire_idle_sheet"
-        case .santa: return "santa_idle_sheet"      // 絵は /danmaku-boss の手順で作ってから Resources/Bosses に入れる(まだ無い)
+        case .santa: return "santa_idle_sheet"      // 待機 16 コマ(idleFrameCount)
         case .dragon: return nil      // 竜王は DragonArt(色の番号の絵を姿ごとに塗る)
         }
     }

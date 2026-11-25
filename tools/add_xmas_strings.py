@@ -8,6 +8,35 @@ P = pathlib.Path(__file__).resolve().parent.parent / 'DanmakuApp/Localizable.xcs
 L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 
 TEXT = {
+    # ---- ボス「クリスマス娘 ノエル」(番号 14)と、技の名前
+    'enemy.boss.14': ['Noel', 'Noel', 'Noel', 'Noël', 'ノエル', '노엘', 'Noel', 'Ноэль', '诺艾尔', '諾艾爾'],
+    'editor.pattern.bosssection.14': [
+        'Noel: Techniken (nur mit diesem Aussehen)', 'Noel moves (only with this look)', 'Noel: técnicas (solo con este aspecto)',
+        'Noël : techniques (uniquement avec cet aspect)', 'ノエルの技(この見た目のときだけ)', '노엘의 기술 (이 모습일 때만)',
+        'Noel: golpes (só com este visual)', 'Ноэль: приёмы (только с этим обликом)', '诺艾尔的招式(仅限此外观)', '諾艾爾的招式(僅限此外觀)',
+    ],
+    'shop.boss.14.desc': [
+        'Weihnachtsmädchen Noel: 5 Techniken und Erwachen', 'Noel the Christmas Girl — 5 moves, and she awakens', 'Noel, la chica navideña: 5 técnicas y despertar',
+        'Noël, la fille de Noël : 5 techniques et éveil', 'クリスマス娘 ノエル ― 5つの技と、覚醒', '크리스마스 소녀 노엘 ― 기술 5개와 각성',
+        'Noel, a garota do Natal: 5 golpes e despertar', 'Рождественская девочка Ноэль: 5 приёмов и пробуждение', '圣诞少女 诺艾尔 ― 5种招式与觉醒', '聖誕少女 諾艾爾 ― 5種招式與覺醒',
+    ],
+    'shop.boss.14.moves': [
+        'Öffne dich, Geschenk · Jingle-Ring · Zuckerstange · Baumlichter · Mitternachtslieferung. Nach dem Erwachen wird sie zum schwarzen Weihnachtsmädchen und die Techniken werden stärker. Wann sie erwacht, bestimmst du.',
+        'Open Up, Present · Jingle Ring · Candy Cane · Tree Lights · Midnight Delivery. When she awakens she turns into Black Santa and her moves get stronger, and you choose when she awakens.',
+        'Ábrete, regalo · Anillo de cascabeles · Bastón de caramelo · Luces del árbol · Entrega de medianoche. Al despertar se vuelve Santa negra y sus técnicas se fortalecen. Tú decides cuándo despierta.',
+        'Ouvre-toi, cadeau · Anneau de grelots · Sucre d’orge · Lumières du sapin · Livraison de minuit. À l’éveil, elle devient la Mère Noël noire et ses techniques se renforcent. Vous choisissez quand elle s’éveille.',
+        'ひらけ、プレゼント・ジングル・リング・キャンディケイン・ツリーの灯・真夜中の配達。覚醒すると黒サンタになって技が強くなり、覚醒する段階は自分で決められます。',
+        '열려라, 선물 · 징글 링 · 캔디 케인 · 트리의 불빛 · 한밤중의 배달. 각성하면 블랙 산타가 되어 기술이 강해지고, 각성하는 단계는 직접 정할 수 있어요.',
+        'Abra-se, presente · Anel de guizos · Bengala doce · Luzes da árvore · Entrega da meia-noite. Ao despertar, ela vira a Noel negra e os golpes ficam mais fortes. Você escolhe quando ela desperta.',
+        'Откройся, подарок · Кольцо бубенцов · Карамельная трость · Огни ёлки · Полуночная доставка. После пробуждения она становится Чёрной Сантой, а приёмы усиливаются. Когда она пробудится — решаете вы.',
+        '打开吧,礼物、铃儿响环、拐杖糖、圣诞树之灯、午夜配送。觉醒后变为黑圣诞少女,招式更强,觉醒的阶段可自行决定。',
+        '打開吧,禮物、鈴兒響環、拐杖糖、聖誕樹之燈、午夜配送。覺醒後變為黑聖誕少女,招式更強,覺醒的階段可自行決定。',
+    ],
+    'pattern.santaGift': ['Öffne dich, Geschenk', 'Open Up, Present', 'Ábrete, regalo', 'Ouvre-toi, cadeau', 'ひらけ、プレゼント', '열려라, 선물', 'Abra-se, presente', 'Откройся, подарок', '打开吧,礼物', '打開吧,禮物'],
+    'pattern.santaBell': ['Jingle-Ring', 'Jingle Ring', 'Anillo de cascabeles', 'Anneau de grelots', 'ジングル・リング', '징글 링', 'Anel de guizos', 'Кольцо бубенцов', '铃儿响环', '鈴兒響環'],
+    'pattern.santaCane': ['Zuckerstange', 'Candy Cane', 'Bastón de caramelo', 'Sucre d’orge', 'キャンディケイン', '캔디 케인', 'Bengala doce', 'Карамельная трость', '拐杖糖', '拐杖糖'],
+    'pattern.santaTree': ['Baumlichter', 'Tree Lights', 'Luces del árbol', 'Lumières du sapin', 'ツリーの灯', '트리의 불빛', 'Luzes da árvore', 'Огни ёлки', '圣诞树之灯', '聖誕樹之燈'],
+    'pattern.santaDelivery': ['Mitternachtslieferung', 'Midnight Delivery', 'Entrega de medianoche', 'Livraison de minuit', '真夜中の配達', '한밤중의 배달', 'Entrega da meia-noite', 'Полуночная доставка', '午夜配送', '午夜配送'],
     # ---- クリスマスのテーマと自機
     'theme.xmas': ['Weihnachten', 'Christmas', 'Navidad', 'Noël', 'クリスマス', '크리스마스', 'Natal', 'Рождество', '圣诞', '聖誕'],
     'ship.sleigh_xmas': ['Schlitten', 'Sleigh', 'Trineo', 'Traîneau', 'そり', '썰매', 'Trenó', 'Сани', '雪橇', '雪橇'],

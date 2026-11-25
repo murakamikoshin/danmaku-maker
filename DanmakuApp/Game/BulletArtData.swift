@@ -35,6 +35,11 @@ enum BulletArtData {
         [".W.", "oWo", "oCo", "oCo", "oCo", ".o."],
         // 弾幕パック3の針(ニードル)。3 つを 6px おきに並べて、1 本の長い針に見せる
         [".W.", "oWo", "oWo", "oNo", "oNo", "oNo", "oNo", ".o."],
+        // ノエルの弾(1.5.0): プレゼント箱・キャンディ・鈴・星の飾り(art/bosses/patterns/engine.js の MAPS と同じ)
+        ["..Y.Y..", ".oYYYo.", "oGGYGGo", "YYYYYYY", "oGGYGGo", "oGLYGGo", ".ooYoo."],
+        [".oRo.", "oWRWo", "RWWWR", "oWRWo", ".oRo."],
+        ["..Y..", ".YLY.", ".YYY.", "YYYYY", "oYYYo", "..k.."],
+        ["..Y..", ".YWY.", "YWWWY", ".YWY.", "..Y.."],
     ]
     /// [種類][0=通常 1=覚醒(竜王の弾は 0〜3 = 姿)] → 文字 → 色(#rrggbb)
     static let palettes: [[[Character: String]]] = [
@@ -70,5 +75,10 @@ enum BulletArtData {
         [["o": "#e0541e", "Y": "#ffb428", "W": "#fff0b4"], ["o": "#1e78f0", "Y": "#5ad2ff", "W": "#f0fcff"], ["o": "#aa28a0", "Y": "#ff5adc", "W": "#ffe6fa"], ["o": "#ffc83c", "Y": "#fff0aa", "W": "#ffffff"]],
         [["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"], ["o": "#1e6edc", "C": "#5adcff", "W": "#ffffff"]],
         [["o": "#2a3a5a", "N": "#b4c8e6", "W": "#ffffff"], ["o": "#2a3a5a", "N": "#b4c8e6", "W": "#ffffff"]],
+        // ノエルの弾(覚醒は黒サンタ: 黒と深紅)
+        [["o": "#184a3c", "G": "#2c9a6e", "L": "#7ad8a6", "Y": "#ffd24a"], ["o": "#16121e", "G": "#3a3048", "L": "#6a5a84", "Y": "#e63a50"]],
+        [["o": "#a01e30", "R": "#ee3c48", "W": "#fff6f0"], ["o": "#16121e", "R": "#3a3048", "W": "#f6f0f4"]],
+        [["o": "#b47a1e", "Y": "#ffc83c", "L": "#fff2b4", "k": "#7a4a14"], ["o": "#7a1424", "Y": "#e63a50", "L": "#ffa0a8", "k": "#3a0a14"]],
+        [["Y": "#ffc83c", "W": "#fffbe0"], ["Y": "#e63a50", "W": "#ffe4e4"]],
     ]
 }

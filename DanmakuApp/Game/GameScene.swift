@@ -308,8 +308,8 @@ final class GameScene: SKScene {
     /// 撃つ少し前に「構え」、撃っている間は「技中」(ループ)、撃ち終わると「硬直」、そのあと待機。絵がないボスは待機のまま
     private func updateBossAction(art: BossSprites.Art) {
         let now = sim.t, w = sim.waveT
-        let windup = Double(art.actions[.windup]?.frames.count ?? 0) * BossSprites.actionFrameDuration
-        let recover = Double(art.actions[.recover]?.frames.count ?? 0) * BossSprites.actionFrameDuration
+        let windup = Double(art.actions[.windup]?.frames.count ?? 0) * art.actionFrameDuration
+        let recover = Double(art.actions[.recover]?.frames.count ?? 0) * art.actionFrameDuration
         let shooting = sim.lastShotWaveT >= 0 && w - sim.lastShotWaveT < 0.3
         switch bossAction {
         case nil:
@@ -331,9 +331,10 @@ final class GameScene: SKScene {
         return (art.frames, art.flashFrames)
     }
 
-    private func bossFrameIndex(count: Int) -> Int {
-        guard let a = bossAction else { return BossSprites.frameIndex(at: sim.t) }
-        let k = Int(max(0, sim.t - bossActionStart) / (a == .attack ? 0.1 : BossSprites.actionFrameDuration))
+    private func bossFrameIndex(count: Int, art: BossSprites.Art) -> Int {
+        // 待機: コマ数と 1 コマの長さは、絵ごと(ふつうは 8 コマ・7/60 秒。ノエルは 16 コマ・0.08 秒)
+        guard let a = bossAction else { return Int(max(0, sim.t) / art.frameDuration) % max(1, count) }
+        let k = Int(max(0, sim.t - bossActionStart) / (a == .attack ? art.attackFrameDuration : art.actionFrameDuration))
         return a == .attack ? k % count : min(k, count - 1)
     }
 
@@ -929,7 +930,7 @@ final class GameScene: SKScene {
                 // キャラクターのボスの大きさ(当たり判定と同じ倍率)
                 bossNode.size = CGSize(width: art.size.width * sim.bossScale, height: art.size.height * sim.bossScale)
                 let (frames, flashFrames) = bossFrames(art: art)
-                let i = bossFrameIndex(count: frames.count)
+                let i = bossFrameIndex(count: frames.count, art: art)
                 bossNode.texture = sim.flash > 0 ? flashFrames[i] : frames[i]
             } else {
                 bossNode.texture = sim.flash > 0 ? bossFlashTexture : bossTexture
