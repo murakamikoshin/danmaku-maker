@@ -62,7 +62,7 @@ Apple のいまの説明では、販売から削除しても、買った人は�
 
 | 商品 ID(`com.koshin.danmakumaker.` のあと) | 中身 | 目安の値段 | コード |
 |---|---|---|---|
-| `boss.santa` | ボス「クリスマス娘 ノエル」 | ¥400 | `Product.boss(.santa)` |
+| `boss.santa` | ボス「サンタ娘 ノエル」 | ¥400 | `Product.boss(.santa)` |
 | `mooks.xmas` | 雑魚の見た目 4種(番号 5〜8: 雪だるま・プレゼント箱・ジンジャーマン・鈴) | ¥200 | `Product.mooks(.xmas)`、`MookPack.xmas` |
 | `ship.sleigh_xmas` / `ship.reindeer_xmas` / `ship.snowflake_xmas` | ドット絵の自機 3種(そり・トナカイ・雪の結晶)。1機ずつ | 各 ¥100 | `Product.ship(_)`、`PaidShip` |
 | `xmas.bullets` / `xmas.background` / `xmas.ship` | テーマ「クリスマス」の部品 | 各 ¥100 | `Product.part(.xmas, _)` |

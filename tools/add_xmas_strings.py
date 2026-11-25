@@ -10,7 +10,9 @@ L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 TEXT = {
     # ---- ホームのお知らせ(期間中だけ。押すとショップのクリスマスパックへ)
     'home.season.xmas.title': [
-        'Noel ist da!', 'Noel is here!', '¡Llega Noel!', 'Noël est là !', 'ノエル、登場！', '노엘 등장!', 'Noel chegou!', 'Ноэль уже здесь!', '诺艾尔登场!', '諾艾爾登場!',
+        'Santa-Mädchen Noel ist da!', 'Santa Girl Noel is here!', '¡Llega Noel, la chica Santa!', 'Noël, la fille Santa, est là !',
+        'サンタ娘 ノエル、登場！', '산타 소녀 노엘 등장!', 'Chegou Noel, a garota Santa!', 'Санта-девочка Ноэль уже здесь!',
+        '圣诞少女 诺艾尔登场!', '聖誕少女 諾艾爾登場!',
     ],
     'home.season.xmas.body': [
         'Dazu Minions, Schiffe und ein Thema', 'Plus Christmas minions, ships and a theme', 'Y esbirros, naves y tema navideños', 'Et des sbires, vaisseaux et un thème',
@@ -46,7 +48,7 @@ TEXT = {
         'Bonus : un air de Noël pour le BGM de vos niveaux', 'おまけ: ステージのBGMにクリスマスの曲', '덤: 스테이지 BGM으로 크리스마스 곡',
         'Bônus: uma música de Natal para o BGM das suas fases', 'Бонус: рождественская мелодия для BGM уровня', '附赠:可用作关卡BGM的圣诞曲', '附贈:可用作關卡BGM的聖誕曲',
     ],
-    # ---- ボス「クリスマス娘 ノエル」(番号 14)と、技の名前
+    # ---- ボス「サンタ娘 ノエル」(番号 14)と、技の名前
     'enemy.boss.14': ['Noel', 'Noel', 'Noel', 'Noël', 'ノエル', '노엘', 'Noel', 'Ноэль', '诺艾尔', '諾艾爾'],
     'editor.pattern.bosssection.14': [
         'Noel: Techniken (nur mit diesem Aussehen)', 'Noel moves (only with this look)', 'Noel: técnicas (solo con este aspecto)',
@@ -54,9 +56,9 @@ TEXT = {
         'Noel: golpes (só com este visual)', 'Ноэль: приёмы (только с этим обликом)', '诺艾尔的招式(仅限此外观)', '諾艾爾的招式(僅限此外觀)',
     ],
     'shop.boss.14.desc': [
-        'Weihnachtsmädchen Noel: 5 Techniken und Erwachen', 'Noel the Christmas Girl — 5 moves, and she awakens', 'Noel, la chica navideña: 5 técnicas y despertar',
-        'Noël, la fille de Noël : 5 techniques et éveil', 'クリスマス娘 ノエル ― 5つの技と、覚醒', '크리스마스 소녀 노엘 ― 기술 5개와 각성',
-        'Noel, a garota do Natal: 5 golpes e despertar', 'Рождественская девочка Ноэль: 5 приёмов и пробуждение', '圣诞少女 诺艾尔 ― 5种招式与觉醒', '聖誕少女 諾艾爾 ― 5種招式與覺醒',
+        'Santa-Mädchen Noel: 5 Techniken und Erwachen', 'Santa Girl Noel — 5 moves, and she awakens', 'Noel, la chica Santa: 5 técnicas y despertar',
+        'Noël, la fille Santa : 5 techniques et éveil', 'サンタ娘 ノエル ― 5つの技と、覚醒', '산타 소녀 노엘 ― 기술 5개와 각성',
+        'Noel, a garota Santa: 5 golpes e despertar', 'Санта-девочка Ноэль: 5 приёмов и пробуждение', '圣诞少女 诺艾尔 ― 5种招式与觉醒', '聖誕少女 諾艾爾 ― 5種招式與覺醒',
     ],
     'shop.boss.14.moves': [
         'Öffne dich, Geschenk · Jingle-Ring · Zuckerstange · Baumlichter · Mitternachtslieferung. Nach dem Erwachen wird sie zum schwarzen Weihnachtsmädchen und die Techniken werden stärker. Wann sie erwacht, bestimmst du.',
