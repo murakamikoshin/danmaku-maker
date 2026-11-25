@@ -475,9 +475,16 @@ final class BGMTests: XCTestCase {
     func testDragonBGMs() {
         XCTAssertEqual(stage(.boss, bgm: 5).sanitized().bgm, 5)
         XCTAssertEqual(stage(.survive, bgm: 6).sanitized().bgm, 6)
-        XCTAssertNil(stage(.boss, bgm: 7).sanitized().bgm)
+        XCTAssertEqual(stage(.boss, bgm: 7).sanitized().bgm, 7)   // クリスマスの曲(1.5.0)
+        XCTAssertNil(stage(.boss, bgm: 8).sanitized().bgm)
         XCTAssertEqual(stage(.boss, bgm: 6).effectiveBGM, 6)
-        XCTAssertEqual(stage(.boss, bgm: 7).effectiveBGM, 1)
+        XCTAssertEqual(stage(.boss, bgm: 7).effectiveBGM, 7)
+        XCTAssertEqual(stage(.boss, bgm: 8).effectiveBGM, 1)
+        XCTAssertEqual(stage(.boss, bgm: 7).bossesNeededToPublish, [.santa], "クリスマスの曲は、ノエルを持っている人だけが選べる")
+        XCTAssertEqual(stage(.survive, bgm: 7).bossesNeededToPublish, [.santa])
+        XCTAssertEqual(Stage.bgmOwner(7), .santa); XCTAssertEqual(Stage.bgmOwner(5), .dragon); XCTAssertEqual(Stage.bgmOwner(6), .dragon)
+        for i in 0...4 { XCTAssertNil(Stage.bgmOwner(i)) }
+        XCTAssertEqual(stage(.boss, bgm: 7).seed, stage(.boss, bgm: nil).seed)
         XCTAssertEqual(stage(.boss, bgm: 5).bossesNeededToPublish, [.dragon])
         XCTAssertEqual(stage(.boss, bgm: 4).bossesNeededToPublish, [])
         XCTAssertEqual(stage(.boss, bgm: 5).seed, stage(.boss, bgm: nil).seed)

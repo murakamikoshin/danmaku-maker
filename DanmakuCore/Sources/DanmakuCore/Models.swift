@@ -898,14 +898,22 @@ public struct Stage: Codable, Equatable, Sendable {
     public var effectivePreviewStart: Int { min(max(0, previewStart ?? 0), maxPreviewStart) }
 
     /// 選べる BGM の数(5・6 は竜王の曲。1.4.0 から。古い版は範囲外なので、いつもの曲で鳴る)
-    public static let bgmCount = 7
+    public static let bgmCount = 8
     /// 竜王を持っている人だけが選べる BGM の番号(遊ぶ人は持っていなくても鳴る。サーバーの DRAGON_BGMS と同じ)
     public static let dragonBGMs: ClosedRange<Int> = 5...6
+    /// ノエルを持っている人だけが選べる、クリスマスの BGM の番号(1.5.0。古い版は範囲外なので、いつもの曲で鳴る)
+    public static let xmasBGM = 7
+    /// その BGM を選ぶのに、持っている必要があるボス(nil は、誰でも選べる曲)。遊ぶ人は持っていなくても鳴る。サーバーの BGM_OWNER と同じ
+    public static func bgmOwner(_ i: Int) -> BossCharacter? {
+        if dragonBGMs.contains(i) { return .dragon }
+        if i == xmasBGM { return .santa }
+        return nil
+    }
 
-    /// 公開するのに持っている必要があるボス(使っているボスと、竜王の曲を選んでいれば竜王)
+    /// 公開するのに持っている必要があるボス(使っているボスと、ボスの曲を選んでいれば、そのボス。竜王の曲 → 竜王、クリスマスの曲 → ノエル)
     public var bossesNeededToPublish: [BossCharacter] {
         var list = usedBosses
-        if let b = bgm, Stage.dragonBGMs.contains(b), !list.contains(.dragon) { list.append(.dragon) }
+        if let b = bgm, let owner = Stage.bgmOwner(b), !list.contains(owner) { list.append(owner) }
         return list
     }
 

@@ -1119,6 +1119,10 @@ private struct BossShopCard: View {
                         }
                         .accessibilityIdentifier("shop.boss.seasonal")
                     }
+                    if boss == .santa {
+                        // おまけ: ステージの BGM にクリスマスの曲
+                        Label("shop.boss.santa.bgm", systemImage: "music.note").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                    }
                     if boss == .dragon {
                         // おまけ: ステージの BGM に竜王の曲 2 つ
                         Label("shop.boss.dragon.bgm", systemImage: "music.note").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)

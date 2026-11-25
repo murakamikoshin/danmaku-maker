@@ -10,8 +10,10 @@ final class AudioManager: ObservableObject {
         case menu = "bgm_menu", stage = "bgm_stage", boss = "bgm_boss", bright = "bgm_bright", mystery = "bgm_mystery", swipe = "bgm_swipe", battle = "bgm_battle"
         /// 竜王の曲(竜王を持っている人がステージに選べる。遊ぶ人は誰でも聴ける)。イントロを1回流してから、このループへ
         case ryuou = "bgm_ryuou_loop", ryuou2 = "bgm_ryuou2_loop"
-        /// ステージの BGM 番号(0=ビビッド 1=ダーク 2=ゆったり 3=キラキラ 4=ミステリアス 5=竜王・烈火 6=竜王・終焉)の曲
-        static func forNumber(_ n: Int) -> Track { [Track.stage, .boss, .menu, .bright, .mystery, .ryuou, .ryuou2][min(max(n, 0), 6)] }
+        /// クリスマスの曲(ノエルを持っている人がステージに選べる。遊ぶ人は誰でも聴ける。tools/make_xmas_bgm.py)
+        case xmas = "bgm_xmas"
+        /// ステージの BGM 番号(0=ビビッド 1=ダーク 2=ゆったり 3=キラキラ 4=ミステリアス 5=竜王・烈火 6=竜王・終焉 7=クリスマス)の曲
+        static func forNumber(_ n: Int) -> Track { [Track.stage, .boss, .menu, .bright, .mystery, .ryuou, .ryuou2, .xmas][min(max(n, 0), 7)] }
         /// 最初に1回だけ流すイントロ(無い曲は nil)
         var intro: String? {
             switch self {

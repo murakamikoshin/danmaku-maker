@@ -81840,6 +81840,331 @@
           }
         }
       }
+    },
+    "bgm.7": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weihnachten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Christmas"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navidad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noël"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリスマス"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크리스마스"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natal"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рождество"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圣诞"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖誕"
+          }
+        }
+      }
+    },
+    "bgm.7.sub": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noels Lied. Sanft wie eine Spieluhr"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noel's tune. Gentle, like a music box"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La canción de Noel. Suave, como una caja de música"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’air de Noël. Doux comme une boîte à musique"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ノエルの曲。オルゴールのようにやさしい"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "노엘의 곡. 오르골처럼 부드러워요"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A música da Noel. Suave como uma caixinha de música"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мелодия Ноэль. Нежная, как музыкальная шкатулка"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "诺艾尔的曲子。像八音盒一样温柔"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "諾艾爾的曲子。像音樂盒一樣溫柔"
+          }
+        }
+      }
+    },
+    "editor.bgm.santa.locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Lied kann nur wählen, wer Noel besitzt. Anhören kann es jeder, und Spieler brauchen Noel nicht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only players who own Noel can choose this tune. Anyone can preview it, and players do not need Noel to hear it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo quienes tienen a Noel pueden elegir esta canción. Cualquiera puede escucharla, y quienes juegan no necesitan a Noel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuls ceux qui possèdent Noël peuvent choisir cet air. Tout le monde peut l’écouter, et les joueurs n’ont pas besoin de Noël."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ノエルを持っている人だけが選べる曲です。試聴はだれでもでき、遊ぶ人はノエルを持っていなくてもこの曲で遊べます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "노엘을 보유한 사람만 선택할 수 있는 곡이에요. 미리 듣기는 누구나 할 수 있고, 플레이하는 사람은 노엘이 없어도 이 곡으로 플레이할 수 있어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só quem tem a Noel pode escolher esta música. Qualquer um pode ouvir, e quem joga não precisa ter a Noel."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать эту мелодию могут только владельцы Ноэль. Прослушать может каждый, а игрокам Ноэль не нужна."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有拥有诺艾尔的人才能选择这首曲子。任何人都可以试听,游玩者无需拥有诺艾尔。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有擁有諾艾爾的人才能選擇這首曲子。任何人都可以試聽,遊玩者無需擁有諾艾爾。"
+          }
+        }
+      }
+    },
+    "publish.boss.bgm.santa": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als BGM ist Noels Lied gewählt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noel's tune is selected as the BGM."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has elegido la canción de Noel como BGM."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’air de Noël est choisi comme BGM."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGMにノエルの曲(クリスマス)を選んでいます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGM으로 노엘의 곡(크리스마스)을 선택했어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A música da Noel está escolhida como BGM."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В качестве BGM выбрана мелодия Ноэль."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGM选择了诺艾尔的曲子(圣诞)。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BGM選擇了諾艾爾的曲子(聖誕)。"
+          }
+        }
+      }
+    },
+    "shop.boss.santa.bgm": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonus: ein Weihnachtslied als Stage-BGM"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonus: a Christmas tune for your stage BGM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extra: una canción navideña para el BGM de tus niveles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonus : un air de Noël pour le BGM de vos niveaux"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "おまけ: ステージのBGMにクリスマスの曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "덤: 스테이지 BGM으로 크리스마스 곡"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bônus: uma música de Natal para o BGM das suas fases"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бонус: рождественская мелодия для BGM уровня"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "附赠:可用作关卡BGM的圣诞曲"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "附贈:可用作關卡BGM的聖誕曲"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

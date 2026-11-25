@@ -38,6 +38,8 @@ export const BOSS_SEASON: Readonly<Record<string, string>> = { santa: "xmas" };
 type LookPart = { bossLook?: number; mooks?: number; mookLook?: number };
 /** 竜王を持っている人だけが選べる BGM の番号(アプリの Stage.dragonBGMs と同じ) */
 export const DRAGON_BGMS: readonly number[] = [5, 6];
+/** その BGM を選ぶのに持っている必要があるボス(アプリの Stage.bgmOwner と同じ)。7 はクリスマスの曲(ノエル) */
+export const BGM_OWNER: Readonly<Record<number, string>> = { 5: "dragon", 6: "dragon", 7: "santa" };
 /** ステージを公開するのに持っている必要がある、専用の絵のボスの商品名(重複なし)。竜王の曲を選んでいれば竜王も */
 export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[]; bgm?: number }): string[] {
   const looks = [stage.bossLook, ...(stage.waves ?? []).map((w) => w.bossLook)];
@@ -46,7 +48,8 @@ export function bossKeysOf(stage: LookPart & { waves?: readonly LookPart[]; bgm?
     const k = l === undefined ? undefined : BOSS_BY_LOOK[l];
     if (k) keys.add(k);
   }
-  if (stage.bgm !== undefined && DRAGON_BGMS.includes(stage.bgm)) keys.add("dragon");
+  const bgmOwner = stage.bgm === undefined ? undefined : BGM_OWNER[stage.bgm];
+  if (bgmOwner) keys.add(bgmOwner);
   return [...keys];
 }
 

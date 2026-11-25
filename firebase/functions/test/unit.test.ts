@@ -324,7 +324,11 @@ describe("validatePublish: BGM", () => {
   it("竜王の曲(5・6)は選べる(1.4.0)", () => {
     for (const b of [5, 6]) { const r = validatePublish(good({ bgm: b })); expect(r.ok && r.stage.bgm).toBe(b); }
   });
-  it.each([[7], [-1], [1.5], ["a"]])("範囲外 %s は拒否", (b) => {
+  it("クリスマスの曲 7 は通す(1.5.0)。needs は付けない(古い版は、いつもの曲で鳴らす)", () => {
+    const r = validatePublish(good({ bgm: 7 }));
+    expect(r.ok && [r.stage.bgm, r.stage.needs]).toEqual([7, undefined]);
+  });
+  it.each([[8], [-1], [1.5], ["a"]])("範囲外 %s は拒否", (b) => {
     expect(validatePublish(good({ bgm: b }))).toEqual({ ok: false, error: "bgm" });
   });
 });

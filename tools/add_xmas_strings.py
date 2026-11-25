@@ -8,6 +8,35 @@ P = pathlib.Path(__file__).resolve().parent.parent / 'DanmakuApp/Localizable.xcs
 L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 
 TEXT = {
+    # ---- クリスマスの BGM(番号 7。ノエルを持っている人が選べる)
+    'bgm.7': ['Weihnachten', 'Christmas', 'Navidad', 'Noël', 'クリスマス', '크리스마스', 'Natal', 'Рождество', '圣诞', '聖誕'],
+    'bgm.7.sub': [
+        'Noels Lied. Sanft wie eine Spieluhr', "Noel's tune. Gentle, like a music box", 'La canción de Noel. Suave, como una caja de música',
+        'L’air de Noël. Doux comme une boîte à musique', 'ノエルの曲。オルゴールのようにやさしい', '노엘의 곡. 오르골처럼 부드러워요',
+        'A música da Noel. Suave como uma caixinha de música', 'Мелодия Ноэль. Нежная, как музыкальная шкатулка', '诺艾尔的曲子。像八音盒一样温柔', '諾艾爾的曲子。像音樂盒一樣溫柔',
+    ],
+    'editor.bgm.santa.locked': [
+        'Dieses Lied kann nur wählen, wer Noel besitzt. Anhören kann es jeder, und Spieler brauchen Noel nicht.',
+        'Only players who own Noel can choose this tune. Anyone can preview it, and players do not need Noel to hear it.',
+        'Solo quienes tienen a Noel pueden elegir esta canción. Cualquiera puede escucharla, y quienes juegan no necesitan a Noel.',
+        'Seuls ceux qui possèdent Noël peuvent choisir cet air. Tout le monde peut l’écouter, et les joueurs n’ont pas besoin de Noël.',
+        'ノエルを持っている人だけが選べる曲です。試聴はだれでもでき、遊ぶ人はノエルを持っていなくてもこの曲で遊べます。',
+        '노엘을 보유한 사람만 선택할 수 있는 곡이에요. 미리 듣기는 누구나 할 수 있고, 플레이하는 사람은 노엘이 없어도 이 곡으로 플레이할 수 있어요.',
+        'Só quem tem a Noel pode escolher esta música. Qualquer um pode ouvir, e quem joga não precisa ter a Noel.',
+        'Выбрать эту мелодию могут только владельцы Ноэль. Прослушать может каждый, а игрокам Ноэль не нужна.',
+        '只有拥有诺艾尔的人才能选择这首曲子。任何人都可以试听,游玩者无需拥有诺艾尔。',
+        '只有擁有諾艾爾的人才能選擇這首曲子。任何人都可以試聽,遊玩者無需擁有諾艾爾。',
+    ],
+    'publish.boss.bgm.santa': [
+        'Als BGM ist Noels Lied gewählt.', "Noel's tune is selected as the BGM.", 'Has elegido la canción de Noel como BGM.', 'L’air de Noël est choisi comme BGM.',
+        'BGMにノエルの曲(クリスマス)を選んでいます。', 'BGM으로 노엘의 곡(크리스마스)을 선택했어요.', 'A música da Noel está escolhida como BGM.', 'В качестве BGM выбрана мелодия Ноэль.',
+        'BGM选择了诺艾尔的曲子(圣诞)。', 'BGM選擇了諾艾爾的曲子(聖誕)。',
+    ],
+    'shop.boss.santa.bgm': [
+        'Bonus: ein Weihnachtslied als Stage-BGM', 'Bonus: a Christmas tune for your stage BGM', 'Extra: una canción navideña para el BGM de tus niveles',
+        'Bonus : un air de Noël pour le BGM de vos niveaux', 'おまけ: ステージのBGMにクリスマスの曲', '덤: 스테이지 BGM으로 크리스마스 곡',
+        'Bônus: uma música de Natal para o BGM das suas fases', 'Бонус: рождественская мелодия для BGM уровня', '附赠:可用作关卡BGM的圣诞曲', '附贈:可用作關卡BGM的聖誕曲',
+    ],
     # ---- ボス「クリスマス娘 ノエル」(番号 14)と、技の名前
     'enemy.boss.14': ['Noel', 'Noel', 'Noel', 'Noël', 'ノエル', '노엘', 'Noel', 'Ноэль', '诺艾尔', '諾艾爾'],
     'editor.pattern.bosssection.14': [

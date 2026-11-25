@@ -733,7 +733,8 @@ private struct BGMPanel: View {
     /// 鍵つき(竜王の曲)を試聴したとき、ショップへの案内を出す
     @State private var lockedTapped: Int?
     private let tints: [Color] = [GameStyle.pinkColor, Color(UIColor(hex: 0x8E5CFF)), GameStyle.cyanColor, GameStyle.yellow, GameStyle.violet,
-                                  Color(UIColor(hex: 0xFF6A2B)), Color(UIColor(hex: 0xC0263E))]
+                                  Color(UIColor(hex: 0xFF6A2B)), Color(UIColor(hex: 0xC0263E)), Color(UIColor(hex: 0x3FC46B))]
+    @EnvironmentObject private var seasons: SeasonConfig
 
     private var selected: Int {
         model.draft.bgm ?? (model.draft.mode == .survive ? 0 : 1)
@@ -741,13 +742,24 @@ private struct BGMPanel: View {
 
     /// 選べない(竜王の曲で、竜王を持っていない)。もう選んであるもの(コピーしたステージなど)は、外せるように鍵を出さない
     private func locked(_ i: Int) -> Bool {
-        Stage.dragonBGMs.contains(i) && !cosmetics.ownership.has(BossCharacter.dragon) && model.draft.bgm != i
+        guard let owner = Stage.bgmOwner(i) else { return false }
+        return !cosmetics.ownership.has(owner) && model.draft.bgm != i
     }
+
+    /// 並べる曲。期間限定のボスの曲(クリスマス)は、そのボスが売り場に出ている期間か、持っている人・もう選んである人にだけ並べる
+    private var choices: [Int] {
+        (0..<Stage.bgmCount).filter { i in
+            guard let owner = Stage.bgmOwner(i), owner.season != nil else { return true }
+            return seasons.onShelf(owner) || cosmetics.ownership.has(owner) || model.draft.bgm == i
+        }
+    }
+    /// 鍵つきの曲を押したときに案内する、ショップのボス
+    private var shopBoss: BossCharacter { lockedTapped.flatMap(Stage.bgmOwner) ?? .dragon }
 
     var body: some View {
         GamePanel(title: "editor.bgm", tint: GameStyle.violet) {
             VStack(spacing: 8) {
-                ForEach(0..<Stage.bgmCount, id: \.self) { i in
+                ForEach(choices, id: \.self) { i in
                     let on = selected == i
                     let lock = locked(i)
                     Button {
@@ -788,7 +800,7 @@ private struct BGMPanel: View {
                     if lockedTapped == i && lock {
                         // 竜王を持っている人だけ選べる(遊ぶ人は、持っていなくてもこの曲で遊べる)
                         VStack(spacing: 6) {
-                            Text("editor.bgm.dragon.locked").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                            Text(Stage.bgmOwner(i) == .santa ? "editor.bgm.santa.locked" : "editor.bgm.dragon.locked").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                             GameActionButton(title: "publish.boss.shop", systemImage: "bag.fill", fill: GameStyle.gold) { showShop = true }
                                 .accessibilityIdentifier("editor.bgm.dragon.shop")
@@ -798,7 +810,7 @@ private struct BGMPanel: View {
             }
             Text("editor.bgm.note").font(.caption).foregroundStyle(.secondary)
         }
-        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: "boss.\(BossCharacter.dragon.productKey)") }
+        .sheet(isPresented: $showShop) { ShopView(initialTab: .bosses, focus: seasons.shopFocus(for: shopBoss)) }
     }
 }
 

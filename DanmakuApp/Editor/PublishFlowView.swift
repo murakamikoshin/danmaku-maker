@@ -108,8 +108,9 @@ struct PublishFlowView: View {
                     // 置いて試すのは持っていなくてもできるが、公開には持っている必要がある
                     GamePanel(title: "publish.boss.title") {
                         Text(String(format: L("publish.boss.body"), L("enemy.boss.\(boss.rawValue)"))).font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
-                        if boss == .dragon && !stage.usedBosses.contains(.dragon) {
-                            Text("publish.boss.bgm").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
+                        if !stage.usedBosses.contains(boss) {
+                            // ボスは使っていないが、そのボスの曲を BGM に選んでいる
+                            Text(boss == .santa ? "publish.boss.bgm.santa" : "publish.boss.bgm").font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
                         }
                     }
                     if boss.inviteLimited {

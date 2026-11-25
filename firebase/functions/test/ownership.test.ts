@@ -12,6 +12,12 @@ describe("ボスを持っているか", () => {
     // 竜王の曲(5・6)を選んだら、竜王を持っている必要がある
     expect(bossKeysOf({ bossLook: 3, bgm: 5 })).toEqual(["dragon"]);
     expect(bossKeysOf({ bossLook: 13, bgm: 6 })).toEqual(["dragon"]);
+    // クリスマスの曲(7)は、ノエルを持っている人だけが選べる
+    expect(bossKeysOf({ bossLook: 3, bgm: 7 })).toEqual(["santa"]);
+    expect(bossKeysOf({ bgm: 7 })).toEqual(["santa"]);
+    expect(bossKeysOf({ bossLook: 14, bgm: 7 })).toEqual(["santa"]);
+    expect(missingBosses({ bgm: 7 }, [], new Set(["com.koshin.danmakumaker.pack.xmas"]))).toEqual([]);
+    expect(missingBosses({ bgm: 7 }, [], new Set())).toEqual(["santa"]);
     expect(bossKeysOf({ bossLook: 5, bgm: 4 })).toEqual(["fallen_angel"]);
   });
   it("単品か永久パックで持っている。招待限定のボスは永久パックに含まれない", () => {
