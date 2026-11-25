@@ -718,9 +718,12 @@ struct SeasonPromoBanner: View {
                 HStack(spacing: 12) {
                     // その期間のボスの絵(1コマ目)。絵が無ければ、雪の印
                     if let boss = BossCharacter.allCases.first(where: { $0.season == season }), let art = BossSprites.shopArt(boss, awakened: false) {
+                        // ボスの絵は、コマのまわりに余白が広い(浮いて動く分)。そのまま入れると小さすぎるので、1.7 倍にして枠で切る
                         Image(decorative: art.frames[0], scale: 1).interpolation(.none).resizable().scaledToFit()
+                            .scaleEffect(1.7)
                             .frame(width: 52, height: 52)
-                            .background(GameStyle.night, in: PixelRect(cornerRadius: 10))
+                            .background(GameStyle.night)
+                            .clipShape(PixelRect(cornerRadius: 10))
                     } else {
                         Image(systemName: "snowflake").font(.system(size: 20, weight: .heavy)).foregroundStyle(GameStyle.cyanColor).frame(width: 52, height: 52)
                     }

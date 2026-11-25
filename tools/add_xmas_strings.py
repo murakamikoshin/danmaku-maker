@@ -16,7 +16,7 @@ TEXT = {
     'home.season.xmas.body': [
         'Boss Noel, Minions, Schiffe und Thema – jetzt im Shop', 'Boss Noel, minions, ships and a theme – now in the shop',
         'Jefa Noel, esbirros, naves y tema: ya en la tienda', 'Boss Noël, sbires, vaisseaux et thème : en boutique',
-        'ボス「ノエル」と、雑魚・自機・テーマ。ショップへ', '보스 "노엘"과 졸개·기체·테마. 상점으로',
+        'ボス「ノエル」と、雑魚・自機・テーマ', '보스 "노엘"과 졸개·기체·테마. 상점으로',
         'Chefe Noel, lacaios, naves e tema: já na loja', 'Босс Ноэль, миньоны, корабли и тема — в магазине',
         'Boss“诺艾尔”与小怪、自机、主题。前往商店', 'Boss「諾艾爾」與小怪、自機、主題。前往商店',
     ],
