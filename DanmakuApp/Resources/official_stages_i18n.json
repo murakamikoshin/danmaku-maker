@@ -1052,5 +1052,39 @@
    "aim": "墮天使的五種招式。生命值降低時會覺醒，招式變得更強。",
    "name": "墮天使的審判"
   }
+ },
+ "o38": {
+  "de": {
+   "aim": "Noels fünf Techniken. Sinken ihre HP, erwacht sie als schwarzes Weihnachtsmädchen und wird stärker.",
+   "name": "Noels Weihnachten"
+  },
+  "es": {
+   "aim": "Las cinco técnicas de Noel. Al bajar sus PS despierta como Santa negra y se vuelve más fuerte.",
+   "name": "La Navidad de Noel"
+  },
+  "fr": {
+   "aim": "Les cinq techniques de Noël. Quand ses PV baissent, elle s’éveille en Mère Noël noire et devient plus forte.",
+   "name": "Le Noël de Noël"
+  },
+  "ko": {
+   "aim": "노엘의 다섯 가지 기술. HP가 줄면 각성해 블랙 산타가 되고 기술이 강해져요.",
+   "name": "노엘의 크리스마스"
+  },
+  "pt-BR": {
+   "aim": "Os cinco golpes da Noel. Quando o HP cai, ela desperta como a Noel negra e fica mais forte.",
+   "name": "O Natal da Noel"
+  },
+  "ru": {
+   "aim": "Пять приёмов Ноэль. Когда её HP падает, она пробуждается Чёрной Сантой и становится сильнее.",
+   "name": "Рождество Ноэль"
+  },
+  "zh-Hans": {
+   "aim": "诺艾尔的五种招式。HP减少后觉醒为黑圣诞少女,招式变强。",
+   "name": "诺艾尔的圣诞节"
+  },
+  "zh-Hant": {
+   "aim": "諾艾爾的五種招式。HP減少後覺醒為黑聖誕少女,招式變強。",
+   "name": "諾艾爾的聖誕節"
+  }
  }
 }

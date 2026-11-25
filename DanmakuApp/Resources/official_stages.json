@@ -2633,5 +2633,136 @@
    "formatVersion": 1,
    "name": "o37"
   }
+ },
+ {
+  "id": "o38",
+  "difficulty": 5,
+  "name": {
+   "ja": "ノエルのクリスマス",
+   "en": "Noel's Christmas"
+  },
+  "aim": {
+   "ja": "ノエルの5つの技。HPが減ると覚醒して黒サンタになり、技が強くなる。",
+   "en": "Noel's five moves. She awakens into Black Santa and grows stronger as her HP drops."
+  },
+  "stage": {
+   "mode": "boss",
+   "durationSec": 90,
+   "bossHp": 600,
+   "bossMove": 0,
+   "bossLook": 14,
+   "awaken": 2,
+   "emitters": [
+    {
+     "t": "santaGift",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.8,
+     "c": 5,
+     "v": 1.9,
+     "r": 0,
+     "k": 0,
+     "ph": 1
+    },
+    {
+     "t": "santaBell",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.4,
+     "c": 24,
+     "v": 2.2,
+     "r": 0,
+     "k": 2,
+     "ph": 1
+    },
+    {
+     "t": "santaCane",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.08,
+     "c": 6,
+     "v": 3.0,
+     "r": 0,
+     "k": 0,
+     "ph": 2
+    },
+    {
+     "t": "santaTree",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 2.0,
+     "c": 9,
+     "v": 2.2,
+     "r": 0,
+     "k": 1,
+     "ph": 2
+    },
+    {
+     "t": "santaBell",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.5,
+     "c": 22,
+     "v": 2.0,
+     "r": 0,
+     "k": 2,
+     "ph": 2
+    },
+    {
+     "t": "santaDelivery",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.7,
+     "c": 6,
+     "v": 4,
+     "r": 0,
+     "k": 3,
+     "ph": 3
+    },
+    {
+     "t": "santaBell",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.4,
+     "c": 24,
+     "v": 2.2,
+     "r": 0,
+     "k": 2,
+     "ph": 3
+    },
+    {
+     "t": "santaCane",
+     "x": 0.5,
+     "y": 0.2,
+     "s": 0,
+     "e": 90,
+     "i": 0.08,
+     "c": 6,
+     "v": 3.0,
+     "r": 0,
+     "k": 0,
+     "ph": 3
+    }
+   ],
+   "formatVersion": 1,
+   "themeBullets": "xmas",
+   "themeBackground": "xmas",
+   "bgm": 7,
+   "name": "o38"
+  }
  }
 ]

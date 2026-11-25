@@ -125,7 +125,14 @@ add(5, "金魚姫の夏祭り", "Goldfish Princess's Summer Festival", "金魚�
     angel_boss(90, 500, 3, [E("hireSukui", i=.65, c=8, v=2, k=0, ph=1), E("hireYoyo", i=1.2, c=6, v=2.2, k=1, ph=1), E("hireRipple", i=.5, c=14, v=1.5, k=2, ph=2),
                            E("hireHanabi", i=.6, c=1, v=4, k=3, ph=2), E("hireKaiyu", i=3.2, c=20, v=1, k=4, ph=3), E("hireSukui", i=.65, c=8, v=2, k=0, ph=3)], look=12))
 
-assert len(S) == 37, len(S)
+# ---- ボス「クリスマス娘 ノエル」の見本(1.5.0)。弾と背景はクリスマスのテーマ、BGM はクリスマスの曲(遊ぶ人は誰でも、この見た目と曲で遊べる) ----
+add(5, "ノエルのクリスマス", "Noel's Christmas", "ノエルの5つの技。HPが減ると覚醒して黒サンタになり、技が強くなる。", "Noel's five moves. She awakens into Black Santa and grows stronger as her HP drops.",
+    {**angel_boss(90, 600, 2, [E("santaGift", i=.8, c=5, v=1.9, k=0, ph=1), E("santaBell", i=.4, c=24, v=2.2, k=2, ph=1), E("santaCane", i=.08, c=6, v=3.0, k=0, ph=2),
+                              E("santaTree", i=2.0, c=9, v=2.2, k=1, ph=2), E("santaBell", i=.5, c=22, v=2.0, k=2, ph=2), E("santaDelivery", i=.7, c=6, v=4, k=3, ph=3),
+                              E("santaBell", i=.4, c=24, v=2.2, k=2, ph=3), E("santaCane", i=.08, c=6, v=3.0, k=0, ph=3)], look=14),
+     "themeBullets": "xmas", "themeBackground": "xmas", "bgm": 7})
+
+assert len(S) == 38, len(S)
 out = [dict(id=i, difficulty=lv, name=dict(ja=ja, en=en), aim=dict(ja=aj, en=ae), stage={**st, "name": i}) for (i, lv, ja, en, aj, ae, st) in S]
 root = pathlib.Path(__file__).resolve().parent.parent
 (root / "DanmakuApp/Resources/official_stages.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))
