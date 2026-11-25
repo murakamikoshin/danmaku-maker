@@ -21,7 +21,8 @@ export type Pattern = (typeof PATTERNS)[number];
 export type Mode = "survive" | "boss" | "damage" | "sequence";
 export type WaveKind = "survive" | "boss";
 /** 見た目のテーマ。classic は標準(データには入れない) */
-export const THEMES = ["sakura", "ocean", "aurora", "gold", "neon", "rainbow"] as const;
+/** xmas は 1.5.0 から(期間限定で売る)。古い版は知らない名前を標準の見た目で読むので、needs は付けない */
+export const THEMES = ["sakura", "ocean", "aurora", "gold", "neon", "rainbow", "xmas"] as const;
 export type Theme = (typeof THEMES)[number];
 export type LifeMode = "lives" | "hp";
 export const LIVES_RANGE = [1, 5] as const;

@@ -339,6 +339,9 @@ describe("validatePublish: 見た目と発射位置の予告", () => {
     const rw = validatePublish(good({ themeBullets: "gold", themeBackground: "neon", themeShip: "rainbow" }));
     expect(rw.ok && rw.stage.themeBullets).toBe("gold");
     expect(rw.ok && rw.stage.themeShip).toBe("rainbow");
+    // クリスマスのテーマ(1.5.0)。needs は付けない(古い版は標準の見た目で読む)
+    const xm = validatePublish(good({ themeBullets: "xmas", themeBackground: "xmas" }));
+    expect(xm.ok && [xm.stage.themeBullets, xm.stage.themeBackground, xm.stage.needs]).toEqual(["xmas", "xmas", undefined]);
     expect(validatePublish(good({ themeBullets: "galaxy" }))).toEqual({ ok: false, error: "theme" });
     expect(validatePublish(good({ themeShip: 3 }))).toEqual({ ok: false, error: "theme" });
   });

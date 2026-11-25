@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BOSS_BY_LOOK, BOSS_KEYS, NOT_IN_LIFETIME, PAID_ONLY_BOSSES, SEASONAL_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, missingMookPacks, mookPacksOf, MOOK_LOOK_MAX, MOOK_PACKS, ownsBossByPurchase, ownsMookPackByPurchase, providerMarks } from "../src/ownership.js";
+import { BOSS_BY_LOOK, BOSS_KEYS, NOT_IN_LIFETIME, PAID_ONLY_BOSSES, SEASONAL_BOSSES, bossKeysOf, fetchPurchasedIds, isPaidShip, missingBosses, missingMookPacks, ownsShipByPurchase, PAID_SHIPS, mookPacksOf, MOOK_LOOK_MAX, MOOK_PACKS, ownsBossByPurchase, ownsMookPackByPurchase, providerMarks } from "../src/ownership.js";
 import { simulate, type SimStage } from "../src/fullsim.js";
 import { validatePublish } from "../src/validate.js";
 
@@ -156,6 +156,28 @@ describe("雑魚の見た目のセット(クリスマス)と、期間の全部�
     expect(ownsBossByPurchase("kitsune", pack)).toBe(false);
     expect(ownsBossByPurchase("puni", pack)).toBe(false);
     expect(ownsBossByPurchase("dragon", pack)).toBe(false);
+  });
+});
+
+describe("買って手に入れる自機(クリスマス)", () => {
+  const p = "com.koshin.danmakumaker.";
+  it("アプリの PaidShip と同じ3機", () => {
+    expect(Object.keys(PAID_SHIPS)).toEqual(["sleigh_xmas", "reindeer_xmas", "snowflake_xmas"]);
+    for (const id of Object.keys(PAID_SHIPS)) expect(isPaidShip(id)).toBe(true);
+    for (const id of ["ace_gold", "original_steel", "seraph_special", "x_foo", "toString", "constructor", ""]) expect(isPaidShip(id)).toBe(false);
+  });
+  it("単品・全部入り・永久買い切りパックで持っている。1機ずつ", () => {
+    expect(ownsShipByPurchase("sleigh_xmas", new Set([p + "ship.sleigh_xmas"]))).toBe(true);
+    expect(ownsShipByPurchase("reindeer_xmas", new Set([p + "ship.sleigh_xmas"]))).toBe(false);
+    for (const id of Object.keys(PAID_SHIPS)) {
+      expect(ownsShipByPurchase(id, new Set([p + "pack.xmas"]))).toBe(true);
+      expect(ownsShipByPurchase(id, new Set([p + "lifetime"]))).toBe(true);
+      expect(ownsShipByPurchase(id, new Set([p + "boss.santa", p + "mooks.xmas"]))).toBe(false);
+      expect(ownsShipByPurchase(id, new Set())).toBe(false);
+    }
+  });
+  it("招待のごほうびの自機は、永久買い切りパックでも買ったことにならない", () => {
+    expect(ownsShipByPurchase("ace_gold", new Set([p + "lifetime", p + "pack.xmas"]))).toBe(false);
   });
 });
 

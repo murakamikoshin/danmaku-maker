@@ -8,4 +8,5 @@ export const THEME_PALETTES: Record<string, { bullets: string[]; background: str
   gold: { bullets: ["#ffd54a", "#ffb300", "#fff0a0", "#ff8f00", "#ffe082"], background: "#1a1405" },
   neon: { bullets: ["#ff2e93", "#00f0ff", "#b6ff00", "#ff9e00", "#9d4dff"], background: "#06001a" },
   rainbow: { bullets: ["#ff5c5c", "#ffb347", "#fff06a", "#6ce08a", "#6aa8ff"], background: "#0b0b1e" },
+  xmas: { bullets: ["#e83a3a", "#3fc46b", "#ffd54a", "#f4f8ff", "#8fd8ff"], background: "#08141c" },
 };

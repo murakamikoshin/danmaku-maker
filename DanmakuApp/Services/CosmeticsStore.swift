@@ -130,6 +130,9 @@ final class CosmeticsStore: ObservableObject {
         var next = Ownership(productIDs: productIDs, posts: postedCount)
         next.adPatterns = ownership.adPatterns
         next.freeBosses = ownership.freeBosses
+        // 買って手に入れる自機(単品・その期間の全部入り・永久買い切りパック)を、持っている自機に足す
+        let ships = PaidShip.allCases.filter { next.has($0) }.map(\.rawValue)
+        if !ships.isEmpty { setOwnedSkins(ships) }
         guard next != ownership else { return }
         ownership = next
         defaults.set(next.owned.map(\.id).sorted(), forKey: Self.ownedKey)

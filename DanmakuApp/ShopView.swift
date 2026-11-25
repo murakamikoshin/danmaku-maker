@@ -38,7 +38,7 @@ struct ShopView: View {
             case "lifetime", "daily": return .deals
             case "adpatterns", "patterns", "patterns2", "maker": return .patterns
             case "shots": return .shots
-            case "customimages": return .looks
+            case "customimages", "ships": return .looks
             case _ where id.hasPrefix("theme."): return .looks
             case "bosses": return .bosses
             case _ where id.hasPrefix("boss."): return .bosses
@@ -183,7 +183,10 @@ struct ShopView: View {
             RemoteShopSection().id("remotenew")
             CustomImagesCard().id("customimages")
             RewardShop()
-            ForEach(Theme.paid, id: \.self) { ThemeCard(theme: $0).id("theme.\($0.rawValue)") }
+            // 期間限定の自機(クリスマスなど): 販売中か、持っている人にだけ
+            if PaidShip.allCases.contains(where: { $0.onShelf(seasons.open) || cosmetics.ownership.has($0) }) { PaidShipSection().id("ships") }
+            // 期間限定のテーマは、販売中か、部品をどれか持っている人にだけ
+            ForEach(Theme.paid.filter { t in t.onShelf(seasons.open) || ThemePart.allCases.contains { cosmetics.ownership.has($0, of: t) } }, id: \.self) { ThemeCard(theme: $0).id("theme.\($0.rawValue)") }
             ThemeCard(theme: .classic)
         }
     }
@@ -986,6 +989,13 @@ private struct SeasonPackCard: View {
                     ForEach(MookPack.allCases.filter { $0.season == season }, id: \.self) { m in
                         Label(L("shop.mooks.\(m.productKey).title"), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text)
                     }
+                    if PaidShip.allCases.contains(where: { $0.season == season }) {
+                        Label(PaidShip.allCases.filter { $0.season == season }.map { ShipSkin.name($0.rawValue) }.joined(separator: " / "), systemImage: "checkmark.circle.fill")
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text)
+                    }
+                    ForEach(Theme.paid.filter { $0.season == season }, id: \.self) { t in
+                        Label(String(format: L("shop.pack.theme"), L(t.nameKey)), systemImage: "checkmark.circle.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text)
+                    }
                     Label("shop.boss.seasonal", systemImage: "snowflake").font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
                     HStack {
                         Spacer()
@@ -998,6 +1008,42 @@ private struct SeasonPackCard: View {
             }
         }
         .accessibilityIdentifier("shop.pack.\(season.rawValue)")
+    }
+}
+
+/// 買って手に入れる、ドット絵の自機(1機ずつ)。買うと、自機の選択(招待の画面の「自機」)と、ステージの見た目で選べる
+private struct PaidShipSection: View {
+    @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var seasons: SeasonConfig
+
+    var body: some View {
+        ShopCard(title: "shop.ships.title", footer: "shop.ships.footer") {
+            CardBody {
+                let list = PaidShip.allCases.filter { $0.onShelf(seasons.open) || cosmetics.ownership.has($0) }
+                ForEach(Array(list.enumerated()), id: \.element) { i, ship in
+                    if i > 0 { CardDivider() }
+                    HStack(spacing: 12) {
+                        SkinThumb(id: ship.rawValue).frame(width: 56, height: 56)
+                            .background(GameStyle.night, in: PixelRect(cornerRadius: 10))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(ShipSkin.name(ship.rawValue)).font(.system(size: 15, weight: .heavy)).foregroundStyle(GameStyle.text)
+                            if ship.season != nil {
+                                Label("shop.boss.seasonal", systemImage: "snowflake").font(.system(size: 11, weight: .heavy)).foregroundStyle(GameStyle.cyanColor)
+                            }
+                        }
+                        Spacer(minLength: 0)
+                        if cosmetics.ownership.has(ship) {
+                            if cosmetics.shipSkin == ship.rawValue { EquippedLabel() }
+                            else { EquipButton { gameTap(); cosmetics.selectSkin(ship.rawValue) } }
+                        } else {
+                            PriceButton(product: .ship(ship))
+                        }
+                    }
+                    .padding(12)
+                    .accessibilityIdentifier("shop.ship.\(ship.rawValue)")
+                }
+            }
+        }
     }
 }
 

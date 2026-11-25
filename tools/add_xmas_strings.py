@@ -8,6 +8,30 @@ P = pathlib.Path(__file__).resolve().parent.parent / 'DanmakuApp/Localizable.xcs
 L = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-Hans', 'zh-Hant']
 
 TEXT = {
+    # ---- クリスマスのテーマと自機
+    'theme.xmas': ['Weihnachten', 'Christmas', 'Navidad', 'Noël', 'クリスマス', '크리스마스', 'Natal', 'Рождество', '圣诞', '聖誕'],
+    'ship.sleigh_xmas': ['Schlitten', 'Sleigh', 'Trineo', 'Traîneau', 'そり', '썰매', 'Trenó', 'Сани', '雪橇', '雪橇'],
+    'ship.reindeer_xmas': ['Rentier', 'Reindeer', 'Reno', 'Renne', 'トナカイ', '순록', 'Rena', 'Олень', '驯鹿', '馴鹿'],
+    'ship.snowflake_xmas': ['Schneeflocke', 'Snowflake', 'Copo de nieve', 'Flocon', '雪の結晶', '눈꽃', 'Floco de neve', 'Снежинка', '雪花', '雪花'],
+    'shop.ships.title': [
+        'Weihnachtsschiffe', 'Christmas Ships', 'Naves navideñas', 'Vaisseaux de Noël', 'クリスマスの自機',
+        '크리스마스 기체', 'Naves de Natal', 'Рождественские корабли', '圣诞自机', '聖誕自機',
+    ],
+    'shop.ships.footer': [
+        'Nur das Aussehen ändert sich; die Trefferzone bleibt gleich. Nur im Verkaufszeitraum erhältlich, danach für immer nutzbar.',
+        'Looks only; the hit area stays the same. Only sold during the sale period, then yours forever.',
+        'Solo cambia el aspecto; la zona de impacto es la misma. Solo se vende durante el periodo de venta y luego es tuya para siempre.',
+        'Apparence uniquement ; la zone de collision reste la même. En vente uniquement pendant la période, puis à vous pour toujours.',
+        '変わるのは見た目だけで、当たり判定は同じです。買えるのは期間中だけ。買ったあとは、ずっと使えます。',
+        '바뀌는 것은 겉모습뿐이고 피격 판정은 같아요. 기간 중에만 구매할 수 있고, 구매한 뒤에는 계속 사용할 수 있어요.',
+        'Só muda a aparência; a área de colisão é a mesma. Só é vendido durante o período de venda e depois é seu para sempre.',
+        'Меняется только внешний вид; зона попадания та же. Продаётся только в период продажи, после покупки остаётся навсегда.',
+        '仅改变外观,判定范围不变。仅在销售期内可购买,购买后可一直使用。',
+        '僅改變外觀,判定範圍不變。僅在販售期內可購買,購買後可一直使用。',
+    ],
+    'shop.pack.theme': [
+        'Thema „%@“', 'Theme "%@"', 'Tema «%@»', 'Thème « %@ »', 'テーマ「%@」', '테마 "%@"', 'Tema "%@"', 'Тема «%@»', '主题“%@”', '主題「%@」',
+    ],
     # ---- 雑魚の見た目のセット(クリスマス)と、クリスマスパック
     'enemy.mook.5': ['Schneemann', 'Snowman', 'Muñeco de nieve', 'Bonhomme de neige', '雪だるま', '눈사람', 'Boneco de neve', 'Снеговик', '雪人', '雪人'],
     'enemy.mook.6': ['Geschenk', 'Gift box', 'Regalo', 'Cadeau', 'プレゼント箱', '선물 상자', 'Presente', 'Подарок', '礼物盒', '禮物盒'],

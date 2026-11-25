@@ -1,3 +1,4 @@
+import DanmakuCore
 import SpriteKit
 import UIKit
 
@@ -9,7 +10,9 @@ enum ShipSkin {
     static let original = "original_steel"
     static let special = "seraph_special"
     /// 全部の ID(サーバーの INVITER_SHIPS などと同じ名前)
-    static let all: [String] = [original] + models.flatMap { m in colors.map { "\(m)_\($0)" } } + [special]
+    /// 買って手に入れる自機(クリスマスの自機など。DanmakuCore の PaidShip)。絵は同じ art/rewards/<ID>/ に、同じ形(32×32・3コマ)で置く
+    static let paid: [String] = PaidShip.allCases.map(\.rawValue)
+    static let all: [String] = [original] + models.flatMap { m in colors.map { "\(m)_\($0)" } } + [special] + paid
 
     static func isValid(_ id: String) -> Bool { all.contains(id) || RemoteCatalog.isRemoteID(id) }
 
@@ -18,6 +21,7 @@ enum ShipSkin {
         if RemoteCatalog.isRemoteID(id) { return compatAssumeMainActor { RemoteCatalog.shared.item(id)?.name ?? id } }
         if id == original { return L("ship.original") }
         if id == special { return L("ship.special") }
+        if paid.contains(id) { return L("ship.\(id)") }
         let parts = id.split(separator: "_").map(String.init)
         guard parts.count == 2 else { return id }
         return "\(L("ship.model.\(parts[0])")) \(L("ship.color.\(parts[1])"))"

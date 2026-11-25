@@ -189,7 +189,7 @@ struct InviteView: View {
         let next = Self.steps.first { $0.need > rewarded }
         return GamePanel(title: "invite.progress.section", tint: GameStyle.yellow) {
             Text(String(format: L("invite.progress.count"), count)).font(.display(15)).foregroundStyle(GameStyle.text)
-            Text(String(format: L("invite.ship.progress"), min(cosmetics.ownedSkins.count, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
+            Text(String(format: L("invite.ship.progress"), min(cosmetics.ownedSkins.filter { !ShipSkin.paid.contains($0) }.count, Self.maxShips), Self.maxShips)).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.text)
             if let nextShip = Self.shipSteps.first(where: { $0 > rewarded }) {
                 Text(String(format: L("invite.ship.next"), nextShip - rewarded)).font(.system(size: 12, weight: .heavy)).foregroundStyle(GameStyle.pinkColor)
             }

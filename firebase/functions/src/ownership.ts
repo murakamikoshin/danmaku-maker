@@ -88,6 +88,23 @@ export function missingMookPacks(stage: Parameters<typeof mookPacksOf>[0], purch
   return mookPacksOf(stage).filter((k) => !ownsMookPackByPurchase(k, purchased));
 }
 
+/**
+ * 買って手に入れる、ドット絵の自機(アプリの PaidShip と同じ)。値は、期間限定で売る自機の期間の名前。
+ * 招待のごほうびの自機(inviteState の ships)は、ここには入れない
+ */
+export const PAID_SHIPS: Readonly<Record<string, string | undefined>> = { sleigh_xmas: "xmas", reindeer_xmas: "xmas", snowflake_xmas: "xmas" };
+
+/** その自機が、買って手に入れるものか */
+export function isPaidShip(id: string): boolean { return Object.prototype.hasOwnProperty.call(PAID_SHIPS, id); }
+
+/** 買った商品の ID の一覧から、その自機を持っているか(単品・その期間の全部入り・永久買い切りパック)。買う自機でなければ false */
+export function ownsShipByPurchase(id: string, purchased: ReadonlySet<string>): boolean {
+  if (!isPaidShip(id)) return false;
+  if (purchased.has(`${PRODUCT_PREFIX}ship.${id}`) || purchased.has(`${PRODUCT_PREFIX}lifetime`)) return true;
+  const season = PAID_SHIPS[id];
+  return season !== undefined && purchased.has(`${PRODUCT_PREFIX}pack.${season}`);
+}
+
 type FetchLike = (url: string, init: { headers: Record<string, string>; signal?: AbortSignal }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
 /**

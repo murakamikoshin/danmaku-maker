@@ -17,7 +17,7 @@ import { decodeReplay, isShotType, recentMonth, simulate } from "./fullsim.js";
 import { prepareWeek, RANKED_STAGE_VERSION, rankedBot, rankedClaim, rankedJoin, rankedLeave, rankedStatus, rankedSubmit, sweepRanked } from "./rankedfns.js";
 import { renderOgp } from "./ogp.js";
 import { syncLatestVersion } from "./appversion.js";
-import { BOSS_KEYS, PAID_ONLY_BOSSES, bossKeysOf, fetchPurchasedIds, missingBosses, missingMookPacks, mookPacksOf, providerMarks } from "./ownership.js";
+import { BOSS_KEYS, PAID_ONLY_BOSSES, bossKeysOf, fetchPurchasedIds, isPaidShip, missingBosses, missingMookPacks, mookPacksOf, ownsShipByPurchase, providerMarks } from "./ownership.js";
 import { isValidShortId, newShortId, normalizeShortId, shareIdFromPath } from "./shortId.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "./share.js";
 import { afterGrant, afterPost, checkPost, jstDay, MIN_GRANT_INTERVAL_MS, quotaFields, readQuota } from "./quota.js";
@@ -119,9 +119,15 @@ export const publishStage = onCall({ memory: "512MiB", timeoutSeconds: 60, secre
   if (!v.ok) throw new HttpsError("invalid-argument", v.error);
   if ((req.data as { termsAccepted?: unknown }).termsAccepted !== true) throw new HttpsError("failed-precondition", "terms-not-accepted");
   // ステージに選んだドット絵の自機は、作者が持っているものだけ(招待のごほうびなどは inviteState の ships に入っている)
+  // 買って手に入れる自機(クリスマスの自機など)は、買った記録を RevenueCat に聞く(聞けなかったら止めない。ボスと同じ)
   if (v.stage.shipSkin) {
     const ships = ((await db.doc(`inviteState/${uid}`).get()).get("ships") as string[] | undefined) ?? [];
-    if (!ships.includes(v.stage.shipSkin)) throw new HttpsError("permission-denied", "ship-not-owned");
+    if (!ships.includes(v.stage.shipSkin)) {
+      if (!isPaidShip(v.stage.shipSkin)) throw new HttpsError("permission-denied", "ship-not-owned");
+      const bought = await fetchPurchasedIds(uid, revenuecatApiKey.value() || undefined);
+      if (bought === null) logger.warn("ship-ownership-unverified", { uid, ship: v.stage.shipSkin });
+      else if (!ownsShipByPurchase(v.stage.shipSkin, bought)) throw new HttpsError("permission-denied", "ship-not-owned");
+    }
   }
   // 「URLを知っている人だけ」の投稿(unlisted)はクリア記録が要らず、一覧には載らない。そうでなければ、作者のクリア記録を再生して
   // 本当にクリアできるステージか確かめる(テストプレイも、ステージで決めた撃ち方)

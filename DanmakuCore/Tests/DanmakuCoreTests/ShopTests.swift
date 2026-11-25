@@ -63,7 +63,7 @@ final class ShopTests: XCTestCase {
         o.posts = 10
         XCTAssertTrue(o.hasUnlocked(.rainbow))
         XCTAssertFalse(Ownership(owned: Set(Product.all)).hasUnlocked(.gold), "買っても、投稿数で解放されるものは解放されない")
-        XCTAssertEqual(Product.all.count, 64)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個、竜王で49個、弾幕パック3の12個で61個)
+        XCTAssertEqual(Product.all.count, 71)   // 弾幕パック2で12個、ボス(堕天使・九尾の巫女・雪の女王・死神・深海の魔女・機神)で6個増えた(金魚姫で48個、竜王で49個、弾幕パック3の12個で61個)
     }
 
     func testLifetimeGrantsPurchasableBossesButNotInviteOnly() {
@@ -171,13 +171,56 @@ final class ShopTests: XCTestCase {
         XCTAssertFalse(pack.has(.kitsune), "期間限定でないボスは付かない")
         XCTAssertFalse(pack.has(.puni))
         XCTAssertFalse(pack.canBuy(.boss(.santa))); XCTAssertFalse(pack.canBuy(.mooks(.xmas))); XCTAssertFalse(pack.canBuy(.seasonPack(.xmas)))
-        // 単品で全部そろえた人・永久買い切りパックの人に、全部入りの買うボタンは出さない。片方だけなら出す
-        XCTAssertFalse(Ownership(owned: [.boss(.santa), .mooks(.xmas)]).canBuy(.seasonPack(.xmas)))
+        for sh in PaidShip.allCases { XCTAssertTrue(pack.has(sh)) }
+        for part in ThemePart.allCases { XCTAssertTrue(pack.has(part, of: .xmas)); XCTAssertFalse(pack.has(part, of: .sakura), "ほかのテーマは付かない") }
+        // 単品で全部そろえた人・永久買い切りパックの人に、全部入りの買うボタンは出さない。足りないものがあれば出す
+        XCTAssertTrue(Ownership(owned: [.boss(.santa), .mooks(.xmas)]).canBuy(.seasonPack(.xmas)), "自機とテーマがまだ")
+        XCTAssertFalse(Ownership(owned: [.boss(.santa), .mooks(.xmas), .ship(.sleigh), .ship(.reindeer), .ship(.snowflake), .set(.xmas)]).canBuy(.seasonPack(.xmas)))
         XCTAssertFalse(Ownership(owned: [.lifetime]).canBuy(.seasonPack(.xmas)))
         XCTAssertTrue(Ownership(owned: [.boss(.santa)]).canBuy(.seasonPack(.xmas)))
         XCTAssertTrue(Ownership().canBuy(.seasonPack(.xmas)))
         // 全部入りは、単品の合計より安い
-        XCTAssertLessThan(Product.seasonPack(.xmas).yen, Product.boss(.santa).yen + Product.mooks(.xmas).yen + 1)
+        let singles = Product.boss(.santa).yen + Product.mooks(.xmas).yen + PaidShip.allCases.map { Product.ship($0).yen }.reduce(0, +) + Product.set(.xmas).yen
+        XCTAssertEqual(singles, 1100)
+        XCTAssertLessThan(Product.seasonPack(.xmas).yen, singles)
+    }
+
+    func testPaidShips() {
+        XCTAssertEqual(PaidShip.allCases.map(\.rawValue), ["sleigh_xmas", "reindeer_xmas", "snowflake_xmas"])
+        for sh in PaidShip.allCases {
+            XCTAssertEqual(Product.ship(sh).id, Product.idPrefix + "ship." + sh.rawValue)
+            XCTAssertEqual(Product(id: Product.idPrefix + "ship." + sh.rawValue), .ship(sh))
+            XCTAssertEqual(Product.ship(sh).yen, 100)
+            XCTAssertEqual(sh.season, .xmas); XCTAssertFalse(sh.onShelf([])); XCTAssertTrue(sh.onShelf([.xmas]))
+            XCTAssertFalse(Ownership().has(sh))
+            XCTAssertTrue(Ownership(owned: [.ship(sh)]).has(sh))
+            XCTAssertTrue(Ownership(owned: [.lifetime]).has(sh))
+            XCTAssertTrue(Ownership(owned: [.seasonPack(.xmas)]).has(sh))
+            // 自機の ID は、ステージの shipSkin にそのまま入れられる形
+            var st = Stage(name: "s", mode: .survive, durationSec: 20, emitters: []); st.shipSkin = sh.rawValue
+            XCTAssertEqual(st.sanitized().shipSkin, sh.rawValue)
+        }
+        XCTAssertFalse(Ownership(owned: [.ship(.sleigh)]).has(.reindeer), "1機ずつ")
+        XCTAssertNil(Product(id: Product.idPrefix + "ship.ace_gold"), "招待のごほうびの自機は、商品ではない")
+    }
+
+    func testSeasonalTheme() {
+        XCTAssertTrue(Theme.paid.contains(.xmas)); XCTAssertEqual(Theme.xmas.season, .xmas)
+        XCTAssertFalse(Theme.xmas.onShelf([])); XCTAssertTrue(Theme.xmas.onShelf([.xmas]))
+        for t in [Theme.sakura, .ocean, .aurora] { XCTAssertNil(t.season); XCTAssertTrue(t.onShelf([])) }
+        XCTAssertEqual(Product.set(.xmas).id, Product.idPrefix + "xmas.set")
+        XCTAssertEqual(Product(id: Product.idPrefix + "xmas.bullets"), .part(.xmas, .bullets))
+        for p in ThemePart.allCases {
+            XCTAssertFalse(Ownership().has(p, of: .xmas))
+            XCTAssertTrue(Ownership(owned: [.set(.xmas)]).has(p, of: .xmas))
+            XCTAssertTrue(Ownership(owned: [.lifetime]).has(p, of: .xmas))
+        }
+        XCTAssertTrue(Ownership(owned: [.part(.xmas, .bullets)]).has(.bullets, of: .xmas))
+        XCTAssertFalse(Ownership(owned: [.part(.xmas, .bullets)]).has(.ship, of: .xmas))
+        // ステージに付けたテーマは、保存して読み戻せる
+        let st = Stage(name: "s", mode: .survive, durationSec: 20, emitters: [], themeBullets: .xmas, themeBackground: .xmas).sanitized()
+        let back = try! JSONDecoder().decode(Stage.self, from: JSONEncoder().encode(st))
+        XCTAssertEqual(back.themeBullets, .xmas); XCTAssertEqual(back.themeBackground, .xmas)
     }
 
     func testStageReportsUsedMookPacks() {
@@ -197,8 +240,8 @@ final class ShopTests: XCTestCase {
     }
 
     func testProductIDRoundTrip() {
-        XCTAssertEqual(Product.all.count, 64)   // 弾幕パック3(1.4.2)で12個、期間限定のサンタ娘・クリスマスの雑魚・クリスマスの全部入り(1.5.0)で3個増えた
-        XCTAssertEqual(Set(Product.all.map(\.id)).count, 64)
+        XCTAssertEqual(Product.all.count, 71)   // 弾幕パック3(1.4.2)で12個、クリスマス(1.5.0)で10個増えた(サンタ娘・雑魚・全部入り・自機3・テーマの部品3とセット)
+        XCTAssertEqual(Set(Product.all.map(\.id)).count, 71)
         for p in Product.all { XCTAssertEqual(Product(id: p.id), p) }
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.removeads"))
         XCTAssertNil(Product(id: "com.koshin.danmakumaker.classic.set"))

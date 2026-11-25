@@ -38,6 +38,11 @@ struct Skin {
             return Skin(bulletColors: [0xFF2E93, 0x00F0FF, 0xB6FF00, 0xFF9E00, 0x9D4DFF].map { UIColor(hex: $0) }, bulletShape: .diamond,
                         background: UIColor(hex: 0x06001A), star: UIColor(hex: 0x3A1F6B),
                         shipColor: UIColor(hex: 0x00F0FF), shipShape: .arrow)
+        case .xmas:
+            // クリスマス(1.5.0): 赤・緑・金・白・水色の星の弾。深い緑がかった夜に、雪の色の星
+            return Skin(bulletColors: [0xE83A3A, 0x3FC46B, 0xFFD54A, 0xF4F8FF, 0x8FD8FF].map { UIColor(hex: $0) }, bulletShape: .star,
+                        background: UIColor(hex: 0x08141C), star: UIColor(hex: 0x4A6A80),
+                        shipColor: UIColor(hex: 0xE83A3A), shipShape: .star)
         case .rainbow:
             return Skin(bulletColors: [0xFF5C5C, 0xFFB347, 0xFFF06A, 0x6CE08A, 0x6AA8FF].map { UIColor(hex: $0) }, bulletShape: .petal,
                         background: UIColor(hex: 0x0B0B1E), star: UIColor(hex: 0x35356B),

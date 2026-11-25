@@ -861,6 +861,7 @@ private struct RewardFxPanel: View {
 private struct LookPanel: View {
     @ObservedObject var model: EditorModel
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var seasons: SeasonConfig
     @State private var showShop = false
     /// ショップで移動する先(押した見た目のテーマ。全体の「ショップへ」は、まだ持っていない最初のテーマ)
     @State private var lookFocus = "customimages"
@@ -873,7 +874,8 @@ private struct LookPanel: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(LocalizedStringKey(part.nameKey)).font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) { ForEach(Theme.allCases, id: \.self) { tile(part, $0) } }.padding(.vertical, 2)
+                        // 期間限定のテーマは、売り場に出ている期間か、その部品を持っている人にだけ並べる
+                        HStack(spacing: 8) { ForEach(Theme.allCases.filter { $0.onShelf(seasons.open) || cosmetics.ownership.has(part, of: $0) }, id: \.self) { tile(part, $0) } }.padding(.vertical, 2)
                     }
                 }
             }
@@ -895,7 +897,7 @@ private struct LookPanel: View {
                 Text(String(format: L("editor.look.rewardhint"), max(0, need - cosmetics.ownership.posts)))
                     .font(.caption.bold()).foregroundStyle(GameStyle.yellow)
             }
-            if let firstLocked = Theme.paid.first(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
+            if let firstLocked = Theme.paid.filter({ $0.onShelf(seasons.open) }).first(where: { !cosmetics.ownership.has(.bullets, of: $0) || !cosmetics.ownership.has(.background, of: $0) || !cosmetics.ownership.has(.ship, of: $0) }) {
                 Button { gameTap(); lookFocus = "theme.\(firstLocked.rawValue)"; showShop = true } label: { Chip(title: L("editor.look.shop"), selected: false) }.buttonStyle(BounceButtonStyle())
             }
         }
