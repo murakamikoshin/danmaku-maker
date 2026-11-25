@@ -11,6 +11,11 @@ const MAPS = {
   yoyo: ["..ooo..", ".oBBBo.", "oBWBBBo", "oSSSSSo", "oBBBBBo", ".oBBBo.", "..ooo..", "...o..."],
   spark: ["..W..", ".WYW.", "WYYYW", ".WYW.", "..W.."],
   awa: [".ooo.", "oW..o", "o...o", "o...o", ".ooo."],
+  // サンタ娘: プレゼント箱・キャンディ・鈴・星の飾り
+  gift: ["..Y.Y..", ".oYYYo.", "oGGYGGo", "YYYYYYY", "oGGYGGo", "oGLYGGo", ".ooYoo."],
+  candy: [".oRo.", "oWRWo", "RWWWR", "oWRWo", ".oRo."],
+  bell: ["..Y..", ".YLY.", ".YYY.", "YYYYY", "oYYYo", "..k.."],
+  star: ["..Y..", ".YWY.", "YWWWY", ".YWY.", "..Y.."],
   fox: ["...o...", "..oBo..", "..oBo..", ".obWBo.", ".oBWBo.", "obBWWBo", "obWWWBo", "obBWBbo", ".obbbo.", "..ooo.."],
   ofuda: ["kkkkk", "kwwwk", "kwrwk", "kwwwk", "kwrwk", "kwrwk", "kwwwk", "krrrk", "kkkkk"],
   plankton: [".gGg.", "gGWGg", "GWWWG", "gGWGg", ".gGg."],
@@ -46,6 +51,10 @@ const PALS = {
   yoyo: [{ o: "#20507a", B: "#78c8ff", W: "#ffffff", S: "#ff5078" }, { o: "#40104a", B: "#c878ff", W: "#ffffff", S: "#ffd040" }],
   spark: [{ W: "#fff6c8", Y: "#ffb420" }, { W: "#ffe0f6", Y: "#e050ff" }],
   awa: [{ o: "#8cd8f8", W: "#ffffff" }, { o: "#c8a0ff", W: "#ffffff" }],
+  gift: [{ o: "#184a3c", G: "#2c9a6e", L: "#7ad8a6", Y: "#ffd24a" }, { o: "#16121e", G: "#3a3048", L: "#6a5a84", Y: "#e63a50" }],
+  candy: [{ o: "#a01e30", R: "#ee3c48", W: "#fff6f0" }, { o: "#16121e", R: "#3a3048", W: "#f6f0f4" }],
+  bell: [{ o: "#b47a1e", Y: "#ffc83c", L: "#fff2b4", k: "#7a4a14" }, { o: "#7a1424", Y: "#e63a50", L: "#ffa0a8", k: "#3a0a14" }],
+  star: [{ Y: "#ffc83c", W: "#fffbe0" }, { Y: "#e63a50", W: "#ffe4e4" }],
   fox: [{ o: "#14286a", b: "#2878f0", B: "#6ec8ff", W: "#ebfaff" }, { o: "#2a0a46", b: "#7a28c8", B: "#c88cff", W: "#f6e8ff" }],
   ofuda: [{ k: "#3c1414", w: "#f5ebd7", r: "#c81e32" }, { k: "#1a0a28", w: "#d8c8f0", r: "#8c28dc" }],
   plankton: [{ g: "#127a72", G: "#3cdcc8", W: "#e6fff8" }, { g: "#7a1222", G: "#ff4664", W: "#ffe6ea" }],
@@ -84,7 +93,7 @@ function makeSprite(map, pal) {
   return c;
 }
 for (const k in MAPS) SPRITES[k] = PALS[k].map(pal => makeSprite(MAPS[k], pal));
-const RADIUS = { kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5, flame: 3, slash: 4, gust: 4, sun: 5, rock: 4, spine: 2.5, tornado: 5, ember: 2, pshot: 2 };
+const RADIUS = { gift: 4, candy: 2.5, bell: 3, star: 2.5, kingyo: 3, yoyo: 4, spark: 2.5, awa: 2.5, fox: 3, ofuda: 3, plankton: 2.5, bubble: 4, ink: 6, missile: 3, hex: 3, shell: 2, flake: 3, icicle: 3, shard: 2.5, soul: 3, blade: 3, chain: 2.5, jelly: 3.5, eye: 4, tooth: 2.5, goo: 2.5, flame: 3, slash: 4, gust: 4, sun: 5, rock: 4, spine: 2.5, tornado: 5, ember: 2, pshot: 2 };
 
 // ---------- 状態 ----------
 const G = { T: 0, bullets: [], lasers: [], marks: [], tasks: [], walls: [], hits: 0, inv: 0, dark: 0, banner: null,
@@ -515,6 +524,84 @@ R.hireKaiyu = function* (aw) {
     }
   }
   yield 170;
+};
+
+// サンタ娘(クリスマスの期間限定のボス)。絵は 112×112 に置いた位置
+const SGIFT = () => pt(80, 36), SHOOK = () => pt(28, 66), SCHEST = () => pt(60, 52), SHAT = () => pt(73, 25);
+// 1. 贈り物「ひらけ、プレゼント」(看板技): 浮いているプレゼントから箱が飛び、止まった所で開いてキャンディの輪になる
+R.santaGift = function* (aw) {
+  for (let v = 0; v < (aw ? 4 : 3); v++) {
+    const n = aw ? 4 : 3, o = SGIFT();
+    for (let i = 0; i < n; i++) {
+      // 落ちる先は自機のまわり(85px 以上はなれた所)。先に印を出す
+      const a = rand() * TAU, d = 85 + rand() * 65, tx = clamp(G.P.x + cos(a) * d, 20, W - 20), ty = clamp(G.P.y + sin(a) * d, 200, H - 30);
+      G.marks.push({ k: "ripple", x: tx, y: ty, t: 0, life: 50 });
+      fire("gift", o.x, o.y, 0, 0, { ox: o.x, oy: o.y, u: b => {
+        if (b.t <= 50) { const k = b.t / 50, e = 1 - (1 - k) * (1 - k); b.x = b.ox + (tx - b.ox) * e; b.y = b.oy + (ty - b.oy) * e - sin(k * PI) * 40; b.vx = 0; b.vy = 0; }
+        if (b.t === 50) { b.dead = 1; const m = aw ? 12 : 8, a0 = rand() * TAU; for (let j = 0; j < m; j++) fire("candy", b.x, b.y, a0 + j * TAU / m, 1.3);
+          if (aw) for (let j = 0; j < 4; j++) fire("star", b.x, b.y, a0 + (j + 0.5) * TAU / 4, 0.7); }
+      } });
+      yield 14;
+    }
+    yield 60;
+  }
+  yield 70;
+};
+// 2. 鈴「ジングル・リング」: 帽子の鈴から、鈴の輪が左右にゆれながら広がる。輪ごとにゆれる向きが逆
+R.santaBell = function* (aw) {
+  for (let v = 0; v < (aw ? 5 : 3); v++) {
+    const o = SHAT(), n = aw ? 20 : 16, a0 = rand() * TAU, dir = v % 2 ? 1 : -1;
+    for (let i = 0; i < n; i++) fire("bell", o.x, o.y, a0 + i * TAU / n, aw ? 1.9 : 1.6, { u: b => { rot(b, cos(b.t * 0.07) * 0.012 * dir); } });
+    yield aw ? 34 : 44;
+  }
+  yield 80;
+};
+// 3. 杖「キャンディケイン」: 杖の先からキャンディの列。まっすぐ飛んだあと、杖の先の形にぐるっと曲がって戻ってくる
+R.santaCane = function* (aw) {
+  for (let v = 0; v < (aw ? 3 : 4); v++) {
+    const o = SHOOK(), a0 = aimFrom(o), sides = aw ? [1, -1] : [v % 2 ? 1 : -1];
+    for (let k = 0; k < 6; k++) {
+      for (const side of sides) for (let i = 0; i < (aw ? 5 : 4); i++) {
+        const a = a0 + side * (0.25 + i * 0.3);
+        fire("candy", o.x, o.y, a, 2.4, { u: b => { if (b.t > 40 && b.t <= 40 + 56) rot(b, -side * PI / 56); } });
+      }
+      yield 7;
+    }
+    yield aw ? 50 : 36;
+  }
+  yield 90;
+};
+// 4. 聖樹「ツリーの灯」: 上から、星の飾りがツリーの形(三角)に並んで降ってくる。先頭は自機の上。星のあいだを抜けるか、横へよける
+R.santaTree = function* (aw) {
+  for (let v = 0; v < (aw ? 3 : 2); v++) {
+    const cx = clamp(G.P.x + (rand() - 0.5) * 60, 90, W - 90), rows = 7, gap = 26;
+    G.marks.push({ k: "glint", x: cx, y: 10, t: 0, life: 30 });
+    yield 30;
+    for (let r = 0; r < rows; r++) {
+      for (let i = 0; i <= r; i++) {
+        const x0 = cx + (i - r / 2) * gap;
+        fire("star", x0, -6, PI / 2, 1.5, aw ? { ox: x0, u: b => { b.x = b.ox + sin(b.t * 0.04 + r) * 9; } } : {});
+      }
+      if (r === rows - 1) for (const dx of [-13, 0, 13]) fire("gift", cx + dx, -6 - 22, PI / 2, 1.5);   // 幹(ツリーの下の箱)
+      yield 15;
+    }
+    yield aw ? 50 : 80;
+  }
+  yield 200;
+};
+// 5. 煙突「真夜中の配達」: 上に光った所から箱がまっすぐ落ちてきて、下で開いてキャンディが上へ扇に飛ぶ。1つは必ず自機の真上
+R.santaDelivery = function* (aw) {
+  for (let w = 0; w < 4; w++) {
+    const xs = [clamp(G.P.x, 16, W - 16)]; for (let i = 1; i < (aw ? 6 : 4); i++) xs.push(16 + rand() * 328);
+    xs.forEach(x => G.marks.push({ k: "glint", x, y: 10, t: 0, life: 34 }));
+    yield 34;
+    xs.forEach(x => fire("gift", x, -6, PI / 2, 0.6, { u: b => {
+      b.vy += 0.07;
+      if (b.y >= H - 40) { b.dead = 1; const m = aw ? 7 : 5; for (let j = 0; j < m; j++) fire("candy", b.x, b.y, -PI / 2 + (j - (m - 1) / 2) * 0.34, 1.7, { u: c => { c.vy += 0.012; } }); }
+    } }));
+    yield 46;
+  }
+  yield 120;
 };
 
 // ぷにまる(覚醒すると、同じ枠の技が別物になる)
