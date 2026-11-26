@@ -883,8 +883,11 @@ export const sendFeedback = onCall(async (req) => {
     : null;
   return submitFeedback(db, uid, req.data, Date.now(), mailer);
 });
-/** 毎月 1 日 0:05(日本時間)に、終わった月の順位から、月間の称号・王冠・メダルを配る */
-export const swipeMonthlyAward = onSchedule({ schedule: "5 0 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "512MiB" }, async () => {
+/**
+ * 毎月 1 日 0:05(日本時間)に、終わった月の順位から、月間の称号・王冠・メダルを配る。
+ * 失敗したときのやり直しのため、1 日の 6:05 まで毎時動かす(配り終えていれば、印を見て何もしない)
+ */
+export const swipeMonthlyAward = onSchedule({ schedule: "5 0-6 1 * *", timeZone: "Asia/Tokyo", timeoutSeconds: 540, memory: "512MiB" }, async () => {
   await runMonthlyAward(db, Date.now());
 });
 
