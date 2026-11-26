@@ -160,6 +160,12 @@ struct EditorView: View {
                     if !model.isPublished, !model.isVerified {
                         Text("editor.hint.unlisted").font(.caption.bold()).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    // ボス戦・ダメージ勝負: 途中の段階からすぐ試せる(1.4.3。テストプレイは、ふつう第1段階から始まる)
+                    if model.draft.mode != .survive && model.draft.mode != .sequence, (model.draft.phases ?? 3) >= 2 {
+                        PhaseTestButtons(count: model.draft.phases ?? 3) { n in
+                            testRun = TestRun(stage: model.stage, customs: model.draft.customImages, fromPhase: n)
+                        }
+                    }
                 }
                 .padding(16).padding(.bottom, 80)
             }
@@ -180,10 +186,11 @@ struct EditorView: View {
             if let i = model.previewingBGM { AudioManager.shared.preview(.forNumber(i)) }
         }) { run in
             PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name)
-                        + (run.fromWave > 0 ? " " + String(format: L("editor.wave.testfrom.title"), run.fromWave + 1) : ""),
-                     isTest: true, customs: run.customs,
+                        + (run.fromWave > 0 ? " " + String(format: L("editor.wave.testfrom.title"), run.fromWave + 1) : "")
+                        + (run.fromPhase > 1 ? " " + String(format: L("editor.phase.testfrom.title"), run.fromPhase) : ""),
+                     isTest: true, customs: run.customs, startPhase: run.fromPhase,
                      onResult: { result, moves in
-                         if run.fromWave == 0 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves), month: result.month) }
+                         if run.fromWave == 0 && run.fromPhase <= 1 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves), month: result.month) }
                      },
                      onExit: { testRun = nil })
         }
@@ -203,7 +210,35 @@ private struct TestRun: Identifiable {
     let stage: Stage
     let customs: CustomImageChoice
     /// 連戦の、途中の場面から始めるテスト(0 は最初から)。途中からのクリアは、クリア確認にしない
-    var fromWave = 0
+    var fromWave = 0    /// ボス戦・ダメージ勝負の、途中の段階から始めるテスト(1 は最初から)。途中からのクリアは、クリア確認にしない
+    var fromPhase = 1
+}
+
+/// 「第2段階からテスト」などのボタン(ボス戦・ダメージ勝負で、段階が2つ以上のとき)
+private struct PhaseTestButtons: View {
+    let count: Int
+    let onTest: (Int) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("editor.phase.testfrom.label").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
+                ForEach(2...max(2, count), id: \.self) { n in
+                    Button { gameTap(); onTest(n) } label: {
+                        Label(String(format: L("editor.phase.testfrom"), n), systemImage: "play.fill")
+                            .font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                            .frame(maxWidth: .infinity).padding(.vertical, 10)
+                            .background(KeyCap(fill: GameStyle.cyan, radius: 12, depth: 3)).padding(.bottom, 3)
+                    }
+                    .buttonStyle(BounceButtonStyle())
+                    .accessibilityIdentifier("editor.phase.testfrom.\(n)")
+                }
+            }
+            Text("editor.phase.testfrom.note").font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
 }
 
 /// プレビューや見本に使う、作者が選んだ見た目

@@ -59,6 +59,27 @@ enum SpriteFactory {
                     }
                     c.closePath(); c.fillPath()
                 }
+                if Skin.isDark(color) {
+                    // 黒っぽい暗い色: 背景に溶けないよう、明るい縁をつける
+                    c.setStrokeColor(UIColor(white: 0.85, alpha: 0.9).cgColor)
+                    c.setLineWidth(1.2)
+                    switch skin.bulletShape {
+                    case .diamond:
+                        c.move(to: CGPoint(x: 6, y: 0.8)); c.addLine(to: CGPoint(x: 11.2, y: 6))
+                        c.addLine(to: CGPoint(x: 6, y: 11.2)); c.addLine(to: CGPoint(x: 0.8, y: 6))
+                        c.closePath(); c.strokePath()
+                    case .star:
+                        for i in 0..<10 {
+                            let a = Double(i) * Double.pi / 5 - Double.pi / 2
+                            let r = i % 2 == 0 ? 5.4 : 2.6
+                            let q = CGPoint(x: 6 + cos(a) * r, y: 6 + sin(a) * r)
+                            i == 0 ? c.move(to: q) : c.addLine(to: q)
+                        }
+                        c.closePath(); c.strokePath()
+                    default:
+                        c.strokeEllipse(in: CGRect(x: 0.6, y: 0.6, width: 10.8, height: 10.8))
+                    }
+                }
                 if skin.bulletShape != .bubble {
                     c.setFillColor(UIColor.white.cgColor)
                     c.fillEllipse(in: CGRect(x: 3, y: 3, width: 6, height: 6))

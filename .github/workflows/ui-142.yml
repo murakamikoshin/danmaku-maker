@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   # 手動実行は、main にこのファイルが入るまで使えないので、テストやこのファイルを変えて push したときにも回す
   push:
-    branches: [requests-142]
+    branches: [requests-142, requests-143]
     paths: [".github/workflows/ui-142.yml", "DanmakuAppUITests/Release142UITests.swift"]
 jobs:
   flows:
@@ -63,7 +63,7 @@ jobs:
             grep -E "error: |Test Case .* (passed|failed)" "flow/$name.log" | sed -E 's/^.*(Test Case)/\1/' | head -40
           }
           run ja_big     "$BIG"   ja
-          run ja_small   "$SMALL" ja "" "DanmakuAppUITests/Release142UITests/testEditorNewControls DanmakuAppUITests/Release142UITests/testBossPhasesNoneAndTwo DanmakuAppUITests/Release142UITests/testShopAndSettings DanmakuAppUITests/Release142UITests/testSequenceEditor"
+          run ja_small   "$SMALL" ja "" "DanmakuAppUITests/Release142UITests/testDragonPatternSwitchInSequence DanmakuAppUITests/Release142UITests/testDarkColorAndPhaseTest DanmakuAppUITests/Release142UITests/testEditorNewControls DanmakuAppUITests/Release142UITests/testBossPhasesNoneAndTwo DanmakuAppUITests/Release142UITests/testShopAndSettings DanmakuAppUITests/Release142UITests/testSequenceEditor"
           run ja_ipad    "$IPAD"  ja "" "DanmakuAppUITests/Release142UITests/testEditorNewControls DanmakuAppUITests/Release142UITests/testBossPhasesNoneAndTwo DanmakuAppUITests/Release142UITests/testShopAndSettings DanmakuAppUITests/Release142UITests/testSequenceEditor"
           run ja_bigtext "$BIG"   ja UICTContentSizeCategoryAccessibilityL "DanmakuAppUITests/Release142UITests/testEditorNewControls DanmakuAppUITests/Release142UITests/testBossPhasesNoneAndTwo DanmakuAppUITests/Release142UITests/testShopAndSettings DanmakuAppUITests/Release142UITests/testSequenceEditor"
           run de_small   "$SMALL" de "" "DanmakuAppUITests/Release142UITests/testEditorNewControls DanmakuAppUITests/Release142UITests/testBossPhasesNoneAndTwo DanmakuAppUITests/Release142UITests/testShopAndSettings DanmakuAppUITests/Release142UITests/testSequenceEditor"

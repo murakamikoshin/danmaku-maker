@@ -243,6 +243,9 @@ function mooksClearVal(v: unknown, allowed: boolean, ems: readonly Emitter[]): {
   if (v !== true || !allowed || !ems.some((m) => !["rain", "sideL", "sideR", "corner", "lightning", "pincer"].includes(m.t))) return { ok: false };
   return { ok: true, v: true };
 }
+/** 弾の色の番号の最後(アプリの Emitter.darkColor と同じ)。0〜4 はテーマの色、5 は 1.4.3 からの黒っぽい暗い色(needs: 8) */
+export const DARK_COLOR = 5;
+
 /** ボスの段階の数の標準(3)と上限。1.3.0 から 4・5、1.4.2 から 1(段階なし)・2(needs: 7) */
 export const PHASE_COUNT_MIN = 3, PHASE_COUNT_MAX = 5, PHASE_COUNT_LOW = 1;
 /** 撃つ段階の値を、段階の番号の一覧にする(アプリの Emitter.phases(of:) と同じ)。0 や形の正しくない値は [] */
@@ -357,7 +360,7 @@ function validateEmitters(raw: unknown, opts: { survive: boolean; limit: number;
     const x = num(item.x, 0, 1), y = num(item.y, 0, 0.6), s = num(item.s, 0, 180), e = num(item.e, 0, 180);
     const i = num(item.i, 0.05, 15), c = int(item.c, 1, 36), v = num(item.v, 1, 5), r = num(item.r, -90, 90);
     // 撃つ段階の値の上限は 2345(段階 5 のボスで、全部ではない並びのいちばん大きいもの)。正しい並びかは isPhaseCode で見る
-    const k = int(item.k, 0, 4), ph = int(item.ph ?? 0, 0, 2345);
+    const k = int(item.k, 0, DARK_COLOR), ph = int(item.ph ?? 0, 0, 2345);
     if (ph !== null && !isPhaseCode(ph, opts.phases ?? 3)) return { ok: false, error: "emitter-range" };
     const fp = int(item.p ?? 0, 0, 1);
     const ang = int(item.a ?? 0, -180, 180);
@@ -633,7 +636,9 @@ export function validatePublish(input: unknown): Validated {
   // 弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ(1.4.2〜)は 7(古い版は知らないパターンを読めない・3段階になる・高さが標準になる)
   const uses142 = allEms.some((m) => isPack3Pattern(m.t) || m.yr !== undefined)
     || (bPhases.v !== undefined && bPhases.v < PHASE_COUNT_MIN) || (waves ?? []).some((w) => w.phases !== undefined && w.phases !== null && w.phases < PHASE_COUNT_MIN);
-  const needs = uses142 ? 7 : manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
+  // 黒っぽい暗い色の弾(1.4.3〜)は 8(色の番号は乱数の種に入る。古い版は 4 に丸めるので、弾の動きが変わる)
+  const usesDark = allEms.some((m) => m.k === DARK_COLOR);
+  const needs = usesDark ? 8 : uses142 ? 7 : manyEmitters ? 6 : usesDragon ? 5 : uses130 ? 4 : bBody === true || multiPhase || (waves ?? []).some((w) => w.bodyHit === true) ? 3
     : contentLevelOf(bBossLook.v, waves, bSize.v, { bossMove, bossX: bHx.v, bossY: bHy.v, ...(input.mooksBreakable === true && bMooks.v !== undefined ? { mooksBreakable: true as const } : {}) });
   // 自機の絵の ID(形だけ確かめる)
   const skinRaw = (input as { shipSkin?: unknown }).shipSkin;

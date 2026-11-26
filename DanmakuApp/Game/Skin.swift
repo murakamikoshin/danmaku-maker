@@ -13,7 +13,34 @@ struct Skin {
     var shipColor: UIColor
     var shipShape: ShipShape
 
+    /// 弾の色(6つ: テーマの5色と、1.4.3 からの黒っぽい暗い色)。暗い色は、背景に溶けないよう明るい縁をつけて描く(SpriteFactory)
     static func of(_ theme: Theme) -> Skin {
+        var s = base(theme)
+        s.bulletColors.append(UIColor(hex: darkBullet(theme)))
+        return s
+    }
+
+    /// 黒っぽい暗い色(サーバーの palette.ts の6つ目と同じ値)
+    static func darkBullet(_ theme: Theme) -> UInt32 {
+        switch theme {
+        case .classic: return 0x2A1838
+        case .sakura: return 0x3D1028
+        case .ocean: return 0x0B2238
+        case .aurora: return 0x10261C
+        case .gold: return 0x2E2208
+        case .neon: return 0x1A0A2E
+        case .rainbow: return 0x1C1C2C
+        }
+    }
+
+    /// 縁をつける暗い色か(明るさが低い色)
+    static func isDark(_ c: UIColor) -> Bool {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        c.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return 0.299 * r + 0.587 * g + 0.114 * b < 0.25
+    }
+
+    private static func base(_ theme: Theme) -> Skin {
         switch theme {
         case .classic:
             return Skin(bulletColors: Palette.bullets, bulletShape: .circle, background: Palette.background, star: Palette.star,

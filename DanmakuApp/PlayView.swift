@@ -52,12 +52,17 @@ final class PlayModel: ObservableObject {
     private var pending: PlayResult?
     private var pendingMoves: [Move] = []
 
-    init(stage: Stage, loadout: Loadout = Loadout()) {
+    /// エディタの「段階からテスト」: ボスを第何段階から始めるか(1 は最初から)
+    private let startPhase: Int
+
+    init(stage: Stage, loadout: Loadout = Loadout(), startPhase: Int = 1) {
         self.stage = stage
         self.loadout = loadout
+        self.startPhase = startPhase
         remaining = stage.isUnlimitedTime ? 0 : Double(stage.durationSec)
         lifeLeft = stage.effectiveLifeCount
         scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.resolved(for: stage))
+        scene.startAtPhase(startPhase)
         wire()
     }
 
@@ -118,6 +123,7 @@ final class PlayModel: ObservableObject {
         lifeLeft = stage.effectiveLifeCount
         damage = 0
         scene = GameScene(stage: stage, loadout: loadout, effects: CosmeticsStore.shared.effectsOn, rewardFX: RewardFX.resolved(for: stage))
+        scene.startAtPhase(startPhase)
         generation += 1
         wire()
     }
@@ -141,7 +147,7 @@ struct PlayView: View {
     @State private var mrecAllowed = false
 
     init(stage: Stage, title: String, isTest: Bool = false, trial: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
-         onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
+         startPhase: Int = 1, onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
         self.isTest = isTest || trial
         self.trial = trial
@@ -151,7 +157,7 @@ struct PlayView: View {
         self.onExit = onExit
         // StateObject の中身は、最初の1回だけ作る(ここで作ると、親の再描画のたびに使われないゲーム画面ができて、重くなる・音が鳴る)
         _model = StateObject(wrappedValue: {
-            let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest || trial, customs: customs))
+            let m = PlayModel(stage: stage, loadout: CosmeticsStore.shared.forPlay(stage: stage, isTest: isTest || trial, customs: customs), startPhase: startPhase)
             m.onResult = onResult
             return m
         }())

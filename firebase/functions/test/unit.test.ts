@@ -11,6 +11,7 @@ import { pathPosition, validatePath } from "../src/custompath.js";
 import { matchesQuery, nameKeys, normalizeName, queryGram, searchKeys } from "../src/search.js";
 import { ogpSvg, renderOgp, OGP_HEIGHT, OGP_WIDTH } from "../src/ogp.js";
 import { snapshot } from "../src/sim.js";
+import { PALETTE, THEME_PALETTES } from "../src/palette.js";
 import { inviteStageUrl, isInviteCode, pickLang, renderSharePage } from "../src/share.js";
 import { shareIdFromPath } from "../src/shortId.js";
 
@@ -1406,5 +1407,27 @@ describe("1.4.2: 弾幕パック3・段階なし/2段階・左右からの弾の
     const r = validatePublish(good({ emitters: [em({ sh: 3 })] }));
     expect(r.ok && [r.stage.emitters[0]!.sh, "needs" in r.stage]).toEqual([3, false]);
     expect(validatePublish(good({ emitters: [em({ sh: 4 })] }))).toEqual({ ok: false, error: "emitter-range" });
+  });
+});
+
+describe("1.4.3: 黒っぽい暗い色の弾(色の番号 5)", () => {
+  it("色 5 は置けて needs 8。6 は範囲外", () => {
+    const r = validatePublish(good({ emitters: [em({ k: 5 })] }));
+    expect(r.ok && r.stage.needs).toBe(8);
+    expect(r.ok && r.stage.emitters[0].k).toBe(5);
+    expect(validatePublish(good({ emitters: [em({ k: 6 })] }))).toEqual({ ok: false, error: "emitter-range" });
+    const four = validatePublish(good({ emitters: [em({ k: 4 })] }));
+    expect(four.ok && (four.stage.needs ?? 1)).toBeLessThan(8);
+  });
+  it("連戦の場面で使っても needs 8", () => {
+    const st = { name: "連戦", authorName: "K", mode: "sequence", durationSec: 82, emitters: [], clearReplay: "AQIDBAUGBwg=",
+      waves: [{ kind: "survive", durationSec: 20, emitters: [em({ e: 20, k: 5 })] }, { kind: "boss", durationSec: 60, bossHp: 400, bossMove: 1, emitters: [em()] }] };
+    const r = validatePublish(st);
+    expect(r).toMatchObject({ ok: true });
+    expect(r.ok && r.stage.needs).toBe(8);
+  });
+  it("色の表は、どのテーマも6色", () => {
+    expect(PALETTE.length).toBe(6);
+    for (const p of Object.values(THEME_PALETTES)) expect(p.bullets.length).toBe(6);
   });
 });

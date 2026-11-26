@@ -175,10 +175,22 @@ struct EmitterPreview: View {
 
 /// 竜王の技の見本。ゲーム画面(GameScene)を、見本用(自機は当たらない・効果音なし・指で動かさない)にして小さく動かす。
 /// この技を出す段階の姿で、この技だけを置いたボス戦。終わったら(または見た目・間隔を変えたら)最初から
+/// 竜王の技の見本は、ゲーム画面を丸ごと動かすので重い(絵も大きい)。連戦などで竜王の技の発射台がいくつも並ぶと、
+/// 見本が同時にいくつも動いて、古い端末ではメモリが足りずにアプリが落ちることがあった。動かすのは、いちばん最近
+/// 画面に出た・設定を変えた1つだけにする(ほかは技の絵を止めて出す)
+@MainActor final class DragonPreviewHub: ObservableObject {
+    static let shared = DragonPreviewHub()
+    @Published private(set) var active: UUID?
+    func claim(_ id: UUID) { if active != id { active = id } }
+    func release(_ id: UUID) { if active == id { active = nil } }
+}
+
 private struct DragonMovePreview: View {
     let emitter: Emitter
     let look: PreviewLook
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @ObservedObject private var hub = DragonPreviewHub.shared
+    @State private var id = UUID()
     @State private var scene: GameScene?
     @State private var built: Spec?
 
@@ -198,12 +210,16 @@ private struct DragonMovePreview: View {
 
     var body: some View {
         ZStack {
-            if let scene {
+            if let scene, hub.active == id {
                 // SpriteView は最初に渡したシーンを持ち続けるので、作り直したら見た目ごと差し替える
                 SpriteView(scene: scene, preferredFramesPerSecond: 60, options: [.ignoresSiblingOrder])
                     .id(ObjectIdentifier(scene))
             } else {
+                // 動いていない見本: 技の絵(ショップ・パターンの一覧と同じ絵)を止めて出す
                 Color(Skin.of(look.background).background)
+                if let img = BossPatternIcon.image(emitter.t) {
+                    Image(uiImage: img).resizable().interpolation(.none).scaledToFit().padding(8)
+                }
             }
         }
         .aspectRatio(DanmakuConfig.width / DanmakuConfig.height, contentMode: .fit)
@@ -211,12 +227,15 @@ private struct DragonMovePreview: View {
         .clipShape(PixelRect(cornerRadius: 10))
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .onAppear { if scene == nil || built != spec { rebuild(spec) } }
-        .onChange(of: spec) { rebuild($0) }
-        .onDisappear { scene = nil; built = nil }
+        .onAppear { hub.claim(id); if scene == nil || built != spec { rebuild(spec) } }
+        .onChange(of: spec) { hub.claim(id); rebuild($0) }
+        // ほかの見本が動き出したら、このゲーム画面は片付ける(メモリを空ける)。また動かすときに作り直す
+        .onChange(of: hub.active) { a in if a != id { scene = nil; built = nil } }
+        .onDisappear { hub.release(id); scene = nil; built = nil }
     }
 
     private func rebuild(_ sp: Spec) {
+        guard hub.active == id else { scene = nil; built = nil; return }
         var e = sp.emitter
         e.s = 0; e.e = 60; e.ph = 0
         let look = sp.look
@@ -232,7 +251,7 @@ private struct DragonMovePreview: View {
         let s = GameScene(stage: st.sanitized(), loadout: lo, preview: true)
         // 時間が来た・ボスを倒したら、同じ見本を最初から(そのあいだに設定が変わっていたら、何もしない)
         let current = $built
-        s.onFinish = { _, _ in DispatchQueue.main.async { if current.wrappedValue == sp { rebuild(sp) } } }
+        s.onFinish = { _, _ in DispatchQueue.main.async { if current.wrappedValue == sp && DragonPreviewHub.shared.active == id { rebuild(sp) } } }
         scene = s
         built = sp
     }
@@ -270,6 +289,8 @@ extension GraphicsContext {
     /// チャージビームを描く(エディタの見本・パターンの絵)
     func drawBeam(_ b: Bullet, color: Color, scale: CGFloat = 1) {
         let look = BeamLook(b)
+        // 黒っぽい暗い色の予告線は、ゲームと同じく明るい灰色で出す
+        let color = !look.firing && Skin.isDark(UIColor(color)) ? Color(white: 0.8) : color
         var p = Path()
         p.move(to: CGPoint(x: b.x * scale, y: b.y * scale))
         p.addLine(to: CGPoint(x: (b.x + b.vx * b.beamLength) * scale, y: (b.y + b.vy * b.beamLength) * scale))
