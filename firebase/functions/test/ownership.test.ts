@@ -91,7 +91,7 @@ describe("期間限定のボス(サンタ娘)", () => {
     expect(v.ok).toBe(true);
     if (!v.ok) return;
     expect(v.stage.bossLook).toBe(14);
-    expect(v.stage.needs).toBe(8);   // 1.4.2 までのアプリには「アップデートが必要」と案内する
+    expect(v.stage.needs).toBe(9);   // 1.4.3 までのアプリには「アップデートが必要」と案内する(8 は 1.4.3 の暗い色)
     // 記録の検証(プレイ・ランキング)は、ステージと操作だけで決まる。所持は引数にない
     const a = simulate(v.stage as unknown as SimStage, new Int8Array(0), 0, "standard");
     const b = simulate(v.stage as unknown as SimStage, new Int8Array(0), 0, "standard");

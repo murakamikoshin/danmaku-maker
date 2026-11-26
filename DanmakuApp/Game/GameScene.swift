@@ -130,6 +130,9 @@ final class GameScene: SKScene {
     /// 竜王の絵を使っている場面の数(0 になったら、塗った絵を捨てる。見本と本物が同時にあるときに、相手の絵を消さない)
     private static var dragonScenes = 0
 
+    /// エディタの「段階からテスト」: ボスを第 n 段階から始める(始まる前に呼ぶ。1 は何もしない)
+    func startAtPhase(_ n: Int) { sim.skipToPhase(n) }
+
     init(stage: Stage, loadout: Loadout = Loadout(), effects: Bool = true, rewardFX: RewardFX = .none, preview: Bool = false) {
         isPreview = preview
         effectsOn = effects
@@ -247,7 +250,8 @@ final class GameScene: SKScene {
         glow.isHidden = false
         let color = skin.bulletColors[min(max(b.color, 0), skin.bulletColors.count - 1)]
         let look = BeamLook(b)
-        glow.strokeColor = color.withAlphaComponent(look.alpha)
+        // 黒っぽい暗い色の予告線は、背景に溶けて見えないので、明るい灰色で出す
+        glow.strokeColor = (look.firing || !Skin.isDark(color) ? color : UIColor(white: 0.8, alpha: 1)).withAlphaComponent(look.alpha)
         glow.lineWidth = look.width
         glow.glowWidth = look.firing ? 4 : 0
         core.isHidden = !look.firing

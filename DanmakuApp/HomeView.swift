@@ -284,11 +284,14 @@ struct HomeView: View {
         // クリア条件(モード)の絞り込みは、並び順のチップとは見た目も場所も分ける(同じチップが2段続くと、どちらが何か分かりにくかった)
         if world.likedBy == nil {
             filters
-            VStack(alignment: .leading, spacing: 8) {
-                sectionLabel("world.sort.title", "arrow.up.arrow.down")
-                ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 96)
+            // 並び順は、作者で絞り込んでいるとき(いいね順だけ)と、難しさで絞り込んでいるとき(クリア率の高い順だけ)は効かないので出さない
+            if world.author == nil && world.difficulty == nil {
+                VStack(alignment: .leading, spacing: 8) {
+                    sectionLabel("world.sort.title", "arrow.up.arrow.down")
+                    ChipGrid(items: StageSort.allCases.map { ($0, L($0.titleKey)) }, selection: $world.sort, idPrefix: "home.sort", minimum: 96)
+                }
+                .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
             }
-            .opacity(world.searching ? 0.4 : 1).disabled(world.searching)
         }
         // 画面に映った行だけを作る(行のプレビューとタイトルを、映ったときに動かし、外れたら止めるため)
         LazyVStack(spacing: 10) {
@@ -345,7 +348,8 @@ struct HomeView: View {
     /// 絞り込み(クリア条件・難しさ)。畳めるようにして、畳んでいる間は、今かけている条件を1行で見せる
     private var filters: some View {
         let modeText = world.mode.flatMap { m in Self.modeOptions.first { $0.0 == m }.map { L($0.1) } }
-        let diffText = world.difficulty.map { L($0.titleKey) }
+        // 作者で絞り込んでいるときと検索中は、難しさは効かない(難しさの欄も出さない・薄くする)ので、畳んだときの1行にも出さない
+        let diffText = (world.author == nil && !world.searching) ? world.difficulty.map { L($0.titleKey) } : nil
         let active = [modeText, diffText].compactMap { $0 }
         return VStack(alignment: .leading, spacing: 10) {
             Button {
@@ -371,7 +375,9 @@ struct HomeView: View {
             .accessibilityIdentifier("home.filter.toggle")
             if filterOpen {
                 modeFilter
-                difficultyFilter
+                if world.author == nil {
+                    difficultyFilter.opacity(world.searching ? 0.4 : 1).disabled(world.searching)
+                }
             }
         }
     }

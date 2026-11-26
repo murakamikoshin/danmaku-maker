@@ -5,9 +5,9 @@ public enum DanmakuConfig {
     public static let formatVersion = 1
     /// このアプリが遊べる内容のレベル(1=1.1.2 まで、2=1.2.0〜の新しいボス、3=1.2.1〜の体当たり・2つの段階、4=1.3.0〜の狙い方・4〜5段階・1UP、
     /// 5=1.4.0〜の竜王、6=1.4.1〜の発射台9〜16個、7=1.4.2〜の弾幕パック3・段階なし/2段階のボス・左右からの弾の高さ、
-    /// 8=1.5.0〜のサンタ娘(期間限定のボス))。
+    /// 8=1.4.3〜の暗い色の弾、9=1.5.0〜のサンタ娘(期間限定のボス))。
     /// サーバーが、これより高いレベルのステージに needs を付けたら、遊ばせずにアップデートを案内する
-    public static let contentLevel = 8
+    public static let contentLevel = 9
     public static let width = 360.0
     public static let height = 540.0
     /// 固定ステップ（秒）。描画フレームとは無関係に、必ずこの刻みで進める
@@ -515,7 +515,7 @@ public struct Wave: Codable, Equatable, Sendable {
                     s: r2(clamp(m.s, 0, 180)), e: r2(clamp(m.e, 0, 180)),
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: isBoss ? Emitter.sanitizedPhase(m.ph, count: nPh) : 0,
+                    k: Int(clamp(Double(m.k), 0, Double(Emitter.darkColor))), ph: isBoss ? Emitter.sanitizedPhase(m.ph, count: nPh) : 0,
                     p: isBoss && m.p == 1 ? 1 : 0,
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,
@@ -671,6 +671,9 @@ public struct Emitter: Codable, Equatable, Sendable {
     }
 
     /// 発射の間隔(秒)の範囲。以前は 2 秒までだったが、ゆっくり撃つ弾幕のために 15 秒まで
+    /// 弾の色の番号の最後(1.4.3 から)。0〜4 はテーマの色、5 は黒っぽい暗い色。5 を使うステージは needs: 8
+    /// (色の番号は乱数の種に入るので、古い版で 4 に丸められると、弾の動きが変わってしまう)
+    public static let darkColor = 5
     public static let minInterval = 0.05
     public static let maxInterval = 15.0
 
@@ -1161,7 +1164,7 @@ public struct Stage: Codable, Equatable, Sendable {
                     i: r2(clamp(m.i, 0.05, Emitter.maxInterval)), c: Int(clamp(Double(m.c), 1, 36)),
                     v: r2(clamp(m.v, 1, 5)), r: clamp(m.r, -90, 90).rounded(),
                     // 生き残りでは段階を使わない(ボス戦で段階を選んでから生き残りに変えると、サーバーに断られて投稿できなかった)
-                    k: Int(clamp(Double(m.k), 0, 4)), ph: mode == .survive ? 0 : Emitter.sanitizedPhase(m.ph, count: nPh),
+                    k: Int(clamp(Double(m.k), 0, Double(Emitter.darkColor))), ph: mode == .survive ? 0 : Emitter.sanitizedPhase(m.ph, count: nPh),
                     p: mode == .survive ? 0 : (m.p == 1 ? 1 : 0),
                     a: m.canRotate ? Wave.sanitizedAngle(m.a) : 0,
                     path: m.t == .custom ? PathData.sanitized(m.path) : nil,

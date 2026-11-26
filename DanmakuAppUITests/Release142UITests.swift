@@ -317,4 +317,63 @@ final class Release142UITests: XCTestCase {
         snap("settings-theme")
         XCTAssertTrue(theme.label.contains(text("fantasy")), "テーマ名が「\(text("fantasy"))」になっていない(\(theme.label))")
     }
+
+    // MARK: - 1.4.3
+
+    /// レビュー(1.4.2): ボスの見た目を竜王にしてから、発射台のパターンを変えると落ちる。
+    /// 連戦のボスの場面で、竜王の技と普通のパターンを何度も行き来し、発射台を増やしても落ちない(見本は1つずつ動く)
+    func testDragonPatternSwitchInSequence() {
+        openEditor()
+        tap("editor.mode.sequence")
+        tap("editor.level.true")
+        let add = find("editor.wave.add.boss")
+        if add.exists && add.isEnabled { add.tap() }
+        let dragon = find("editor.boss.look.13")
+        XCTAssertTrue(dragon.exists, "ボスの見た目に竜王がない")
+        dragon.tap()
+        snap("seq-dragon-selected")
+        for raw in ["dragonBreath", "ring", "dragonWings", "aim", "dragonRaid", "dragonGale", "spiral", "dragonEnd"] {
+            choosePattern(raw)
+            sleep(1)
+        }
+        for _ in 0..<3 {
+            let more = find("editor.add")
+            if more.exists && more.isEnabled { more.tap() }
+        }
+        snap("seq-dragon-after-switch")
+        XCTAssertTrue(exists("editor.close"), "竜王でパターンを変えたら落ちた")
+        testPlay("seq-dragon", seconds: 4)
+    }
+
+    /// ボス戦で竜王にして、パターンを変える(普通 → 竜王の技 → 普通)
+    func testDragonPatternSwitchInBoss() {
+        openEditor()
+        tap("editor.mode.boss")
+        tap("editor.level.true")
+        find("editor.boss.look.13").tap()
+        for raw in ["ring", "dragonBreath", "aim", "dragonWings", "dragonQuake", "ring"] {
+            scrollToTop()
+            choosePattern(raw)
+        }
+        XCTAssertTrue(exists("editor.close"), "竜王でパターンを変えたら落ちた")
+        snap("boss-dragon-switch")
+    }
+
+    /// 黒っぽい暗い色(6つ目の色)と、途中の段階からテスト
+    func testDarkColorAndPhaseTest() {
+        openEditor()
+        tap("editor.mode.boss")
+        let dark = find("emitter.color.0.5")
+        XCTAssertTrue(dark.exists, "6つ目(暗い色)の色がない")
+        dark.tap()
+        snap("dark-color")
+        let from3 = find("editor.phase.testfrom.3")
+        XCTAssertTrue(from3.exists, "「第3段階から」のボタンがない")
+        from3.tap()
+        XCTAssertTrue(exists("play.quit", timeout: 20), "第3段階からのテストが始まらない")
+        sleep(3)
+        snap("play-from-phase3")
+        el("play.quit").tap()
+        XCTAssertTrue(exists("editor.close", timeout: 15), "テストからエディタへ戻れない")
+    }
 }

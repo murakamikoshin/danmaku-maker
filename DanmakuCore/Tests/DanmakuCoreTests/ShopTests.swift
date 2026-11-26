@@ -125,7 +125,7 @@ final class ShopTests: XCTestCase {
 
     func testSeasonalBossStageSurvivesSanitizeAndNeedsNewApp() {
         XCTAssertEqual(BossCharacter.maxLook, 14)
-        XCTAssertEqual(DanmakuConfig.contentLevel, 8)
+        XCTAssertEqual(DanmakuConfig.contentLevel, 9)   // 8 は 1.4.3 の暗い色の弾。サンタ娘は 9(サーバーの needs も 9)
         let st = Stage(name: "x", mode: .boss, durationSec: 60, bossHp: 300, emitters: [], bossLook: 14).sanitized()
         XCTAssertEqual(st.bossLook, 14)
     }

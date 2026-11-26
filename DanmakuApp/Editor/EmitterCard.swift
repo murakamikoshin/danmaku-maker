@@ -329,7 +329,7 @@ struct EmitterCard: View {
 
     private var bulletBadge: some View {
         ZStack {
-            Circle().fill(Color(Skin.of(look.bullets).bulletColors[min(max(emitter.k, 0), 4)]))
+            Circle().fill(Color(Skin.of(look.bullets).bulletColors[min(max(emitter.k, 0), Emitter.darkColor)]))
             Circle().fill(Color.white).frame(width: 9, height: 9)
         }
         .frame(width: 22, height: 22)
@@ -395,8 +395,8 @@ private struct ColorSwatches: View {
     private var colors: [UIColor] { Skin.of(theme).bulletColors }
 
     var body: some View {
-        HStack(spacing: 14) {
-            ForEach(0..<5, id: \.self) { j in
+        HStack(spacing: 10) {
+            ForEach(0...Emitter.darkColor, id: \.self) { j in
                 let selected = selection == j
                 Button {
                     gameTap()
@@ -404,6 +404,8 @@ private struct ColorSwatches: View {
                 } label: {
                     ZStack {
                         Circle().fill(Color(colors[j]))
+                        // 黒っぽい暗い色(6つ目)は、ゲームと同じく明るい縁つき
+                        if Skin.isDark(colors[j]) { Circle().stroke(Color(white: 0.85).opacity(0.9), lineWidth: 2) }
                         Circle().fill(Color.white).frame(width: 14, height: 14)
                     }
                     .frame(width: 30, height: 30)

@@ -58734,61 +58734,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nur Stages mit mindestens 10 Versuchen. Leicht ab 50 % Clear-Quote, Normal 20–50 %, Schwer 5–20 %, Extrem unter 5 %."
+            "value": "Nur Stages mit mindestens 10 Versuchen. Leicht ab 50 % Clear-Quote, Normal 20–50 %, Schwer 5–20 %, Extrem unter 5 %. Sortiert nach Clear-Quote, höchste zuerst."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only stages with at least 10 attempts. Easy: 50%+ clear rate, Normal 20–50%, Hard 5–20%, Extreme under 5%."
+            "value": "Only stages with at least 10 attempts. Easy: 50%+ clear rate, Normal 20–50%, Hard 5–20%, Extreme under 5%. Sorted by clear rate, highest first."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Solo niveles con al menos 10 intentos. Fácil: 50 %+ de clear, Normal 20–50 %, Difícil 5–20 %, Extremo menos del 5 %."
+            "value": "Solo niveles con al menos 10 intentos. Fácil: 50 %+ de clear, Normal 20–50 %, Difícil 5–20 %, Extremo menos del 5 %. Ordenados por % de clear, de mayor a menor."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seulement les niveaux avec au moins 10 essais. Facile : 50 %+ de réussite, Normal 20–50 %, Difficile 5–20 %, Extrême moins de 5 %."
+            "value": "Seulement les niveaux avec au moins 10 essais. Facile : 50 %+ de réussite, Normal 20–50 %, Difficile 5–20 %, Extrême moins de 5 %. Triés par taux de réussite, du plus élevé au plus bas."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "挑戦が10回以上のステージだけ。クリア率が、かんたん=50%以上、ふつう=20〜50%、むずかしい=5〜20%、鬼=5%未満"
+            "value": "挑戦が10回以上のステージだけ。クリア率が、かんたん=50%以上、ふつう=20〜50%、むずかしい=5〜20%、鬼=5%未満。クリア率の高い順に並びます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "도전 10회 이상인 스테이지만. 클리어율: 쉬움 50% 이상, 보통 20~50%, 어려움 5~20%, 귀신급 5% 미만"
+            "value": "도전 10회 이상인 스테이지만. 클리어율: 쉬움 50% 이상, 보통 20~50%, 어려움 5~20%, 귀신급 5% 미만. 클리어율이 높은 순으로 표시돼요."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Só fases com pelo menos 10 tentativas. Fácil: 50 %+ de clear, Normal 20–50 %, Difícil 5–20 %, Extremo abaixo de 5 %."
+            "value": "Só fases com pelo menos 10 tentativas. Fácil: 50 %+ de clear, Normal 20–50 %, Difícil 5–20 %, Extremo abaixo de 5 %. Ordenadas pelo % de clear, do maior para o menor."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Только уровни с 10+ попытками. Легко: 50 %+ прохождений, Обычно 20–50 %, Сложно 5–20 %, Адски — меньше 5 %."
+            "value": "Только уровни с 10+ попытками. Легко: 50 %+ прохождений, Обычно 20–50 %, Сложно 5–20 %, Адски — меньше 5 %. По проценту прохождений, от большего к меньшему."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "仅限挑战10次以上的关卡。通关率：简单50%以上，普通20–50%，困难5–20%，鬼畜低于5%。"
+            "value": "仅限挑战10次以上的关卡。通关率：简单50%以上，普通20–50%，困难5–20%，鬼畜低于5%。按通关率从高到低排列。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "僅限挑戰10次以上的關卡。通關率：簡單50%以上，普通20–50%，困難5–20%，鬼畜低於5%。"
+            "value": "僅限挑戰10次以上的關卡。通關率：簡單50%以上，普通20–50%，困難5–20%，鬼畜低於5%。依通關率由高到低排列。"
           }
         }
       }
@@ -82682,6 +82682,266 @@
           "stringUnit": {
             "state": "translated",
             "value": "第1～10名也會同時獲得前百分比的稱號。聖夜自機是12月限定獎品，名次越高，獲得越多(已擁有的不會重複)。"
+          }
+        }
+      }
+    },
+    "editor.phase.testfrom.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "途中の段階からテスト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test from a later phase"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从中途阶段试玩"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從中途階段試玩"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중간 페이즈부터 테스트"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar desde una fase posterior"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tester à partir d’une phase"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ab einer späteren Phase testen"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar a partir de uma fase"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тест с более поздней фазы"
+          }
+        }
+      }
+    },
+    "editor.phase.testfrom": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第%lld段階から"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From phase %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从第 %lld 阶段"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從第 %lld 階段"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "페이즈 %lld부터"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desde la fase %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dès la phase %lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ab Phase %lld"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da fase %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С фазы %lld"
+          }
+        }
+      }
+    },
+    "editor.phase.testfrom.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(第%lld段階から)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(from phase %lld)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(从第 %lld 阶段)"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(從第 %lld 階段)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(페이즈 %lld부터)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(desde la fase %lld)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(dès la phase %lld)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(ab Phase %lld)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(da fase %lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(с фазы %lld)"
+          }
+        }
+      }
+    },
+    "editor.phase.testfrom.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前の段階を飛ばして試せます。投稿に必要なクリア確認は、「テストプレイ」で最初から通してください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skips the earlier phases. To post, you still need to clear the whole stage with “Test play”."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可跳过前面的阶段试玩。发布所需的通关确认，请用“试玩”从头通关。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可跳過前面的階段試玩。發布所需的通關確認，請用「試玩」從頭通關。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "앞 페이즈를 건너뛰고 테스트할 수 있어요. 게시에 필요한 클리어 확인은 「테스트 플레이」로 처음부터 클리어하세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite las fases anteriores. Para publicar, aún debes superar la fase completa con «Probar»."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passe les phases précédentes. Pour publier, il faut toujours finir le niveau entier avec « Tester »."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überspringt die vorherigen Phasen. Zum Veröffentlichen musst du die ganze Stage weiterhin mit „Testspiel“ schaffen."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pula as fases anteriores. Para publicar, você ainda precisa vencer a fase inteira com “Testar”."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропускает предыдущие фазы. Для публикации всё равно нужно пройти весь уровень через «Тестовая игра»."
           }
         }
       }

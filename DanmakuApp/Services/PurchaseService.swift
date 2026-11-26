@@ -90,6 +90,8 @@ final class PurchaseService: NSObject, ObservableObject {
         case .shot(let s): cosmetics.equip(s)
         case .customImages: break   // 画像を選んだときに使う設定になる
         case .pattern, .patternPack, .patternPack2, .patternPack3, .patternMaker, .boss, .lifetime: break   // ステージ作りで、そのパターンや作成モードが使えるようになる
+        case .mooks, .seasonPack: break   // 雑魚の見た目・期間限定のパックも、ステージ作りで選ぶ
+        case .ship: break   // 買った自機は「持っている自機」に足される(CosmeticsStore.updateOwnership)。選ぶのは自機の画面で
         }
     }
 

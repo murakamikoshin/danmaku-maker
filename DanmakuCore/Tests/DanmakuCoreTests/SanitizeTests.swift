@@ -17,7 +17,7 @@ final class SanitizeTests: XCTestCase {
         XCTAssertEqual(DanmakuConfig.maxEmitters, 16)
         let m = s.emitters[0]
         XCTAssertEqual([m.x, m.y, m.s, m.e, m.i, m.v, m.r], [1, 0.6, 0, 180, 0.05, 5, 90])
-        XCTAssertEqual([m.c, m.k, m.ph], [36, 4, 3])
+        XCTAssertEqual([m.c, m.k, m.ph], [36, Emitter.darkColor, 3])
     }
 
     func testBossHpRoundsTo50() {

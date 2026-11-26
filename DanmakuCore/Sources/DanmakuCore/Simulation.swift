@@ -917,6 +917,7 @@ public struct Simulation {
         resetAimRng()
         hp = spec.hp
         phase = 1
+        phaseTimeOffset = 0
         banner = 0
         flash = 0
         cooldown = 0
@@ -994,7 +995,7 @@ public struct Simulation {
         let n = spec.phases
         if isDamageRace {
             // ダメージ勝負は、HP ではなく時間を段階の数で等分して進む(3段階なら3分の1ずつ)
-            let f = max(0, waveT) / spec.limit
+            let f = (max(0, waveT) + phaseTimeOffset) / spec.limit
             for j in 1..<n where f < Double(j) / Double(n) { return j }
             return n
         }
@@ -1002,6 +1003,20 @@ public struct Simulation {
         let r = Double(hp) / Double(max(1, spec.hp))
         for j in 1..<n where r > Double(n - j) / Double(n) { return j }
         return n
+    }
+
+    /// ダメージ勝負を途中の段階から試すときに、段階の計算だけ進めておく時間(秒)。ふだんは 0
+    private var phaseTimeOffset = 0.0
+
+    /// エディタの「段階からテスト」: いまの場面のボスを、第 n 段階から始める(ボス戦は HP をその段階の始まりまで減らす。
+    /// ダメージ勝負は、段階の計算だけその段階の始まりまで進める)。始まる前(最初のステップより前)に呼ぶ。段階が変わったときと同じく、名前の帯が出る
+    public mutating func skipToPhase(_ n: Int) {
+        guard isBoss, n >= 2, n <= spec.phases else { return }
+        if isDamageRace {
+            phaseTimeOffset = spec.limit * Double(n - 1) / Double(spec.phases)
+        } else {
+            hp = max(1, Int((Double(spec.hp) * Double(spec.phases - n + 1) / Double(spec.phases)).rounded(.down)))
+        }
     }
 
     /// いまの場面のボスの段階の数(3〜5)。画面の HP バーの区切りに使う
