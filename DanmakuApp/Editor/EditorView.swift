@@ -188,7 +188,7 @@ struct EditorView: View {
             PlayView(stage: run.stage, title: L("editor.test.prefix") + (run.stage.name)
                         + (run.fromWave > 0 ? " " + String(format: L("editor.wave.testfrom.title"), run.fromWave + 1) : "")
                         + (run.fromPhase > 1 ? " " + String(format: L("editor.phase.testfrom.title"), run.fromPhase) : ""),
-                     isTest: true, customs: run.customs, startPhase: run.fromPhase,
+                     isTest: true, customs: run.customs, startPhase: run.fromPhase, partialTest: run.fromWave > 0 || run.fromPhase > 1,
                      onResult: { result, moves in
                          if run.fromWave == 0 && run.fromPhase <= 1 && result.outcome == .cleared { model.markVerified(stage: run.stage, replay: Replay(moves: moves), month: result.month) }
                      },

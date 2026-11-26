@@ -134,6 +134,8 @@ struct PlayView: View {
     let isTest: Bool
     /// ショップのボスのお試し(テストプレイと同じく記録・全画面広告・復活なし。もう一度はリワード広告を見てから)
     let trial: Bool
+    /// テストプレイを途中(第2段階・2つ目の場面など)から始めたか。クリアしても、投稿できるクリア確認にはならない
+    let partialTest: Bool
     let share: ShareContext?
     let ranking: RankingContext?
     let onStart: (() -> Void)?
@@ -147,10 +149,11 @@ struct PlayView: View {
     @State private var mrecAllowed = false
 
     init(stage: Stage, title: String, isTest: Bool = false, trial: Bool = false, customs: CustomImageChoice = .none, share: ShareContext? = nil, ranking: RankingContext? = nil,
-         startPhase: Int = 1, onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
+         startPhase: Int = 1, partialTest: Bool = false, onStart: (() -> Void)? = nil, onResult: ((PlayResult, [Move]) -> Void)? = nil, onExit: @escaping () -> Void) {
         self.title = title
         self.isTest = isTest || trial
         self.trial = trial
+        self.partialTest = partialTest
         self.share = share
         self.ranking = ranking
         self.onStart = onStart
@@ -181,7 +184,7 @@ struct PlayView: View {
                 }
                 .overlay {
                     if let r = model.result {
-                        ResultView(result: r, isTest: isTest, trial: trial, mrecUnitID: mrecAllowed ? ads.mrecUnitID : nil, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
+                        ResultView(result: r, isTest: isTest, trial: trial, partialTest: partialTest, mrecUnitID: mrecAllowed ? ads.mrecUnitID : nil, share: share, ranking: ranking, moves: model.finalMoves, boss: model.stage.usedBosses.first,
                                    retry: { Task { await retryWithAdBreak() } },   // もう一度は、3回続けるごとに全画面広告を挟む
                                    back: { Task { await adBreak(); onExit() } },
                                    trialNeedsAd: model.trialFreeRetries == 0, trialFreeLeft: model.trialFreeRetries)
@@ -343,6 +346,8 @@ struct ResultView: View {
     var isTest = false
     /// ショップのボスのお試し(isTest と一緒に true)
     var trial = false
+    /// 途中から始めたテストプレイ(クリアしても、投稿できるようにはならない)
+    var partialTest = false
     /// 結果のパネルの下に出すレクタングル広告のユニット ID(nil は出さない)。下に空きがあるときだけ出す
     var mrecUnitID: String?
     var share: ShareContext?
@@ -354,6 +359,7 @@ struct ResultView: View {
     let back: () -> Void
 
     @EnvironmentObject private var cosmetics: CosmeticsStore
+    @EnvironmentObject private var seasons: SeasonConfig
     @State private var showBossShop = false
     @EnvironmentObject private var rewardStore: RewardStore
     @EnvironmentObject private var ads: AdsService
@@ -380,7 +386,7 @@ struct ResultView: View {
 
     private var message: String {
         if trial { return L(win ? "result.trial.ok" : "result.trial.ng") }
-        if isTest { return L(win ? "result.test.ok" : "result.test.ng") }
+        if isTest { return L(win ? (partialTest ? "result.test.partial" : "result.test.ok") : "result.test.ng") }
         switch result.outcome {
         case .cleared:
             if result.isDamage { return L("result.msg.damage") }
@@ -510,7 +516,7 @@ struct ResultView: View {
         .background(GeometryReader { g in Color.clear.onAppear { areaHeight = g.size.height }.onChange(of: g.size.height) { areaHeight = $0 } })
         .onChange(of: mrecFits) { if $0 { showMrecSoon() } }
         .onAppear { if mrecFits { showMrecSoon() } }
-        .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses) }
+        .sheet(isPresented: $showBossShop) { ShopView(initialTab: .bosses, focus: boss.map { seasons.shopFocus(for: $0) }) }   // 期間外の限定ボスは、永久買い切りパックへ
     }
 
     /// パネルの下に、レクタングル(印と余白を含めて約 290pt)が収まるか。小さい画面や、パネルが長いときは出さない

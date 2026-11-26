@@ -186,7 +186,7 @@ struct ShopView: View {
             // 期間限定の自機(クリスマスなど): 販売中か、持っている人にだけ
             if PaidShip.allCases.contains(where: { $0.onShelf(seasons.open) || cosmetics.ownership.has($0) }) { PaidShipSection().id("ships") }
             // 期間限定のテーマは、販売中か、部品をどれか持っている人にだけ
-            ForEach(Theme.paid.filter { t in t.onShelf(seasons.open) || ThemePart.allCases.contains { cosmetics.ownership.has($0, of: t) } }, id: \.self) { ThemeCard(theme: $0).id("theme.\($0.rawValue)") }
+            ForEach(Theme.paid.filter { t in t.onShelf(seasons.open) || ThemePart.allCases.contains { cosmetics.ownership.has($0, of: t) } }, id: \.self) { ThemeCard(theme: $0, onSale: $0.onShelf(seasons.open)).id("theme.\($0.rawValue)") }
             ThemeCard(theme: .classic)
         }
     }
@@ -371,8 +371,12 @@ private struct ThemeCard: View {
     @EnvironmentObject private var cosmetics: CosmeticsStore
     @EnvironmentObject private var purchases: PurchaseService
     let theme: Theme
+    /// 売り場に出しているか(期間限定のテーマは、期間外は持っている部品だけ並べ、買うボタンは出さない)
+    var onSale = true
 
     private var parts: [Product] { ThemePart.allCases.map { Product.part(theme, $0) } }
+    private var shownParts: [ThemePart] { ThemePart.allCases.filter { onSale || cosmetics.ownership.has($0, of: theme) } }
+    private var showSet: Bool { theme != .classic && (onSale || !cosmetics.ownership.canBuy(.set(theme))) }
     private var offPercent: Int { theme == .classic ? 0 : purchases.discountPercent(bundle: .set(theme), singles: parts) }
 
     var body: some View {
@@ -385,7 +389,7 @@ private struct ThemeCard: View {
                         .font(.display(23))
                         .foregroundStyle(.white).padding(.horizontal, 6).padding(.vertical, 2).background(Color.black.opacity(0.55))
                     Spacer()
-                    if theme != .classic && cosmetics.ownership.canBuy(.set(theme)) {
+                    if theme != .classic && onSale && cosmetics.ownership.canBuy(.set(theme)) {
                         Text(String(format: L("shop.off"), offPercent))
                             .font(.system(size: 12, weight: .black)).foregroundStyle(GameStyle.ink)
                             .padding(.vertical, 4).padding(.horizontal, 10)
@@ -397,11 +401,11 @@ private struct ThemeCard: View {
             .frame(height: 170)
 
             VStack(spacing: 0) {
-                ForEach(Array(ThemePart.allCases.enumerated()), id: \.element) { idx, part in
+                ForEach(Array(shownParts.enumerated()), id: \.element) { idx, part in
                     PartRow(theme: theme, part: part)
-                    if idx < ThemePart.allCases.count - 1 || theme != .classic { CardDivider() }
+                    if idx < shownParts.count - 1 || showSet { CardDivider() }
                 }
-                if theme != .classic { setRow }
+                if showSet { setRow }
             }
             .background(GameStyle.panel)
         }

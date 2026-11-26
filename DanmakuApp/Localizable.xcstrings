@@ -79377,61 +79377,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Auch zeitlich begrenzte Bosse – jederzeit nutzbar, unabhängig vom Verkaufszeitraum"
+            "value": "Auch zeitlich begrenzte Bosse und Looks – jederzeit nutzbar, unabhängig vom Verkaufszeitraum"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Limited-time bosses too – usable anytime, in or out of season"
+            "value": "Limited-time bosses and looks too – usable anytime, in or out of season"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "También los jefes de tiempo limitado: úsalos cuando quieras, sea o no temporada"
+            "value": "También los jefes y aspectos de tiempo limitado: úsalos cuando quieras, sea o no temporada"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les boss en vente limitée aussi : utilisables à tout moment, hors période comprise"
+            "value": "Les boss et apparences en vente limitée aussi : utilisables à tout moment, hors période comprise"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "期間限定のボスも、期間に関係なくいつでも使えます"
+            "value": "期間限定のボスや見た目も、期間に関係なくいつでも使えます"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "기간 한정 보스도 기간에 상관없이 언제든 사용 가능"
+            "value": "기간 한정 보스와 외형도 기간에 상관없이 언제든 사용 가능"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chefes de tempo limitado também: use quando quiser, dentro ou fora da temporada"
+            "value": "Chefes e visuais de tempo limitado também: use quando quiser, dentro ou fora da temporada"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "И боссы с ограниченным сроком продажи — доступны всегда, вне зависимости от периода"
+            "value": "И боссы и облики с ограниченным сроком продажи — доступны всегда, вне зависимости от периода"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "限时Boss也包含在内,不受销售期限制,随时可用"
+            "value": "限时Boss和外观也包含在内,不受销售期限制,随时可用"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "限時Boss也包含在內,不受販售期限制,隨時可用"
+            "value": "限時Boss和外觀也包含在內,不受販售期限制,隨時可用"
           }
         }
       }
@@ -79708,7 +79708,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show hit point"
+            "value": "Show hitbox dot"
           }
         },
         "es": {
@@ -82942,6 +82942,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пропускает предыдущие фазы. Для публикации всё равно нужно пройти весь уровень через «Тестовая игра»."
+          }
+        }
+      }
+    },
+    "result.test.partial": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cleared from a later point. To publish, clear it from the start."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "途中からのクリアです。投稿するには、最初から通してクリアしてください。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这是从中途开始的通关。要发布，请从头通关一次。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這是從中途開始的通關。要發布，請從頭通關一次。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중간부터 시작한 클리어예요. 게시하려면 처음부터 클리어해 주세요."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Superado desde un punto intermedio. Para publicar, supéralo desde el principio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réussi à partir d’un point intermédiaire. Pour publier, réussissez-le depuis le début."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ab einer späteren Stelle geschafft. Zum Veröffentlichen schaffe es von Anfang an."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitória a partir de um ponto intermediário. Para publicar, vença desde o início."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пройдено с середины. Чтобы опубликовать, пройдите уровень с начала."
           }
         }
       }

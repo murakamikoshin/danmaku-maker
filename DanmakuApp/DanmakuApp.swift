@@ -93,6 +93,8 @@ struct DanmakuApp: App {
                     if phase == .active { NotificationService.shared.clearLocalReminders(); ReviewPrompt.noteLaunch() }
                     if phase == .active { AudioManager.shared.resumeIfNeeded() } else { AudioManager.shared.pause() }
                     if phase == .active { Task { await RewardNoticeService.shared.check() } }   // 招待や月間ランキングのごほうびが届いていないか
+                    // 期間限定の販売(12/1 から・12/26 17:00 まで)は、裏に置いたままの人にも合わせる(取りに行くのは 1 時間に 1 回まで)
+                    if phase == .active { Task { await seasonConfig.refresh() } }
                     // 設定アプリで通知の許可を変えて戻ってきたときに、表示を合わせる
                     if phase == .active { Task { await NotificationService.shared.refreshAuthorization() } }
                     // 起動時に広告を開始できなかった・読み込めなかったときは、前面に戻るたびにやり直す
