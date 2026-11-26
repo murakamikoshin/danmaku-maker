@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor } from "../src/titles.js";
+import { awardsFor, bestCrownTitle, crownOfTitle, goldShipsFor, rewardShipOrder } from "../src/titles.js";
 import { beamHits, blastHits, monthOf, MONTH_GRACE_MS, playedMonth, recentMonth, usesMonth } from "../src/fullsim.js";
 import { crossedMilestone, pushLang, pushText, tokyoMonth, PUSH_KINDS, OPT_IN_KINDS } from "../src/notify.js";
 import { containsNgWord } from "../src/ngwords/index.js";
@@ -1068,6 +1068,24 @@ describe("月間ランキングの金の自機", () => {
     expect(g(100, 1000)).toEqual(["phantom_gold"]);
     expect(g(101, 1000)).toEqual([]);   // 上位50% だけの人は、自機なし
     expect(g(2, 5)).toEqual(all.slice(1));
+  });
+});
+
+describe("月間ランキングの自機の色", () => {
+  it("2026年12月は聖夜(holly)。配り方(機数・並び)は金と同じ", () => {
+    const g = (rank: number, total: number) => goldShipsFor(awardsFor(rank, total), "2026-12");
+    const all = ["ace_holly", "bastion_holly", "gemini_holly", "lancer_holly", "phantom_holly"];
+    expect(g(1, 1000)).toEqual(all);
+    expect(g(3, 1000)).toEqual(all.slice(2));
+    expect(g(10, 1000)).toEqual(all.slice(3));
+    expect(g(11, 1000)).toEqual(["phantom_holly"]);
+    expect(g(101, 1000)).toEqual([]);
+  });
+  it("色の決まっていない月(11月・1月)と、月なしは金のまま", () => {
+    for (const m of ["2026-11", "2027-01", undefined]) {
+      expect(goldShipsFor(awardsFor(1, 100), m)).toEqual(["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"]);
+    }
+    expect(rewardShipOrder("2026-12")).toEqual(["ace_holly", "bastion_holly", "gemini_holly", "lancer_holly", "phantom_holly"]);
   });
 });
 

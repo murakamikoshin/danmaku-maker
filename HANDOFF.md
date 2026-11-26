@@ -145,3 +145,11 @@
 - 確認の状況: 1 つ目のコミット(アーケードの見た目)は、CI(UI Screenshots)でビルドが通り、主な画面のスクリーンショットを確認済み。**2 つ目のコミット(テーマの切り替え・崩れの修正)は、GitHub Actions が支払い・利用上限の理由で動かず、未ビルド**。Actions が動くようになったら、`design-refresh` で UI Screenshots を流して確かめる(幻想テーマの画面も撮るようにしてある)
 - 画面確認(UI Screenshots)の起動引数: `-ui-theme arcade|gensou|classic`、`-swipe-on`(スワイプのタブを出すだけ。CI は Remote Config を持たないので、これがないとタブが 3 つで撮れる)、`-open-swipe`(スワイプの画面を開く)
 - 3 テーマの見比べ画像は `docs/design_compare/`(ホーム・エディタ・ショップ・設定・クリア)。初期設定は「従来」に決めた(2026-11-11、Koshin)
+
+## 2026-11-26 12月の月間ランキングの自機「聖夜」(xmas-150、1.5.0 に入れる)
+- 12月(2026-12)の月間ランキングで配る自機を、金ではなく「聖夜」(`<機種>_holly`)にした。配り方(順位ごとの機数・並び)は金と同じ。ない月は金のまま。
+- 月と色の対応は2か所で同じにする: サーバー `firebase/functions/src/titles.ts` の `MONTHLY_SHIP_COLOR`、アプリ `ShipSkin.monthlyRewardColor`。
+- 絵は `art/rewards/<機種>_holly/`。作り直し・来月以降の色は `art/rewards/_tools/make_monthly_ship.py`(steel の絵を部位ごとに色替え)。
+- 賞品の画面(SeasonPrizesView)は、限定の色の月だけ「12月だけの限定！」の帯と、聖夜の自機・専用の注意書きを出す。
+- **配るのは 2027/1/1 0:05 の `swipeMonthlyAward`。それまでに functions のデプロイが必要**(アプリの 1.5.0 も、それまでに出しておく。1.4.x の人は、もらっても 1.5.0 に上げるまで見えない)。
+- ついでに直したもの: 招待の画面の「招待でもらった自機 ○/31」に、ランキングでもらった金・聖夜の自機が数えられていたのを外した。

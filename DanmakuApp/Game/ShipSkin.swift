@@ -12,7 +12,18 @@ enum ShipSkin {
     /// 全部の ID(サーバーの INVITER_SHIPS などと同じ名前)
     /// 買って手に入れる自機(クリスマスの自機など。DanmakuCore の PaidShip)。絵は同じ art/rewards/<ID>/ に、同じ形(32×32・3コマ)で置く
     static let paid: [String] = PaidShip.allCases.map(\.rawValue)
-    static let all: [String] = [original] + models.flatMap { m in colors.map { "\(m)_\($0)" } } + [special] + paid
+    /// スワイプ弾幕の月間ランキングで配る自機の機種(並びは配る順の逆。サーバーの GOLD_SHIP_ORDER と同じ)
+    static let rewardModels = ["ace", "bastion", "gemini", "lancer", "phantom"]
+    /// 月ごとに配る自機の色(ここにない月は金)。サーバーの MONTHLY_SHIP_COLOR と同じにする
+    static let monthlyRewardColor: [String: String] = ["2026-12": "holly"]
+    /// その月(「年-月」)の順位で配る自機。上の順位ほど多く、後ろから配る
+    static func rewardShips(month: String) -> [String] {
+        let c = monthlyRewardColor[month] ?? "gold"
+        return rewardModels.map { "\($0)_\(c)" }
+    }
+    /// 月間ランキングの賞品だけの自機(金以外の限定色)
+    static let monthlyOnly: [String] = Array(Set(monthlyRewardColor.values)).sorted().flatMap { c in rewardModels.map { "\($0)_\(c)" } }
+    static let all: [String] = [original] + models.flatMap { m in colors.map { "\(m)_\($0)" } } + monthlyOnly + [special] + paid
 
     static func isValid(_ id: String) -> Bool { all.contains(id) || RemoteCatalog.isRemoteID(id) }
 

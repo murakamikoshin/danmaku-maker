@@ -87,10 +87,18 @@ export interface MonthlyAward {
 
 /** 月間ランキングのごほうびの金の自機(art/rewards の ID)。上の順位は、下の順位のぶんも全部もらえる。1位=5機 … 上位1%・10%=1機。ワスプは取ってある */
 export const GOLD_SHIP_ORDER = ["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"] as const;
-export function goldShipsFor(a: { kinds: readonly string[]; crown: number; medal: boolean }): string[] {
+/** 月ごとに配る自機の色(ここにない月は金)。機種と並びは金と同じ。アプリの ShipSkin.monthlyRewardColor と同じにする */
+export const MONTHLY_SHIP_COLOR: Readonly<Record<string, string>> = { "2026-12": "holly" };
+/** その月(「年-月」)の順位で配る自機の並び(後ろから配る) */
+export function rewardShipOrder(month?: string): readonly string[] {
+  const color = month ? MONTHLY_SHIP_COLOR[month] : undefined;
+  return color ? GOLD_SHIP_ORDER.map((id) => id.replace(/_gold$/, `_${color}`)) : GOLD_SHIP_ORDER;
+}
+export function goldShipsFor(a: { kinds: readonly string[]; crown: number; medal: boolean }, month?: string): string[] {
   // 何機もらえるか: 1位=5, 2位=4, 3位=3, 4〜10位=2, 上位1%・10%=1, 上位50%=0
   const n = a.crown === 1 ? 5 : a.crown === 2 ? 4 : a.crown === 3 ? 3 : a.medal ? 2 : a.kinds.some((k) => k === "pct1" || k === "pct10") ? 1 : 0;
-  return GOLD_SHIP_ORDER.slice(GOLD_SHIP_ORDER.length - n);
+  const order = rewardShipOrder(month);
+  return order.slice(order.length - n);
 }
 
 /** 参加者 total 人のうち rank 位(同点は同じ順位)がもらうもの。上位 1%・10%・50% は、一番高い段階を1つ */

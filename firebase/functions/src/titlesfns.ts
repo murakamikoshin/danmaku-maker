@@ -129,8 +129,8 @@ export async function runMonthlyAward(db: Firestore, nowMs: number): Promise<Mon
     if (a.kinds.length > 0) {
       bw.set(db.doc(`titleState/${e.uid}`), { titles: FieldValue.arrayUnion(...a.kinds.map((k) => monthlyTitleId(k, month))) }, { merge: true });
     }
-    // 金の自機(上の順位は下のぶんも全部)。もらった自機は、招待でもらう自機と同じ置き場所(inviteState)に入れる
-    const gold = goldShipsFor(a);
+    // 自機(上の順位は下のぶんも全部。色は月ごと)。もらった自機は、招待でもらう自機と同じ置き場所(inviteState)に入れる
+    const gold = goldShipsFor(a, month);   // 月ごとの色(12月=聖夜)。ない月は金
     if (gold.length > 0) bw.set(db.doc(`inviteState/${e.uid}`), { ships: FieldValue.arrayUnion(...gold) }, { merge: true });
   });
   await bw.flush();

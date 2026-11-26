@@ -1,13 +1,15 @@
 import SwiftUI
 
-/// スワイプ弾幕の今月の賞品: 月末の順位ごとにもらえる称号・王冠・金の自機と、参加賞(回復ドリンク)。
+/// スワイプ弾幕の今月の賞品: 月末の順位ごとにもらえる称号・王冠・自機(色は月ごと)と、参加賞(回復ドリンク)。
 /// 中身はサーバーの titles.ts(awardsFor・goldShipsFor)と、titlesfns.ts の参加賞と同じ
 struct SeasonPrizesView: View {
     let openRanking: () -> Void
     @Environment(\.dismiss) private var dismiss
 
-    /// 金の自機は、上の順位ほど多い(上の順位は、下の順位のぶんも全部もらえる)。サーバーの GOLD_SHIP_ORDER の後ろから
-    private static let goldOrder = ["ace_gold", "bastion_gold", "gemini_gold", "lancer_gold", "phantom_gold"]
+    /// 自機は、上の順位ほど多い(上の順位は、下の順位のぶんも全部もらえる)。色は月ごと(12月=聖夜、ない月は金)。サーバーの rewardShipOrder の後ろから
+    private var shipOrder: [String] { ShipSkin.rewardShips(month: month) }
+    /// 今月の自機の色(金以外なら、限定の色)
+    private var shipColor: String? { ShipSkin.monthlyRewardColor[month] }
     private struct Row: Identifiable {
         let id: String
         let label: String
@@ -44,6 +46,18 @@ struct SeasonPrizesView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("season.prizes.note").font(.system(size: 13, weight: .semibold)).foregroundStyle(GameStyle.text.opacity(0.85))
                         .fixedSize(horizontal: false, vertical: true)
+                    if let c = shipColor {
+                        // 今月だけの限定の自機のお知らせ
+                        HStack(spacing: 10) {
+                            SkinThumb(id: "ace_\(c)").frame(width: 40, height: 40)
+                            Text(LocalizedStringKey("season.prizes.special.\(c)")).font(.system(size: 13, weight: .heavy)).foregroundStyle(GameStyle.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(10).background(GameStyle.yellow, in: PixelRect(cornerRadius: 12))
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("season.prizes.special")
+                    }
                     ForEach(rows) { r in row(r) }
                     // 参加賞
                     HStack(spacing: 12) {
@@ -54,7 +68,7 @@ struct SeasonPrizesView: View {
                         Spacer(minLength: 0)
                     }
                     .padding(12).background(GameStyle.panelHi, in: PixelRect(cornerRadius: 12))
-                    Text("season.prizes.footer").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(LocalizedStringKey(shipColor.map { "season.prizes.footer.\($0)" } ?? "season.prizes.footer")).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     // いつでも取れる称号(期間なし。一度もらったらずっと使える)
                     Text("season.always.title").font(.display(17)).foregroundStyle(GameStyle.text).padding(.top, 8)
                     Text("season.always.note").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -102,9 +116,9 @@ struct SeasonPrizesView: View {
                 }
                 if r.ships > 0 {
                     HStack(spacing: 4) {
-                        ForEach(Self.goldOrder.suffix(r.ships), id: \.self) { SkinThumb(id: $0).frame(width: 26, height: 26) }
+                        ForEach(shipOrder.suffix(r.ships), id: \.self) { SkinThumb(id: $0).frame(width: 26, height: 26) }
                     }
-                    .accessibilityLabel(Text(String(format: L("season.prize.ships"), r.ships)))
+                    .accessibilityLabel(Text(String(format: L(shipColor.map { "season.prize.ships.\($0)" } ?? "season.prize.ships"), r.ships)))
                 }
             }
             Spacer(minLength: 0)

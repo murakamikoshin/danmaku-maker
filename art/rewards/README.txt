@@ -14,3 +14,9 @@ drink_rainbow（虹色の回復ドリンク）
 - 丸いフラスコに虹の6色の液、金のふた
 - 作り直しは _tools/make_drink_rainbow.py
 - 拡大表示時は filteringMode = .nearest
+
+<機種>_holly（スワイプ弾幕・2026年12月の月間ランキングの賞品「聖夜」）
+- ace / bastion / gemini / lancer / phantom の5機（金の自機と同じ並びで配る。wasp はなし）
+- 32x32 / 3コマ。steel の絵を部位ごとに色替えしたもの。3コマ目で電飾がキラッと光る
+- 作り直し・別の月の色を作るときは _tools/make_monthly_ship.py
+- 月と色の対応は、サーバーの MONTHLY_SHIP_COLOR（titles.ts）とアプリの ShipSkin.monthlyRewardColor

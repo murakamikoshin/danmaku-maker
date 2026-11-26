@@ -82425,6 +82425,266 @@
           }
         }
       }
+    },
+    "ship.color.holly": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weihnacht"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yuletide"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navidad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Houx"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖夜"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "성야"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natalina"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рождество"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圣夜"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖夜"
+          }
+        }
+      }
+    },
+    "season.prize.ships.holly": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Weihnachtsschiffe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Yuletide ships"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld naves navideñas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld vaisseaux Houx"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖夜の自機 %lld機"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "성야 기체 %lld대"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld naves natalinas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рождественских кораблей: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圣夜自机 %lld架"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聖夜自機 %lld架"
+          }
+        }
+      }
+    },
+    "season.prizes.special.holly": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur im Dezember! Die Preisschiffe gibt es diesen Monat in Weihnachtsfarben"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "December only! This month’s prize ships come in Yuletide colors"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Solo en diciembre! Las naves de premio de este mes vienen en colores navideños"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décembre seulement ! Les vaisseaux à gagner ce mois-ci sont aux couleurs Houx"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12月だけの限定！ 今月の賞品は「聖夜」カラーの自機です"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12월 한정! 이번 달 상품은 「성야」 컬러 기체예요"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só em dezembro! As naves de prêmio deste mês vêm em cores natalinas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Только в декабре! Призовые корабли этого месяца — в рождественских цветах"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12月限定！本月奖品是「圣夜」配色的自机"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12月限定！本月獎品是「聖夜」配色的自機"
+          }
+        }
+      }
+    },
+    "season.prizes.footer.holly": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plätze 1–10 erhalten auch den Top-%-Titel. Weihnachtsschiffe gibt es nur im Dezember; höhere Ränge bekommen mehr (vorhandene zählen nicht doppelt)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ranks 1–10 also get the top-% title. Yuletide ships are a December-only prize; higher ranks get more (ones you already own don’t count twice)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los puestos 1–10 también reciben el título de top %. Las naves navideñas son un premio solo de diciembre; cuanto más alto, más naves (las que ya tienes no se repiten)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les rangs 1 à 10 reçoivent aussi le titre top %. Les vaisseaux Houx sont un prix de décembre uniquement ; plus le rang est haut, plus vous en recevez (ceux déjà obtenus ne comptent pas deux fois)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1〜10位の人は、上位%の称号も一緒にもらえます。聖夜の自機は12月だけの賞品で、上の順位ほど多くもらえます(持っているものは増えません)。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1~10위는 상위 % 칭호도 함께 받아요. 성야 기체는 12월 한정 상품이고, 순위가 높을수록 더 많이 받아요(이미 가진 것은 늘지 않아요)."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do 1º ao 10º também ganham o título de top %. As naves natalinas são um prêmio só de dezembro; quanto maior a posição, mais naves (as que já tem não se repetem)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Места 1–10 также получают титул топ-%. Рождественские корабли — приз только декабря; чем выше место, тем больше кораблей (имеющиеся не дублируются)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第1～10名也会同时获得前百分比的称号。圣夜自机是12月限定奖品，名次越高，获得越多(已拥有的不会重复)。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第1～10名也會同時獲得前百分比的稱號。聖夜自機是12月限定獎品，名次越高，獲得越多(已擁有的不會重複)。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
