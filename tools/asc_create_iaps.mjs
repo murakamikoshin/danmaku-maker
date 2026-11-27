@@ -107,6 +107,31 @@ products.push(
   { id: 'lifetime', yen: 3000, ref: 'Lifetime Pack', ja: ['永久買い切りパック', '全部の課金コンテンツと広告削除を、今後の追加分もずっと。'], en: ['Lifetime Pack', 'All paid items and Remove Ads, forever.'], notes: lifetimeNotes },
 );
 
+// クリスマス(2026-11-27 追加。1.5.0): 期間限定の10個。期間外はアプリの売り場に出ない(サンドボックス・審査では、いつでも出る)
+const xmasNote = (where) => `This is a one-time (non-consumable) purchase, sold for a limited time (Christmas, Dec 1 - Dec 26). In the sandbox (TestFlight / App Review) it is always on sale. To test: open the Shop tab (bottom of the screen), ${where}. Anyone can play stages that use these items without buying; they are only needed to publish a stage that uses them. Use "Restore Purchases" in the Shop to restore it. No account is required.`;
+products.push(
+  { id: 'boss.santa', yen: 400, ref: 'Boss Santa Girl Noel', ja: ['サンタ娘 ノエル', 'ステージに置ける期間限定のボス。5つの技と覚醒つき。'], en: ['Santa Girl Noel', 'A limited-time boss with 5 moves and awakening.'],
+    notes: xmasNote('open the "Bosses" tab at the top and buy "Noel". It can then be used as the boss of a stage you publish (Create tab > Boss mode > Advanced > Boss look); it also unlocks the "Christmas" BGM') },
+  { id: 'mooks.xmas', yen: 200, ref: 'Christmas Minions', ja: ['クリスマスの雑魚セット', 'ステージの雑魚を、クリスマスの見た目4種に。'], en: ['Christmas Minions', '4 Christmas looks for the minions in your stages.'],
+    notes: xmasNote('open the "Bosses" tab at the top and buy "Christmas Minions". The 4 minion looks can then be used in stages you publish (Create tab > Advanced > Minion look)') },
+  { id: 'ship.sleigh_xmas', yen: 100, ref: 'Ship Sleigh', ja: ['自機「そり」', 'クリスマスのドット絵の自機です。'], en: ['Sleigh Ship', 'A Christmas pixel-art ship.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Sleigh" in the ships section, then tap "Use"') },
+  { id: 'ship.reindeer_xmas', yen: 100, ref: 'Ship Reindeer', ja: ['自機「トナカイ」', 'クリスマスのドット絵の自機です。'], en: ['Reindeer Ship', 'A Christmas pixel-art ship.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Reindeer" in the ships section, then tap "Use"') },
+  { id: 'ship.snowflake_xmas', yen: 100, ref: 'Ship Snowflake', ja: ['自機「雪の結晶」', 'クリスマスのドット絵の自機です。'], en: ['Snowflake Ship', 'A Christmas pixel-art ship.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Snowflake" in the ships section, then tap "Use"') },
+  { id: 'xmas.bullets', yen: 100, ref: 'Christmas Bullets', ja: ['クリスマスの弾', '弾の色と形がクリスマスのテーマに変わります。'], en: ['Christmas Bullets', 'Changes the color and shape of bullets.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Bullets" on the "Christmas" theme card') },
+  { id: 'xmas.background', yen: 100, ref: 'Christmas Background', ja: ['クリスマスの背景', '背景がクリスマスのテーマに変わります。'], en: ['Christmas Background', 'Changes the stage background.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Background" on the "Christmas" theme card') },
+  { id: 'xmas.ship', yen: 100, ref: 'Christmas Ship', ja: ['クリスマスの自機', '自機の見た目がクリスマスのテーマに変わります。'], en: ['Christmas Ship', 'Changes how your ship looks.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Ship" on the "Christmas" theme card') },
+  { id: 'xmas.set', yen: 200, ref: 'Christmas Set', ja: ['クリスマスセット', 'クリスマスの弾・背景・自機の3点セットです。'], en: ['Christmas Set', 'Bullets, background and ship in one set.'],
+    notes: xmasNote('open the "Looks" tab at the top and buy "Set" on the "Christmas" theme card') },
+  { id: 'pack.xmas', yen: 600, ref: 'Christmas Pack', ja: ['クリスマスパック', 'ノエル・雑魚セット・自機3種・テーマをまとめてお得に。'], en: ['Christmas Pack', 'Noel, minions, 3 ships and the theme in one pack.'],
+    notes: xmasNote('open the "Bosses" tab at the top and buy "Christmas Pack". It unlocks everything above: the boss Noel, the Christmas minion looks, the 3 Christmas ships and the Christmas theme') },
+);
+
 const NOTES = 'This is a one-time (non-consumable) purchase. To test: tap the palette icon at the top left of the home screen to open "Customize & Shop", then buy this item. It becomes available to use right away. Use "Restore Purchases" at the bottom of the same screen to restore it. No account is required.';
 
 const b = await chromium.connectOverCDP('http://127.0.0.1:9222');

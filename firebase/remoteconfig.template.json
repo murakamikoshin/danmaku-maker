@@ -2,7 +2,7 @@
   "conditions": [
     {
       "name": "xmas_sale_2026",
-      "expression": "dateTime > dateTime('2026-12-01T00:00:00', 'Asia/Tokyo') && dateTime <= dateTime('2026-12-26T17:00:00', 'Asia/Tokyo')",
+      "expression": "dateTime >= dateTime('2026-12-01T00:00:00', 'Asia/Tokyo') && dateTime < dateTime('2026-12-26T17:00:00', 'Asia/Tokyo')",
       "tagColor": "GREEN"
     }
   ],
@@ -23,7 +23,7 @@
     },
     "update_latest_version": {
       "defaultValue": {
-        "value": "1.4.2"
+        "value": "1.4.3"
       },
       "description": "これより古い版に「新しいバージョンがあります」(あとで閉じられる)。空なら出さない。1.2.0 から",
       "valueType": "STRING"
